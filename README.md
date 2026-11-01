@@ -219,8 +219,10 @@ faces the manifest covers, per language. Once the manifest exists, a
 `packs/` test fails when an embedded image is not under its base URL.
 
 The curated files are the scenarios (`scenarios/`; `mainSchemes` lists the
-main scheme sets a scenario such as an Underling's is played with), card
-overrides
+main scheme sets a scenario such as an Underling's is played with, and `sets`
+the encounter sets its rules require besides the villain set, such as
+Taskmaster's Hydra Patrol, which the setup shuffles into the encounter deck
+and the lobby does not offer as modular sets), card overrides
 (`cards.json`: face sizes, the Cerebro image ids of the identities whose
 Cerebro images are swapped, the OCTGN image file stems (`octgn`) of the faces
 whose records carry a wrong OCTGN id, and the cards a deck containing a card

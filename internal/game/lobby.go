@@ -313,6 +313,9 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 		if slices.Contains(cfg.Modulars[:i], code) {
 			return invalid("duplicate modular set %q", code)
 		}
+		if slices.Contains(scenario.Sets, code) {
+			return invalid("%q is already part of scenario %q", code, scenario.ID)
+		}
 		if isMainSchemeSet(cat, code) {
 			if !slices.Contains(scenario.MainSchemes, code) {
 				return invalid("%q is not a main scheme set of scenario %q", code, scenario.ID)

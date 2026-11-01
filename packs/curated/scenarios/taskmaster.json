@@ -1,6 +1,9 @@
 {
   "id": "taskmaster",
   "villainSet": "taskmaster",
+  "sets": [
+    "hydra_patrol"
+  ],
   "piles": [
     {
       "key": "villain",

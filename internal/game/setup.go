@@ -386,6 +386,11 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	b.selfContained = scenario.SelfContained
 
 	classic := !slices.ContainsFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Encounter })
+	// The encounter sets the scenario requires join the classic encounter
+	// deck only.
+	if !classic && len(scenario.Sets) > 0 {
+		return pack.Scenario{}, invalid("scenario %q has encounter sets but no classic encounter deck", scenario.ID)
+	}
 	if classic {
 		b.inPlayRight = discardX + portraitWidth
 		b.lastPile = true
@@ -472,7 +477,10 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 		apart[c.Code] = true
 	}
 
+	// The sets the scenario requires come right after the villain set, so a
+	// scenario without any draws the same card ids for a seed.
 	encounterSets := []string{scenario.VillainSet}
+	encounterSets = append(encounterSets, scenario.Sets...)
 	encounterSets = append(encounterSets, cfg.Modulars...)
 	if cfg.Standard != "" {
 		encounterSets = append(encounterSets, cfg.Standard)

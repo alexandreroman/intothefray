@@ -452,6 +452,53 @@ describe('ScenarioPicker self-contained scenario', () => {
   });
 });
 
+describe('ScenarioPicker required sets', () => {
+  // Taskmaster's rules add Hydra Patrol to its villain set: it is no modular set to pick.
+  const trors: Index = {
+    ...index,
+    scenarios: [
+      ...index.scenarios,
+      {
+        id: 'taskmaster',
+        name: 'Taskmaster',
+        pack: 'core',
+        image: '',
+        supported: true,
+        recommended: ['bomb_scare'],
+        sets: ['hydra_patrol'],
+      },
+    ],
+    sets: [
+      ...index.sets,
+      { code: 'hydra_patrol', name: 'Hydra Patrol', pack: 'core', kind: 'modular' },
+      { code: 'under_attack', name: 'Under Attack', pack: 'core', kind: 'modular' },
+    ],
+  };
+
+  async function menuLabels(config: LobbyConfig): Promise<string[]> {
+    render(ScenarioPicker, { view: viewOf(config), index: trors, onconfigure: vi.fn() });
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+    return within(screen.getByRole('group', { name: 'Core Set' }))
+      .getAllByRole('button')
+      .map((button) => (button.textContent ?? '').replace(/\s+/g, ' ').trim());
+  }
+
+  it("does not offer the scenario's required sets", async () => {
+    expect(await menuLabels({ ...rhino, scenario: 'taskmaster', modulars: [] })).toEqual([
+      'Bomb Scare ★ recommended',
+      'Under Attack',
+    ]);
+  });
+
+  it('offers them for another scenario', async () => {
+    expect(await menuLabels({ ...rhino, modulars: [] })).toEqual([
+      'Bomb Scare ★ recommended',
+      'Hydra Patrol',
+      'Under Attack',
+    ]);
+  });
+});
+
 describe('ScenarioPicker main scheme sets', () => {
   // An Underling is played with one of its main scheme sets; Civil War's scheme set belongs to no
   // scenario of this index.

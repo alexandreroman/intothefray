@@ -158,10 +158,13 @@ type Start struct {
 
 // Scenario is a hand-curated scenario setup.
 type Scenario struct {
-	ID          string               `json:"id"`
-	Name        string               `json:"name"`
-	Pack        string               `json:"pack"`
-	VillainSet  string               `json:"villainSet"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Pack       string `json:"pack"`
+	VillainSet string `json:"villainSet"`
+	// Sets lists the encounter sets the scenario's rules add to the villain
+	// set; they join the classic encounter deck as a modular set does.
+	Sets        []string             `json:"sets,omitempty"`
 	Piles       []Pile               `json:"piles"`
 	Start       map[Difficulty]Start `json:"start"`
 	SetAside    []string             `json:"setAside,omitempty"`
@@ -219,6 +222,9 @@ type ScenarioRef struct {
 	SelfContained bool `json:"selfContained,omitempty"`
 	// MainSchemes lists the main scheme sets the scenario is played with.
 	MainSchemes []string `json:"mainSchemes,omitempty"`
+	// Sets lists the encounter sets the scenario's rules add to the villain
+	// set, which the lobby does not offer as modular sets.
+	Sets []string `json:"sets,omitempty"`
 	// Localized holds the overrides of the entry per language code, e.g. "fr".
 	Localized map[string]Localized `json:"localized,omitempty"`
 }

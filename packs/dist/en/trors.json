@@ -4502,6 +4502,9 @@
       "name": "Taskmaster",
       "pack": "trors",
       "villainSet": "taskmaster",
+      "sets": [
+        "hydra_patrol"
+      ],
       "piles": [
         {
           "key": "villain",

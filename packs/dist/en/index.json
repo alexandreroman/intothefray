@@ -651,6 +651,9 @@
       "supported": true,
       "recommended": [
         "weap_master"
+      ],
+      "sets": [
+        "hydra_patrol"
       ]
     },
     {

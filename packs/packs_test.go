@@ -540,6 +540,9 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 		deckCards []string
 		inPlay    []string
 		setAside  []string
+		// encounterSets are the sets the scenario requires, every copy of
+		// whose cards lies in the classic encounter deck.
+		encounterSets []string
 	}{
 		{
 			scenario:  "crossbones",
@@ -554,8 +557,9 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 			setAside:  []string{"04130"},
 		},
 		{
-			scenario: "taskmaster",
-			setAside: []string{"04097", "04098", "04099", "04100"},
+			scenario:      "taskmaster",
+			setAside:      []string{"04097", "04098", "04099", "04100"},
+			encounterSets: []string{"hydra_patrol"},
 		},
 	}
 	for _, tt := range tests {
@@ -593,6 +597,19 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 				for _, code := range tt.setAside {
 					want[code] = []string{game.PileScenarioAside}
 				}
+				for _, setCode := range tt.encounterSets {
+					set, ok := cat.Set(setCode)
+					if !ok {
+						t.Fatalf("no set %q", setCode)
+					}
+					for _, code := range set.Cards {
+						card, _, err := cat.Card(code)
+						if err != nil {
+							t.Fatal(err)
+						}
+						want[card.Code] = slices.Repeat([]string{game.PileEncounter}, card.Quantity)
+					}
+				}
 				for code, places := range want {
 					if got := placesOf(table, code); !slices.Equal(got, places) {
 						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
@@ -619,13 +636,11 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 				if difficulty == pack.Expert {
 					cfg.Expert = "expert"
 				}
-				if id == "taskmaster" {
-					cfg.Modulars = append(cfg.Modulars, "hydra_patrol")
-				}
 				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
 
 				scenario, _ := cat.Scenario(id)
-				setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, cfg.Modulars...)
+				setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, scenario.Sets...)
+				setCodes = append(setCodes, cfg.Modulars...)
 				for _, deck := range scenario.Decks {
 					setCodes = append(setCodes, deck.Sets...)
 				}

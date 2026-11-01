@@ -83,6 +83,11 @@ func buildScenarios(
 			ref.ID = def.ID
 			ref.SelfContained = def.SelfContained
 			ref.MainSchemes = def.MainSchemes
+			ref.Sets = def.Sets
+			// A set the scenario requires is not a modular set to recommend.
+			ref.Recommended = slices.DeleteFunc(ref.Recommended, func(code string) bool {
+				return slices.Contains(def.Sets, code)
+			})
 			// The modular sets come with the main scheme set the host picks.
 			if len(def.MainSchemes) > 0 {
 				ref.Recommended = []string{}
@@ -99,7 +104,7 @@ func buildScenarios(
 					Reason: fmt.Sprintf("scenario %s names unknown card %s", def.ID, code),
 				})
 			}
-			missingSets := missingDeckSets(def, setKinds)
+			missingSets := missingSetCodes(def, setKinds)
 			for _, code := range missingSets {
 				problems = append(problems, report.Unsupported{
 					Code:   code,
@@ -124,6 +129,7 @@ func buildScenarios(
 					Name:          villain.set.Name,
 					Pack:          villain.pack,
 					VillainSet:    def.VillainSet,
+					Sets:          def.Sets,
 					Piles:         def.Piles,
 					Start:         def.Start,
 					SetAside:      def.SetAside,
@@ -238,10 +244,11 @@ func missingCards(def curated.ScenarioDef, cardsByCode map[string]pack.Card) []s
 	})
 }
 
-// missingDeckSets returns the sorted set codes the decks of the definition
-// name that are not in the catalog. setKinds maps a set code to its kind.
-func missingDeckSets(def curated.ScenarioDef, setKinds map[string]string) []string {
-	var named []string
+// missingSetCodes returns the sorted set codes the definition names, as its
+// encounter sets or in its decks, that are not in the catalog. setKinds maps
+// a set code to its kind.
+func missingSetCodes(def curated.ScenarioDef, setKinds map[string]string) []string {
+	named := slices.Clone(def.Sets)
 	for _, deck := range def.Decks {
 		named = append(named, deck.Sets...)
 	}

@@ -14,7 +14,8 @@ import (
 
 // setupCatalog returns a small catalog: a classic scenario, a self-contained one with two villains whose decks and
 // side schemes lie in the row, one whose encounter deck leaves a villain-set card over, one with an ordered deck, and
-// a classic one whose scenario decks take villain-set cards, by set and by card, and a modular set's cards.
+// a classic one whose scenario decks take villain-set cards, by set and by card, and a modular set's cards, and two
+// that require an encounter set: a classic one and a self-contained one with its own encounter deck.
 func setupCatalog(t *testing.T) *pack.Catalog {
 	t.Helper()
 	card := func(code, kind string, size pack.Size, qty int) pack.Card {
@@ -51,6 +52,8 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 			// A classic scenario with scenario decks.
 			card("21001", "side_scheme", pack.SizeLand, 1), card("21002", "side_scheme", pack.SizeLand, 1),
 			card("21003", "attachment", pack.SizeStd, 2),
+			// An encounter set a scenario requires.
+			card("22001", "minion", pack.SizeStd, 2),
 		},
 		Sets: []pack.Set{
 			{Code: "hset", Name: "Hero", Kind: "hero", Cards: []string{"01001"}},
@@ -68,6 +71,7 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 				Cards: []string{"20001", "20002", "20003", "21001", "21002", "21003"},
 			},
 			{Code: "vs_d_side", Name: "Decks side schemes", Kind: "modular", Cards: []string{"21001", "21002"}},
+			{Code: "req", Name: "Required", Kind: "modular", Cards: []string{"22001"}},
 		},
 		Heroes: []pack.Hero{{Identity: "01001", Set: "hset", Obligation: "01090", Nemesis: "nem"}},
 		Scenarios: []pack.Scenario{
@@ -127,6 +131,25 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 				},
 				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
 					Top: map[string]pack.FaceRef{"villain": {Card: "20001"}, "scheme": {Card: "20002"}},
+				}},
+			},
+			{
+				ID: "required", VillainSet: "vs_c", Sets: []string{"req"},
+				Piles: []pack.Pile{
+					{Key: "villain", Label: "Villain", Cards: []string{"20001"}},
+					{Key: "scheme", Label: "Scheme", Cards: []string{"20002"}},
+				},
+				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+					Top:    map[string]pack.FaceRef{"villain": {Card: "20001"}, "scheme": {Card: "20002"}},
+					InPlay: []pack.FaceRef{{Card: "20004"}},
+				}},
+			},
+			{
+				ID: "required_own_deck", VillainSet: "vs_o", SelfContained: true, Sets: []string{"req"},
+				Piles: []pack.Pile{{Key: "v1", Label: "One", Cards: []string{"10001", "10002"}}},
+				Decks: []pack.ScenarioDeck{{Key: "da", Label: "Deck A", Sets: []string{"sa"}, Encounter: true}},
+				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+					Top: map[string]pack.FaceRef{"v1": {Card: "10001"}},
 				}},
 			},
 		},
@@ -404,5 +427,43 @@ func TestScenarioDeckSetsStayOutOfClassicDeck(t *testing.T) {
 		if c.Pile != want {
 			t.Errorf("a copy of %s lies in %q, want %s", c.Code, c.Pile, want)
 		}
+	}
+}
+
+func TestRequiredSetJoinsClassicEncounterDeck(t *testing.T) {
+	table := mustScenarioTable(t, "required")
+
+	var copies int
+	for _, c := range table.Cards {
+		if c.Code != "22001" {
+			continue
+		}
+		copies++
+		if c.Zone != ZonePile || c.Pile != PileEncounter || c.Home != PileEncounter {
+			t.Errorf("a copy of 22001 lies in %q (home %q), want the encounter deck", c.Pile, c.Home)
+		}
+	}
+	if copies != 2 {
+		t.Errorf("got %d copies of 22001, want 2", copies)
+	}
+	if n := len(table.Piles[PileEncounter].Cards); n != 4 {
+		t.Errorf("encounter deck has %d cards, want the 2 copies of 20003 and of 22001", n)
+	}
+}
+
+func TestRequiredSetNeedsClassicEncounterDeck(t *testing.T) {
+	_, err := scenarioTable(t, "required_own_deck")
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "no classic encounter deck") {
+		t.Errorf("got error %v, want an invalid scenario without a classic encounter deck", err)
+	}
+}
+
+func TestConfigRejectsRequiredSetAsModular(t *testing.T) {
+	cfg := LobbyConfig{Scenario: "required", Difficulty: pack.Standard, Modulars: []string{"req"}}
+
+	err := validateConfig(cfg, setupCatalog(t))
+
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), `"req" is already part of scenario "required"`) {
+		t.Errorf("got error %v, want the required set rejected as a modular set", err)
 	}
 }
