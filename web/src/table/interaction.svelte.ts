@@ -458,9 +458,16 @@ class TableInteraction {
   /**
    * The pointer left an element: it goes after the linger, unless still in
    * use, as the card of a pill within reach. The linger spares the preview a
-   * flicker between two cards.
+   * flicker between two cards. Without `element`, the hovered element goes.
+   * The leave of an element that is not the hovered one changes nothing: a
+   * redraw hovers what it put under a resting pointer (rehover) before the
+   * browser reports the pointer as leaving what lay there.
    */
-  leave(): void {
+  leave(element?: TableElement): void {
+    const hovered = this.hovered;
+    if (element !== undefined && (hovered?.kind !== element.kind || hovered.id !== element.id)) {
+      return;
+    }
     this.#cancelHide();
     this.#hideTimer = setTimeout(() => {
       if (this.locked || this.contextMenu !== null || this.#pillHolds()) {
