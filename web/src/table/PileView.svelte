@@ -104,7 +104,10 @@
 </div>
 
 <style>
-  /* At level 0, table cards (server z from 0, drawn after the piles) stay on top of it. */
+  /*
+   * At level 0, table cards (server z from 0, drawn after the piles) stay on top of it. A riffle lifts the pile to 1
+   * while it plays, over its neighbouring piles.
+   */
   .card {
     position: absolute;
     z-index: 0;

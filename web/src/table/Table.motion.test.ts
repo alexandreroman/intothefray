@@ -212,6 +212,13 @@ function animationsOf(selector: string): [Keyframe[], KeyframeAnimationOptions][
   });
 }
 
+/** The delays of a pile's bounces: its own animations that scale it, not its lift over its neighbours. */
+function bounceDelays(id: string): (number | undefined)[] {
+  return animationsOf(`.surface .pile[data-id="${id}"]`)
+    .filter(([keyframes]) => keyframes[0]?.transform !== undefined)
+    .map(([, options]) => options.delay);
+}
+
 async function settle(): Promise<void> {
   await tick();
   await tick();
@@ -463,7 +470,8 @@ describe('Table animations', () => {
       log: [START, line('shuffled their deck', { who: 'Sam', color: 1 })],
     });
     await rerender({ session, view: next });
-    await waitFor(() => expect(animationsOf('.surface .pile[data-id="deck:p1"]')).toHaveLength(1));
+    // Its bounce, and its lift over its neighbours.
+    await waitFor(() => expect(animationsOf('.surface .pile[data-id="deck:p1"]')).toHaveLength(2));
     const pile = container.querySelector('.surface .pile[data-id="deck:p1"]');
     // Six copies of its back riffle back into it.
     expect(
@@ -480,10 +488,7 @@ describe('Table animations', () => {
         const [, options] = call as unknown as [Keyframe[], KeyframeAnimationOptions];
         return element.parentElement === pile ? [options.delay] : [];
       });
-      const bounce = animationsOf(`.surface .pile[data-id="${id}"]`).map(
-        ([, options]) => options.delay,
-      );
-      return { copies, bounce };
+      return { copies, bounce: bounceDelays(id) };
     }
 
     it('a card shuffled into its deck: the deck riffles once the card has landed', async () => {
@@ -508,6 +513,35 @@ describe('Table animations', () => {
         copies: [420, 460, 500, 540, 580, 620],
         bounce: [420],
       });
+    });
+
+    it('the pile rises over its neighbours for the whole riffle', async () => {
+      const session = fakeSession();
+      const deck = (count: number): PileView => ({ ...PILES[0]!, count });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('b', { owner: 1, x: 40 })], { piles: [deck(30), PILES[1]!] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], {
+          piles: [deck(31), PILES[1]!],
+          log: [START, line('shuffled Spider-Man into their deck', { who: 'Sam', color: 1 })],
+        }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const lifts = animationsOf('.surface .pile[data-id="deck:p1"]').filter(
+        ([keyframes]) => keyframes[0]?.zIndex !== undefined,
+      );
+      expect(lifts).toHaveLength(1);
+      const [[keyframes, options]] = lifts as [[Keyframe[], KeyframeAnimationOptions]];
+      expect(keyframes.map((frame) => frame.zIndex)).toEqual([1, 1]);
+      // From the first copy leaving, once the card has landed, to the last one back: 5 × 40 + 620 ms.
+      expect(options).toMatchObject({ delay: 420, duration: 820 });
+      // Back to its own level once the riffle is over.
+      expect(options.fill).toBeUndefined();
     });
 
     it('a discard pile shuffled back: the deck riffles once the last card has landed', async () => {
@@ -546,7 +580,7 @@ describe('Table animations', () => {
         view: makeView([], { log: [START, line('shuffled their deck', { who: 'Sam', color: 1 })] }),
       });
       await waitFor(() =>
-        expect(animationsOf('.surface .pile[data-id="deck:p1"]')).toHaveLength(1),
+        expect(animationsOf('.surface .pile[data-id="deck:p1"]')).toHaveLength(2),
       );
       const { copies, bounce } = riffleDelays(container, 'deck:p1');
       expect(copies[0]).toBe(0);
@@ -870,7 +904,8 @@ describe('Table animations', () => {
       ];
       await rerender({ session, view: makeView([], { piles: alexPiles(30), log: shuffled }) });
       const pile = () => container.querySelector('.surface .pile[data-id="deck:p0"]')!;
-      await waitFor(() => expect(runningOn(pile())).toHaveLength(1));
+      // Its bounce, and its lift over its neighbours.
+      await waitFor(() => expect(runningOn(pile())).toHaveLength(2));
       const riffle = started.filter((animation) => animation.element.parentElement === pile());
       expect(riffle).toHaveLength(6);
 
@@ -879,7 +914,7 @@ describe('Table animations', () => {
         view: makeView([], { piles: alexPiles(29), log: shuffled, handCounts: [6, 5] }),
       });
       await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
-      expect(runningOn(pile())).toHaveLength(1);
+      expect(runningOn(pile())).toHaveLength(2);
       expect(riffle.filter((animation) => animation.cancelled)).toEqual([]);
     });
 
@@ -1230,10 +1265,7 @@ describe('Table animations', () => {
           }),
         );
         await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
-        const bounce = animationsOf('.surface .pile[data-id="enc"]').map(
-          ([, options]) => options.delay,
-        );
-        expect(bounce).toEqual([QUARTER_MS]);
+        expect(bounceDelays('enc')).toEqual([QUARTER_MS]);
       });
     });
 
