@@ -1,6 +1,9 @@
 import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
+import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 /** The Git revision of the checkout, with "-dirty" when it has changes (like Go's VCS stamp), or undefined. */
@@ -29,12 +32,39 @@ if (!process.env.VITE_COMMIT && !process.env.VITEST) {
   }
 }
 
+/**
+ * Publishes the index of the generated card packs as packs/en/index.json, a static file the app
+ * fetches: the generated data is English, localized names live inside it. The cards of a game come
+ * from the API, so the pack files themselves stay out. The index is watched, so a watch build
+ * picks up regenerated packs (make packs).
+ */
+function packIndex(): Plugin {
+  const source = path.resolve(import.meta.dirname, '../packs/dist/en/index.json');
+  return {
+    name: 'pack-index',
+    apply: 'build',
+    buildStart() {
+      if (!fs.existsSync(source)) {
+        this.error(`index not found: ${source} (run "make packs")`);
+      }
+      this.addWatchFile(source);
+    },
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'packs/en/index.json',
+        source: fs.readFileSync(source),
+      });
+    },
+  };
+}
+
 export default defineConfig({
   // The base stays absolute (Vite's default '/', never './'): routes are real paths (/g/<id>), so
   // assets must not resolve against them. The GitHub Pages build passes its sub-path with --base.
   // Besides the VITE_* variables, expose the instance name shown in the tab title (see lib/title.ts).
   envPrefix: ['VITE_', 'APP_INSTANCE'],
-  plugins: [svelte(), svelteTesting()],
+  plugins: [svelte(), svelteTesting(), packIndex()],
   test: {
     environment: 'jsdom',
     globals: true,
