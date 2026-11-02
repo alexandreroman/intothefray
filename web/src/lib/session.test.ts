@@ -126,6 +126,33 @@ describe('GameSession', () => {
     expect(FakeWebSocket.instances).toHaveLength(expectedDelays.length + 2);
   });
 
+  it('keeps the object of a table card that did not change from one view to the next', () => {
+    const session = newSession();
+    FakeWebSocket.last.open();
+    const withCards = (moved: number): View => ({
+      ...view(),
+      phase: 'playing',
+      table: {
+        cards: [
+          { id: 'still', face: 0, back: 'player', owner: 0, zone: 'table', x: 0, y: 0, z: 1 },
+          { id: 'moved', face: 0, back: 'player', owner: 0, zone: 'table', x: moved, y: 0, z: 2 },
+        ],
+        piles: [],
+        stages: [],
+        firstPlayer: { x: 0, y: 0 },
+      },
+    });
+    FakeWebSocket.last.receive({ type: 'view', version: 1, view: withCards(0) });
+    const [still, moved] = session.view?.table?.cards ?? [];
+
+    FakeWebSocket.last.receive({ type: 'view', version: 2, view: withCards(40) });
+
+    const cards = session.view?.table?.cards ?? [];
+    expect(cards[0]).toBe(still);
+    expect(cards[1]).not.toBe(moved);
+    expect(cards[1]?.x).toBe(40);
+  });
+
   it('tells how long the view went stale across a reconnection, and no gap while connected', () => {
     const session = newSession();
     FakeWebSocket.last.open();

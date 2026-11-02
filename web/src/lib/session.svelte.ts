@@ -13,6 +13,7 @@ import type {
   View,
 } from './types';
 import { wsUrl } from './api';
+import { reuseUnchanged } from './reuse';
 
 type Status = 'connecting' | 'open' | 'reconnecting' | 'closed';
 
@@ -72,7 +73,12 @@ const CLOSE_GAME_NOT_FOUND = 4404;
  * until close() is called or the game turns out not to exist.
  */
 export class GameSession {
-  view = $state<View | null>(null);
+  /**
+   * The latest view. Raw, not deeply reactive: a view is never changed in
+   * place, only replaced, and a card or pile unchanged since the previous view
+   * keeps its object (reuseUnchanged), so the table redraws only what changed.
+   */
+  view = $state.raw<View | null>(null);
   status = $state<Status>('connecting');
   lastError = $state<SessionError | null>(null);
   deckError = $state<UnsupportedCard[] | null>(null);
@@ -437,7 +443,7 @@ export class GameSession {
     this.viewGap = this.#droppedSinceView && this.#viewAt !== null ? now - this.#viewAt : 0;
     this.#droppedSinceView = false;
     this.#viewAt = now;
-    this.view = next;
+    this.view = reuseUnchanged(this.view, next);
     this.#followOthersWatching(next);
     // A colour no longer seated has left: its cursor must not linger.
     for (const color of [...this.presence.keys()]) {
