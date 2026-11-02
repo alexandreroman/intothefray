@@ -3,6 +3,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
+import { FakeWebSocket } from '../lib/socket.testing';
 import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import {
   card,
@@ -57,38 +58,6 @@ function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
   });
 }
 
-/** The network under a real session: what it sends, and a way to answer. */
-class FakeWebSocket {
-  static last: FakeWebSocket | null = null;
-
-  readyState = 0;
-  sent: Record<string, unknown>[] = [];
-  onopen: (() => void) | null = null;
-  onmessage: ((event: { data: string }) => void) | null = null;
-  onclose: ((event: { code: number }) => void) | null = null;
-
-  constructor(readonly url: string) {
-    FakeWebSocket.last = this;
-  }
-
-  send(data: string): void {
-    this.sent.push(JSON.parse(data) as Record<string, unknown>);
-  }
-
-  close(): void {
-    this.readyState = 3;
-  }
-
-  open(): void {
-    this.readyState = 1;
-    this.onopen?.();
-  }
-
-  receive(message: object): void {
-    this.onmessage?.({ data: JSON.stringify(message) });
-  }
-}
-
 // The screen: the table starts 40 px below the top of the window, under the top
 // bar, and the presence layer covers it exactly. The surface lies 20 px in and
 // 40 px down from the table's top until it is scrolled. Positions inside it are
@@ -132,7 +101,7 @@ async function renderTable(view: View = makeView()) {
     WebSocket: FakeWebSocket as unknown as typeof WebSocket,
   });
   session.connect();
-  const socket = FakeWebSocket.last!;
+  const socket = FakeWebSocket.last;
   socket.open();
   // The session sends presence only once a view tells it someone else watches.
   let version = 1;
@@ -835,7 +804,7 @@ describe("other players' presence", () => {
     await nextFrame();
     expect(placed('sam', '.card').classList).toContain('lifted');
     // The connection drops: what was known of the others goes with it.
-    socket.onclose?.({ code: 1006 });
+    socket.drop();
     await nextFrame();
     expect(placed('sam', '.card').classList).not.toContain('lifted');
   });
