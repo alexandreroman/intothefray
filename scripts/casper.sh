@@ -1,11 +1,11 @@
 #!/bin/sh
 # Optional Casper workspace support: per-worktree ports and the info panel.
 # Nothing else in the project depends on this script.
-# Usage: scripts/casper.sh setup|run|dev|teardown
+# Usage: scripts/casper.sh setup|dev|teardown
 #
-# Known limit: the Makefile applies the variables that .env assigns (and, for
-# Dev only, those of .env.local) on top of the environment, so a value set
-# there (a PORT, an APP_INSTANCE) wins over the value of .env.casper.
+# Known limit: for make dev, the Makefile applies the variables that .env and
+# .env.local assign on top of the environment, so a value set in either file
+# (a PORT, an APP_INSTANCE) wins over the value of .env.casper.
 set -eu
 
 # Resolve the repo root from the script location, not the cwd.
@@ -64,27 +64,17 @@ ENV
 	go mod download
 }
 
-# Publish the endpoints of the given mode (dev or containers) to the info
-# panel. `casper info set` replaces the whole panel, so each mode writes a
-# complete document. The ports come from the environment that run/dev loaded
-# from .env.casper, never recomputed.
+# Publish the endpoints of the dev stack to the info panel. `casper info set`
+# replaces the whole panel, so this writes a complete document. The ports come
+# from the environment that dev loaded from .env.casper, never recomputed.
 info() {
 	has_casper || return 0
-	mode=$1
 	web_port=${WEB_PORT:-8080}
 	server_port=${PORT:-9000}
 	redis_port=${REDIS_PORT:-6379}
 
-	if [ "$mode" = dev ]; then
-		stack="dev stack"
-		restart="casper run dev"
-	else
-		stack="container stack"
-		restart="casper run"
-	fi
-
 	casper info set - >/dev/null 2>&1 <<DOC || true
-# Into The Fray — $stack
+# Into The Fray — dev stack
 
 ## Endpoints
 
@@ -99,7 +89,7 @@ info() {
 redis-cli -p $redis_port
 \`\`\`
 
-Restart with \`$restart\`.
+Restart with \`casper run\`.
 DOC
 }
 
@@ -116,39 +106,16 @@ clear_info() {
 dev() {
 	load_env
 	cd "$root"
-	info dev
+	info
 	trap clear_info EXIT
 	trap 'exit 130' INT
 	trap 'exit 143' TERM
 	make dev
 }
 
-# Stop the container stack and clear the panel. The INT and TERM traps turn
-# a signal into a normal exit, so this runs once, from the EXIT trap only.
-# app-down failure is ignored: the container engine may be gone already.
-stop_containers() {
-	trap - EXIT INT TERM
-	clear_info
-	make app-down >/dev/null 2>&1 || true
-}
-
-# Start the container stack (web, app and Redis), then follow its logs so
-# the command stays attached: stopping it stops the stack, like dev. The trap is
-# installed before app-up so that a failed or interrupted start is cleaned
-# up too; the panel is only published once the stack is healthy.
-run() {
-	load_env
-	cd "$root"
-	trap stop_containers EXIT
-	trap 'exit 130' INT
-	trap 'exit 143' TERM
-	make app-up
-	info containers
-	make app-logs
-}
-
-# Stop this workspace's containers. Failure is ignored: the container
-# engine may not be running, and teardown must not block deletion.
+# Remove this workspace's Redis and Caddy containers, which make dev starts
+# detached (infra-up) and leaves up when it stops. Failure is ignored: the
+# container engine may not be running, and teardown must not block deletion.
 teardown() {
 	# The environment carries COMPOSE_PROJECT_NAME and the ports to compose.
 	load_env
@@ -159,11 +126,10 @@ teardown() {
 
 case "${1:-}" in
 setup) setup ;;
-run) run ;;
 dev) dev ;;
 teardown) teardown ;;
 *)
-	echo "usage: $0 setup|run|dev|teardown" >&2
+	echo "usage: $0 setup|dev|teardown" >&2
 	exit 2
 	;;
 esac

@@ -14,11 +14,11 @@ work on their default ports. All Casper wiring lives in `.casper.json` and
 worktree's compose project name (`COMPOSE_PROJECT_NAME`), its ports (web
 `CASPER_PORT`, server +1, Redis +2), the matching `REDIS_URL` and its
 instance name `APP_INSTANCE` (the branch, sanitized; the directory name
-when detached). The Casper commands are **Run** (`scripts/casper.sh run`:
-the whole stack in containers — web, server, Redis — declared in
-`compose.yaml`, via `make app-up`) and **Dev** (`scripts/casper.sh dev`:
-the hot-reload stack, `make dev`), and only those; both load `.env.casper`
-and publish the URLs to the info panel.
+when detached). The single Casper command is the default one, `run`
+(`casper run`, which calls `scripts/casper.sh dev`: the hot-reload stack,
+`make dev`); it loads `.env.casper` and publishes the URLs to the info
+panel. The `teardown` hook removes the workspace's Redis and Caddy
+containers (`make app-down`) and clears the panel.
 
 **Why:** the project must stay usable, unchanged, by anyone who does not run
 Casper.
@@ -26,8 +26,7 @@ Casper.
 **How to apply:** put any new Casper behaviour in `scripts/casper.sh` or
 `.casper.json`; the build files only take generic, env-driven settings
 (`PORT`, `WEB_PORT`, `REDIS_PORT`, `APP_INSTANCE`). A value set in `.env`
-wins over `.env.casper`; one set in `.env.local` wins for Dev only, as
-`make` loads `.env.local` for the development targets alone.
+or `.env.local` wins over `.env.casper`, as `make dev` loads both.
 
 ## Instance name in the tab title
 
