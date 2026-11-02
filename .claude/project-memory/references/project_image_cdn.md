@@ -44,8 +44,7 @@ its CI.
 intothefray-img, then a commit of the app diff (release and rollback in
 [[project_deployment]]); a missing image is fixed the same way, never by
 a client fallback. `TestEmbeddedImagesOnCDN` in `packs/packs_test.go`
-fails on any non-CDN image URL in the embedded catalog once
-`packs/images/manifest.json` exists; design and plan in
+fails on any non-CDN image URL in the embedded catalog; design and plan in
 `docs/superpowers/specs/2026-10-25-image-cdn-design.md` and
 `docs/superpowers/plans/2026-10-25-image-cdn.md`. See
 [[project_constraints]], [[reference_card_sources]].
