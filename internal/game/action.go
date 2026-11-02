@@ -190,22 +190,35 @@ func withoutUnreadFields(a Action) Action {
 }
 
 // resolveOnTable resolves a, any kind but a group, on the table as apply
-// will see it: with the cards revealed on the deck a acts on back in it (see
-// coveredFor), so that the recorded cards are those apply takes. It picks
-// every new id, a client choosing none: those of a shuffle, and those of the
-// cards a takes out of sight (see renamedBy). A rebuild resolves its
+// will see it: with the cards revealed on the deck a acts on back in it and
+// the cards covering hides renamed (see coveredFor), so that the recorded
+// cards are those apply takes. It picks every new id, a client choosing none:
+// those of the cards covering hides, those of a shuffle, and those of the
+// cards a takes out of sight (see renamedOnTheWay). A rebuild resolves its
 // shuffles again here too (see replayEvent).
 func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	t, hidden, err := original.coveredFor(a, PlayerArea(who.seat))
 	if err != nil {
 		return Action{}, err
 	}
+	hiddenRenames := map[string]string{}
+	if len(hidden) > 0 {
+		// t is a copy of original whenever covering hides a card.
+		addFreshIDs(t, hiddenRenames, hidden, rng)
+		renameCards(t, hiddenRenames)
+	}
 	a.Renames = nil
 	resolved, err := resolveKind(original, t, who, a, rng)
 	if err != nil {
 		return resolved, err
 	}
-	if ids := t.renamedBy(resolved, hidden); len(ids) > 0 {
+	if len(hiddenRenames) > 0 {
+		if resolved.Renames == nil {
+			resolved.Renames = make(map[string]string, len(hiddenRenames))
+		}
+		maps.Copy(resolved.Renames, hiddenRenames)
+	}
+	if ids := t.renamedOnTheWay(resolved); len(ids) > 0 {
 		if resolved.Renames == nil {
 			resolved.Renames = make(map[string]string, len(ids))
 		}

@@ -24,13 +24,23 @@ const (
 
 // apply performs a on t. It is all-or-nothing: every check runs before the
 // first mutation, so an error leaves t untouched. A deck action sees the cards
-// revealed on its deck back on top of it (see coveredFor).
+// revealed on its deck back on top of it, the cards covering hides under their
+// new ids (see coveredFor).
 func apply(t *Table, a Action) error {
 	covered, hidden, err := t.coveredFor(a, a.Area)
 	if err != nil {
 		return err
 	}
-	if err := applyAction(covered, a, hidden); err != nil {
+	hiddenRenames, rest, err := splitRenames(covered, a.Renames, hidden)
+	if err != nil {
+		return err
+	}
+	// covered is a copy of t whenever covering hides a card.
+	if len(hiddenRenames) > 0 {
+		renameCards(covered, hiddenRenames)
+	}
+	a.Renames = rest
+	if err := applyAction(covered, a); err != nil {
 		return err
 	}
 	if covered != t {
@@ -39,11 +49,42 @@ func apply(t *Table, a Action) error {
 	return nil
 }
 
-// applyAction performs a on t, as apply does, on the table as a sees it;
-// hidden are the cards covering took out of sight (see coveredFor). The cards
-// a takes out of sight get their new ids last (see renamedBy).
-func applyAction(t *Table, a Action, hidden []string) error {
-	renames, err := t.checkRenamedOnTheWay(a, hidden)
+// splitRenames splits renames, those of an action that covers its deck, in
+// two: first the new ids of hidden, the cards covering hides (see
+// coveredFor), checked as fresh on t (see checkFreshIDs), then the others,
+// nil when there are none.
+func splitRenames(t *Table, renames map[string]string, hidden []string) (map[string]string, map[string]string, error) {
+	if len(hidden) == 0 {
+		return nil, renames, nil
+	}
+	hiddenRenames := make(map[string]string, len(hidden))
+	rest := maps.Clone(renames)
+	for _, id := range hidden {
+		renamed, ok := rest[id]
+		if !ok {
+			return nil, nil, invalid("card %q is not renamed", id)
+		}
+		hiddenRenames[id] = renamed
+		delete(rest, id)
+	}
+	if _, err := checkFreshIDs(t, hiddenRenames, hidden); err != nil {
+		return nil, nil, err
+	}
+	if len(rest) == 0 {
+		rest = nil
+	}
+	return hiddenRenames, rest, nil
+}
+
+// applyAction performs a on t, as apply does, on the table as a sees it. The
+// cards it takes out of sight get their new ids last (see renamedOnTheWay).
+// An action of a kind that renames no card carries no renames: a rebuild
+// then gives the event the renames of the table it meets (see renamedAgain).
+func applyAction(t *Table, a Action) error {
+	if len(a.Renames) > 0 && !renamesCards(a) {
+		return invalid("%q action renames no card", a.Kind)
+	}
+	renames, err := t.checkRenamedOnTheWay(a)
 	if err != nil {
 		return err
 	}
@@ -1092,8 +1133,8 @@ func (t *Table) deckCards(pile *Pile) []string {
 // of a deck with cards revealed on it (see actedDeck), they lie back on top
 // of that deck, face down, in a copy of t. Otherwise it returns t itself.
 // hand is the hand of the deck a draw naming no pile takes from. It also
-// returns the cards it takes out of sight: the revealed cards, and the cards
-// tucked under them that go to the bottom of a deck (see tuckedUnderDecks).
+// returns the cards covering hides (see hiddenByCovering), which get new ids
+// before a is performed: resolveOnTable picks them, apply gives them.
 func (t *Table) coveredFor(a Action, hand Area) (*Table, []string, error) {
 	deckID := t.actedDeck(a, hand)
 	covering := t.revealedOn(deckID)
@@ -1103,13 +1144,10 @@ func (t *Table) coveredFor(a Action, hand Area) (*Table, []string, error) {
 	if _, err := t.pile(deckID); err != nil {
 		return nil, nil, err
 	}
-	var hidden []string
 	for _, c := range covering {
 		if err := t.checkLeave(c); err != nil {
 			return nil, nil, err
 		}
-		hidden = append(hidden, c.ID)
-		hidden = append(hidden, t.tuckedUnderDecks(c)...)
 	}
 
 	covered := t.Clone()
@@ -1117,7 +1155,30 @@ func (t *Table) coveredFor(a Action, hand Area) (*Table, []string, error) {
 	for _, c := range covering {
 		covered.putOnPile(deck, covered.Cards[c.ID])
 	}
-	return covered, hidden, nil
+	return covered, t.hiddenByCovering(a, deckID, covering), nil
+}
+
+// hiddenByCovering returns the cards that covering deckID for a takes out of
+// sight under ids everybody saw (see renamedOnTheWay): the cards tucked under
+// the covering cards that drop to the bottom of a deck (see tuckedUnderDecks),
+// and the covering cards themselves when a puts a card over them. It leaves
+// out a's own card, which a moves on, and the cards a shuffle of deckID
+// renames anyway.
+func (t *Table) hiddenByCovering(a Action, deckID string, covering []*Card) []string {
+	var ids []string
+	for _, c := range covering {
+		if a.Kind == ActToDeck && a.Where == whereTop {
+			ids = append(ids, c.ID)
+		}
+		for _, id := range t.tuckedUnderDecks(c) {
+			// A card drops to the bottom of its home deck.
+			shuffled := producesShuffle(a) && t.Cards[id].Home == deckID
+			if id != a.Card && !shuffled {
+				ids = append(ids, id)
+			}
+		}
+	}
+	return ids
 }
 
 // actedDeck returns the id of the deck whose top a takes, reorders or

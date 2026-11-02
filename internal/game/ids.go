@@ -103,23 +103,6 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 	return append(ids, t.sentUnderDecks(c, a)...)
 }
 
-// renamedBy returns the cards a, performed on t, the table as a sees it (see
-// coveredFor), gives new ids: those of renamedOnTheWay, and, for a card put
-// on top of its deck, hidden, the cards covering took out of sight under it.
-// A card both lists name is listed once.
-func (t *Table) renamedBy(a Action, hidden []string) []string {
-	ids := t.renamedOnTheWay(a)
-	if a.Kind != ActToDeck || a.Where != whereTop {
-		return ids
-	}
-	for _, id := range hidden {
-		if !slices.Contains(ids, id) {
-			ids = append(ids, id)
-		}
-	}
-	return ids
-}
-
 // sentUnderDecks returns the cards tucked under c that go to the bottom of a
 // deck when a takes c off the table (see tuckedUnderDecks), but those a
 // shuffle into c's deck gathers.
@@ -148,27 +131,28 @@ func (t *Table) tuckedUnderDecks(c *Card) []string {
 }
 
 // checkRenamedOnTheWay checks that a gives a new id to exactly the cards it
-// takes out of sight (see renamedBy; hidden as coveredFor returns them), and
-// returns the renames for apply to give once a is performed. It returns none
-// for an action that renames no card on its way, nor for a shuffle into a
-// deck, which checks its renames itself (see applyToDeck).
-func (t *Table) checkRenamedOnTheWay(a Action, hidden []string) (map[string]string, error) {
+// takes out of sight (see renamedOnTheWay), and returns the renames for apply
+// to give once a is performed. It returns none for an action that renames no
+// card on its way, nor for a shuffle into a deck, which checks its renames
+// itself (see applyToDeck).
+func (t *Table) checkRenamedOnTheWay(a Action) (map[string]string, error) {
 	if !takesAway[a.Kind] || producesShuffle(a) {
 		return nil, nil
 	}
-	if _, err := checkFreshIDs(t, a.Renames, t.renamedBy(a, hidden)); err != nil {
+	if _, err := checkFreshIDs(t, a.Renames, t.renamedOnTheWay(a)); err != nil {
 		return nil, err
 	}
 	return a.Renames, nil
 }
 
 // renamedAgain returns a, recorded on another table, with the new ids of the
-// cards it takes out of sight on t (see renamedBy): a card still among
-// them keeps the new id it was given, so that later events still name it,
-// and a card now among them gets one from rng. The sub-actions of a group
-// are each renamed on the table the previous ones leave, as applyGroup
-// performs them. A rebuild uses it for an event whose cards tucked under the
-// card it moves changed (see replayEvent).
+// cards it takes out of sight on t: those covering hides (see coveredFor) and
+// those it takes on its way (see renamedOnTheWay). A card still among them
+// keeps the new id it was given, so that later events still name it, and a
+// card now among them gets one from rng. The sub-actions of a group are each
+// renamed on the table the previous ones leave, as applyGroup performs them.
+// A rebuild uses it for an event whose cards tucked under the card it moves,
+// or under the card revealed on its deck, changed (see replayEvent).
 func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 	if a.Kind == ActGroup {
 		staged := t.Clone()
@@ -186,7 +170,7 @@ func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 		a.Actions = subs
 		return a, nil
 	}
-	if !takesAway[a.Kind] || producesShuffle(a) {
+	if producesShuffle(a) {
 		return a, nil
 	}
 	covered, hidden, err := t.coveredFor(a, a.Area)
@@ -194,20 +178,49 @@ func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 		return a, err
 	}
 	renames := map[string]string{}
-	var added []string
-	for _, id := range covered.renamedBy(a, hidden) {
-		if renamed, ok := a.Renames[id]; ok {
-			renames[id] = renamed
-		} else {
-			added = append(added, id)
+	keepOrAddIDs(covered, renames, a.Renames, hidden, rng)
+	if len(hidden) > 0 {
+		// covered is a copy of t whenever covering hides a card.
+		renameCards(covered, renames)
+	}
+	switch {
+	case takesAway[a.Kind]:
+		keepOrAddIDs(covered, renames, a.Renames, covered.renamedOnTheWay(a), rng)
+	case a.Kind == ActReorderTop:
+		// A reorder renames the cards it reorders, or none (see
+		// resolveReorderTop): apply checks them.
+		for _, id := range a.Cards {
+			if renamed, ok := a.Renames[id]; ok {
+				renames[id] = renamed
+			}
 		}
 	}
-	addFreshIDs(covered, renames, added, rng)
 	a.Renames = nil
 	if len(renames) > 0 {
 		a.Renames = renames
 	}
 	return a, nil
+}
+
+// keepOrAddIDs adds to renames a new id for each of ids: the one recorded
+// gave it, if any, or else a fresh one from rng (see addFreshIDs).
+func keepOrAddIDs(t *Table, renames, recorded map[string]string, ids []string, rng *rand.Rand) {
+	var added []string
+	for _, id := range ids {
+		if renamed, ok := recorded[id]; ok {
+			renames[id] = renamed
+		} else {
+			added = append(added, id)
+		}
+	}
+	addFreshIDs(t, renames, added, rng)
+}
+
+// renamesCards reports whether a is of a kind that may give cards new ids
+// itself: one that takes a card away, a shuffle, or a reorder of a deck's top
+// (see resolveReorderTop).
+func renamesCards(a Action) bool {
+	return takesAway[a.Kind] || producesShuffle(a) || a.Kind == ActReorderTop
 }
 
 // takesAway are the kinds that may take a card out of its place, and with it
