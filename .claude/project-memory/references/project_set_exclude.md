@@ -11,7 +11,7 @@ type: project
   pack keeps each such card, with no set and the back a set-less card of
   its faction has, so a deck that names it still loads.
 - The generator fails when an excluded card is not in the set in the
-  marvelcdb data.
+  source data (marvelcdb, completed by mc4db).
 - Taskmaster's set excludes 10098, marvelcdb's player-side copy of the
   captive ally Shang-Chi 04098: the box holds one Shang-Chi, the encounter
   card 04098.
