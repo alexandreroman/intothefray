@@ -1,29 +1,32 @@
 <script lang="ts">
+  import { onMount, untrack } from 'svelte';
   import { playerName } from '../lib/names';
   import { GameSession } from '../lib/session.svelte';
   import Table from '../table/Table.svelte';
   import Ended from './Ended.svelte';
   import Lobby from './Lobby.svelte';
 
-  // The parent keys this component on the game id: one instance per game.
+  // The parent keys this component on the game id: one instance, and one session, per game.
   let { id }: { id: string } = $props();
 
-  let session = $state.raw<GameSession | null>(null);
+  // Read once, on purpose: a new id is a new instance.
+  const session = new GameSession(
+    untrack(() => id),
+    playerName(),
+  );
 
-  $effect(() => {
-    const created = new GameSession(id, playerName());
-    session = created;
-    created.connect();
+  onMount(() => {
+    session.connect();
     return () => {
-      created.close();
+      session.close();
     };
   });
 
   // Also covers the gap between the socket opening and the first view.
   const waiting = $derived(
-    session?.status !== 'closed' && (session?.status !== 'open' || !session.view),
+    session.status !== 'closed' && (session.status !== 'open' || !session.view),
   );
-  const notFound = $derived(session?.status === 'closed' && session.lastError?.code === 'notFound');
+  const notFound = $derived(session.status === 'closed' && session.lastError?.code === 'notFound');
 </script>
 
 {#if notFound}
@@ -31,10 +34,10 @@
 {:else}
   {#if waiting}
     <p class="status" role="status">
-      {session?.status === 'reconnecting' ? 'Reconnecting…' : 'Connecting…'}
+      {session.status === 'reconnecting' ? 'Reconnecting…' : 'Connecting…'}
     </p>
   {/if}
-  {#if session?.view}
+  {#if session.view}
     {#if session.view.phase === 'lobby'}
       <Lobby {session} view={session.view} />
     {:else if session.view.phase === 'playing'}
