@@ -174,10 +174,10 @@ func fetchInputsWith(ctx context.Context, logger *slog.Logger, client *fetch.Cli
 	if in.MC4DBPacks, err = mc4db.FetchPacks(ctx, client, mc4db.BaseURL); err != nil {
 		return in, err
 	}
-	if in.CB, err = cerebro.FetchCards(ctx, client); err != nil {
+	if in.CB, err = cerebro.FetchCards(ctx, client, cerebro.BaseURL); err != nil {
 		return in, err
 	}
-	if in.CBSets, err = cerebro.FetchSets(ctx, client); err != nil {
+	if in.CBSets, err = cerebro.FetchSets(ctx, client, cerebro.BaseURL); err != nil {
 		return in, err
 	}
 	if in.Curated, err = curated.Load(opts.curatedDir); err != nil {

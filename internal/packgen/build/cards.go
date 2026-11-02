@@ -20,10 +20,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
-const (
-	cerebroImageURL = "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/%s.jpg"
-	baseCodeLength  = 5 // digits of a code, without its face letter
-)
+const baseCodeLength = 5 // digits of a code, without its face letter
 
 // buildCards groups the marvelcdb entries into cards and returns them by pack
 // code, sorted by code. A card is one base code with its faces, except for
@@ -307,7 +304,7 @@ func cerebroImage(entry marvelcdb.Card, cerebroID string, cerebroIDs map[string]
 	if !found {
 		return ""
 	}
-	return fmt.Sprintf(cerebroImageURL, id)
+	return cerebro.ImageURL(id)
 }
 
 // recordImage returns the image of the source record of a face, empty when the

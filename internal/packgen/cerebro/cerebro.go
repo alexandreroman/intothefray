@@ -8,7 +8,11 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/fetch"
 )
 
-const baseURL = "https://cerebro-beta-bot.herokuapp.com"
+// BaseURL is the Cerebro API.
+const BaseURL = "https://cerebro-beta-bot.herokuapp.com"
+
+// imageURL is the format of the URL of a Cerebro card image, given its id.
+const imageURL = "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/%s.jpg"
 
 // Card is a Cerebro card. Only its ID is used: it names the card image.
 type Card struct {
@@ -23,21 +27,26 @@ type Set struct {
 	Recommends []string `json:"Recommends"`
 }
 
-// FetchCards returns every card.
-func FetchCards(ctx context.Context, c *fetch.Client) ([]Card, error) {
-	return fetchList[Card](ctx, c, baseURL, "cards")
-}
-
-// FetchSets returns every set.
-func FetchSets(ctx context.Context, c *fetch.Client) ([]Set, error) {
-	return fetchList[Set](ctx, c, baseURL, "sets")
-}
-
-// The base URL is a parameter so tests can target a local server.
-func fetchList[T any](ctx context.Context, c *fetch.Client, base, resource string) ([]T, error) {
-	var items []T
-	if err := c.JSON(ctx, base+"/"+resource, &items); err != nil {
-		return nil, fmt.Errorf("fetch cerebro %s: %w", resource, err)
+// FetchCards returns every card from the Cerebro API at base, e.g. BaseURL.
+func FetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
+	var cards []Card
+	if err := c.JSON(ctx, base+"/cards", &cards); err != nil {
+		return nil, fmt.Errorf("fetch cerebro cards: %w", err)
 	}
-	return items, nil
+	return cards, nil
+}
+
+// FetchSets returns every set from the Cerebro API at base.
+func FetchSets(ctx context.Context, c *fetch.Client, base string) ([]Set, error) {
+	var sets []Set
+	if err := c.JSON(ctx, base+"/sets", &sets); err != nil {
+		return nil, fmt.Errorf("fetch cerebro sets: %w", err)
+	}
+	return sets, nil
+}
+
+// ImageURL returns the URL of the image of the Cerebro card with this id, as
+// Cerebro spells it.
+func ImageURL(id string) string {
+	return fmt.Sprintf(imageURL, id)
 }

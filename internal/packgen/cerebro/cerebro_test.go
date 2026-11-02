@@ -58,15 +58,22 @@ func TestFetchUsesEndpoints(t *testing.T) {
 	client := &fetch.Client{HTTP: server.Client(), CacheDir: t.TempDir()}
 	ctx := context.Background()
 
-	cards, err := fetchList[Card](ctx, client, server.URL, "cards")
+	cards, err := FetchCards(ctx, client, server.URL)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(cards) != 1 || cards[0].ID != "c1" {
 		t.Errorf("cards = %+v", cards)
 	}
-	sets, err := fetchList[Set](ctx, client, server.URL, "sets")
+	sets, err := FetchSets(ctx, client, server.URL)
 	if err != nil || len(sets) != 1 || sets[0].ID != "s1" {
 		t.Errorf("sets = %+v, err = %v", sets, err)
+	}
+}
+
+func TestImageURL(t *testing.T) {
+	want := "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/01097A.jpg"
+	if got := ImageURL("01097A"); got != want {
+		t.Errorf("ImageURL(01097A) = %q, want %q", got, want)
 	}
 }
