@@ -94,7 +94,7 @@ export type DragSource =
 // It mirrors rowContentY in internal/game/setup.go.
 const ROW_LABEL_ROOM = 30;
 
-export function snap(v: number): number {
+function snap(v: number): number {
   return Math.round(v / GRID) * GRID;
 }
 

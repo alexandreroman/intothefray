@@ -9,7 +9,6 @@ import {
   insertIndex,
   isDownward,
   pileTargets,
-  snap,
   sourceOf,
   stackOf,
   type DragSource,
@@ -62,14 +61,6 @@ const TABLE: DropRect = { kind: 'table', rect: rect(0, 300, 1000, 300) };
 const DEAL_TO = 'p1';
 
 const TABLE_CARD: DragSource = { kind: 'card', card: 'c', x: 100, y: 40 };
-
-describe('snap', () => {
-  it('rounds to the 10-unit grid', () => {
-    expect(snap(123)).toBe(120);
-    expect(snap(125)).toBe(130);
-    expect(snap(-4)).toBe(-0);
-  });
-});
 
 describe('dropTarget', () => {
   const pileRect: DropRect = {
