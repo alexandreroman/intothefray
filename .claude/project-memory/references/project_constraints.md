@@ -9,11 +9,13 @@ type: project
 - Anti-cheat: the server sends each viewer only what they may see (no
   other hands, deck order, face-down cards). Card ids are opaque and
   never let a viewer follow a card out of sight: a card gets a new id
-  (`Action.Renames`, `renamedOnTheWay` in internal/game) when it goes
-  onto a deck, unless it lands as the shown top card of a face-up side
-  deck, and when it goes into a hand out of a hand or face down off the
-  table; tucked cards that drop under a deck too. The new ids of one
-  action or group are distinct.
+  (`Action.Renames`; `renamedOnTheWay`, `hiddenByCovering` in
+  internal/game) when it goes onto a deck, unless it lands as the shown
+  top card of a face-up side deck, and when it goes into a hand out of a
+  hand or face down off the table. So do the tucked cards that drop under
+  a deck, those under a covered revealed card included, and a revealed
+  card covered by a card put on top (see [[project_deck_reveal]]). The
+  new ids of one action or group are distinct.
 - Card images, card backs and theme images are stored in a Cloudflare R2
   bucket and served by `https://img.intothefray.xyz`, the only image host
   the browser loads from (see [[project_image_cdn]]). The user accepts that
