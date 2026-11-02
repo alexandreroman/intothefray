@@ -251,11 +251,11 @@ func faceCodesOf(mc []marvelcdb.Card) map[string][]string {
 func localizeIndex(index *pack.Index, defs []curated.ScenarioDef, fr frenchSources) {
 	for i := range index.Packs {
 		ref := &index.Packs[i]
-		ref.Localized = localizedName(ref.Name, fr.packName(ref.Code, ref.Name))
+		ref.Localized = localizedName(fr.packName(ref.Code, ref.Name))
 	}
 	for i := range index.Sets {
 		ref := &index.Sets[i]
-		ref.Localized = localizedName(ref.Name, fr.setName(ref.Code, ref.Name))
+		ref.Localized = localizedName(fr.setName(ref.Code, ref.Name))
 	}
 
 	// A curated scenario may be named differently from its villain set; any
@@ -270,14 +270,15 @@ func localizeIndex(index *pack.Index, defs []curated.ScenarioDef, fr frenchSourc
 		if !found {
 			setCode = ref.ID
 		}
-		ref.Localized = localizedName(ref.Name, fr.setName(setCode, ref.Name))
+		ref.Localized = localizedName(fr.setName(setCode, ref.Name))
 	}
 }
 
 // localizedName returns the French override of an index entry, nil when the
-// French name is unknown or the same as the English one.
-func localizedName(english, frenchName string) map[string]pack.Localized {
-	if frenchName == "" || frenchName == english {
+// entry is untranslated, as frenchSources returns "" for a name that only
+// respells the English one.
+func localizedName(frenchName string) map[string]pack.Localized {
+	if frenchName == "" {
 		return nil
 	}
 	return map[string]pack.Localized{french: {Name: frenchName}}
