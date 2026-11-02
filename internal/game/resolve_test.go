@@ -495,3 +495,93 @@ func TestFlipLeavesAnIdentityFaceUp(t *testing.T) {
 		t.Errorf("flip of a single-faced identity = %+v, %v; want face 0, face up", flip, err)
 	}
 }
+
+// withJunk returns a carrying a value in every list, map, flag and name a
+// client could send, read by its kind or not.
+func withJunk(a Action) Action {
+	a.Cards = make([]string, 2000)
+	for i := range a.Cards {
+		a.Cards[i] = fmt.Sprintf("junk%d", i)
+	}
+	a.Actions = []Action{{Kind: ActMove, Card: "junk"}}
+	a.Seats = []int{0, 1, 2}
+	a.Renames = map[string]string{"junk": "cjunk"}
+	a.Exhausted = new(true)
+	a.FaceDown = new(true)
+	a.Name = "junk"
+	return a
+}
+
+// TestResolveDropsFieldsItsKindDoesNotRead checks that a client's value
+// never reaches the recorded action through a field its kind does not read:
+// it would be stored and replayed for nothing.
+func TestResolveDropsFieldsItsKindDoesNotRead(t *testing.T) {
+	f := newResolveFixture(t)
+	hand := slices.Clone(f.g.Table.Hands["p0"])
+	read := func(a Action, set func(*Action)) Action {
+		a = withJunk(a)
+		set(&a)
+		return a
+	}
+	none := func(*Action) {}
+
+	tests := []struct {
+		name  string
+		a     Action
+		reads []string // the fields the resolved action may carry
+	}{
+		{"move", read(Action{Kind: ActMove, Card: f.ownTable, X: 100, Y: 100}, none), nil},
+		{"put on top of a deck", read(Action{Kind: ActToDeck, Card: f.hand, Where: whereTop}, none), []string{"Renames"}},
+		{"exhaust", read(Action{Kind: ActExhaust, Card: f.ownTable}, none), []string{"Exhausted"}},
+		{"flip", read(Action{Kind: ActFlip, Card: f.ownTable}, none), []string{"FaceDown"}},
+		{"token", read(Action{Kind: ActToken, Card: f.ownTable, Delta: 1}, func(a *Action) { a.Name = tokenDamage }),
+			[]string{"Name"}},
+		{"hand order", read(Action{Kind: ActHandOrder, Area: "p0"}, func(a *Action) { a.Cards = hand }),
+			[]string{"Cards"}},
+		{"arrow clear", read(Action{Kind: ActArrowClear}, none), nil},
+		{"draw", read(Action{Kind: ActDraw, N: 1}, none), []string{"Cards"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := resolve(f.g, f.g.actorOf(0), tt.a, newTestRNG())
+			if err != nil {
+				t.Fatalf("resolve(%s) = %v", tt.a.Kind, err)
+			}
+			checkOnlyReads(t, got, tt.reads)
+			if tt.name == "draw" && len(got.Cards) != 1 {
+				t.Errorf("draw records %d cards, want the 1 drawn", len(got.Cards))
+			}
+		})
+	}
+
+	t.Run("group", func(t *testing.T) {
+		sub := withJunk(Action{Kind: ActMove, Card: f.ownTable, X: 100, Y: 100})
+		other := withJunk(Action{Kind: ActMove, Card: f.encTable, X: 300, Y: 100})
+		a := withJunk(Action{Kind: ActGroup})
+		a.Actions = []Action{sub, other}
+
+		got, err := resolve(f.g, f.g.actorOf(0), a, newTestRNG())
+		if err != nil {
+			t.Fatalf("resolve(group) = %v", err)
+		}
+		checkOnlyReads(t, got, []string{"Actions"})
+		if len(got.Actions) != 2 {
+			t.Fatalf("group holds %d actions, want 2", len(got.Actions))
+		}
+		for _, sub := range got.Actions {
+			checkOnlyReads(t, sub, nil)
+		}
+	})
+}
+
+// checkOnlyReads fails when a carries a list, map, flag or name outside
+// reads.
+func checkOnlyReads(t *testing.T, a Action, reads []string) {
+	t.Helper()
+	value := reflect.ValueOf(a)
+	for _, field := range []string{"Cards", "Actions", "Seats", "Renames", "Exhausted", "FaceDown", "Name"} {
+		if !slices.Contains(reads, field) && !value.FieldByName(field).IsZero() {
+			t.Errorf("%s action keeps the client's %s: %v", a.Kind, field, value.FieldByName(field))
+		}
+	}
+}

@@ -143,6 +143,7 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if g.Table == nil {
 		return Action{}, fmt.Errorf("%w: the game has no table", ErrPhase)
 	}
+	a = withoutUnreadFields(a)
 	if who.seat < 0 || who.seat >= g.seatCount() {
 		return Action{}, forbidden("seat %d is not at this table", who.seat)
 	}
@@ -159,6 +160,37 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 		return resolveGroup(g, who, a, rng)
 	}
 	return resolveOnTable(g.Table, who, a, rng)
+}
+
+// namedKinds are the kinds that read Action.Name.
+var namedKinds = map[Kind]bool{
+	ActToken:    true,
+	ActStatus:   true,
+	ActModifier: true,
+	ActMarker:   true,
+}
+
+// withoutUnreadFields returns a without the lists, maps, flags and name its
+// kind does not read: whatever a client sends there would be recorded and
+// replayed for nothing. Renames, Seats, Exhausted and FaceDown are never the
+// client's: resolve fills them for the kinds that read them, Cards too, but
+// for the client's orders of a reorder of a deck's top or of a hand. The
+// sub-actions of a group are resolved, so dropped from, in turn.
+func withoutUnreadFields(a Action) Action {
+	if a.Kind != ActReorderTop && a.Kind != ActHandOrder {
+		a.Cards = nil
+	}
+	if a.Kind != ActGroup {
+		a.Actions = nil
+	}
+	if !namedKinds[a.Kind] {
+		a.Name = ""
+	}
+	a.Renames = nil
+	a.Seats = nil
+	a.Exhausted = nil
+	a.FaceDown = nil
+	return a
 }
 
 // resolveOnTable resolves a, any kind but a group, on the table as apply
