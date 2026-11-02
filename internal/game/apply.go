@@ -270,7 +270,7 @@ func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	return nil, false, false
 }
 
-// shuffledIntoDeck returns the cards a shuffle of c into deck, its home,
+// shuffledIntoDeck returns the cards a shuffle of c into deck (see toDeckID)
 // gathers: the cards of deck, the cards tucked under c that leaving the table
 // sends to deck (see tuckedDestination), then c.
 func (t *Table) shuffledIntoDeck(c *Card, deck *Pile) []string {
@@ -575,14 +575,42 @@ func (t *Table) addToHand(area Area, c *Card) {
 	c.Pile = ""
 }
 
+// toDeckID returns the id of the deck a toDeck action puts c into: the deck
+// a.Pile names, or else c's home.
+func toDeckID(c *Card, a Action) string {
+	return cmp.Or(a.Pile, c.Home)
+}
+
+// checkTakes verifies that deck takes c: a deck takes the cards of its owner
+// only. A player's deck and side decks take that player's cards; the
+// encounter decks and the scenario decks, owned by nobody, take the cards
+// owned by nobody. No other pile is a deck.
+func checkTakes(deck *Pile, c *Card) error {
+	switch deck.Kind {
+	case KindDeck, KindSideDeck, KindEncounter, KindScenarioDeck:
+	default:
+		return invalid("pile %q is not a deck", deck.ID)
+	}
+	if deck.Owner != c.Owner {
+		return invalid("deck %q does not take card %q, which has another owner", deck.ID, c.ID)
+	}
+	return nil
+}
+
+// applyToDeck puts the card into the deck a names (see toDeckID), which
+// becomes its home: discarded later, it goes where that deck's cards go (see
+// discardPileID).
 func applyToDeck(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
 		return err
 	}
-	deck, ok := t.Piles[c.Home]
-	if !ok {
-		return invalid("card %q has no home pile %q", c.ID, c.Home)
+	deck, err := t.pile(toDeckID(c, a))
+	if err != nil {
+		return err
+	}
+	if err := checkTakes(deck, c); err != nil {
+		return err
 	}
 	if err := t.checkLeave(c); err != nil {
 		return err
@@ -615,6 +643,7 @@ func applyToDeck(t *Table, a Action) error {
 	}
 	c.Zone = ZonePile
 	c.Pile = deck.ID
+	c.Home = deck.ID
 	return nil
 }
 
@@ -1215,11 +1244,15 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 		deckID, _ := deckOfDiscard(a.Pile)
 		return deckID
 	case ActToDeck:
-		// A card put on top of its deck, or shuffled into it, goes over or
-		// among the card revealed there; the revealed card itself goes as it is.
+		// A card put on top of a deck, or shuffled into it, goes over or among
+		// the card revealed there; the revealed card itself goes as it is.
 		c, ok := t.Cards[a.Card]
-		if ok && (a.Where == whereTop || a.Where == whereShuffle) && c.OnPile != c.Home {
-			return c.Home
+		if !ok {
+			return ""
+		}
+		deckID := toDeckID(c, a)
+		if (a.Where == whereTop || a.Where == whereShuffle) && c.OnPile != deckID {
+			return deckID
 		}
 	}
 	return ""

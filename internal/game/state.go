@@ -59,7 +59,7 @@ type Card struct {
 	FaceDown  bool           `json:"faceDown,omitempty"`
 	Back      pack.Back      `json:"back"`
 	Owner     int            `json:"owner"` // seat, or NoOwner
-	Home      string         `json:"home"`  // id of the pile it returns to: a deck, side deck, scenario deck or "enc"
+	Home      string         `json:"home"`  // id of its deck: the one it starts in, then the last a toDeck put it into
 	Zone      Zone           `json:"zone"`
 	X         int            `json:"x"`
 	Y         int            `json:"y"`

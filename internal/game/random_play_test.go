@@ -116,7 +116,13 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 15:
 		return Action{Kind: ActToHand, Card: pick(onTable)}
 	case 16:
-		return Action{Kind: ActToDeck, Card: pick(hand), Where: oneOf(whereTop, whereBottom, whereShuffle)}
+		a := Action{Kind: ActToDeck, Card: pick(hand), Where: oneOf(whereTop, whereBottom, whereShuffle)}
+		// Half the time the action names the deck, one that takes the card:
+		// its home or another deck of its owner.
+		if c, ok := t.Cards[a.Card]; ok && r.IntN(2) == 0 {
+			a.Pile = pick(decksOf(t, c.Owner))
+		}
+		return a
 	case 17:
 		card := pick(onTable)
 		return Action{Kind: ActToPile, Card: card, Target: oneOf(PileVictory, PileScenarioAside, "aside:"+string(area))}
@@ -157,6 +163,23 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	default:
 		return Action{Kind: ActUndo}
 	}
+}
+
+// decksOf returns the ids of the decks on t that owner's cards may go to,
+// sorted: a player's deck and side decks, or for owner NoOwner the encounter
+// and scenario decks.
+func decksOf(t *Table, owner int) []string {
+	var ids []string
+	for id, p := range t.Piles {
+		switch p.Kind {
+		case KindDeck, KindSideDeck, KindEncounter, KindScenarioDeck:
+			if p.Owner == owner {
+				ids = append(ids, id)
+			}
+		}
+	}
+	slices.Sort(ids)
+	return ids
 }
 
 // checkReplay verifies that replaying the setup and events of g, as stored
@@ -202,6 +225,8 @@ func TestRandomPlayKeepsTheHistoryRight(t *testing.T) {
 	}{
 		{"rhino", newDoFixture},
 		{"klaw", klawFixture},
+		// Side decks give the players' cards a deck other than their home.
+		{"side decks", sideDeckFixture},
 	}
 	for _, scenario := range scenarios {
 		t.Run(scenario.name, func(t *testing.T) {

@@ -242,8 +242,8 @@ describe('dragging a group of cards', () => {
       {
         kind: 'group',
         actions: [
-          { kind: 'toDeck', card: 'mine', where: 'top' },
-          { kind: 'toDeck', card: 'other', where: 'top' },
+          { kind: 'toDeck', card: 'mine', where: 'top', pile: 'deck:p0' },
+          { kind: 'toDeck', card: 'other', where: 'top', pile: 'deck:p0' },
         ],
       },
       0,

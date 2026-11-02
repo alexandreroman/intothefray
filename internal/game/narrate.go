@@ -349,7 +349,7 @@ func (n narrator) toHandEvent(a Action) logLine {
 
 func (n narrator) toDeckEvent(a Action) logLine {
 	card := n.name(a.Card)
-	deck := n.pile(n.before.Cards[a.Card].Home)
+	deck := n.pile(toDeckID(n.before.Cards[a.Card], a))
 	var text phrase
 	switch a.Where {
 	case whereBottom:
@@ -368,11 +368,11 @@ func (n narrator) toDeckEvent(a Action) logLine {
 func (n narrator) groupEvent(a Action) logLine {
 	cards := make([]string, 0, len(a.Actions))
 	targets := make([]string, 0, len(a.Actions))
-	homes := make([]string, 0, len(a.Actions))
+	decks := make([]string, 0, len(a.Actions))
 	for _, sub := range a.Actions {
 		cards = append(cards, sub.Card)
 		targets = append(targets, sub.Target)
-		homes = append(homes, n.before.Cards[sub.Card].Home)
+		decks = append(decks, toDeckID(n.before.Cards[sub.Card], sub))
 	}
 	count := fmt.Sprintf("%d cards", len(cards))
 
@@ -390,7 +390,7 @@ func (n narrator) groupEvent(a Action) logLine {
 		if first.Where == whereBottom {
 			where = " at the bottom of "
 		}
-		text = join(words("put "+count+where), n.sharedPile(homes, "their decks"))
+		text = join(words("put "+count+where), n.sharedPile(decks, "their decks"))
 	}
 	text = join(text, words(" ("), n.cardList(cards), words(")"))
 	return logLine{text: text, cards: n.visibleCards(cards...)}

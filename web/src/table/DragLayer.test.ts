@@ -425,6 +425,7 @@ describe('dragging a table card', () => {
         kind: 'toDeck',
         card: 'mine',
         where: 'top',
+        pile: 'deck:p0',
       },
       0,
     );
@@ -440,7 +441,7 @@ describe('dragging a table card', () => {
 
     await release(660, 500);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'toDeck', card: 'mine', where: 'top' },
+      { kind: 'toDeck', card: 'mine', where: 'top', pile: 'deck:p0' },
       0,
     );
   });
@@ -456,7 +457,76 @@ describe('dragging a table card', () => {
 
     await release(90, 200);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'toDeck', card: 'minion', where: 'top' },
+      { kind: 'toDeck', card: 'minion', where: 'top', pile: 'enc' },
+      0,
+    );
+  });
+
+  it('puts an encounter card on top of a scenario deck, which is not its home', async () => {
+    const view = weaponsView();
+    view.table!.cards.push(card('minion', { owner: -1, back: 'encounter', x: 200, y: 300 }));
+    const { session } = await renderTable(view);
+    await press(placed('minion'), 250, 400);
+    // The Experimental Weapons deck lies at 940, 340 on the screen.
+    await moveTo(990, 400);
+    expect(placed('sdeck:x').classList).toContain('drop-pile');
+    expect(screen.getByText('Top of Experimental Weapons deck')).toBeTruthy();
+
+    await release(990, 400);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'minion', where: 'top', pile: 'sdeck:x' },
+      0,
+    );
+  });
+
+  it('places a card dropped next to a deck that is not its home, not into it', async () => {
+    const view = weaponsView();
+    view.table!.cards.push(card('minion', { owner: -1, back: 'encounter', x: 200, y: 300 }));
+    const { session } = await renderTable(view);
+    await press(placed('minion'), 250, 400);
+    // 8 px below the Experimental Weapons deck, which ends at 497 on the screen.
+    await moveTo(990, 505);
+    expect(placed('sdeck:x').classList).not.toContain('drop-pile');
+
+    await release(990, 505);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'move', card: 'minion' }),
+      0,
+    );
+  });
+
+  it('still takes a drop next to the home deck', async () => {
+    const { session } = await renderTable();
+    await press(placed('mine'), 50, 400);
+    // 8 px right of the deck, which ends at 732 on the screen.
+    await moveTo(740, 400);
+    expect(placed('deck:p0').classList).toContain('drop-pile');
+
+    await release(740, 400);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'mine', where: 'top', pile: 'deck:p0' },
+      0,
+    );
+  });
+
+  it('tucks a card under a card revealed on a deck that is not its home', async () => {
+    const view = makeView();
+    // Alex's face-down Labor side deck, at 940, 340 on the screen, its top card revealed.
+    view.table!.piles.push(
+      pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 920, y: 300, count: 5, label: 'Labor' }),
+    );
+    view.table!.cards.push(
+      card('revealed', { code: '01001', home: 'side:p0:0', onPile: 'side:p0:0', x: 920, y: 300 }),
+    );
+    const { session } = await renderTable(view);
+    await press(placed('mine'), 50, 400);
+    await moveTo(990, 400);
+    expect(placed('side:p0:0').classList).not.toContain('drop-pile');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(990, 400);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'attach', card: 'mine', target: 'revealed' }),
       0,
     );
   });
@@ -1116,7 +1186,7 @@ describe('dragging a hand card', () => {
 
     await release(660, 500);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'toDeck', card: 'h3', where: 'top' },
+      { kind: 'toDeck', card: 'h3', where: 'top', pile: 'deck:p0' },
       0,
     );
   });

@@ -222,6 +222,67 @@ describe('groupPileTargets', () => {
   });
 });
 
+describe('a group dropped on a deck of its owner', () => {
+  // Red Skull's Side-scheme deck belongs to nobody; Alex (p0) has a Sense deck, Sam (p1) one too.
+  const piles = [
+    pile('enc', { kind: 'encounter' }),
+    pile('encd', { kind: 'encounterDiscard' }),
+    pile('sdeck:schemes', { kind: 'scenarioDeck', label: 'Side-scheme' }),
+    pile('deck:p0', { owner: 0 }),
+    pile('disc:p0', { kind: 'discard', owner: 0 }),
+    pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }),
+    pile('side:p1:0', { kind: 'sideDeck', owner: 1, label: 'Sense' }),
+  ];
+  const cards = [
+    card('patrol', { owner: -1, back: 'encounter' }),
+    card('minion', { owner: -1, back: 'encounter' }),
+    card('a'),
+    card('sense', { home: 'side:p0:0' }),
+  ];
+  const view = makeView(cards, piles);
+  const of = (units: string[]) => groupPileTargets(units, view).map((t) => [t.pile, t.drop]);
+
+  it('offers encounter cards every deck of nobody', () => {
+    expect(of(['patrol', 'minion'])).toEqual([
+      ['enc', 'top'],
+      ['sdeck:schemes', 'top'],
+      ['encd', 'discard'],
+    ]);
+  });
+
+  it("offers the viewer's cards each of their decks, whatever their homes", () => {
+    expect(of(['a', 'sense'])).toEqual([
+      ['deck:p0', 'top'],
+      ['side:p0:0', 'top'],
+    ]);
+  });
+
+  it('takes a drop near a deck only when it is the home of every unit', () => {
+    const exact = (units: string[]) => groupPileTargets(units, view).map((t) => [t.pile, t.exact]);
+    expect(exact(['patrol', 'minion'])).toEqual([
+      ['enc', undefined],
+      ['sdeck:schemes', true],
+      ['encd', undefined],
+    ]);
+    // The Sense card's home is the Sense deck, the other card's Alex's deck: neither is home to both.
+    expect(exact(['a', 'sense'])).toEqual([
+      ['deck:p0', true],
+      ['side:p0:0', true],
+    ]);
+  });
+
+  it('puts every unit on top of the deck the group is dropped on', () => {
+    const single: Action = { kind: 'toDeck', card: 'patrol', where: 'top', pile: 'sdeck:schemes' };
+    expect(groupAction(['patrol', 'minion'], 'patrol', single, cards)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toDeck', card: 'patrol', where: 'top', pile: 'sdeck:schemes' },
+        { kind: 'toDeck', card: 'minion', where: 'top', pile: 'sdeck:schemes' },
+      ],
+    });
+  });
+});
+
 describe('interaction group', () => {
   afterEach(() => {
     interaction.reset();

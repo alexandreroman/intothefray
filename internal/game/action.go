@@ -52,7 +52,7 @@ type Action struct {
 	Kind   Kind   `json:"kind"`
 	Card   string `json:"card,omitempty"`
 	Target string `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
-	Pile   string `json:"pile,omitempty"`   // also the deck whose top card a play takes
+	Pile   string `json:"pile,omitempty"`   // also the deck a play takes the top of, or a toDeck goes to (toDeckID)
 	Area   Area   `json:"area,omitempty"`   // whose hand (handOrder; filled by resolve for a draw), who is dealt to (deal)
 	X      int    `json:"x,omitempty"`
 	Y      int    `json:"y,omitempty"`
@@ -552,16 +552,22 @@ func resolveToPile(t *Table, who actor, a Action) (Action, error) {
 	return a, checkPile(target, who, false)
 }
 
+// resolveToDeck checks that who may use the deck the card goes to (see
+// toDeckID) and that this deck takes it (see checkTakes). A shuffle into it is
+// resolved here.
 func resolveToDeck(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	c, err := usableCard(t, who, a.Card)
 	if err != nil {
 		return a, err
 	}
-	deck, err := t.pile(c.Home)
+	deck, err := t.pile(toDeckID(c, a))
 	if err != nil {
 		return a, err
 	}
 	if err := checkPile(deck, who, false); err != nil {
+		return a, err
+	}
+	if err := checkTakes(deck, c); err != nil {
 		return a, err
 	}
 	switch a.Where {

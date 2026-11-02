@@ -1,6 +1,6 @@
 ---
 name: "Discard destinations"
-description: "A discarded card goes to its owner's discard pile unless its side or scenario deck declares \"own\" or \"none\""
+description: "A card goes to its home deck's discard: owner's pile, or \"own\" / \"none\"; a deck takes any card of its owner as home"
 type: project
 ---
 
@@ -23,6 +23,16 @@ type: project
 - Discard 1/X from a deck follows the same rule.
 - A card keeps its home wherever it is discarded: Top of deck returns a
   weapon to the Experimental Weapons deck.
+- A card's home is the deck it was last put into. Any deck (a player's deck
+  or side deck, the encounter deck, a scenario deck) takes any card of its
+  owner: a player's cards go to that player's decks, cards owned by nobody to
+  the encounter and scenario decks. A drag onto the deck puts the card on top
+  (`toDeck` with `pile`); the deck becomes its home, so its discard follows
+  that deck's rule: a modular side scheme shuffled into Red Skull's
+  side-scheme deck is discarded to that deck's discard pile. A deck other
+  than the card's home takes a drop only right over it, and a card lying on
+  it (a revealed card) takes the drop instead; the home deck takes a drop
+  near it too.
 - A scenario with its own encounter decks has no classic encounter discard
   pile, so each of its decks states `"own"` or `"none"` (checked by the
   pack generator).
