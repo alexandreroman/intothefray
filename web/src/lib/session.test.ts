@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { wsUrl } from './api';
 import { getToken, setToken } from './prefs';
 import { GameSession } from './session.svelte';
