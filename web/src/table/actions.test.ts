@@ -10,7 +10,7 @@ import {
 } from './actions';
 import { knownCard } from '../lib/catalog';
 import type { Action, CardView, PackFace, PileView, View, YouView } from '../lib/types';
-import { card, infoFrom } from './fixtures.testing';
+import { card, infoFrom, pile } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -38,10 +38,6 @@ const FACES: Record<string, Partial<PackFace>[]> = {
 };
 
 const infoOf = infoFrom(FACES);
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 5, ...extra };
-}
 
 /** Rhino with two players, Alex (p0) and Sam (p1), and every pile of a real table. */
 function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View {

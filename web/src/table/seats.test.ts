@@ -8,15 +8,8 @@ import {
   seatHero,
   seatOf,
 } from './seats';
-import type { CardView, PileView, View } from '../lib/types';
-
-function card(id: string, owner: number): CardView {
-  return { id, code: '01001', face: 0, back: 'player', owner, zone: 'table', x: 0, y: 0, z: 1 };
-}
-
-function pile(id: string, owner: number): PileView {
-  return { id, kind: 'deck', owner, x: 0, y: 0, count: 10 };
-}
+import type { View } from '../lib/types';
+import { card, pile } from './fixtures.testing';
 
 /** Alex (colour 0) plays two decks, p0 and p1 (Spider-Man); Sam (colour 1) one, p2. */
 function makeView(
@@ -51,12 +44,16 @@ function makeView(
     config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: [
-        card('alex1', 1),
-        card('sam', 2),
-        card('enemy', -1),
-        { ...card('h', 1), zone: 'hand' },
+        card('alex1', { owner: 1 }),
+        card('sam', { owner: 2 }),
+        card('enemy', { owner: -1 }),
+        card('h', { owner: 1, zone: 'hand' }),
       ],
-      piles: [pile('deck:p1', 1), pile('deck:p2', 2), { ...pile('enc', -1), kind: 'encounter' }],
+      piles: [
+        pile('deck:p1', { owner: 1 }),
+        pile('deck:p2', { owner: 2 }),
+        pile('enc', { kind: 'encounter' }),
+      ],
       stages: [],
       firstPlayer: { x: 0, y: 0 },
     },

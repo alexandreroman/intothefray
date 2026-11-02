@@ -1,19 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Action, CardView, PileView, View } from '../lib/types';
-import type { Rect } from './drag';
 import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
 import { cardsInBand, groupAction, groupPileTargets, groupUnits } from './selection';
-import { card } from './fixtures.testing';
+import { card, pile, rect } from './fixtures.testing';
 import { rowPitch, spreadRows } from './rows';
-
-function rect(left: number, top: number, width: number, height: number): Rect {
-  return { left, top, right: left + width, bottom: top + height };
-}
-
-function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 10, ...extra };
-}
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(cards: CardView[], piles: PileView[]): View {

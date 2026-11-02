@@ -10,6 +10,7 @@ import type {
   PresenceState,
   SessionError,
 } from '../lib/types';
+import type { Rect } from './drag';
 
 /** A face-up Spider-Man of seat 0's, on the table at its origin. */
 export function card(id: string, extra: Partial<CardView> = {}): CardView {
@@ -76,19 +77,17 @@ export function placed(id: string, selector = ''): HTMLElement {
   return element;
 }
 
-/** A measured box, as getBoundingClientRect gives, with its sides as plain fields. */
+/**
+ * A measured box, as getBoundingClientRect gives: a real DOMRect, whose sides are getters on its
+ * prototype, which a spread of the rect loses.
+ */
 export function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  };
+  return new DOMRect(left, top, width, height);
+}
+
+/** A box on the screen by its sides, as the drag code measures one. */
+export function rect(left: number, top: number, width: number, height: number): Rect {
+  return { left, top, right: left + width, bottom: top + height };
 }
 
 /**

@@ -3,35 +3,13 @@ import { interaction } from './interaction.svelte';
 import PileView from './PileView.svelte';
 import pileSource from './PileView.svelte?raw';
 import tableSource from './Table.svelte?raw';
-import type { CardView as TableCard, PackFace, PileView as Pile } from '../lib/types';
+import type { CardView as TableCard, PackFace } from '../lib/types';
+import { card, pile } from './fixtures.testing';
 
 const ENCOUNTER_BACK = 'https://img.intothefray.xyz/assets/back-encounter.avif';
 
-function pile(extra: Partial<Pile> = {}): Pile {
-  return {
-    id: 'enc',
-    kind: 'encounter',
-    owner: -1,
-    x: 0,
-    y: 0,
-    count: 0,
-    ...extra,
-  };
-}
-
 function topCard(extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id: 'c9',
-    code: '01101',
-    face: 0,
-    back: 'encounter',
-    owner: -1,
-    zone: 'pile',
-    x: 0,
-    y: 0,
-    z: 0,
-    ...extra,
-  };
+  return card('c9', { code: '01101', back: 'encounter', owner: -1, zone: 'pile', z: 0, ...extra });
 }
 
 function face(extra: Partial<PackFace> = {}): PackFace {
@@ -52,7 +30,7 @@ beforeEach(() => {
 
 describe('PileView', () => {
   it('empty pile renders a slot without count', () => {
-    const { container } = render(PileView, { pile: pile({ kind: 'discard', count: 0 }) });
+    const { container } = render(PileView, { pile: pile('enc', { kind: 'discard', count: 0 }) });
 
     const el = pileElement(container);
     expect(el.classList.contains('inert')).toBe(true);
@@ -62,7 +40,9 @@ describe('PileView', () => {
   });
 
   it('a pile without listed cards shows its back and its count', () => {
-    const { container } = render(PileView, { pile: pile({ x: 120, y: 20, count: 12 }) });
+    const { container } = render(PileView, {
+      pile: pile('enc', { kind: 'encounter', x: 120, y: 20, count: 12 }),
+    });
 
     expect(screen.getByRole('img', { name: 'Encounter card back' }).getAttribute('src')).toBe(
       ENCOUNTER_BACK,
@@ -87,7 +67,9 @@ describe('PileView', () => {
   it('draws the ring of the player who previews it inside itself, so that it follows the pile', () => {
     interaction.previewByOthers(new Map([['enc', 2]]));
     try {
-      const { container } = render(PileView, { pile: pile({ count: 3 }) });
+      const { container } = render(PileView, {
+        pile: pile('enc', { kind: 'encounter', count: 3 }),
+      });
 
       const ring = pileElement(container).querySelector<HTMLElement>(':scope > .rring');
       expect(ring?.style.getPropertyValue('--c')).toBe('var(--p3)');
@@ -97,24 +79,24 @@ describe('PileView', () => {
   });
 
   it('a player deck shows the player back', () => {
-    render(PileView, { pile: pile({ kind: 'deck', owner: 0, count: 30 }) });
+    render(PileView, { pile: pile('enc', { kind: 'deck', owner: 0, count: 30 }) });
     expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
   });
 
   it('a side deck with its own back draws that back captioned, one without the player back', () => {
-    const gift = pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, count: 3, label: 'Gift' });
+    const gift = pile('side:p0:0', { kind: 'sideDeck', owner: 0, count: 3, label: 'Gift' });
     render(PileView, { pile: { ...gift, back: 'encounter' } });
     const back = screen.getByRole('img', { name: 'Gift card back' });
     expect(back.querySelector('img')?.getAttribute('src')).toBe(ENCOUNTER_BACK);
     expect(back.querySelector('.caption')?.textContent).toBe('GIFT');
 
-    const invocation = pile({ id: 'side:p0:1', kind: 'sideDeck', owner: 0, count: 5 });
+    const invocation = pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5 });
     render(PileView, { pile: { ...invocation, label: 'Invocation' } });
     expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
   });
 
   it('a pile listing its cards shows the face of the top one', () => {
-    const shown = pile({ kind: 'encounterDiscard', count: 2, cards: ['c8', 'c9'] });
+    const shown = pile('enc', { kind: 'encounterDiscard', count: 2, cards: ['c8', 'c9'] });
     render(PileView, { pile: shown, top: topCard(), face: face() });
 
     const img = screen.getByRole('img', { name: 'Hydra Mercenary' });
@@ -122,7 +104,7 @@ describe('PileView', () => {
   });
 
   it('a face-down top card shows its back, whatever face it is given', () => {
-    const shown = pile({ kind: 'deck', count: 2, cards: ['c8', 'c9'] });
+    const shown = pile('enc', { kind: 'deck', count: 2, cards: ['c8', 'c9'] });
     render(PileView, { pile: shown, top: topCard({ faceDown: true }), face: face() });
 
     expect(screen.getByRole('img', { name: 'Encounter card back' })).toBeTruthy();
@@ -130,7 +112,7 @@ describe('PileView', () => {
   });
 
   it('a landscape top card shows in a portrait slot', () => {
-    const shown = pile({ kind: 'encounterDiscard', count: 1, cards: ['c9'] });
+    const shown = pile('enc', { kind: 'encounterDiscard', count: 1, cards: ['c9'] });
     const { container } = render(PileView, {
       pile: shown,
       top: topCard(),
@@ -145,7 +127,7 @@ describe('PileView', () => {
   });
 
   it('a pile has no label: its owner is named by the frame around it', () => {
-    const { container } = render(PileView, { pile: pile({ count: 3 }) });
+    const { container } = render(PileView, { pile: pile('enc', { kind: 'encounter', count: 3 }) });
 
     const el = pileElement(container);
     expect(el.querySelector('.label')).toBeNull();

@@ -1,22 +1,10 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
 import { type Anim, diffViews, mergedLines, type OwnDrop } from './animate';
+import { card, pile } from './fixtures.testing';
 
-function card(id: string, extra: Partial<CardView> = {}): CardView {
-  return {
-    id,
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 1,
-    ...extra,
-  };
-}
-
-function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: 0, x: 600, y: 0, count: 10, ...extra };
+/** A pile of seat 0's, 10 cards, right of the table's origin. */
+function seatPile(id: string, extra: Partial<PileView> = {}): PileView {
+  return pile(id, { owner: 0, x: 600, count: 10, ...extra });
 }
 
 function line(text: string, extra: Partial<LogView> = {}): LogView {
@@ -74,10 +62,10 @@ function view(
     table: {
       cards,
       piles: extra.piles ?? [
-        pile('deck:p0'),
-        pile('disc:p0', { kind: 'discard', x: 720, count: 0, cards: [] }),
-        pile('deck:p1', { owner: 1 }),
-        pile('enc', { kind: 'encounter', owner: -1 }),
+        seatPile('deck:p0'),
+        seatPile('disc:p0', { kind: 'discard', x: 720, count: 0, cards: [] }),
+        seatPile('deck:p1', { owner: 1 }),
+        seatPile('enc', { kind: 'encounter', owner: -1 }),
       ],
       stages: [
         { key: 'villain', label: 'Villain', current: extra.current ?? 'v1', cards: ['v1', 'v2'] },
@@ -223,11 +211,11 @@ describe('diffViews', () => {
     it('does not tilt when it comes onto the table already exhausted', () => {
       const prev = view({
         cards: [card('h', { zone: 'hand', exhausted: true }), card('p', { zone: 'pile' })],
-        piles: [pile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['p'] })],
+        piles: [seatPile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['p'] })],
       });
       const next = view({
         cards: [card('h', { x: 100, exhausted: true }), card('p', { x: 200, exhausted: true })],
-        piles: [pile('disc:p0', { kind: 'discard', x: 720, count: 0, cards: [] })],
+        piles: [seatPile('disc:p0', { kind: 'discard', x: 720, count: 0, cards: [] })],
         log: [OLD_LINE, line('played Spider-Man')],
       });
 
@@ -306,7 +294,7 @@ describe('diffViews', () => {
     const known = (id: string, extra: Partial<CardView> = {}) =>
       card(id, { code: '01001', ...extra });
     const discard = (cards: string[]) =>
-      pile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
+      seatPile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
     const prev = view({
       cards: [
         known('down'),
@@ -315,7 +303,7 @@ describe('diffViews', () => {
         known('toDeck'),
         known('inHand', { zone: 'hand' }),
       ],
-      piles: [pile('deck:p0'), discard(['fromDiscard'])],
+      piles: [seatPile('deck:p0'), discard(['fromDiscard'])],
     });
     const next = view({
       cards: [
@@ -325,7 +313,7 @@ describe('diffViews', () => {
         known('inHand', { zone: 'hand', face: 1 }),
       ],
       // Put back on the deck, the card is no longer listed.
-      piles: [pile('deck:p0', { count: 11 }), discard([])],
+      piles: [seatPile('deck:p0', { count: 11 }), discard([])],
     });
 
     const flips = diffViews(prev, next).filter((anim) => anim.kind === 'flip');
@@ -337,12 +325,12 @@ describe('diffViews', () => {
 
   it('turns over a card played face up from a deck, or revealed from the encounter deck', () => {
     // The server never lists the cards of a deck: they show up on the table as the deck shrinks.
-    const prev = view({ piles: [pile('deck:p0', { count: 10 })] });
+    const prev = view({ piles: [seatPile('deck:p0', { count: 10 })] });
     const played = view({
       cards: [card('fromDeck', { code: '01001', x: 300 })],
-      piles: [pile('deck:p0', { count: 9 })],
+      piles: [seatPile('deck:p0', { count: 9 })],
     });
-    const encounter = (count: number) => pile('enc', { kind: 'encounter', owner: -1, count });
+    const encounter = (count: number) => seatPile('enc', { kind: 'encounter', owner: -1, count });
     const revealed = view({
       cards: [card('fromEncounter', { code: '01097', back: 'encounter', owner: -1 })],
       piles: [encounter(19)],
@@ -373,10 +361,10 @@ describe('diffViews', () => {
   it("turns a card revealed from a player's deck face up on it, for its owner and for others", () => {
     for (const owner of [0, 1]) {
       const deckId = `deck:p${owner}`;
-      const prev = view({ piles: [pile(deckId, { owner, count: 10 })] });
+      const prev = view({ piles: [seatPile(deckId, { owner, count: 10 })] });
       const next = view({
         cards: [card('rev', { code: '01001', owner, x: 600, onPile: deckId })],
-        piles: [pile(deckId, { owner, count: 9 })],
+        piles: [seatPile(deckId, { owner, count: 9 })],
       });
 
       expect(diffViews(prev, next)).toEqual([
@@ -390,10 +378,10 @@ describe('diffViews', () => {
     const revealed = (owner: number) =>
       card('rev', { code: '01001', owner, x: 600, onPile: `deck:p${owner}` });
     const own = diffViews(
-      view({ cards: [revealed(0)], piles: [pile('deck:p0', { count: 9 })] }),
+      view({ cards: [revealed(0)], piles: [seatPile('deck:p0', { count: 9 })] }),
       view({
         cards: [card('rev', { code: '01001', zone: 'hand' })],
-        piles: [pile('deck:p0', { count: 9 })],
+        piles: [seatPile('deck:p0', { count: 9 })],
         hands: { p0: ['rev'] },
         handCounts: [1, 0],
       }),
@@ -408,8 +396,8 @@ describe('diffViews', () => {
     ]);
 
     const theirs = diffViews(
-      view({ cards: [revealed(1)], piles: [pile('deck:p1', { owner: 1, count: 9 })] }),
-      view({ piles: [pile('deck:p1', { owner: 1, count: 9 })], handCounts: [0, 1] }),
+      view({ cards: [revealed(1)], piles: [seatPile('deck:p1', { owner: 1, count: 9 })] }),
+      view({ piles: [seatPile('deck:p1', { owner: 1, count: 9 })], handCounts: [0, 1] }),
     );
     expect(theirs).toEqual([{ kind: 'away', id: 'rev' }]);
   });
@@ -419,9 +407,9 @@ describe('diffViews', () => {
       const deckId = `deck:p${owner}`;
       const prev = view({
         cards: [card('rev', { code: '01001', owner, x: 600, onPile: deckId })],
-        piles: [pile(deckId, { owner, count: 9 })],
+        piles: [seatPile(deckId, { owner, count: 9 })],
       });
-      const next = view({ piles: [pile(deckId, { owner, count: 10 })] });
+      const next = view({ piles: [seatPile(deckId, { owner, count: 10 })] });
 
       expect(diffViews(prev, next)).toEqual([
         { kind: 'fly', id: 'rev', toPile: deckId, turns: 'down' },
@@ -433,11 +421,11 @@ describe('diffViews', () => {
     // An open view of the deck lists its cards, though the deck shows none.
     const prev = view({
       cards: [card('seen', { code: '01001', zone: 'pile' })],
-      piles: [pile('deck:p0', { count: 10 })],
+      piles: [seatPile('deck:p0', { count: 10 })],
     });
     const next = view({
       cards: [card('seen', { code: '01001', x: 300 })],
-      piles: [pile('deck:p0', { count: 9 })],
+      piles: [seatPile('deck:p0', { count: 9 })],
     });
 
     expect(diffViews(prev, next).filter((anim) => anim.kind === 'flip')).toEqual([
@@ -516,10 +504,10 @@ describe('diffViews', () => {
       const base = view({
         log,
         piles: [
-          pile('deck:p0'),
-          pile('deck:p1', { owner: 1 }),
-          pile('disc:p1', { kind: 'discard', owner: 1, count: 0, cards: [] }),
-          pile('deck:p2', { owner: 2 }),
+          seatPile('deck:p0'),
+          seatPile('deck:p1', { owner: 1 }),
+          seatPile('disc:p1', { kind: 'discard', owner: 1, count: 0, cards: [] }),
+          seatPile('deck:p2', { owner: 2 }),
         ],
       });
       base.you = { ...base.you, areas: ['p0', 'p1'] };
@@ -574,7 +562,7 @@ describe('diffViews', () => {
 
   describe('the top card of a side deck that shows it', () => {
     const invocation = (top: string, count = 4): PileView =>
-      pile('side:p0:0', {
+      seatPile('side:p0:0', {
         kind: 'sideDeck',
         x: 360,
         count,
@@ -585,7 +573,7 @@ describe('diffViews', () => {
       });
     const onPile = (id: string) => card(id, { code: '09032', zone: 'pile', home: 'side:p0:0' });
     const withTop = (top: string, cards: CardView[], count?: number) =>
-      view({ cards, piles: [pile('deck:p0'), invocation(top, count)] });
+      view({ cards, piles: [seatPile('deck:p0'), invocation(top, count)] });
 
     it('turns face up when the previous top leaves', () => {
       const prev = withTop('i1', [onPile('i1')]);
@@ -607,7 +595,7 @@ describe('diffViews', () => {
       const prev = withTop('i1', [onPile('i1')]);
       const next = view({
         cards: [onPile('i7')],
-        piles: [pile('deck:p0'), invocation('i7')],
+        piles: [seatPile('deck:p0'), invocation('i7')],
         log: [OLD_LINE, line('shuffled their Invocation deck', { who: 'Alex', color: 0 })],
       });
 
@@ -642,7 +630,7 @@ describe('diffViews', () => {
   describe('a card put at the bottom of a deck', () => {
     const alex = { who: 'Alex', color: 0 };
     const sense = (count: number): PileView =>
-      pile('side:p0:1', {
+      seatPile('side:p0:1', {
         kind: 'sideDeck',
         x: 520,
         count,
@@ -653,8 +641,12 @@ describe('diffViews', () => {
     const top = card('s1', { code: '60002', zone: 'pile', home: 'side:p0:1' });
     const radar = card('radar', { code: '60003', x: 800, home: 'side:p0:1' });
     const bottomOf = (count: number, text: string, cards: CardView[] = [top]) =>
-      view({ cards, piles: [pile('deck:p0'), sense(count)], log: [OLD_LINE, line(text, alex)] });
-    const prev = view({ cards: [top, radar], piles: [pile('deck:p0'), sense(4)] });
+      view({
+        cards,
+        piles: [seatPile('deck:p0'), sense(count)],
+        log: [OLD_LINE, line(text, alex)],
+      });
+    const prev = view({ cards: [top, radar], piles: [seatPile('deck:p0'), sense(4)] });
 
     it('slips under a side deck showing its top card, which does not turn', () => {
       const next = bottomOf(5, 'put Radar Sense at the bottom of their Sense deck');
@@ -673,9 +665,9 @@ describe('diffViews', () => {
     it('slips under a deck, from the table or the hand, alone or in a group', () => {
       const mine = card('m', { code: '01001', x: 300 });
       const held = card('h', { code: '01002', zone: 'hand' });
-      const before = view({ cards: [mine, held], piles: [pile('deck:p0', { count: 10 })] });
+      const before = view({ cards: [mine, held], piles: [seatPile('deck:p0', { count: 10 })] });
       const after = view({
-        piles: [pile('deck:p0', { count: 12 })],
+        piles: [seatPile('deck:p0', { count: 12 })],
         log: [OLD_LINE, line('put 2 cards at the bottom of their deck', alex)],
       });
 
@@ -692,7 +684,7 @@ describe('diffViews', () => {
       ]);
       const undone = view({
         cards: [top],
-        piles: [pile('deck:p0'), sense(5)],
+        piles: [seatPile('deck:p0'), sense(5)],
         log: [
           OLD_LINE,
           line('put Radar Sense at the bottom of their Sense deck', { ...alex, undone: true }),
@@ -703,7 +695,7 @@ describe('diffViews', () => {
 
     describe('a side card tucked under a card that leaves the table', () => {
       const invocation = (count: number): PileView =>
-        pile('side:p0:0', {
+        seatPile('side:p0:0', {
           kind: 'sideDeck',
           x: 360,
           count,
@@ -711,7 +703,7 @@ describe('diffViews', () => {
           discard: 'sided:p0:0',
         });
       const used = (cards: string[]): PileView =>
-        pile('sided:p0:0', {
+        seatPile('sided:p0:0', {
           kind: 'sideDiscard',
           x: 440,
           count: cards.length,
@@ -719,13 +711,13 @@ describe('diffViews', () => {
           cards,
         });
       const encd = (cards: string[]): PileView =>
-        pile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
+        seatPile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
       const enemy = card('e', { code: '01100', owner: -1, back: 'encounter', x: 800 });
       const thug = card('t', { code: '01101', owner: -1, back: 'encounter', x: 1000 });
       const tucked = (id: string, home: string, parent = 'e') =>
         card(id, { code: '60004', x: 810, y: 10, parent, home });
       const piles = (senseCount: number, discarded: string[], invocationCount = 5) => [
-        pile('deck:p0'),
+        seatPile('deck:p0'),
         sense(senseCount),
         invocation(invocationCount),
         used([]),
@@ -767,7 +759,7 @@ describe('diffViews', () => {
         const before = view({ cards: [top, enemy, tucked('i', 'side:p0:0')], piles: piles(4, []) });
         const after = view({
           cards: [top, { ...enemy, zone: 'pile' }, { ...tucked('i', 'side:p0:0'), zone: 'pile' }],
-          piles: [pile('deck:p0'), sense(4), invocation(5), used(['i']), encd(['e'])],
+          piles: [seatPile('deck:p0'), sense(4), invocation(5), used(['i']), encd(['e'])],
           log: discardedLine('discarded Hydra Mercenary'),
         });
 
@@ -795,16 +787,16 @@ describe('diffViews', () => {
 
   it('shuffle of a side deck or its discard pile names the pile after its label', () => {
     const piles = [
-      pile('deck:p0'),
-      pile('side:p0:0', {
+      seatPile('deck:p0'),
+      seatPile('side:p0:0', {
         kind: 'sideDeck',
         x: 360,
         count: 4,
         label: 'Invocation',
         discard: 'sided:p0:0',
       }),
-      pile('sided:p0:0', { kind: 'sideDiscard', x: 520, count: 1, label: 'Invocation' }),
-      pile('side:p1:0', { kind: 'sideDeck', owner: 1, x: 360, count: 5, label: 'Invocation' }),
+      seatPile('sided:p0:0', { kind: 'sideDiscard', x: 520, count: 1, label: 'Invocation' }),
+      seatPile('side:p1:0', { kind: 'sideDeck', owner: 1, x: 360, count: 5, label: 'Invocation' }),
     ];
     const alex = { who: 'Alex', color: 0 };
     const prev = view({ piles });
@@ -843,8 +835,8 @@ describe('diffViews', () => {
     const next = view({
       cards: [card('a', { zone: 'pile' })],
       piles: [
-        pile('deck:p0'),
-        pile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['a'] }),
+        seatPile('deck:p0'),
+        seatPile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['a'] }),
       ],
       log: [OLD_LINE, line('discarded Spider-Man')],
     });
@@ -888,7 +880,7 @@ describe('diffViews', () => {
     const prev = view({ cards: [card('a', { x: 40 })] });
     const next = view({
       cards: [card('a', { zone: 'pile' })],
-      piles: [pile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['a'] })],
+      piles: [seatPile('disc:p0', { kind: 'discard', x: 720, count: 1, cards: ['a'] })],
       log: [OLD_LINE, line('discarded Spider-Man', { who: 'Alex', color: 0 })],
     });
 
@@ -931,9 +923,9 @@ describe('diffViews', () => {
   });
 
   describe('draws', () => {
-    const deck = (count: number) => pile('deck:p0', { count });
+    const deck = (count: number) => seatPile('deck:p0', { count });
     const discard = (cards: string[]) =>
-      pile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
+      seatPile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
     const inHand = (id: string, extra: Partial<CardView> = {}) =>
       card(id, { code: '01001', zone: 'hand', ...extra });
 
@@ -964,7 +956,7 @@ describe('diffViews', () => {
       const twoDecks = (count: number, cards: CardView[], hand: string[]): View => {
         const base = view({
           cards,
-          piles: [deck(10), pile('deck:p1', { owner: 1, count })],
+          piles: [deck(10), seatPile('deck:p1', { owner: 1, count })],
           hands: { p0: [], p1: hand },
         });
         base.you = { ...base.you, areas: ['p0', 'p1'] };
@@ -1017,7 +1009,7 @@ describe('diffViews', () => {
     });
 
     it("a card passed in while another player draws does not come out of that player's deck", () => {
-      const samDeck = (count: number) => pile('deck:p1', { owner: 1, count });
+      const samDeck = (count: number) => seatPile('deck:p1', { owner: 1, count });
       const prev = view({ piles: [deck(10), samDeck(10)], hands: { p0: [] }, handCounts: [0, 5] });
       // Sam passes one of each to Alex, and draws two: one more in his hand.
       const next = view({
@@ -1031,7 +1023,7 @@ describe('diffViews', () => {
     });
 
     it('an encounter card drawn into the hand comes out of the encounter deck', () => {
-      const encounter = (count: number) => pile('enc', { kind: 'encounter', owner: -1, count });
+      const encounter = (count: number) => seatPile('enc', { kind: 'encounter', owner: -1, count });
       const prev = view({ piles: [deck(10), encounter(20)], hands: { p0: [] } });
       const next = view({
         cards: [inHand('e', { owner: -1, back: 'encounter' })],
@@ -1067,7 +1059,7 @@ describe('diffViews', () => {
     });
 
     it("another player's draw from their deck leaves it unseen", () => {
-      const samDeck = (count: number) => pile('deck:p1', { owner: 1, count });
+      const samDeck = (count: number) => seatPile('deck:p1', { owner: 1, count });
       const prev = view({ piles: [deck(10), samDeck(10)], handCounts: [0, 5] });
       const next = view({ piles: [deck(10), samDeck(8)], handCounts: [0, 7] });
 
@@ -1079,14 +1071,14 @@ describe('diffViews', () => {
 
     it("another player's draw from their discard pile names the card", () => {
       const samDiscard = (cards: string[]) =>
-        pile('disc:p1', { kind: 'discard', owner: 1, count: cards.length, cards });
+        seatPile('disc:p1', { kind: 'discard', owner: 1, count: cards.length, cards });
       const prev = view({
         cards: [card('x', { code: '01001', owner: 1, zone: 'pile' })],
-        piles: [pile('deck:p1', { owner: 1 }), samDiscard(['x'])],
+        piles: [seatPile('deck:p1', { owner: 1 }), samDiscard(['x'])],
         handCounts: [0, 5],
       });
       const next = view({
-        piles: [pile('deck:p1', { owner: 1 }), samDiscard([])],
+        piles: [seatPile('deck:p1', { owner: 1 }), samDiscard([])],
         handCounts: [0, 6],
       });
 
@@ -1096,7 +1088,7 @@ describe('diffViews', () => {
     it("a spectator sees every player's draw leave", () => {
       const spectating = (counts: [number, number], decks: [number, number]): View => {
         const base = view({
-          piles: [deck(decks[0]), pile('deck:p1', { owner: 1, count: decks[1] })],
+          piles: [deck(decks[0]), seatPile('deck:p1', { owner: 1, count: decks[1] })],
           handCounts: counts,
         });
         base.you = { role: 'spectator', color: -1, host: false };
@@ -1112,15 +1104,15 @@ describe('diffViews', () => {
 
   describe('changes of place', () => {
     const alex = { who: 'Alex', color: 0 };
-    const deck = (count: number) => pile('deck:p0', { count });
-    const samDeck = (count: number) => pile('deck:p1', { owner: 1, count });
-    const encounter = (count: number) => pile('enc', { kind: 'encounter', owner: -1, count });
+    const deck = (count: number) => seatPile('deck:p0', { count });
+    const samDeck = (count: number) => seatPile('deck:p1', { owner: 1, count });
+    const encounter = (count: number) => seatPile('enc', { kind: 'encounter', owner: -1, count });
     const discard = (cards: string[]) =>
-      pile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
+      seatPile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
     const samDiscard = (cards: string[]) =>
-      pile('disc:p1', { kind: 'discard', owner: 1, x: 720, count: cards.length, cards });
+      seatPile('disc:p1', { kind: 'discard', owner: 1, x: 720, count: cards.length, cards });
     const victory = (cards: string[]) =>
-      pile('vic', { kind: 'victory', owner: -1, x: 900, count: cards.length, cards });
+      seatPile('vic', { kind: 'victory', owner: -1, x: 900, count: cards.length, cards });
     const onPile = (id: string, extra: Partial<CardView> = {}) =>
       card(id, { code: '01001', zone: 'pile', ...extra });
 
@@ -1257,7 +1249,7 @@ describe('diffViews', () => {
     });
 
     it('the top of a deck that shows it, dragged by the viewer onto the table, does not enter', () => {
-      const shown = (cards: string[], count: number) => pile('deck:p0', { count, cards });
+      const shown = (cards: string[], count: number) => seatPile('deck:p0', { count, cards });
       const prev = view({ cards: [onPile('c1')], piles: [shown(['c1'], 10), discard([])] });
       const next = view({
         cards: [card('c1', { code: '01001', x: 300 })],
@@ -1271,7 +1263,11 @@ describe('diffViews', () => {
 
     it('a group of three table cards put on top of a deck flies there, once each', () => {
       const prev = view({
-        cards: [card('c1'), card('c2'), card('c3')],
+        cards: [
+          card('c1', { faceDown: true }),
+          card('c2', { faceDown: true }),
+          card('c3', { faceDown: true }),
+        ],
         piles: [deck(7), discard([])],
       });
       const next = view({ piles: [deck(10), discard([])] });
@@ -1321,7 +1317,7 @@ describe('diffViews', () => {
 
     it("the viewer's own drop of the encounter deck's top on its discard pile flies there, turning face up", () => {
       const encd = (cards: string[]) =>
-        pile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
+        seatPile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
       const prev = view({ piles: [deck(10), encounter(20), encd([])] });
       const next = view({
         cards: [onPile('e1', { back: 'encounter', owner: -1 })],
@@ -1390,10 +1386,10 @@ describe('diffViews', () => {
     });
 
     it('a card played from the deck enters face down: it does not turn over', () => {
-      const prev = view({ piles: [pile('deck:p0', { count: 10 })] });
+      const prev = view({ piles: [seatPile('deck:p0', { count: 10 })] });
       const next = view({
         cards: [card('played', { faceDown: true, x: 300 })],
-        piles: [pile('deck:p0', { count: 9 })],
+        piles: [seatPile('deck:p0', { count: 9 })],
       });
 
       expect(diffViews(prev, next)).toEqual([{ kind: 'enter', id: 'played', fromPile: 'deck:p0' }]);
@@ -1411,7 +1407,12 @@ describe('diffViews', () => {
 
     it("a scenario deck's top card played face up enters from that deck and turns over", () => {
       const weapons = (count: number) =>
-        pile('sdeck:x', { kind: 'scenarioDeck', owner: -1, count, label: 'Experimental Weapons' });
+        seatPile('sdeck:x', {
+          kind: 'scenarioDeck',
+          owner: -1,
+          count,
+          label: 'Experimental Weapons',
+        });
       const prev = view({ cards: [card('v1', { owner: -1 })], piles: [deck(10), weapons(4)] });
       const played = card('w', { code: '01097', back: 'encounter', owner: -1, parent: 'v1' });
       const next = view({
@@ -1430,7 +1431,7 @@ describe('diffViews', () => {
 
     it('no more cards fly into a deck than it grew by', () => {
       const prev = view({
-        cards: [card('a', { x: 100 }), card('b', { x: 300 })],
+        cards: [card('a', { x: 100, faceDown: true }), card('b', { x: 300, faceDown: true })],
         piles: [deck(10)],
       });
       const next = view({ piles: [deck(11)] });
@@ -1658,7 +1659,7 @@ describe('diffViews', () => {
 
     it('a side card shuffled into its side deck flies there and the side deck riffles', () => {
       const invocation = (count: number) =>
-        pile('side:p0:0', {
+        seatPile('side:p0:0', {
           kind: 'sideDeck',
           x: 360,
           count,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CardView, PileView, Size } from '../lib/types';
+import type { Size } from '../lib/types';
 import {
   cardBox,
   contentWidth,
@@ -30,25 +30,7 @@ import {
   surfaceSize,
   visualBox,
 } from './layout';
-
-function card(overrides: Partial<CardView> = {}): CardView {
-  return {
-    id: 'c',
-    code: '01001',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 0,
-    y: 0,
-    z: 0,
-    ...overrides,
-  };
-}
-
-function pile(overrides: Partial<PileView> = {}): PileView {
-  return { id: 'p', kind: 'deck', owner: 0, x: 0, y: 0, count: 10, ...overrides };
-}
+import { card, pile } from './fixtures.testing';
 
 const alwaysStd = (): Size => 'std';
 const nothingShows = { w: 0, h: 0 };
@@ -79,36 +61,36 @@ describe('cardBox sizes', () => {
 
 describe('surfaceSize', () => {
   it('leaves 200 free past the rightmost item and 300 under the lowest one', () => {
-    const cards = [card({ x: 50, y: 300 }), card({ x: 400, y: 10 })];
+    const cards = [card('c', { x: 50, y: 300 }), card('c', { x: 400, y: 10 })];
     expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 712, h: 757 });
   });
 
   it('uses the size of each card, a face-down card being 112x157', () => {
-    expect(surfaceSize([card({ x: 100 })], [], () => 'dland', nothingShows)).toEqual({
+    expect(surfaceSize([card('c', { x: 100 })], [], () => 'dland', nothingShows)).toEqual({
       w: 524,
       h: 457,
     });
-    const faceDown = [card({ x: 100, faceDown: true })];
+    const faceDown = [card('c', { x: 100, faceDown: true })];
     expect(surfaceSize(faceDown, [], () => 'dland', nothingShows)).toEqual({ w: 412, h: 457 });
   });
 
   it('counts piles as 112x157 boxes, but not the out-of-play piles, which are not drawn', () => {
     const piles = [
-      pile({ x: 160, y: 360 }),
-      pile({ id: 'vic', kind: 'victory', x: 2000, y: 2000 }),
-      pile({ id: 'aside', kind: 'aside', x: 3000, y: 3000 }),
+      pile('p', { x: 160, y: 360 }),
+      pile('vic', { kind: 'victory', x: 2000, y: 2000 }),
+      pile('aside', { kind: 'aside', x: 3000, y: 3000 }),
     ];
     expect(surfaceSize([], piles, alwaysStd, nothingShows)).toEqual({ w: 472, h: 817 });
   });
 
   it('ignores the cards that are not on the table', () => {
-    const cards = [card({ zone: 'hand', x: 900, y: 900 })];
+    const cards = [card('c', { zone: 'hand', x: 900, y: 900 })];
     // Nothing on the table: it fits, with no free room.
     expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 0, h: 0 });
   });
 
   it('never grows past where a card at the server bound of 20000 ends', () => {
-    const cards = [card({ x: 20_000, y: 20_000 })];
+    const cards = [card('c', { x: 20_000, y: 20_000 })];
     expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({ w: 20_224, h: 20_224 });
     expect(surfaceSize(cards, [], alwaysStd, { w: 30_000, h: 25_000 })).toEqual({
       w: 30_000,
@@ -117,7 +99,7 @@ describe('surfaceSize', () => {
   });
 
   it('fills what shows of the table', () => {
-    const cards = [card({ x: 400 })];
+    const cards = [card('c', { x: 400 })];
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 900 })).toEqual({ w: 1200, h: 900 });
     // Too narrow for the card, tall enough: free room on the right only.
     expect(surfaceSize(cards, [], alwaysStd, { w: 300, h: 200 })).toEqual({ w: 712, h: 200 });
@@ -125,7 +107,7 @@ describe('surfaceSize', () => {
 
   it('adds free room only once the items no longer fit in what shows', () => {
     // The lowest item ends at 517: in a 744 tall view, the table does not scroll.
-    const cards = [card({ x: 0, y: 360 })];
+    const cards = [card('c', { x: 0, y: 360 })];
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 744 }).h).toBe(744);
     // Right at the edge, it still fits.
     expect(surfaceSize(cards, [], alwaysStd, { w: 1200, h: 517 }).h).toBe(517);
@@ -154,7 +136,7 @@ describe('an exhausted card', () => {
   });
 
   it('makes the surface wider and taller, rounded up to whole units', () => {
-    const cards = [card({ x: 400, y: 300, exhausted: true })];
+    const cards = [card('c', { x: 400, y: 300, exhausted: true })];
     const right = Math.ceil(456 + turnedWidth / 2);
     const bottom = Math.ceil(378.5 + turnedHeight / 2);
     expect(surfaceSize(cards, [], alwaysStd, nothingShows)).toEqual({
@@ -166,23 +148,23 @@ describe('an exhausted card', () => {
 
 describe('isOutOfPlay', () => {
   it('is true of the victory display and set-aside piles only', () => {
-    expect(isOutOfPlay(pile({ kind: 'victory' }))).toBe(true);
-    expect(isOutOfPlay(pile({ kind: 'aside' }))).toBe(true);
-    expect(isOutOfPlay(pile({ kind: 'encounter' }))).toBe(false);
-    expect(isOutOfPlay(pile({ kind: 'discard' }))).toBe(false);
+    expect(isOutOfPlay(pile('p', { kind: 'victory' }))).toBe(true);
+    expect(isOutOfPlay(pile('p', { kind: 'aside' }))).toBe(true);
+    expect(isOutOfPlay(pile('p', { kind: 'encounter' }))).toBe(false);
+    expect(isOutOfPlay(pile('p', { kind: 'discard' }))).toBe(false);
   });
 });
 
 describe('footprints', () => {
   it('lists the table cards with their sizes, then the drawn piles as 112x157', () => {
     const cards = [
-      card({ id: 'a', x: 10, y: 20 }),
-      card({ id: 'b', x: 200, faceDown: true }),
-      card({ id: 'h', zone: 'hand' }),
+      card('a', { x: 10, y: 20 }),
+      card('b', { x: 200, faceDown: true }),
+      card('h', { zone: 'hand' }),
     ];
     const piles = [
-      pile({ id: 'enc', kind: 'encounter', owner: -1, x: 500 }),
-      pile({ id: 'vic', kind: 'victory', owner: -1, x: 700 }),
+      pile('enc', { kind: 'encounter', owner: -1, x: 500 }),
+      pile('vic', { kind: 'victory', owner: -1, x: 700 }),
     ];
     expect(footprints(cards, piles, () => 'land')).toEqual([
       { id: 'a', x: 10, y: 20, w: 157, h: 112 },
@@ -195,10 +177,10 @@ describe('footprints', () => {
 describe('ownerFrames', () => {
   it("frames each owner's deck and discard pile, 10 units off their edges", () => {
     const piles = [
-      pile({ id: 'enc', kind: 'encounter', owner: -1, x: 0, y: 30 }),
-      pile({ id: 'encd', kind: 'encounterDiscard', owner: -1, x: 130, y: 30 }),
-      pile({ id: 'deck:p0', kind: 'deck', owner: 0, x: 0, y: 360 }),
-      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 130, y: 360 }),
+      pile('enc', { kind: 'encounter', owner: -1, x: 0, y: 30 }),
+      pile('encd', { kind: 'encounterDiscard', owner: -1, x: 130, y: 30 }),
+      pile('deck:p0', { kind: 'deck', owner: 0, x: 0, y: 360 }),
+      pile('disc:p0', { kind: 'discard', owner: 0, x: 130, y: 360 }),
     ];
     expect(ownerFrames(piles)).toEqual([
       { owner: -1, x: -10, y: 20, w: 262, h: 177 },
@@ -208,19 +190,19 @@ describe('ownerFrames', () => {
 
   it('leaves the out-of-play piles out', () => {
     const piles = [
-      pile({ id: 'deck:p1', kind: 'deck', owner: 1, x: 0, y: 690 }),
-      pile({ id: 'aside:p1', kind: 'aside', owner: 1, x: 900, y: 690 }),
-      pile({ id: 'vic', kind: 'victory', owner: -1, x: 0, y: 30 }),
+      pile('deck:p1', { kind: 'deck', owner: 1, x: 0, y: 690 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 900, y: 690 }),
+      pile('vic', { kind: 'victory', owner: -1, x: 0, y: 30 }),
     ];
     expect(ownerFrames(piles)).toEqual([{ owner: 1, x: -10, y: 680, w: 132, h: 177 }]);
   });
 
   it('frames the side decks and their discard piles with the deck and discard pile', () => {
     const piles = [
-      pile({ id: 'deck:p0', kind: 'deck', owner: 0, x: 0, y: 360 }),
-      pile({ id: 'disc:p0', kind: 'discard', owner: 0, x: 130, y: 360 }),
-      pile({ id: 'side:p0:0', kind: 'sideDeck', owner: 0, x: 260, y: 360, label: 'Invocation' }),
-      pile({ id: 'sided:p0:0', kind: 'sideDiscard', owner: 0, x: 390, y: 360 }),
+      pile('deck:p0', { kind: 'deck', owner: 0, x: 0, y: 360 }),
+      pile('disc:p0', { kind: 'discard', owner: 0, x: 130, y: 360 }),
+      pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 260, y: 360, label: 'Invocation' }),
+      pile('sided:p0:0', { kind: 'sideDiscard', owner: 0, x: 390, y: 360 }),
     ];
     expect(ownerFrames(piles)).toEqual([{ owner: 0, x: -10, y: 350, w: 522, h: 177 }]);
   });
@@ -228,12 +210,12 @@ describe('ownerFrames', () => {
 
 describe('outOfPlayChips', () => {
   const piles = [
-    pile({ id: 'enc', kind: 'encounter', owner: -1 }),
-    pile({ id: 'saside', kind: 'aside', owner: -1, count: 5 }),
-    pile({ id: 'vic', kind: 'victory', owner: -1, count: 0 }),
-    pile({ id: 'deck:p0', kind: 'deck', owner: 0 }),
-    pile({ id: 'aside:p0', kind: 'aside', owner: 0, count: 2 }),
-    pile({ id: 'aside:p1', kind: 'aside', owner: 1, count: 1 }),
+    pile('enc', { kind: 'encounter', owner: -1 }),
+    pile('saside', { kind: 'aside', owner: -1, count: 5 }),
+    pile('vic', { kind: 'victory', owner: -1, count: 0 }),
+    pile('deck:p0', { kind: 'deck', owner: 0 }),
+    pile('aside:p0', { kind: 'aside', owner: 0, count: 2 }),
+    pile('aside:p1', { kind: 'aside', owner: 1, count: 1 }),
   ];
 
   it("gives the villain the victory display, then the scenario's set-aside cards", () => {
@@ -251,7 +233,7 @@ describe('outOfPlayChips', () => {
 
   it('leaves out the piles the table does not have', () => {
     expect(outOfPlayChips(2, piles)).toEqual([]);
-    expect(outOfPlayChips(-1, [pile({ id: 'vic', kind: 'victory', owner: -1 })])).toEqual([
+    expect(outOfPlayChips(-1, [pile('vic', { kind: 'victory', owner: -1, count: 10 })])).toEqual([
       { pile: 'vic', kind: 'victory', label: 'Victory display', count: 10 },
     ]);
   });
@@ -371,20 +353,20 @@ describe('contentWidth', () => {
   const std = (): Size => 'std';
 
   it('reaches the right edge of the last card, pile or frame', () => {
-    const cards = [card({ id: 'a', x: 300 }), card({ id: 'b', x: 1500 })];
+    const cards = [card('a', { x: 300 }), card('b', { x: 1500 })];
     expect(contentWidth(cards, [], std)).toBe(1612);
     // A frame reaches 10 units past its piles.
-    expect(contentWidth([], [pile({ id: 'd', kind: 'deck', x: 130 })], std)).toBe(252);
+    expect(contentWidth([], [pile('d', { kind: 'deck', x: 130 })], std)).toBe(252);
   });
 
   it('leaves out the out-of-play piles and the cards off the table, and is 0 for an empty table', () => {
-    const away = [card({ id: 'h', x: 3000, zone: 'hand' })];
-    const aside = [pile({ id: 'aside:p0', kind: 'aside', x: 3000 })];
+    const away = [card('h', { x: 3000, zone: 'hand' })];
+    const aside = [pile('aside:p0', { kind: 'aside', x: 3000 })];
     expect(contentWidth(away, aside, std)).toBe(0);
   });
 
   it('takes in the turned box of an exhausted card', () => {
-    const turned = contentWidth([card({ x: 0, exhausted: true })], [], std);
+    const turned = contentWidth([card('c', { x: 0, exhausted: true })], [], std);
     expect(turned).toBe(
       Math.ceil(visualBox({ id: 'c', x: 0, y: 0, w: 112, h: 157, exhausted: true }).right),
     );

@@ -3,7 +3,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed, tallTable } from './fixtures.testing';
+import { card, domRect, fakeSession, infoFrom, pile, placed, tallTable } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -142,12 +142,6 @@ function weaponsView(): View {
 /** The seat of the active hand. */
 function activeSeat(): string | undefined {
   return document.querySelector<HTMLElement>('.hand:not(.inactive)')?.dataset.seat;
-}
-
-// A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
-// spread of the rect loses.
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return new DOMRect(left, top, width, height);
 }
 
 // The screen, at zoom 1: the surface 20 px in from the left and 40 px down

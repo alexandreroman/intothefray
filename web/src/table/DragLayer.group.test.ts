@@ -6,7 +6,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed, tallTable } from './fixtures.testing';
+import { card, domRect, fakeSession, infoFrom, pile, placed, tallTable } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -64,12 +64,6 @@ function makeView(cards: TableCard[] = CARDS): View {
     },
     log: [],
   };
-}
-
-// A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
-// spread of the rect loses.
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return new DOMRect(left, top, width, height);
 }
 
 const SURFACE = { left: 20, top: 40 };

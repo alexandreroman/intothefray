@@ -7,7 +7,7 @@ import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { TOUCH_MODE_QUERY } from './touch';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
+import { card, domRect, fakeSession, infoFrom, pile, placed } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -76,33 +76,19 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
   };
 }
 
-function rect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
-}
-
 async function renderTable(view = makeView()) {
   // The visible table, and the menus' width: jsdom lays nothing out.
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement,
   ) {
     if (this.classList.contains('tablewrap')) {
-      return rect(0, 50, 1000, 700);
+      return domRect(0, 50, 1000, 700);
     }
     if (this.classList.contains('table-menu')) {
       // 200 wide, where it is placed.
-      return rect(parseFloat(this.style.left) || 0, parseFloat(this.style.top) || 0, 200, 0);
+      return domRect(parseFloat(this.style.left) || 0, parseFloat(this.style.top) || 0, 200, 0);
     }
-    return rect(0, 0, 0, 0);
+    return domRect(0, 0, 0, 0);
   });
   const session = fakeSession();
   const result = render(Table, { session, view });
@@ -1050,15 +1036,15 @@ describe('the arrow mode', () => {
       this: HTMLElement,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 50, 1000, 700);
+        return domRect(0, 50, 1000, 700);
       }
       if (this.classList.contains('arrowhint')) {
-        return rect(0, 0, 300, 34);
+        return domRect(0, 0, 300, 34);
       }
       if (this.dataset.id === 'mine') {
-        return rect(400, 400, 100, 140);
+        return domRect(400, 400, 100, 140);
       }
-      return rect(0, 0, 0, 0);
+      return domRect(0, 0, 0, 0);
     });
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));

@@ -13,18 +13,9 @@ import {
   stackOf,
   type DragSource,
   type DropRect,
-  type Rect,
 } from './drag';
 import { spreadRows } from './rows';
-import { card } from './fixtures.testing';
-
-function rect(left: number, top: number, width: number, height: number): Rect {
-  return { left, top, right: left + width, bottom: top + height };
-}
-
-function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 10, ...extra };
-}
+import { card, pile, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(

@@ -10,7 +10,7 @@ import tableSource from './Table.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
-import { fakeSession, infoFrom } from './fixtures.testing';
+import { card, domRect, fakeSession, infoFrom, pile } from './fixtures.testing';
 import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
@@ -83,14 +83,6 @@ const FACES: Record<string, Partial<PackFace>[]> = {
 
 const infoOf = infoFrom(FACES);
 
-function card(id: string, extra: Partial<TableCard>): TableCard {
-  return { id, face: 0, back: 'player', owner: -1, zone: 'table', x: 0, y: 0, z: 1, ...extra };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 3, ...extra };
-}
-
 /**
  * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
  * lays them out: the villain's row at the top, Alex's row from 380, then
@@ -98,8 +90,8 @@ function pile(id: string, extra: Partial<PileView>): PileView {
  */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
-    card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
-    card('s', { code: '01097', back: 'encounter', x: 460, y: 30 }),
+    card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
+    card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
     card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
     card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
@@ -605,7 +597,7 @@ describe('Table', () => {
   it("captions a side deck's own back on its pile and on its face-down cards", async () => {
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 630 }),
         // Its deck is not on the table: its back has no caption.
         card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 630 }),
@@ -641,7 +633,7 @@ describe('Table', () => {
     localStorage.setItem('itf-view', 'focus');
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         // In the villain row, which shows; its side deck lies in Sam's row, which does not.
         card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 30 }),
       ],
@@ -672,16 +664,16 @@ describe('Table', () => {
   });
 
   it('moves the Focus panel to a corner clear of the hovered card', async () => {
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 0, 1000, 800);
+        return domRect(0, 0, 1000, 800);
       }
       // Rhino lies under the bottom right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 112, 157) : rect(0, 0, 0, 0);
+      return (this as HTMLElement).dataset.id === 'v'
+        ? domRect(800, 500, 112, 157)
+        : domRect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -705,15 +697,13 @@ describe('Table', () => {
   });
 
   it('stays put as the pointer moves: only the hovered card counts', async () => {
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 0, 1000, 800);
+        return domRect(0, 0, 1000, 800);
       }
-      return rect(0, 0, 10, 10);
+      return domRect(0, 0, 10, 10);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -1228,7 +1218,7 @@ describe('Table view modes', () => {
     });
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         card('b', { code: '01001', owner: 1, x: 300, y: 410 }),
         card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
       ],
@@ -1397,17 +1387,7 @@ describe('Table view modes', () => {
       const top = inSurface ? Number.parseFloat(style.top) || 0 : 0;
       const width = inSurface ? Number.parseFloat(style.width) || 0 : 1000;
       const height = inSurface ? Number.parseFloat(style.height) || 0 : 900;
-      return {
-        left,
-        top,
-        width,
-        height,
-        right: left + width,
-        bottom: top + height,
-        x: left,
-        y: top,
-        toJSON: () => ({}),
-      } as DOMRect;
+      return domRect(left, top, width, height);
     });
     const session = fakeSession();
     render(Table, { session, view: makeView() });
@@ -1441,8 +1421,8 @@ describe('several decks', () => {
   function makeTwoDeckView(): View {
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
-        card('s', { code: '01097', back: 'encounter', x: 460, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
+        card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
         card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
         card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
         card('c', { code: '01001', owner: 2, x: 300, y: 850 }),
@@ -1548,16 +1528,16 @@ describe('several decks', () => {
   });
 
   it('keeps the Focus panel off the bottom left corner while the selector shows in the All view', async () => {
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 0, 1000, 800);
+        return domRect(0, 0, 1000, 800);
       }
       // Rhino lies under the bottom right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 112, 157) : rect(0, 0, 0, 0);
+      return (this as HTMLElement).dataset.id === 'v'
+        ? domRect(800, 500, 112, 157)
+        : domRect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);

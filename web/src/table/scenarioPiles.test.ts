@@ -6,24 +6,11 @@ import { pileLabel } from './boxes';
 import { dropAction, pileTargets, sourceOf } from './drag';
 import { pileBack } from './face';
 import { chipsByFrame, footprints, ownerFrames, pileBox } from './layout';
+import { card, pile } from './fixtures.testing';
 
-function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 5, ...extra };
-}
-
-function card(id: string, extra: Partial<CardView> = {}): CardView {
-  return {
-    id,
-    code: '01001',
-    face: 0,
-    back: 'encounter',
-    owner: -1,
-    zone: 'pile',
-    x: 0,
-    y: 0,
-    z: 0,
-    ...extra,
-  };
+/** An encounter card nobody owns, in one of the piles. */
+function encounterCard(id: string, extra: Partial<CardView> = {}): CardView {
+  return card(id, { back: 'encounter', owner: -1, zone: 'pile', z: 0, ...extra });
 }
 
 /**
@@ -88,7 +75,7 @@ function makeView(piles: PileView[] = WRECKER): View {
       modulars: [],
     },
     table: {
-      cards: [card('d1', { home: 'enc:wrecker' })],
+      cards: [encounterCard('d1', { home: 'enc:wrecker' })],
       piles,
       hands: { p0: [] },
       stages: [],
@@ -240,7 +227,9 @@ describe('scenarioDeck', () => {
       pile: 'sdeck:x',
       n: 1,
     });
-    expect(discardPileOf(card('c', { home: 'sdeck:x' }), view.table?.piles ?? [])).toBe('sdisc:x');
+    expect(discardPileOf(encounterCard('c', { home: 'sdeck:x' }), view.table?.piles ?? [])).toBe(
+      'sdisc:x',
+    );
   });
 
   it('discards onto the encounter discard pile when it names it', () => {
@@ -257,14 +246,16 @@ describe('scenarioDeck', () => {
     const items = menu('sdeck:weapons', view);
     expect(run(items, 'discard1')).toEqual({ kind: 'discardTop', pile: 'sdeck:weapons', n: 1 });
     expect(items.map((it) => it.id)).toContain('discardTop');
-    expect(discardPileOf(card('c', { home: 'sdeck:weapons' }), view.table?.piles ?? [])).toBe(
-      'encd',
-    );
+    expect(
+      discardPileOf(encounterCard('c', { home: 'sdeck:weapons' }), view.table?.piles ?? []),
+    ).toBe('encd');
   });
 
   it('a card of a deck without a discard is never discarded', () => {
-    expect(discardPileOf(card('c', { home: 'sdeck:weapons' }), WRECKER)).toBeNull();
-    expect(discardPileOf(card('c', { home: 'enc:wrecker' }), WRECKER)).toBe('encd:wrecker');
+    expect(discardPileOf(encounterCard('c', { home: 'sdeck:weapons' }), WRECKER)).toBeNull();
+    expect(discardPileOf(encounterCard('c', { home: 'enc:wrecker' }), WRECKER)).toBe(
+      'encd:wrecker',
+    );
   });
 });
 
@@ -296,7 +287,7 @@ describe('drop targets of a scenario card', () => {
     const view = makeView();
     const table = view.table && {
       ...view.table,
-      cards: [card('d1', { home: 'enc:wrecker', zone: 'table' })],
+      cards: [encounterCard('d1', { home: 'enc:wrecker', zone: 'table' })],
     };
     const source = sourceOf({ kind: 'card', id: 'd1' }, { ...view, table });
     if (!source) {

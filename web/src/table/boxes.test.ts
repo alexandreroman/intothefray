@@ -1,12 +1,10 @@
 import { canShuffleIn, pileLabel, tileActions, type TileContext } from './boxes';
 import type { CardView, PileView, View } from '../lib/types';
+import { card, pile } from './fixtures.testing';
 
-function card(id: string, owner: number): CardView {
-  return { id, code: '01001', face: 0, back: 'player', owner, zone: 'pile', x: 0, y: 0, z: 1 };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 1, ...extra };
+/** A card of that seat's, in one of the piles. */
+function pileCard(id: string, owner: number): CardView {
+  return card(id, { owner, zone: 'pile' });
 }
 
 const PILES: PileView[] = [
@@ -68,13 +66,13 @@ function pileOf(id: string): PileView {
 describe('a player with two decks', () => {
   it('own pile box for second seat', () => {
     const view = makeView();
-    const tiles = tileActions(card('c', 1), pileOf('deck:p1'), contextOf(view));
+    const tiles = tileActions(pileCard('c', 1), pileOf('deck:p1'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'discard', 'bottom']);
     // Played to the row of its own deck, not the selected one's, face up though its deck hides it.
     // 40 past p1's deck at 0–112, in its row.
     expect(tiles[1]?.run()).toEqual({ kind: 'play', card: 'c', x: 160, y: 330, faceUp: true });
 
-    const aside = tileActions(card('a', 1), pileOf('aside:p1'), contextOf(view));
+    const aside = tileActions(pileCard('a', 1), pileOf('aside:p1'), contextOf(view));
     expect(aside.map((tile) => tile.id)).toEqual(['play', 'discard', 'bottom', 'shuffle']);
     expect(canShuffleIn(pileOf('aside:p1'), [0, 1], WITH_ENC)).toBe(true);
     // Without an encounter deck on the table there is nothing to shuffle into.
@@ -84,7 +82,7 @@ describe('a player with two decks', () => {
 
   it('plays an own card of a shared pile to the row of its own deck', () => {
     const view = makeView();
-    const won = card('v', 1);
+    const won = pileCard('v', 1);
     view.table!.cards = [won];
     const victory = pile('vic', { kind: 'victory', cards: ['v'] });
     const tiles = tileActions(won, victory, contextOf(view));
@@ -95,8 +93,8 @@ describe('a player with two decks', () => {
 
   it("keeps another player's deck and set-aside cards out", () => {
     const view = makeView();
-    expect(tileActions(card('s', 2), pileOf('deck:p2'), contextOf(view))).toEqual([]);
-    expect(tileActions(card('s', 2), pileOf('aside:p2'), contextOf(view))).toEqual([]);
+    expect(tileActions(pileCard('s', 2), pileOf('deck:p2'), contextOf(view))).toEqual([]);
+    expect(tileActions(pileCard('s', 2), pileOf('aside:p2'), contextOf(view))).toEqual([]);
     expect(canShuffleIn(pileOf('aside:p2'), [0, 1], WITH_ENC)).toBe(false);
     expect(pileLabel(pileOf('deck:p2'), view)).toBe("Sam's deck");
   });
@@ -127,27 +125,27 @@ describe('a discard pile box', () => {
 
   it('shuffles an own card into its own deck from the second seat', () => {
     const view = viewWithDiscards();
-    const tiles = tileActions(card('d', 1), discardOf('disc:p1'), contextOf(view));
+    const tiles = tileActions(pileCard('d', 1), discardOf('disc:p1'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'shuffle']);
     expect(tiles[2]?.run()).toEqual({ kind: 'toDeck', card: 'd', where: 'shuffle' });
   });
 
   it("does not shuffle another player's card", () => {
     const view = viewWithDiscards();
-    const tiles = tileActions(card('s', 2), discardOf('disc:p2'), contextOf(view));
+    const tiles = tileActions(pileCard('s', 2), discardOf('disc:p2'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['play']);
   });
 
   it('shuffles an encounter card into the encounter deck', () => {
     const view = viewWithDiscards();
-    const tiles = tileActions(card('e', -1), discardOf('encd'), contextOf(view));
+    const tiles = tileActions(pileCard('e', -1), discardOf('encd'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['play', 'shuffle']);
     expect(tiles[1]?.run()).toEqual({ kind: 'toDeck', card: 'e', where: 'shuffle' });
   });
 
   it('does not shuffle without a home deck', () => {
     const view = viewWithDiscards(false);
-    const tiles = tileActions(card('e', -1), discardOf('encd'), contextOf(view));
+    const tiles = tileActions(pileCard('e', -1), discardOf('encd'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['play']);
   });
 });
@@ -184,7 +182,7 @@ describe('side decks', () => {
   }
 
   function sideCard(id: string, owner: number, home: string): CardView {
-    return { ...card(id, owner), home };
+    return { ...pileCard(id, owner), home };
   }
 
   it('names the side decks and their discard piles after their label', () => {
