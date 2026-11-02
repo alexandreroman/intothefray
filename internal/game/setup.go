@@ -298,7 +298,8 @@ func (b *tableBuilder) pushToPile(pileID string, c *Card) {
 	b.table.pushOnPile(b.table.Piles[pileID], c)
 }
 
-// placeOnTable puts a new card on the table.
+// placeOnTable puts a new card on the table, face up on the given face, with
+// no tokens: players place the starting threat by hand.
 func (b *tableBuilder) placeOnTable(c *Card, face int, x, y int) {
 	c.Face = face
 	b.table.placeOnTable(c, x, y)
@@ -741,9 +742,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 		if err != nil {
 			return nil, err
 		}
-		if err := b.placeFace(c, def, top.Face, x, rowY(villainRow)); err != nil {
-			return nil, err
-		}
+		b.placeOnTable(c, top.Face, x, rowY(villainRow))
 		stage.Current = c.ID
 		stage.Villain = len(def.Faces) > 0 && def.Faces[0].Type == faceTypeVillain
 		current = c
@@ -775,9 +774,7 @@ func (b *tableBuilder) putInPlay(ref pack.FaceRef, home string) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := b.placeFace(c, def, ref.Face, x, rowY(villainRow)); err != nil {
-		return nil, err
-	}
+	b.placeOnTable(c, ref.Face, x, rowY(villainRow))
 	return c, nil
 }
 
@@ -826,16 +823,6 @@ func firstPlayerSpot(identitySize pack.Size, x, y int) Point {
 // ceilToGrid rounds a positive table coordinate up to the grid.
 func ceilToGrid(v int) int {
 	return (v + gridSize - 1) / gridSize * gridSize
-}
-
-// placeFace puts a new encounter card on the table, face up on the given
-// face, with no tokens: players place the starting threat by hand.
-func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
-	if face < 0 || face >= len(def.Faces) {
-		return invalid("card %s has no face %d", def.Code, face)
-	}
-	b.placeOnTable(c, face, x, y)
-	return nil
 }
 
 // setupPlayer creates the identity, the nemesis cards, the obligation, the

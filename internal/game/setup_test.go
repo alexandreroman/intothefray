@@ -601,23 +601,20 @@ func TestSetupKlawSideSchemeStaysInEncounterDeck(t *testing.T) {
 	}
 }
 
-// TestSetupPlacesNoStartingThreat checks that a card the setup places carries
-// no tokens, even when its face prints a starting threat: players place all
-// threat by hand.
+// TestSetupPlacesNoStartingThreat checks that no card the setup places
+// carries tokens, though main schemes print a starting threat: players place
+// all threat by hand.
 func TestSetupPlacesNoStartingThreat(t *testing.T) {
 	cat := newCatalog(t)
-	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(3)}
-
-	// 01108 prints a starting threat of 2 per player.
-	c, def, err := b.newEncounterCard("01108")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := b.placeFace(c, def, 0, 0, 0); err != nil {
-		t.Fatal(err)
-	}
-	if len(c.Tokens) != 0 {
-		t.Errorf("tokens = %v, want none", c.Tokens)
+	for _, scenario := range []string{"rhino", "klaw"} {
+		t.Run(scenario, func(t *testing.T) {
+			table := startedGame(t, DefaultConfig(cat, scenario)).Table
+			for _, id := range slices.Sorted(maps.Keys(table.Cards)) {
+				if c := table.Cards[id]; c.Zone == ZoneTable && len(c.Tokens) != 0 {
+					t.Errorf("card %s (%s) carries tokens %v, want none", id, c.Code, c.Tokens)
+				}
+			}
+		})
 	}
 }
 
