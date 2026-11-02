@@ -258,10 +258,12 @@ func (s *Store) Online(ctx context.Context, gameID string, now time.Time) (map[s
 
 // Subscribe receives the events of every game. The returned function stops
 // the subscription and closes the channel; the channel also closes when ctx
-// ends, releasing the Redis connection. Events are handed to the reader one
-// at a time, so a reader that stops reading stalls the subscription until it
-// is closed. The subscription survives a lost connection: once it is back,
-// the reader gets an Event with Resync set.
+// ends, releasing the Redis connection. A reader that falls behind loses
+// events: go-redis buffers 100 messages and drops one it cannot hand over
+// within a minute, with no Resync to tell. The server's online rounds send
+// every local game again, which heals a lost update. The subscription
+// survives a lost connection: once it is back, the reader gets an Event with
+// Resync set.
 func (s *Store) Subscribe(ctx context.Context) (<-chan Event, func() error, error) {
 	sub := s.rdb.PSubscribe(ctx, eventsPattern)
 	// Wait for the subscription to be active so that an event published
