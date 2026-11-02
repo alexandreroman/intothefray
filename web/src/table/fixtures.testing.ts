@@ -59,7 +59,7 @@ export function seated(
 }
 
 /** The fields of a view a test gives: `table` holds only the table's fields it changes. */
-export type ViewFields = Partial<Omit<View, 'table'>> & { table?: Partial<TableView> };
+type ViewFields = Partial<Omit<View, 'table'>> & { table?: Partial<TableView> };
 
 /**
  * Rhino in play, seen by Alex (colour 0, the host, p0) with Sam (colour 1, p1) at the table, their
