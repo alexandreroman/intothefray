@@ -28,7 +28,7 @@ export function loadIndex(): Promise<Index> {
   return indexPromise;
 }
 
-/** Mirrors aliasFace in internal/pack/catalog.go. */
+/** Mirrors AliasFace in internal/pack/catalog.go. */
 function aliasFace(alias: string, faceCount: number): number {
   if (faceCount === 1 || !FACE_CODE.test(alias)) {
     return 0;
