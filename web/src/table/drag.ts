@@ -2,6 +2,7 @@
 // dropped, and the action a drop sends. Pure helpers; DragLayer.svelte follows
 // the pointer, measures the screen and calls them.
 
+import { byId } from '../lib/byId';
 import {
   markerPoint,
   type Action,
@@ -387,7 +388,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       return at ? { kind: 'marker', name: element.name, ...at } : null;
     }
     case 'card': {
-      const card = table.cards.find((c) => c.id === element.id);
+      const card = byId(table.cards).get(element.id);
       if (card?.zone !== 'table') {
         return null;
       }
@@ -404,7 +405,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
       return null;
     }
     case 'pile': {
-      const pile = table.piles.find((p) => p.id === element.id);
+      const pile = byId(table.piles).get(element.id);
       if (!pile || pile.count === 0) {
         return null;
       }

@@ -16,6 +16,7 @@
   import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
+  import { byId } from '../lib/byId';
   import { gameCards, knownCard, loadGameCards, loadIndex } from '../lib/catalog';
   import { storedLang } from '../lib/lang';
   import { localizedFace, localizedName } from '../lib/localize';
@@ -255,7 +256,7 @@
 
   const cards = $derived(view.table?.cards ?? []);
   const piles = $derived(view.table?.piles ?? []);
-  const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
+  const cardsById = $derived(byId(cards));
 
   // ---- The viewer's decks ----
 
@@ -282,10 +283,15 @@
     if (pile.topFaceUp && taken.includes(null)) {
       return undefined;
     }
-    const topId = (pile.cards ?? [])
-      .filter((id) => !taken.includes(id) && !motion.flying.has(id))
-      .at(-1);
-    return topId === undefined ? undefined : cardsById.get(topId);
+    // From the top down, the first card neither taken nor flying.
+    const listed = pile.cards ?? [];
+    for (let i = listed.length - 1; i >= 0; i--) {
+      const id = listed[i];
+      if (id !== undefined && !taken.includes(id) && !motion.flying.has(id)) {
+        return cardsById.get(id);
+      }
+    }
+    return undefined;
   }
 
   /** What pointing at a pile does to the preview: it shows its top card, and a deck's back clears it. */
@@ -596,7 +602,7 @@
   /** The face the preview shows; none for a card back, which tells nothing more on the table. */
   function previewOf(previewed: TableElement | null): Preview | null {
     if (previewed?.kind === 'pile') {
-      const pile = piles.find((p) => p.id === previewed.id);
+      const pile = byId(piles).get(previewed.id);
       const top = pile && pile.count > 0 ? topOf(pile) : undefined;
       return top ? previewOfCard(top) : null;
     }
@@ -921,7 +927,7 @@
    */
   function rehoverPile(element: HTMLElement): void {
     const id = element.dataset.id;
-    const pile = piles.find((p) => p.id === id);
+    const pile = id === undefined ? undefined : byId(piles).get(id);
     const hovered = interaction.hovered;
     if (!pile || element.classList.contains('inert')) {
       return;
@@ -1087,7 +1093,7 @@
   const contextHeader = $derived.by((): ContextHeader | null => {
     const element = interaction.contextMenu?.element;
     if (element?.kind === 'pile') {
-      const pile = piles.find((p) => p.id === element.id);
+      const pile = byId(piles).get(element.id);
       return pile ? pileHeader(pile, view) : null;
     }
     const card = element ? cardsById.get(element.id) : undefined;
@@ -1123,7 +1129,7 @@
     if (contextContentOf(element) === null) {
       return;
     }
-    const pile = element.kind === 'pile' ? piles.find((p) => p.id === element.id) : undefined;
+    const pile = element.kind === 'pile' ? byId(piles).get(element.id) : undefined;
     interaction.openContextMenu(element, at, pile ? previewOfPile(pile) : 'show');
   }
 
@@ -1193,7 +1199,7 @@
 
   // The pile can shrink while the question is open (another player deals from
   // it): the answer never asks for more cards than it holds, the card revealed on it included.
-  const askedPile = $derived(asking ? piles.find((pile) => pile.id === asking?.pile) : undefined);
+  const askedPile = $derived(asking ? byId(piles).get(asking.pile) : undefined);
   const askedMax = $derived(
     asking && askedPile && view.table ? Math.min(asking.max, deckCount(askedPile, view.table)) : 0,
   );
@@ -1278,12 +1284,12 @@
     const table = view.table;
     const opened = table?.private;
     if (opened && !closingView) {
-      const pile = piles.find((p) => p.id === opened.pile);
+      const pile = byId(piles).get(opened.pile);
       return pile ? { kind: 'pile', pile, mode: opened.mode, cards: opened.cards } : null;
     }
     if (localBox?.kind === 'browse') {
       const id = localBox.pile;
-      const pile = piles.find((p) => p.id === id);
+      const pile = byId(piles).get(id);
       // Public piles list their cards bottom to top.
       return pile
         ? { kind: 'pile', pile, mode: 'browse', cards: [...(pile.cards ?? [])].reverse() }

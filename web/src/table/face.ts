@@ -1,3 +1,4 @@
+import { byId } from '../lib/byId';
 import type { Back, CardView, PileView } from '../lib/types';
 import { sideLabel } from './actions';
 
@@ -31,6 +32,6 @@ export function pileCaption(pile: PileView): string | undefined {
  * that deck has its own back, else none.
  */
 export function backCaption(card: CardView, piles: readonly PileView[]): string | undefined {
-  const home = piles.find((pile) => pile.id === card.home);
+  const home = card.home === undefined ? undefined : byId(piles).get(card.home);
   return home ? pileCaption(home) : undefined;
 }
