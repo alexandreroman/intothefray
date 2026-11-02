@@ -1990,6 +1990,7 @@
         readOnly={view.you.role !== 'player'}
         {selected}
         act={actInBox}
+        lastError={session.lastError}
         onclose={closeBox}
       />
     {/key}

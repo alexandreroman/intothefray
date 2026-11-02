@@ -111,6 +111,11 @@ async function renderTable(view = makeView()) {
   return {
     session,
     rerender: (next: View) => result.rerender({ session, view: next }),
+    /** The server refuses the action of that id; the view stays as it is. */
+    refuse: async (id: number, current: View) => {
+      session.lastError = { id, code: 'invalid', message: 'refused' };
+      await result.rerender({ session: { ...session }, view: current });
+    },
     unmount: () => result.unmount(),
   };
 }
@@ -335,6 +340,42 @@ describe('CardBox', () => {
     expect(document.querySelector('.tile-ghost')).toBeNull();
     // The new order stays while the server answers.
     expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+  });
+
+  /** Drags Web-Shooter, the top card, to the end of the look box. */
+  async function reorderWebShooterLast(): Promise<void> {
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    await fireEvent.pointerDown(image, { clientX: 60, clientY: 150, button: 0 });
+    await fireEvent.pointerMove(window, { clientX: 400, clientY: 150, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 400, clientY: 150 });
+  }
+
+  it('shows the old order at once when a reorder is not sent', async () => {
+    const { session } = await renderTable(makeView({ private: LOOK }));
+    session.act.mockReturnValue(null as never);
+    layOutTiles();
+
+    await reorderWebShooterLast();
+
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Backflip']);
+  });
+
+  it('shows the server order at once when the server refuses a reorder', async () => {
+    const view = makeView({ private: LOOK });
+    const { session, refuse } = await renderTable(view);
+    session.act.mockReturnValue(7 as never);
+    layOutTiles();
+
+    await reorderWebShooterLast();
+    expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+
+    // An error answering another action changes nothing.
+    await refuse(6, view);
+    expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+
+    await refuse(7, view);
+    expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Backflip']);
   });
 
   it('a reorder starts past the table drag threshold', async () => {

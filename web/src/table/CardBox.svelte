@@ -12,7 +12,16 @@
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
   import { scrollFade } from '../lib/scrollFade';
-  import type { Action, CardView, PackFace, PileView, Point, Size, View } from '../lib/types';
+  import type {
+    Action,
+    CardView,
+    PackFace,
+    PileView,
+    Point,
+    SessionError,
+    Size,
+    View,
+  } from '../lib/types';
   import {
     canShuffleIn,
     compareCardNumbers,
@@ -40,6 +49,7 @@
     readOnly,
     selected,
     act,
+    lastError,
     onclose,
   }: {
     box: ShownBox;
@@ -52,6 +62,8 @@
     /** The viewer's selected deck: a card of a pile that is not theirs is played to its row. */
     selected: number | null;
     act: (action: Action) => number | null;
+    /** The server's last error: one answering the reorder sent drops its order. */
+    lastError: SessionError | null;
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
   } = $props();
@@ -358,16 +370,29 @@
 
   let drag = $state<TileDrag | null>(null);
 
-  // The order sent to the server, shown until its new view arrives (for the cards it was sent from).
-  let pending = $state.raw<{ order: string[]; from: readonly string[] } | null>(null);
+  /**
+   * The order sent to the server, shown until its new view arrives (for the
+   * cards it was sent from), or the server refuses the action of that id.
+   */
+  let pending = $state.raw<{ order: string[]; from: readonly string[]; action: number } | null>(
+    null,
+  );
+  // An answer that never comes: the box shows the server's order again.
   let pendingTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const pendingShown = $derived(
+    pending !== null &&
+      box.kind === 'pile' &&
+      pending.from === box.cards &&
+      lastError?.id !== pending.action,
+  );
 
   const shownTiles = $derived.by((): Tile[] => {
     if (drag?.lifted) {
       const byKey = new Map(matching.map((t) => [t.key, t]));
       return drag.order.flatMap((key) => byKey.get(key) ?? []);
     }
-    if (pending && box.kind === 'pile' && pending.from === box.cards) {
+    if (pending && pendingShown) {
       const order = pending.order;
       return [...matching].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
     }
@@ -538,10 +563,13 @@
     }
     let next = 0;
     const order = all.map((id) => (shown.includes(id) ? (shown[next++] ?? id) : id));
-    pending = { order, from: box.cards };
+    const sent = act({ kind: 'reorderTop', pile: box.pile.id, cards: order });
+    if (sent === null) {
+      return;
+    }
+    pending = { order, from: box.cards, action: sent };
     clearTimeout(pendingTimer);
     pendingTimer = setTimeout(() => (pending = null), LANDING_MS);
-    act({ kind: 'reorderTop', pile: box.pile.id, cards: order });
   }
 
   // ---- Footer ----
