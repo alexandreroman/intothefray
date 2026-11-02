@@ -148,9 +148,12 @@ and everything under `/assets/` and `/packs/` are left out: a missing
 asset or pack answers 404.
 
 `make dev` and `make app-up` both bind ports 9000 and 8080: stop one
-before starting the other. The containers publish Redis and the server
-on `127.0.0.1` only, and the web port on every interface, so a phone on
-the local network can open the app at the machine's address.
+before starting the other. Under `make app-up`, the containers publish
+Redis and the server on `127.0.0.1` only, and the web port on every
+interface, so a phone on the local network can open the app at the
+machine's address. Under `make dev`, Redis and the web port are
+published the same way, but the server runs on the host through Air
+and listens on every interface.
 
 ### Casper workspaces
 
