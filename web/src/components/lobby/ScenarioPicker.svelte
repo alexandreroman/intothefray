@@ -42,7 +42,7 @@
     { value: 'expert', label: 'Expert' },
   ];
   const SETTINGS_SLIDE_MS = 250;
-  // The Add a set menu's gap under its button, and its height cap, as .menu's max-height.
+  // The Add a set menu's gap under its button, and its height cap: it scrolls inside beyond it.
   const MENU_GAP = 4;
   const MENU_MAX_HEIGHT = 320;
 
@@ -479,9 +479,7 @@
                     bind:this={menu}
                     style:left="{menuPlace?.left ?? 0}px"
                     style:top="{menuPlace?.top ?? 0}px"
-                    style:max-height={menuPlace?.maxHeight == null
-                      ? undefined
-                      : `${menuPlace.maxHeight}px`}
+                    style:max-height="{menuPlace?.maxHeight ?? MENU_MAX_HEIGHT}px"
                   >
                     {#each modularGroups as group (group.pack.code)}
                       {@const headingId = `${uid}-pack-${group.pack.code}`}
@@ -829,7 +827,6 @@
     position: absolute;
     z-index: 10;
     visibility: hidden;
-    max-height: 320px;
     overflow-y: auto;
     background: var(--panel-2);
     border: 1px solid var(--line-strong);
