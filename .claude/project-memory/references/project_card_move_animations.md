@@ -29,9 +29,10 @@ type: project
 - The diff (`animate.ts` `diffViews`) works from the two views, so undo
   replays the same motions backwards. Only what the views cannot tell
   comes from the new history lines: a card put at the bottom of a deck, a
-  shuffle, and the colour of the change glow (the actor of the last new
-  line). The client matches the server's English wording of those lines
-  (`internal/game/narrate.go` names the verbs).
+  shuffle, whether a line is an undo, and the colour of the change glow
+  (the actor of the last new line). The client matches the server's
+  English wording of those lines (`internal/game/narrate.go` names the
+  verbs).
 - The viewer's own drop never animates twice (`OwnDrop`): on the table
   or in the hand it already lies where it went; onto a pile, each of
   its cards flies there from where it was let go (its landed ghost).
