@@ -7,3 +7,9 @@
  * the window and whose bottom controls gather in one bar (Table.svelte).
  */
 export const SMALL_SCREEN_QUERY = '(max-width: 600px), (max-height: 500px)';
+
+/** A narrow screen, up to 900px wide: the table's side column goes, the history is not shown. */
+export const NARROW_SCREEN_QUERY = '(max-width: 900px)';
+
+/** A phone held upright, up to 600px wide: the table zooms further out and fits its width. */
+export const PHONE_QUERY = '(max-width: 600px)';

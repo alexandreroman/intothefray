@@ -19,7 +19,7 @@
   import { localizedFace, localizedName } from '../lib/localize';
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
-  import { SMALL_SCREEN_QUERY } from '../lib/screen';
+  import { NARROW_SCREEN_QUERY, PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -452,9 +452,9 @@
 
   // The breakpoints of the @media rules below. On a narrow screen the side
   // column goes: the history is not shown.
-  const narrow = new MediaQuery('max-width: 900px');
+  const narrow = new MediaQuery(NARROW_SCREEN_QUERY);
   // A phone held upright: the table zooms further out, and fits its width until the viewer zooms.
-  const phone = new MediaQuery('max-width: 600px');
+  const phone = new MediaQuery(PHONE_QUERY);
   // A phone either way up: the top bar floats over the play area, the hand's cards follow the
   // window, and the controls at the bottom right gather in one bar above the resting hand.
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
