@@ -363,13 +363,8 @@ are used as they are.
 
 On `main` only, for a push or a manual run (`workflow_dispatch`), the
 `web` job also builds the frontend for GitHub Pages in place of its plain
-build, and once the three checks have passed, three more jobs run in turn
-(see Deployment):
-
-- `publish`: pushes the image to GHCR, tagged with the commit SHA and
-  `main`;
-- `pages`: deploys the frontend that the `web` job built;
-- `deploy-backend`: asks the infra repository to deploy the image.
+build, and once the three checks have passed, three more jobs run in turn,
+`publish`, `pages` and `deploy-backend` (see Deployment).
 
 ## Deployment
 
