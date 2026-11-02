@@ -127,7 +127,7 @@
     TABLE_EDGE_BOTTOM,
     type Corner,
   } from './focus';
-  import SidePanel from './SidePanel.svelte';
+  import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
   import { TOUCH_MODE_QUERY } from './touch';
   import ZoomControl from './ZoomControl.svelte';
@@ -1845,8 +1845,8 @@
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
         <button
           class="btn-ghost"
-          aria-label="Undo last action"
-          data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
+          aria-label={UNDO_TIP}
+          data-tip={view.canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
           aria-disabled={!view.canUndo}
           onclick={() => {
             if (view.canUndo) {
