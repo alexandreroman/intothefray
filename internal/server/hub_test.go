@@ -2,11 +2,9 @@ package server
 
 import (
 	"context"
-	"errors"
 	"io"
 	"log/slog"
 	"maps"
-	"net"
 	"net/http/httptest"
 	"slices"
 	"strings"
@@ -21,6 +19,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/internal/store/storetest"
 	"github.com/alexandreroman/intothefray/packs"
 )
 
@@ -770,41 +769,9 @@ func TestTouchKeepsConnectedGamesAlive(t *testing.T) {
 	}
 }
 
-// restartableClient returns a client of mr and a function that restarts mr.
-// miniredis listens before it registers its commands, so a client that
-// redials during the restart can reach a server that answers every command,
-// PSUBSCRIBE included, with "unknown command". The client refuses to dial
-// while the restart is in progress, as if the server were still down.
-func restartableClient(t *testing.T, mr *miniredis.Miniredis) (*redis.Client, func()) {
-	t.Helper()
-
-	var down atomic.Bool
-	rdb := redis.NewClient(&redis.Options{
-		Addr: mr.Addr(),
-		Dialer: func(ctx context.Context, network, addr string) (net.Conn, error) {
-			if down.Load() {
-				return nil, errors.New("redis is restarting")
-			}
-			return (&net.Dialer{}).DialContext(ctx, network, addr)
-		},
-	})
-	t.Cleanup(func() { _ = rdb.Close() })
-
-	restart := func() {
-		t.Helper()
-		down.Store(true)
-		mr.Close()
-		if err := mr.Restart(); err != nil {
-			t.Fatalf("restart Redis: %v", err)
-		}
-		down.Store(false)
-	}
-	return rdb, restart
-}
-
 func TestReconnectResyncsViewers(t *testing.T) {
 	mr := miniredis.RunT(t)
-	rdb, restart := restartableClient(t, mr)
+	rdb, restart := storetest.RestartableClient(t, mr)
 	ts := startInstance(t, mr, func(s *Server) {
 		s.deps.Store = store.New(rdb, time.Hour)
 	})
