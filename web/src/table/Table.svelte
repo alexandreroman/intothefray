@@ -983,11 +983,10 @@
     // flip?): reading the catalog state here recomputes the items once it loads.
     void catalog;
     const hovered = interaction.hovered;
-    const role = view.you.role;
-    if (!hovered || role === undefined) {
+    if (!hovered) {
       return [];
     }
-    return actionsFor(hovered, view, { areas: view.you.areas, role }, lang, interaction.group);
+    return actionsFor(hovered, view, lang, interaction.group);
   });
 
   // ---- The arrow mode's hint ----
@@ -1068,17 +1067,10 @@
   type ContextContent = { entries: ContextEntry[]; note?: string };
 
   function contextContentOf(element: TableElement): ContextContent | null {
-    const role = view.you.role;
-    if (role === undefined || element.kind === 'hand') {
+    if (element.kind === 'hand') {
       return null;
     }
-    const items = actionsFor(
-      element,
-      view,
-      { areas: view.you.areas, role },
-      lang,
-      interaction.group,
-    );
+    const items = actionsFor(element, view, lang, interaction.group);
     if (!Array.isArray(items)) {
       return { entries: [], note: items.text };
     }

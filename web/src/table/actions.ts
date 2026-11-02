@@ -7,9 +7,9 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { isOutOfPlay } from './layout';
-import { asideId, deckId, discardId, seatOf, seatPlayer } from './seats';
+import { asideId, deckId, discardId, ownSeats, seatPlayer } from './seats';
 import { groupUnits, MAX_COUNT } from './selection';
-import type { Action, Area, CardView, PileView, Role, Stage, TableView, View } from '../lib/types';
+import type { Action, CardView, PileView, Stage, TableView, View } from '../lib/types';
 
 /**
  * What the actions are for: a table card, a pile or a card of the viewer's
@@ -171,26 +171,26 @@ interface Context {
 }
 
 /**
- * Returns the actions the viewer may take on el, or the text to show instead
- * when the element belongs to someone else. Hand cards (their keys are
- * handled by keys.ts), empty piles and elements no longer on the table get
- * nothing. Spectators only look: see spectatorActions. On a card of the
- * selected group, Discard and Move to take the whole group (spec 2).
+ * Returns the actions the viewer (view.you) may take on el, or the text to
+ * show instead when the element belongs to someone else. Hand cards (their
+ * keys are handled by keys.ts), empty piles and elements no longer on the
+ * table get nothing, nor does a viewer of an unknown token. Spectators only
+ * look: see spectatorActions. On a card of the selected group, Discard and
+ * Move to take the whole group (spec 2).
  */
 export function actionsFor(
   el: TableElement,
   view: View,
-  you: { areas?: readonly Area[]; role: Role },
   lang: Lang,
   group?: ReadonlySet<string>,
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];
   }
-  if (you.role === 'spectator') {
+  if (view.you.role === 'spectator') {
     return spectatorActions(el, view.table);
   }
-  const seats = (you.areas ?? []).map(seatOf);
+  const seats = ownSeats(view);
   if (seats.length === 0) {
     return [];
   }

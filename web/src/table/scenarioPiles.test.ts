@@ -99,7 +99,7 @@ function makeView(piles: PileView[] = WRECKER): View {
 }
 
 function menu(id: string, view = makeView()): ActionItem[] {
-  const result = actionsFor({ kind: 'pile', id }, view, { areas: ['p0'], role: 'player' }, 'en');
+  const result = actionsFor({ kind: 'pile', id }, view, 'en');
   if (!Array.isArray(result)) {
     throw new Error(`expected items, got "${result.text}"`);
   }

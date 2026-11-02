@@ -8,7 +8,7 @@ import {
   type ContextEntry,
 } from './contextItems';
 import { knownCard } from '../lib/catalog';
-import type { Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
+import type { CardView, PackFace, PileView, View, YouView } from '../lib/types';
 import { card, infoFrom } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -115,14 +115,12 @@ function makeView(): View {
   };
 }
 
-const ALEX: { areas: Area[]; role: Role } = { areas: ['p0'], role: 'player' };
-const SPECTATOR: { role: Role } = { role: 'spectator' };
+const SPECTATOR: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
 
-function entriesFor(
-  element: TableElement,
-  you: { areas?: Area[]; role: Role } = ALEX,
-): ContextEntry[] {
-  return contextItems(element, actionsFor(element, makeView(), you, 'en'));
+/** The entries of the element, for Alex, the viewer of makeView, or for `you` when given. */
+function entriesFor(element: TableElement, you?: YouView): ContextEntry[] {
+  const view = makeView();
+  return contextItems(element, actionsFor(element, you ? { ...view, you } : view, 'en'));
 }
 
 /**
