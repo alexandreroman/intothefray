@@ -27,7 +27,10 @@ type: project
 - The backend runs on an OVH VPS at `api.intothefray.xyz` (see
   [[project_deployment]]); it stays portable.
 
-**Why:** decided during the design.
+**Why:** per-viewer views keep play fair between players; without
+accounts or long-term storage there is nothing to run beyond a
+short-lived sandbox game. The full rationale is in the design spec under
+`docs/`.
 
 **How to apply:** check new features against these limits before
-building; the full rationale is in the design spec under `docs/`.
+building.
