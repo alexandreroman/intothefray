@@ -178,23 +178,17 @@ In a Casper worktree workspace, the setup hook of `.casper.json`
 It also sets `APP_INSTANCE` to the worktree's branch, so the browser
 tab of the workspace reads `Into The Fray (<branch>)`.
 
-Two commands start the stack, both with the ports of `.env.casper` and
-both listing the workspace URLs in the Casper info panel:
+The Casper command `casper run` (`scripts/casper.sh dev`) starts
+`make dev` with hot reload (Redis, Caddy, Air and the web build) on the
+ports of `.env.casper`, and lists the workspace URLs in the Casper info
+panel. Stopping the command stops Air and the web build and clears the
+panel; the Redis and Caddy containers stay up (stop them with
+`make infra-down`) until the teardown hook removes them along with the
+workspace.
 
-- **Run** (`casper run`, that is `scripts/casper.sh run`) starts the
-  whole stack in containers with `make app-up` (Caddy, server and
-  Redis) and follows its logs. Stopping the command runs
-  `make app-down`.
-- **Dev** (`casper run dev`) starts `make dev` with hot reload (Redis,
-  Caddy, Air and the web build). Stopping the command stops Air and the
-  web build only: the Redis and Caddy containers stay up (stop them
-  with `make infra-down`).
-
-Run stops its stack and both clear the panel when the command ends.
-They bind the same server port, so run one at a time. Several workspaces can
-run at the same time, each with its own compose project. A `PORT` or an
-`APP_INSTANCE` set in `.env` overrides `.env.casper`; one set in
-`.env.local` does so for Dev only.
+Several workspaces can run at the same time, each with its own compose
+project. A `PORT` or an `APP_INSTANCE` set in `.env` or `.env.local`
+overrides `.env.casper`.
 
 `.env.casper` holds the compose project name, the ports, `REDIS_URL` and
 the instance name.
