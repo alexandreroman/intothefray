@@ -451,13 +451,9 @@
 
   // ---- The screen ----
 
-  // The breakpoints of the @media rules below. On a narrow screen the side
-  // column goes: the history is not shown.
+  // The screen sizes of lib/screen.ts, which the @media rules below write out too.
   const narrow = new MediaQuery(NARROW_SCREEN_QUERY);
-  // A phone held upright: the table zooms further out, and fits its width until the viewer zooms.
   const phone = new MediaQuery(PHONE_QUERY);
-  // A phone either way up: the top bar floats over the play area, the hand's cards follow the
-  // window, and the controls at the bottom right gather in one bar above the resting hand.
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
 
