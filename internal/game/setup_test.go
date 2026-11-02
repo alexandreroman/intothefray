@@ -640,25 +640,34 @@ func TestStartRequiresDecks(t *testing.T) {
 	}
 }
 
-// twoDeckGame returns a started game where Alex ("a", host) plays two
-// Spider-Man decks, seats 0 and 1, and Sam ("s") one, seat 2.
-func twoDeckGame(t *testing.T) *Game {
+// threeSeatGame returns a started Rhino game where Alex ("a", host) plays
+// seats 0 and 1 and Sam ("s") seat 2, with the given decks.
+func threeSeatGame(t *testing.T, decks [3]DeckChoice) *Game {
 	t.Helper()
 	cat := newCatalog(t)
 	g := twoSlotLobby(t)
 	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
 	}
-	for _, slot := range []struct {
+	slots := []struct {
 		token string
-		deck  int
-	}{{"a", 0}, {"a", 1}, {"s", 0}} {
-		seatDeck(t, g, slot.token, slot.deck, spiderManDeck(t, cat), cat)
+		slot  int
+	}{{"a", 0}, {"a", 1}, {"s", 0}}
+	for i, slot := range slots {
+		seatDeck(t, g, slot.token, slot.slot, decks[i], cat)
 	}
 	if err := g.Start("a", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
 	}
 	return g
+}
+
+// twoDeckGame returns threeSeatGame with a Spider-Man deck at every seat:
+// Alex plays two of them.
+func twoDeckGame(t *testing.T) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	return threeSeatGame(t, [3]DeckChoice{spiderManDeck(t, cat), spiderManDeck(t, cat), spiderManDeck(t, cat)})
 }
 
 func TestStartNeedsEverySlot(t *testing.T) {

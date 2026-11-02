@@ -126,28 +126,6 @@ func TestSetupWithoutTheDeckCardSetsNothingAside(t *testing.T) {
 	}
 }
 
-// threeSeatGame starts a Rhino game where Alex plays seats 0 and 1 and Sam
-// seat 2, with the given decks.
-func threeSeatGame(t *testing.T, decks [3]DeckChoice) *Table {
-	t.Helper()
-	cat := newCatalog(t)
-	g := twoSlotLobby(t)
-	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
-		t.Fatal(err)
-	}
-	slots := []struct {
-		token string
-		slot  int
-	}{{"a", 0}, {"a", 1}, {"s", 0}}
-	for i, slot := range slots {
-		seatDeck(t, g, slot.token, slot.slot, decks[i], cat)
-	}
-	if err := g.Start("a", cat, testSeed, testNow); err != nil {
-		t.Fatal(err)
-	}
-	return g.Table
-}
-
 func TestSetupSetsAsideDeckCardsPerSeat(t *testing.T) {
 	cat := newCatalog(t)
 	plain := spiderManDeck(t, cat)
@@ -162,7 +140,7 @@ func TestSetupSetsAsideDeckCardsPerSeat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			table := threeSeatGame(t, tt.decks)
+			table := threeSeatGame(t, tt.decks).Table
 			for seat, with := range tt.with {
 				t.Run(fmt.Sprintf("seat %d", seat), func(t *testing.T) {
 					if with {
