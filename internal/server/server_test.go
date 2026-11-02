@@ -21,6 +21,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/config"
 	"github.com/alexandreroman/intothefray/internal/decks"
+	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/store"
 	"github.com/alexandreroman/intothefray/internal/version"
 	"github.com/alexandreroman/intothefray/packs"
@@ -46,6 +47,18 @@ func newTestServerWith(t *testing.T, configure func(*Server)) (*httptest.Server,
 	return ts, mr
 }
 
+// testCatalog returns the real card catalog, failing the test when it
+// cannot be decoded.
+func testCatalog(t testing.TB) *pack.Catalog {
+	t.Helper()
+
+	cat, err := packs.Catalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cat
+}
+
 // newServer builds a Server backed by a fresh miniredis and the real card
 // catalog. Its deck importer points nowhere: tests that load decks replace it.
 func newServer(t *testing.T) (*Server, *miniredis.Miniredis) {
@@ -66,10 +79,7 @@ func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
 func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Config) *Server {
 	t.Helper()
 
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cat := testCatalog(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	t.Cleanup(func() { _ = rdb.Close() })
 
