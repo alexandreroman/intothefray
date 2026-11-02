@@ -274,11 +274,6 @@
     pointer-events: auto;
   }
 
-  .chip :global(svg) {
-    width: 20px;
-    height: 20px;
-  }
-
   /*
     A finger needs 44 px, whatever the zoom: on touch, an invisible hit area around each chip, 44
     screen px a side (44px / --z in table units, which the surface's zoom brings back to 44px).
