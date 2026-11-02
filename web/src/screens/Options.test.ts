@@ -46,6 +46,25 @@ async function type(input: HTMLInputElement, value: string): Promise<void> {
   await fireEvent.input(input, { target: { value: typed } });
 }
 
+/**
+ * Inserts `text` over the selection from `start` to `end` as a browser does: a beforeinput event
+ * while the selection is in place, then the new value with the caret after the text.
+ */
+async function edit(
+  input: HTMLInputElement,
+  start: number,
+  end: number,
+  text: string,
+): Promise<void> {
+  input.setSelectionRange(start, end);
+  await fireEvent(input, new InputEvent('beforeinput', { bubbles: true }));
+  const value = input.value;
+  input.value = value.slice(0, start) + text + value.slice(end);
+  const caret = start + text.length;
+  input.setSelectionRange(caret, caret);
+  await fireEvent(input, new InputEvent('input', { bubbles: true }));
+}
+
 describe('Options', () => {
   it('stores the name as you type', async () => {
     render(Options);
@@ -77,6 +96,31 @@ describe('Options', () => {
     await type(input, '𝒜'.repeat(17));
     expect(input.value).toBe('𝒜'.repeat(16));
     expect(getPref('itf-name')).toBe('𝒜'.repeat(16));
+  });
+
+  it('refuses a letter typed in the middle of a full name and leaves the caret where it was', async () => {
+    render(Options);
+    const input = screen.getByLabelText<HTMLInputElement>('Your name');
+    const full = 'Abcdefghijklmnop';
+    await type(input, full);
+
+    await edit(input, 5, 5, 'X');
+
+    expect(input.value).toBe(full);
+    expect([input.selectionStart, input.selectionEnd]).toEqual([5, 5]);
+    expect(getPref('itf-name')).toBe(full);
+  });
+
+  it('keeps what fits of an overflowing paste at the caret', async () => {
+    render(Options);
+    const input = screen.getByLabelText<HTMLInputElement>('Your name');
+    await type(input, 'Abcdefghijklmn');
+
+    await edit(input, 3, 3, '𝒜𝒜𝒜𝒜');
+
+    expect(input.value).toBe('Abc𝒜𝒜defghijklmn');
+    expect([input.selectionStart, input.selectionEnd]).toEqual([7, 7]);
+    expect(getPref('itf-name')).toBe('Abc𝒜𝒜defghijklmn');
   });
 
   it('shows a stored name longer than the limit cut', () => {
