@@ -467,7 +467,7 @@
       return null;
     }
     const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
-    return { x: (corner.x - origin.left) / zoom, y: (corner.y - origin.top) / zoom };
+    return toTable(corner, origin, zoom);
   }
 
   /** The marker a drag carries, by its name; none for a name that is not a marker. */
