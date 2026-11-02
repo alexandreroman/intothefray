@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1.28
 
 # — build stage —
 FROM golang:1.27-alpine AS build
@@ -19,7 +19,7 @@ RUN --mount=type=cache,id=gomod,target=/go/pkg/mod \
         -o /out/intothefray ./cmd/intothefray
 
 # — runtime stage —
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13:nonroot
 COPY --from=build /out/intothefray /intothefray
 EXPOSE 9000
 # Distroless has no shell or curl: the binary probes itself
