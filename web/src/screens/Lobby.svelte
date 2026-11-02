@@ -469,7 +469,7 @@
   .startbar {
     position: sticky;
     bottom: 0;
-    background: #0d111beb;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
     border-top: 1px solid var(--panel-2);
     backdrop-filter: blur(10px);
   }

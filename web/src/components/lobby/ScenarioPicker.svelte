@@ -628,7 +628,7 @@
 
   .vil.on {
     border: 2px solid var(--sel);
-    box-shadow: 0 0 0 4px #49c6ff29;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--sel) 16%, transparent);
   }
 
   .vil.unsupported {
