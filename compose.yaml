@@ -9,7 +9,6 @@ services:
       test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
       interval: 10s
       timeout: 10s
-      retries: 3
 
   app:
     build: .
@@ -25,7 +24,6 @@ services:
       test: ["CMD", "/intothefray", "healthcheck"]
       interval: 10s
       timeout: 10s
-      retries: 3
 
   web:
     # The Caddy version is pinned here only: the web app has no Dockerfile
@@ -51,4 +49,3 @@ services:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz"]
       interval: 10s
       timeout: 10s
-      retries: 3
