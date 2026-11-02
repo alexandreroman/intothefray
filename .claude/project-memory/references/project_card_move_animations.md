@@ -9,7 +9,11 @@ type: project
 - Every card the viewer saw that changes place travels from where it was
   to where it went: table spot, the viewer's hand, a pile drawn on the
   table, or the owner frame chip of an out-of-play pile (victory display,
-  set-aside), which stands for that pile.
+  set-aside), which stands for that pile. A card leaving a chip starts
+  as a portrait table card (112×157 units at the zoom) centred on it,
+  so it travels at a card's size, never squashed or turned a quarter
+  (`measureOrigin` in `motion.svelte.ts`); a card going to a chip
+  shrinks into the chip's box.
 - A card the viewer cannot see travels as a back: out of a face-down pile
   it leaves on its back and turns to its face where it lands face up; a
   card that lands face down stays a back. A card taken face down off the

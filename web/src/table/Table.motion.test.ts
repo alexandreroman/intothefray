@@ -1382,6 +1382,61 @@ describe('Table animations', () => {
       ]);
     });
 
+    describe('out of a set-aside pile', () => {
+      const aside = (cards: string[]): PileView => ({
+        id: 'aside:p1',
+        kind: 'aside',
+        owner: 1,
+        x: 0,
+        y: 0,
+        count: cards.length,
+        cards,
+      });
+
+      /** Places the chip of Sam's set-aside cards, wider than tall, as jsdom lays nothing out. */
+      function placeChip(container: Element): void {
+        const chip = container.querySelector<HTMLElement>('.surface .chip[data-pile="aside:p1"]')!;
+        chip.style.left = '900px';
+        chip.style.top = '280px';
+        chip.style.width = '40px';
+        chip.style.height = '20px';
+      }
+
+      it('a card put on its deck flies from the chip as a portrait card', async () => {
+        const { next, container } = await renderTable(
+          makeView([card('s', { owner: 1, zone: 'pile' })], { piles: [samDeck(30), aside(['s'])] }),
+        );
+        placeChip(container);
+
+        await next(makeView([], { piles: [samDeck(31), aside([])] }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(motion.flights).toMatchObject([
+          {
+            kind: 'toPile',
+            pile: 'deck:p1',
+            from: { cx: 920, cy: 290, w: 112, h: 157 },
+            quarter: false,
+          },
+        ]);
+      });
+
+      it('a card played onto the table slides from the chip at its own size', async () => {
+        const { next, container } = await renderTable(
+          makeView([card('s', { owner: 1, zone: 'pile' })], { piles: [samDeck(30), aside(['s'])] }),
+        );
+        placeChip(container);
+
+        await next(
+          makeView([card('s', { owner: 1, x: 400 })], { piles: [samDeck(30), aside([])] }),
+        );
+        const selector = '.surface .card[data-id="s"]';
+        await waitFor(() => expect(animationsOf(selector)).toHaveLength(1));
+        const [[keyframes]] = animationsOf(selector) as [[Keyframe[], KeyframeAnimationOptions]];
+        // From the chip's middle (920, 290) to the card's, 112 × 157 at 400, 0: unscaled.
+        expect(keyframes[0]).toEqual({ translate: '464px 211.5px', scale: '1' });
+      });
+    });
+
     it("a card taken into another player's hand slides down and fades where it was", async () => {
       const { next, container } = await renderTable(makeView([card('c2', { x: 100 })]));
 
