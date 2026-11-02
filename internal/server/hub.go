@@ -26,8 +26,9 @@ const (
 	// counts as open that long without a renewal, so that one late round
 	// drops nobody.
 	leaseRounds = 3
-	// storeCallTimeout bounds each store call of the background work: the
-	// event loop handles the events of every game one at a time.
+	// storeCallTimeout bounds each store call that runs outside a request:
+	// the event loop and rounds, which handle every game one at a time, and
+	// a connection's lease and offline writes.
 	storeCallTimeout = 2 * time.Second
 )
 
