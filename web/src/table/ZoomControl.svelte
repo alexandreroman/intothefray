@@ -26,6 +26,8 @@
     /** The keyboard button, which the sheet opens from. */
     keysButton?: HTMLButtonElement;
   } = $props();
+
+  const pctLabel = $derived(onfit ? 'Fit to width' : 'Back to 100%');
 </script>
 
 <div class="zoomctl floatbar">
@@ -36,21 +38,15 @@
     aria-label="Zoom out"
     onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button
   >
-  {#if onfit}
-    <button class="btn-ghost pct" data-tip="Fit to width" aria-label="Fit to width" onclick={onfit}>
-      {Math.round(zoom * 100)}%
-    </button>
-  {:else}
-    <button
-      class="btn-ghost pct"
-      data-tip="Back to 100%"
-      data-kbd="0"
-      aria-label="Back to 100%"
-      onclick={() => onzoom(1)}
-    >
-      {Math.round(zoom * 100)}%
-    </button>
-  {/if}
+  <button
+    class="btn-ghost pct"
+    data-tip={pctLabel}
+    data-kbd={onfit ? undefined : '0'}
+    aria-label={pctLabel}
+    onclick={onfit ?? (() => onzoom(1))}
+  >
+    {Math.round(zoom * 100)}%
+  </button>
   <button
     class="btn-ghost"
     data-tip="Zoom in"
