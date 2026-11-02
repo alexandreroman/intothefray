@@ -673,5 +673,114 @@ describe('tokens and statuses', () => {
       expect(pill()).toBeNull();
       expect(interaction.hovered).toEqual({ kind: 'card', id: 'theirs' });
     });
+
+    it('the pill stays when the pointer leaves it for a point still within its reach', async () => {
+      await renderTable(viewWithCounters());
+      vi.useFakeTimers();
+      await hoverToken();
+      await fireEvent.pointerEnter(pill()!);
+
+      await fireEvent.pointerLeave(pill()!, GAP);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(pill()).not.toBeNull();
+    });
+
+    describe('crossing another counter', () => {
+      // On an exhausted card, the tilted modifier above overlaps the room between a modifier and its pill.
+      const DEF = { card: 'mine', kind: 'modifier', name: 'def' };
+      const ATK = { card: 'mine', kind: 'modifier', name: 'atk' };
+      // Above the token, short of the pill: within reach.
+      const BELOW_PILL = { clientX: 120, clientY: 198 };
+      // Beside the token, below its top: where a neighbour in a row lies, out of reach.
+      const BESIDE = { clientX: 145, clientY: 210 };
+
+      function viewWithModifiers(): View {
+        return makeView({ cards: [card('mine', { mods: { atk: 1, def: 2 } }), ...others] });
+      }
+
+      /**
+       * Hovers the DEF modifier of 'mine', laid out as the token of hoverToken, with the pointer on it:
+       * the ATK modifier is the counter the pointer crosses.
+       */
+      async function hoverModifier(): Promise<{ lower: HTMLElement; upper: HTMLElement }> {
+        await fireEvent.pointerEnter(placed('mine'));
+        const lower = counter('mine', 'modifier:def');
+        lower.getBoundingClientRect = () =>
+          DOMRect.fromRect({ x: 100, y: 200, width: 40, height: 20 });
+        await fireEvent.pointerEnter(lower);
+        pill()!.getBoundingClientRect = () =>
+          DOMRect.fromRect({ x: 90, y: 170, width: 60, height: 26 });
+        await fireEvent.pointerMove(lower, { clientX: 120, clientY: 210 });
+        return { lower, upper: counter('mine', 'modifier:atk') };
+      }
+
+      it('the pill keeps its counter while the pointer crosses another one on its way up', async () => {
+        const { session } = await renderTable(viewWithModifiers());
+        vi.useFakeTimers();
+        const { lower, upper } = await hoverModifier();
+
+        await fireEvent.pointerLeave(lower);
+        await fireEvent.pointerEnter(upper);
+        await fireEvent.pointerMove(upper, BELOW_PILL);
+        expect(interaction.counter).toEqual(DEF);
+
+        const add = within(pill()!).getByRole('button', { name: 'Add 1' });
+        await fireEvent.pointerLeave(upper);
+        await fireEvent.pointerEnter(pill()!);
+        await fireEvent.pointerMove(add, { clientX: 140, clientY: 180 });
+        await fireEvent.click(add);
+        expect(session.act).toHaveBeenCalledExactlyOnceWith(
+          { kind: 'modifier', card: 'mine', name: 'def', delta: 1 },
+          0,
+        );
+        expect(interaction.counter).toEqual(DEF);
+      });
+
+      it('the crossed counter takes the pill once the pointer leaves its reach on it', async () => {
+        await renderTable(viewWithModifiers());
+        vi.useFakeTimers();
+        const { lower, upper } = await hoverModifier();
+        await fireEvent.pointerLeave(lower);
+        await fireEvent.pointerEnter(upper);
+
+        await fireEvent.pointerMove(upper, OUTSIDE);
+        expect(interaction.counter).toEqual(ATK);
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(pill()).not.toBeNull();
+        expect(interaction.counter).toEqual(ATK);
+      });
+
+      it('a counter beside the token, out of reach, takes the pill at once', async () => {
+        await renderTable(viewWithModifiers());
+        vi.useFakeTimers();
+        const { lower, upper } = await hoverModifier();
+        await fireEvent.pointerLeave(lower);
+        await fireEvent.pointerEnter(upper);
+
+        await fireEvent.pointerMove(upper, BESIDE);
+        expect(interaction.counter).toEqual(ATK);
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(pill()).not.toBeNull();
+        expect(interaction.counter).toEqual(ATK);
+      });
+
+      it('a counter crossed then left does not take the pill', async () => {
+        await renderTable(viewWithModifiers());
+        vi.useFakeTimers();
+        const { lower, upper } = await hoverModifier();
+        await fireEvent.pointerLeave(lower);
+        await fireEvent.pointerEnter(upper);
+        await fireEvent.pointerLeave(upper);
+        await fireEvent.pointerLeave(placed('mine'));
+        expect(interaction.counter).toEqual(DEF);
+
+        await fireEvent.pointerMove(surface(), OUTSIDE);
+        await vi.advanceTimersByTimeAsync(LINGER_MS - 1);
+        expect(interaction.counter).toEqual(DEF);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(pill()).toBeNull();
+        expect(interaction.hovered).toBeNull();
+      });
+    });
   });
 });
