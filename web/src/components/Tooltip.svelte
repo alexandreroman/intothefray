@@ -62,7 +62,7 @@
     const { anchor } = shown;
     const centred = anchor.left + anchor.width / 2 - box.width / 2;
     left = Math.max(EDGE, Math.min(window.innerWidth - box.width - EDGE, centred));
-    below = anchor.top <= 40;
+    below = anchor.top - box.height - GAP < EDGE;
     top = below ? anchor.bottom + GAP : anchor.top - box.height - GAP;
     // Pointing at the element's centre, even when the bubble is pushed in from a window edge.
     const centre = anchor.left + anchor.width / 2 - left;
