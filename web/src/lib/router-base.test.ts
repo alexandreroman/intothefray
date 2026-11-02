@@ -1,14 +1,10 @@
+import { navigate } from './router.testing';
+
 // The router under a sub-path, as on GitHub Pages. A file of its own: the
 // router reads the base once, when the module loads.
 vi.stubEnv('BASE_URL', '/intothefray/');
 window.history.replaceState(null, '', '/intothefray/nowhere');
 const { go, href, route } = await import('./router.svelte');
-
-// Lands on a URL, as a page load or back/forward does, then tells the router.
-function navigate(path: string): void {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
 
 afterAll(() => {
   vi.unstubAllEnvs();

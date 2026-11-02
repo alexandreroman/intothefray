@@ -1,10 +1,5 @@
 import { go, href, route } from './router.svelte';
-
-// Lands on a URL, as a page load or back/forward does, then tells the router.
-function navigate(path: string): void {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
+import { navigate } from './router.testing';
 
 /** Goes back one history entry and waits until the router has seen it. */
 function back(): Promise<void> {
