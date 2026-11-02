@@ -37,13 +37,21 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/**
+ * Types a value into an input as a browser does: it stops at the input's maxlength, which counts
+ * UTF-16 code units (jsdom does not enforce it).
+ */
+async function type(input: HTMLInputElement, value: string): Promise<void> {
+  const typed = input.maxLength >= 0 ? value.slice(0, input.maxLength) : value;
+  await fireEvent.input(input, { target: { value: typed } });
+}
+
 describe('Options', () => {
   it('stores the name as you type', async () => {
     render(Options);
-    const input = screen.getByLabelText('Your name');
-    expect((input as HTMLInputElement).maxLength).toBe(16);
+    const input = screen.getByLabelText<HTMLInputElement>('Your name');
 
-    await fireEvent.input(input, { target: { value: 'Alex' } });
+    await type(input, 'Alex');
 
     expect(getPref('itf-name')).toBe('Alex');
   });
@@ -56,6 +64,19 @@ describe('Options', () => {
 
     expect(input.value).toBe('Alex');
     expect(getPref('itf-name')).toBe('Alex');
+  });
+
+  it('counts the letters of a name outside the BMP as one each, as the server does', async () => {
+    render(Options);
+    const input = screen.getByLabelText<HTMLInputElement>('Your name');
+
+    await type(input, '𝒜'.repeat(16));
+    expect(input.value).toBe('𝒜'.repeat(16));
+    expect(getPref('itf-name')).toBe('𝒜'.repeat(16));
+
+    await type(input, '𝒜'.repeat(17));
+    expect(input.value).toBe('𝒜'.repeat(16));
+    expect(getPref('itf-name')).toBe('𝒜'.repeat(16));
   });
 
   it('shows a stored name longer than the limit cut', () => {

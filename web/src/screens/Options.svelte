@@ -45,8 +45,9 @@
   });
 
   function onNameInput(): void {
-    // Not trimmed here, so that a space can be typed between two words.
-    name = stripEmoji(name);
+    // Not trimmed here, so that a space can be typed between two words. Cut in code points, as
+    // the server counts them, not by maxlength, which counts UTF-16 units.
+    name = Array.from(stripEmoji(name)).slice(0, MAX_NAME_LENGTH).join('');
     savePlayerName(name);
   }
 
@@ -93,7 +94,6 @@
         <input
           type="text"
           id="name"
-          maxlength={MAX_NAME_LENGTH}
           placeholder="e.g. Alex"
           bind:value={name}
           oninput={onNameInput}
