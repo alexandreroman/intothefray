@@ -722,13 +722,12 @@
    * The room under the controls at the bottom of the table (the zoom control,
    * the narrow Undo, the hero selector), in px. On a small screen they sit
    * above the resting hand, which would cover them otherwise: above the strip
-   * restingStrip gives for the base card, which the resting hand, drawn from its
-   * raised cards (handRestDrop), does not rise past.
+   * restingStrip gives for the base card (restingRoom, as a hand shows only
+   * with own decks), which the resting hand, drawn from its raised cards
+   * (handRestDrop), does not rise past.
    */
   const controlsBottom = $derived(
-    small.current && handSeats.length > 0
-      ? restingStrip(baseHandCard.h, baseHandDrop) + ABOVE_HAND
-      : TABLE_EDGE_BOTTOM,
+    small.current && handSeats.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM,
   );
 
   // ---- The Focus panel's corner ----
