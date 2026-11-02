@@ -1,6 +1,5 @@
 <script lang="ts">
   import { playerName } from '../lib/names';
-  import { href } from '../lib/router.svelte';
   import { GameSession } from '../lib/session.svelte';
   import Table from '../table/Table.svelte';
   import Ended from './Ended.svelte';
@@ -28,11 +27,7 @@
 </script>
 
 {#if notFound}
-  <div class="message table-bg">
-    <span class="caption">Game not found</span>
-    <p>This game doesn't exist or has expired.</p>
-    <a class="btn-primary" href={href('/')}>Back to home</a>
-  </div>
+  <Ended caption="Game not found" text="This game doesn't exist or has expired." />
 {:else}
   {#if waiting}
     <p class="status" role="status">
@@ -45,35 +40,20 @@
     {:else if session.view.phase === 'playing'}
       <Table {session} view={session.view} />
     {:else}
-      <Ended />
+      <Ended
+        caption="Game over"
+        title="THIS GAME HAS ENDED"
+        text="Start a new one from the home screen."
+      />
     {/if}
   {/if}
 {/if}
 
 <style>
-  .message {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 24px 16px;
-    text-align: center;
-  }
-
-  p {
-    margin: 0;
-  }
-
-  .message p {
-    color: var(--muted);
-    font-size: 16px;
-  }
-
   .status {
     position: fixed;
     top: 12px;
+    margin: 0;
     left: 50%;
     transform: translateX(-50%);
     padding: 6px 14px;

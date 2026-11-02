@@ -99,7 +99,9 @@ describe('Game', () => {
     mockSession({ status: 'closed', lastError: { code: 'notFound', message: 'no' } });
     render(Game, { id: 'x' });
 
+    expect(screen.getByText('Game not found').classList.contains('caption')).toBe(true);
     expect(screen.getByText("This game doesn't exist or has expired.")).toBeTruthy();
+    expect(screen.queryByRole('heading')).toBeNull();
     expect(screen.getByRole('link', { name: 'Back to home' }).getAttribute('href')).toBe('/');
   });
 
@@ -116,6 +118,8 @@ describe('Game', () => {
     localStorage.setItem('itf-name', 'Alex');
     mockSession({ view: { ...playingView, phase: 'ended' } });
     render(Game, { id: 'x' });
+    expect(screen.getByText('Game over').classList.contains('caption')).toBe(true);
     expect(screen.getByRole('heading', { name: /this game has ended/i })).toBeTruthy();
+    expect(screen.getByText('Start a new one from the home screen.')).toBeTruthy();
   });
 });
