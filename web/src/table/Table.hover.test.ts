@@ -3,7 +3,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction, LINGER_MS } from './interaction.svelte';
-import { TOUCH_MODE_QUERY } from './touch';
+import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
@@ -93,20 +93,6 @@ async function tap(...entered: HTMLElement[]): Promise<void> {
   }
 }
 
-/** Puts the screen in touch mode (touch.ts), before the table is drawn: only its query matches. */
-function inTouchMode(): void {
-  vi.spyOn(window, 'matchMedia').mockImplementation(
-    (query) =>
-      Object.assign(new EventTarget(), {
-        media: query,
-        matches: query === TOUCH_MODE_QUERY,
-        onchange: null,
-        addListener: () => {},
-        removeListener: () => {},
-      }) as unknown as MediaQueryList,
-  );
-}
-
 beforeEach(() => {
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
@@ -115,6 +101,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
   interaction.reset();
@@ -242,7 +229,8 @@ describe('hovering the table', () => {
 
 describe('a tap on touch', () => {
   it("in touch mode, opens a card's menu, which stays once the finger lifts, and previews nothing", async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     vi.useFakeTimers();
     await tap(placed('two'));
@@ -261,7 +249,8 @@ describe('a tap on touch', () => {
   });
 
   it('in touch mode, opens the menus of piles and previews nothing', async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     await tap(placed('disc:p0'));
     expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'disc:p0' });
@@ -487,7 +476,8 @@ describe('tokens and statuses', () => {
   });
 
   it('a tap on a token shows the pill, opens no menu, and the pill stays once the finger lifts', async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -503,7 +493,8 @@ describe('tokens and statuses', () => {
   });
 
   it('a tapped pill stays through taps on − and +, and moves to the next token tapped', async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -523,7 +514,8 @@ describe('tokens and statuses', () => {
   });
 
   it('a tapped pill goes with a tap elsewhere, and its card with it', async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -544,7 +536,8 @@ describe('tokens and statuses', () => {
   });
 
   it('a tapped pill goes with its token, and its card lingers out with it', async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     const { rerender } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -557,7 +550,8 @@ describe('tokens and statuses', () => {
   });
 
   it('Escape lets go of a tapped pill', async () => {
-    inTouchMode();
+    // Touch mode (touch.ts), before the table is drawn.
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     await tap(placed('mine'), counter('mine', 'token:dmg'));
 

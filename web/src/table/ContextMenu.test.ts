@@ -4,7 +4,7 @@ import Table from './Table.svelte';
 import menuSource from './ContextMenu.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
-import { TOUCH_MODE_QUERY } from './touch';
+import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import {
@@ -179,6 +179,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
   interaction.reset();
@@ -1058,16 +1059,7 @@ describe('the arrow mode', () => {
   });
 
   it('speaks of taps and no Esc key in touch mode', async () => {
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query) =>
-        Object.assign(new EventTarget(), {
-          media: query,
-          matches: query === TOUCH_MODE_QUERY,
-          onchange: null,
-          addListener: () => {},
-          removeListener: () => {},
-        }) as unknown as MediaQueryList,
-    );
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     await click(placed('mine'), 120, 80, { pointerType: 'touch' });
     await fireEvent.click(menuItem(contextMenu()!, 'Draw an arrow'));
