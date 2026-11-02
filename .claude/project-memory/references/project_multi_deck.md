@@ -17,7 +17,7 @@ type: project
   or pile touched when it is one of the player's seats, else the deck
   selected in the hero selector. The server checks ownership.
 - Undo takes back the player's last burst across all their seats. The
-  player has one private view (Look at top / Search), kept at their first
+  player has one private view (Look at top / Search), held at their first
   seat.
 - At the table the hero selector (round hero avatars, bottom left) picks
   the selected deck: its hand shows and shared-card actions are credited

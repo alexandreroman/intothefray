@@ -7,7 +7,7 @@ type: project
 # Provider-neutral UI copy
 
 The interface speaks of a "deck link" and names no deck provider
-(marvelcdb or other). Server import error texts may still name the
+(marvelcdb or other). Server import error texts may name the
 provider that failed.
 
 **Why:** more deck providers than marvelcdb are planned.
