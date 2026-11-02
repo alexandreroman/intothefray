@@ -217,8 +217,8 @@ To add images, run `make sources`, commit `sources.json`, run
 `make publish` in `intothefray-img`, then `make packs`. `make packs`
 fails when the manifest is missing, and drops a card with a face that has
 no English image ("no image" in the report). The report prints how many
-faces the manifest covers, per language. Once the manifest exists, a
-`packs/` test fails when an embedded image is not under its base URL.
+faces the manifest covers, per language. A `packs/` test fails when an
+embedded image is not under its base URL.
 
 The curated files are the scenarios (`scenarios/`; `mainSchemes` lists the
 main scheme sets a scenario such as an Underling's is played with, and `sets`
