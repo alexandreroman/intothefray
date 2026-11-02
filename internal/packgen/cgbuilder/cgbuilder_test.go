@@ -25,7 +25,7 @@ func readPage(t *testing.T, name string) []byte {
 }
 
 func TestParsePacks(t *testing.T) {
-	got, err := ParsePacks(readPage(t, "cycle.html"))
+	got, err := parsePacks(readPage(t, "cycle.html"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func TestParsePacks(t *testing.T) {
 }
 
 func TestParseCards(t *testing.T) {
-	got, err := ParseCards(readPage(t, "liste_carte.html"))
+	got, err := parseCards(readPage(t, "liste_carte.html"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestParseCards(t *testing.T) {
 }
 
 func TestParseSets(t *testing.T) {
-	got, err := ParseSets(readPage(t, "set_modulaire.html"))
+	got, err := parseSets(readPage(t, "set_modulaire.html"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,14 +67,14 @@ func TestParseSets(t *testing.T) {
 
 func TestParseEmptyPagesFail(t *testing.T) {
 	page := []byte("<html><body>Maintenance</body></html>")
-	if _, err := ParsePacks(page); err == nil {
-		t.Error("ParsePacks succeeded on a page without pack")
+	if _, err := parsePacks(page); err == nil {
+		t.Error("parsePacks succeeded on a page without pack")
 	}
-	if _, err := ParseCards(page); !errors.Is(err, ErrNoCard) {
-		t.Errorf("ParseCards error = %v, want ErrNoCard on a page without card", err)
+	if _, err := parseCards(page); !errors.Is(err, errNoCard) {
+		t.Errorf("parseCards error = %v, want errNoCard on a page without card", err)
 	}
-	if _, err := ParseSets(page); err == nil {
-		t.Error("ParseSets succeeded on a page without set")
+	if _, err := parseSets(page); err == nil {
+		t.Error("parseSets succeeded on a page without set")
 	}
 }
 
