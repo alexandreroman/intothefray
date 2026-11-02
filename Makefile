@@ -58,10 +58,10 @@ app-logs: ## Follow logs from the full stack
 
 ##@ Develop
 
+# Trap reaps the whole process group (kill 0) on exit or signal, so no
+# orphaned processes survive Ctrl-C or a child crash.
 .PHONY: dev
 dev: infra-up web-install ## Start infra, then run the API (hot reload) and the web build (reload the page)
-	# Trap reaps the whole process group (kill 0) on exit or signal, so no
-	# orphaned processes survive Ctrl-C or a child crash.
 	@trap 'kill 0' EXIT INT TERM; \
 		( air; kill 0 ) & \
 		( cd web && pnpm watch; kill 0 ) & \
