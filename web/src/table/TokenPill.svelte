@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { withSign } from './actions';
+  import { MAX_MODIFIER, withSign } from './actions';
   import { interaction } from './interaction.svelte';
 
   let {
@@ -30,6 +30,10 @@
     version?: unknown;
     onstep: (delta: -1 | 1) => void;
   } = $props();
+
+  // A modifier stops at ±MAX_MODIFIER, where the server clamps it; a token or status has no top.
+  const atTop = $derived(signed && value >= MAX_MODIFIER);
+  const atBottom = $derived(signed && value <= -MAX_MODIFIER);
 
   // Room between the pill and its token, and from the window edge.
   const GAP = 2;
@@ -137,6 +141,7 @@
     type="button"
     aria-label="Remove 1"
     data-tip="Remove 1"
+    disabled={atBottom}
     onmousedown={noSelection}
     onclick={() => onstep(-1)}>−</button
   >
@@ -146,6 +151,7 @@
     type="button"
     aria-label="Add 1"
     data-tip="Add 1"
+    disabled={atTop}
     onmousedown={noSelection}
     onclick={() => onstep(1)}>+</button
   >

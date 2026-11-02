@@ -3,6 +3,7 @@ import {
   actionsFor,
   counterName,
   keyLabel,
+  MAX_MODIFIER,
   withSign,
   type ActionItem,
   type TableElement,
@@ -319,6 +320,22 @@ describe('actionsFor', () => {
       name: 'hp',
       delta: -1,
     });
+  });
+
+  it('greys the modifier step past the ±99 the server clamps a modifier to', () => {
+    const disabled = (mods: Record<string, number>) => {
+      const view = makeView({ cards: [card('mine', { mods })] });
+      const modifiers = menuOf(itemsFor({ kind: 'card', id: 'mine' }, view), 'modifiers');
+      return modifiers.filter((it) => it.disabled).map((it) => ({ id: it.id, reason: it.reason }));
+    };
+
+    expect(disabled({ atk: MAX_MODIFIER - 1, def: -(MAX_MODIFIER - 1) })).toEqual([]);
+    expect(disabled({ atk: MAX_MODIFIER })).toEqual([
+      { id: 'atk+1', reason: 'The ATK modifier is already +99' },
+    ]);
+    expect(disabled({ atk: -MAX_MODIFIER })).toEqual([
+      { id: 'atk-1', reason: 'The ATK modifier is already \u221299' },
+    ]);
   });
 
   it('an exhausted card shows ready and the counter submenus give the counts', () => {

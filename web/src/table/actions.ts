@@ -138,6 +138,12 @@ export const STATUSES: readonly Counter[] = [
  */
 export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec', 'hp'] as const;
 
+/**
+ * The largest modifier, either way: the server clamps a modifier to ±99 (maxCount, in
+ * applyCounter), so a step past it changes nothing.
+ */
+export const MAX_MODIFIER = 99;
+
 /** The kinds of counters a card carries: tokens and statuses count up from 0, modifiers are signed. */
 export type CounterKind = 'token' | 'status' | 'modifier';
 
@@ -151,6 +157,11 @@ export function countersOf(card: CardView, kind: CounterKind): Record<string, nu
     case 'modifier':
       return card.mods;
   }
+}
+
+/** The card's modifier on that stat, 0 when it has none. */
+function modifierOf(card: CardView, name: string): number {
+  return card.mods?.[name] ?? 0;
 }
 
 /** A modifier with its sign, a real minus sign (U+2212) when negative: "+1", "−2". */
@@ -433,16 +444,25 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
 
 /**
  * "Add a modifier": a submenu that gives the card +1 to a stat, then, past a
- * separator, −1. Unlike most token and status items, these have no keys.
+ * separator, −1. Unlike most token and status items, these have no keys. A
+ * step past ±MAX_MODIFIER is greyed: the server would change nothing.
  */
 function modifierMenu(card: CardView): ActionItem {
   const step = (delta: 1 | -1) =>
-    MODIFIERS.map((name): ActionItem => ({
-      id: `${name}${delta > 0 ? '+1' : '-1'}`,
-      label: `${withSign(delta)} ${name.toUpperCase()}`,
-      group: 0,
-      run: () => ({ kind: 'modifier', card: card.id, name, delta }),
-    }));
+    MODIFIERS.map((name): ActionItem => {
+      const limit = delta * MAX_MODIFIER;
+      const atLimit = delta > 0 ? modifierOf(card, name) >= limit : modifierOf(card, name) <= limit;
+      return {
+        id: `${name}${delta > 0 ? '+1' : '-1'}`,
+        label: `${withSign(delta)} ${name.toUpperCase()}`,
+        disabled: atLimit,
+        reason: atLimit
+          ? `The ${name.toUpperCase()} modifier is already ${withSign(limit)}`
+          : undefined,
+        group: 0,
+        run: () => ({ kind: 'modifier', card: card.id, name, delta }),
+      };
+    });
   return {
     id: 'modifiers',
     label: 'Add a modifier',
