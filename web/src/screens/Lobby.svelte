@@ -241,7 +241,7 @@
             {#if seatCount(view) < MAX_SEATS}
               <div class="sect add-deck">
                 <button class="btn add" aria-disabled={session.deckLoading} onclick={addDeck}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                  <Icon name="plus" />
                   Add a deck
                 </button>
               </div>
@@ -508,13 +508,10 @@
     color: var(--error-text);
   }
 
-  .add svg {
+  .add :global(svg) {
     width: 16px;
     height: 16px;
-    fill: none;
-    stroke: currentColor;
     stroke-width: 2;
-    stroke-linecap: round;
   }
 
   .go {

@@ -79,10 +79,7 @@
         <h1 class="display">SUIT UP</h1>
       </div>
       <p class="note">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 11v5M12 8h.01" />
-        </svg>
+        <Icon name="info" />
         Saved in this browser only. Changes apply right away.
       </p>
     </div>
@@ -107,13 +104,7 @@
           title="Pick a new random name"
           onclick={pickRandomName}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="3.5" />
-            <circle cx="9" cy="9" r="1.2" />
-            <circle cx="15" cy="15" r="1.2" />
-            <circle cx="15" cy="9" r="1.2" />
-            <circle cx="9" cy="15" r="1.2" />
-          </svg>
+          <Icon name="dice" />
         </button>
       </div>
     </div>
@@ -236,14 +227,9 @@
     color: var(--muted);
   }
 
-  .note svg {
-    flex: none;
+  .note :global(svg) {
     width: 16px;
     height: 16px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
   }
 
   /* A setting: its label and help on the left, its control on the right, or below on a phone. */
@@ -320,18 +306,9 @@
     justify-content: center;
   }
 
-  .dice svg {
+  .dice :global(svg) {
     width: 20px;
     height: 20px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linejoin: round;
-  }
-
-  .dice circle {
-    fill: currentColor;
-    stroke: none;
   }
 
   .themes {
