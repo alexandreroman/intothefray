@@ -133,6 +133,32 @@ func TestSourcesUnknownCerebroOverride(t *testing.T) {
 	}
 }
 
+func TestSourcesRejectsOverrideOfNoFace(t *testing.T) {
+	tests := []struct {
+		name     string
+		code     string
+		override curated.CardOverride
+	}{
+		{"unknown face code", "01097c", curated.CardOverride{Octgn: "8646001097c"}},
+		{"card code of a multi-face card", "01097", curated.CardOverride{Size: pack.SizeLand}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in := Inputs{
+				MC:      marvelcdbCards(t, "01097", "01097a", "01097b"),
+				Curated: curated.Curated{Cards: map[string]curated.CardOverride{tt.code: tt.override}},
+			}
+
+			_, err := Sources(in)
+
+			want := "curated card " + tt.code + ": size, Cerebro and OCTGN overrides need the code of a face"
+			if err == nil || !strings.Contains(err.Error(), want) {
+				t.Fatalf("Sources error = %v, want one containing %q", err, want)
+			}
+		})
+	}
+}
+
 func TestSourcesCerebroOverride(t *testing.T) {
 	in := Inputs{
 		MC: marvelcdbCards(t, "01097a", "01097b"),

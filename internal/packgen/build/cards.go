@@ -85,17 +85,37 @@ func cerebroIDsOf(cb []cerebro.Card) map[string]string {
 	return ids
 }
 
-// checkCerebroOverrides fails when a curated card names a Cerebro image that
-// Cerebro does not have: the face would silently lose its Cerebro image.
-func checkCerebroOverrides(overrides map[string]curated.CardOverride, cb []cerebro.Card) error {
+// checkCardOverrides fails when a curated card override would silently do
+// nothing: its size, Cerebro or OCTGN override is keyed by a code that is not
+// the code of a face of the records (a misspelt code, or the card code of a
+// multi-face card), or it names a Cerebro image that Cerebro does not have.
+func checkCardOverrides(
+	overrides map[string]curated.CardOverride,
+	mc []marvelcdb.Card,
+	cb []cerebro.Card,
+) error {
+	faceCodes := make(map[string]bool)
+	entriesByCard, _, _ := groupEntries(mc)
+	for _, entries := range entriesByCard {
+		for _, entry := range entries {
+			faceCodes[entry.Code] = true
+		}
+	}
 	cerebroIDs := cerebroIDsOf(cb)
-	for _, faceCode := range slices.Sorted(maps.Keys(overrides)) {
-		id := overrides[faceCode].Cerebro
-		if id == "" {
+
+	for _, code := range slices.Sorted(maps.Keys(overrides)) {
+		override := overrides[code]
+		if override.Size == "" && override.Cerebro == "" && override.Octgn == "" {
 			continue
 		}
-		if _, found := cerebroIDs[strings.ToUpper(id)]; !found {
-			return fmt.Errorf("curated card %s: Cerebro image %s is not a Cerebro card", faceCode, id)
+		if !faceCodes[code] {
+			return fmt.Errorf("curated card %s: size, Cerebro and OCTGN overrides need the code of a face", code)
+		}
+		if override.Cerebro == "" {
+			continue
+		}
+		if _, found := cerebroIDs[strings.ToUpper(override.Cerebro)]; !found {
+			return fmt.Errorf("curated card %s: Cerebro image %s is not a Cerebro card", code, override.Cerebro)
 		}
 	}
 	return nil

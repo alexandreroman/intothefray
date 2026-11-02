@@ -9,13 +9,14 @@ import (
 // Sources lists the image sources of every face Build builds, in no particular
 // order, for the image pipeline's sources.json. Faces are listed before any
 // card is dropped: the pipeline is what finds them an image. The curated
-// Cerebro overrides apply, so swapped Cerebro images stay fixed; like Build, it
-// fails when one names an image Cerebro does not have. The curated OCTGN
-// overrides apply too, for faces whose records carry a wrong OCTGN id.
+// Cerebro overrides apply, so swapped Cerebro images stay fixed, and so do the
+// curated OCTGN overrides, for faces whose records carry a wrong OCTGN id.
+// Like Build, it fails when an override is not keyed by the code of a face or
+// names an image Cerebro does not have.
 func Sources(in Inputs) ([]cdn.SourceFace, error) {
 	// The same merged records as Build, so every face it builds is listed.
 	mc, _, _, _ := withFallback(in.MC, in.MCPacks, in.MC4DB, in.MC4DBPacks)
-	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
+	if err := checkCardOverrides(in.Curated.Cards, mc, in.CB); err != nil {
 		return nil, err
 	}
 	cerebroIDs := cerebroIDsOf(in.CB)

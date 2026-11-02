@@ -70,7 +70,7 @@ func Build(in Inputs) (Result, error) {
 	if in.MC, err = excludeSetCards(in.MC, in.Curated.Sets); err != nil {
 		return Result{}, err
 	}
-	if err := checkCerebroOverrides(in.Curated.Cards, in.CB); err != nil {
+	if err := checkCardOverrides(in.Curated.Cards, in.MC, in.CB); err != nil {
 		return Result{}, err
 	}
 	fr := frenchSourcesOf(in)

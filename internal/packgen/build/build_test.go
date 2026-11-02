@@ -607,6 +607,35 @@ func TestBuildRejectsUnknownCerebroOverride(t *testing.T) {
 	}
 }
 
+func TestBuildRejectsOverrideOfNoFace(t *testing.T) {
+	tests := []struct {
+		name     string
+		code     string
+		override curated.CardOverride
+	}{
+		{"unknown face code", "01001c", curated.CardOverride{Cerebro: "01001A"}},
+		{"card code of a multi-face card", "01001", curated.CardOverride{Size: pack.SizeLand}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in := withManifest(t, Inputs{
+				MC:      setsFixture(t),
+				MCPacks: corePacks,
+				CB:      []cerebro.Card{{ID: "01001A"}, {ID: "01001B"}},
+			})
+			// Set after withManifest, whose Sources call refuses the override too.
+			in.Curated = curated.Curated{Cards: map[string]curated.CardOverride{tt.code: tt.override}}
+
+			_, err := Build(in)
+
+			want := "curated card " + tt.code + ": size, Cerebro and OCTGN overrides need the code of a face"
+			if err == nil || !strings.Contains(err.Error(), want) {
+				t.Fatalf("got error %v, want one containing %q", err, want)
+			}
+		})
+	}
+}
+
 func TestBuildCarriesCardSetAside(t *testing.T) {
 	in := heroSetsInputs(t, nil)
 	in.Curated.Cards = map[string]curated.CardOverride{

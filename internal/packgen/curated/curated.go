@@ -18,9 +18,12 @@ import (
 // CardOverride replaces values derived from the sources for one card or face
 // code.
 type CardOverride struct {
+	// Size is the size to give the face instead of the one of its card type.
+	// It is only valid on the code of a face.
 	Size pack.Size `json:"size,omitempty"`
 	// Cerebro is the Cerebro image id to use for the face instead of the one
-	// matching its code, for cards whose Cerebro images are swapped.
+	// matching its code, for cards whose Cerebro images are swapped. It is
+	// only valid on the code of a face.
 	Cerebro string `json:"cerebro,omitempty"`
 	// Octgn is the OCTGN image file stem to use for the face instead of the
 	// one derived from its octgn_id, for cards whose source records carry a
