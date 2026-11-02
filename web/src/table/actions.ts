@@ -86,9 +86,10 @@ export interface ActionItem {
 
 /**
  * The key of each card and pile action, as its menu entry shows it and the
- * keys sheet lists it (KeysSheet.svelte). Several actions share a key, each
- * on its own kind of element: W draws a revealed card or from a deck, X
- * discards a card or a deck's top card, and with Shift, Draw X and Discard X.
+ * keys sheet lists it (KeysSheet.svelte); the arrow and a hand card's keys
+ * (keys.ts) have no menu entry. Several actions share a key, each on its own
+ * kind of element: W draws a revealed card or from a deck, X discards a card,
+ * a hand card or a deck's top card, and with Shift, Draw X and Discard X.
  */
 export const KEYS = {
   exhaust: 'E',
@@ -103,6 +104,7 @@ export const KEYS = {
   look: 'L',
   search: 'K',
   shuffle: 'U',
+  play: 'P',
 } as const;
 
 // Groups of a card in play, in menu order: Exhaust and Flip (or the stage

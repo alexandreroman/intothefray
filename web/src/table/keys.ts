@@ -5,7 +5,7 @@
 
 import { modal } from '../components/modal.svelte';
 import type { Action, CardView, Size, View } from '../lib/types';
-import { countersOf, discardPileOf, type ActionItem, type CounterKind } from './actions';
+import { countersOf, discardPileOf, KEYS, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
 import { freeSlot } from './layout';
 import { areaOf, ownSeats } from './seats';
@@ -165,7 +165,7 @@ function playerKey(event: KeyboardEvent, table: KeyTable): boolean {
     return !event.shiftKey && !event.repeat && handKey(key, hovered.id, table);
   }
   // A starts an arrow from a card in play; a click then picks the card it points at.
-  if (key === 'a' && hovered.kind === 'card') {
+  if (key === KEYS.arrow.toLowerCase() && hovered.kind === 'card') {
     const card = table.view.table?.cards.find((c) => c.id === hovered.id);
     if (event.shiftKey || event.repeat || card?.zone !== 'table') {
       return false;
@@ -250,7 +250,7 @@ function removeOne(adds: CounterAction, table: KeyTable): boolean {
  */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   switch (key) {
-    case 'p': {
+    case KEYS.play.toLowerCase(): {
       const seat = handSeatOf(id, table.view);
       const card = table.view.table?.cards.find((c) => c.id === id);
       if (seat === undefined || !table.view.table || !card) {
@@ -260,7 +260,7 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
       table.act({ kind: 'play', card: id, x, y });
       return true;
     }
-    case 'x':
+    case KEYS.discard.toLowerCase():
     case 'backspace': {
       // A side deck's card without a discard pile has nowhere to be discarded to.
       const card = table.view.table?.cards.find((c) => c.id === id);

@@ -80,7 +80,7 @@
     [
       'Card in your hand',
       [
-        { what: 'Play', keys: ['P'] },
+        { what: 'Play', keys: [KEYS.play] },
         { what: 'Discard', keys: [KEYS.discard, '⌫'] },
       ],
     ],
