@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -116,18 +117,9 @@ func TestImportDeckOK(t *testing.T) {
 			t.Fatalf("cards not sorted: %s before %s", got.Cards[i-1].Code, got.Cards[i].Code)
 		}
 	}
-	if !contains(got.Cards, game.DeckEntry{Code: "01043d", Qty: 2}) {
+	if !slices.Contains(got.Cards, game.DeckEntry{Code: "01043d", Qty: 2}) {
 		t.Errorf("01043d x2 missing from %v", got.Cards)
 	}
-}
-
-func contains(cards []game.DeckEntry, want game.DeckEntry) bool {
-	for _, card := range cards {
-		if card == want {
-			return true
-		}
-	}
-	return false
 }
 
 func TestImportDeckUnsupported(t *testing.T) {
