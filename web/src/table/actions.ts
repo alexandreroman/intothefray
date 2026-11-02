@@ -215,7 +215,7 @@ export function actionsFor(
       if (card?.zone !== 'table') {
         return [];
       }
-      return cardActions(card, context, groupUnitsOf(card, group, context.table));
+      return cardActions(card, context, leavingUnits(card, group, context.table));
     }
     case 'pile': {
       const pile = context.table.piles.find((p) => p.id === el.id);
@@ -261,26 +261,26 @@ function spectatorActions(el: TableElement, table: TableView): ActionItem[] {
 // ---- Cards in play ----
 
 /**
- * The units Discard and Move to take when the card is one of the selected
- * group: its units (groupUnits), when there are two or more. Null otherwise:
- * the card's own items.
+ * The units Discard and Move to take: the selected group's units
+ * (groupUnits) when the card is one of a group of two or more, else the card
+ * alone.
  */
-function groupUnitsOf(
+function leavingUnits(
   card: CardView,
   group: ReadonlySet<string> | undefined,
   table: TableView,
-): CardView[] | null {
+): CardView[] {
   if (!group?.has(card.id)) {
-    return null;
+    return [card];
   }
   const units = groupUnits(group, table.cards).flatMap((id) => {
     const unit = table.cards.find((c) => c.id === id);
     return unit ? [unit] : [];
   });
-  return units.length >= 2 ? units : null;
+  return units.length >= 2 ? units : [card];
 }
 
-function cardActions(card: CardView, context: Context, units: CardView[] | null): ActionItem[] {
+function cardActions(card: CardView, context: Context, units: CardView[]): ActionItem[] {
   // A card revealed on a deck lies there, out of play: it is neither exhausted nor given statuses
   // or modifiers (the server refuses it, inPlayCard), and its owner draws it from there. It takes
   // tokens, which count on it where it lies.
@@ -305,7 +305,7 @@ function cardActions(card: CardView, context: Context, units: CardView[] | null)
   if (!revealed) {
     items.push(counterMenu(card, 'status'), modifierMenu(card));
   }
-  items.push(...(units ? groupLeaveItems(units, context) : leaveItems(card, context)));
+  items.push(...leaveItems(units, context));
   return items;
 }
 
@@ -452,31 +452,51 @@ function modifierMenu(card: CardView): ActionItem {
 }
 
 /**
- * Discard and Move to, disabled while the card is, or holds, one that stays on
- * the table. A card of a side deck without a discard pile has no Discard.
+ * Discard and Move to, for a card or for a selected group (two units or
+ * more). A group's entries send one group action over every unit, as a group
+ * drop does (selection.ts, groupAction), and show only when every unit could
+ * take them alone. A card of a side deck without a discard pile has no
+ * Discard. Disabled while a unit is, or holds, a card that stays on the
+ * table, or for more units than one group takes.
  */
-function leaveItems(card: CardView, context: Context): ActionItem[] {
+function leaveItems(units: readonly CardView[], context: Context): ActionItem[] {
   const discard: ActionItem = {
     id: 'discard',
-    label: 'Discard',
+    label: units.length >= 2 ? `Discard ${units.length} cards` : 'Discard',
     key: 'X',
     altKeys: ['Backspace'],
     group: GROUP_LEAVE,
-    run: () => ({ kind: 'discard', card: card.id }),
+    run: () => actionOver(units, (unit) => ({ kind: 'discard', card: unit.id })),
   };
   const moveTo: ActionItem = {
     id: 'moveTo',
     label: 'Move to',
     group: GROUP_LEAVE,
-    menu: moveMenu(card, context),
+    menu: moveMenu(units, context),
   };
 
-  const items = discardPileOf(card, context.table.piles) === null ? [moveTo] : [discard, moveTo];
-  const reason = staysOnTable(card, context.table);
+  const discardable = units.every((unit) => discardPileOf(unit, context.table.piles) !== null);
+  const items = discardable ? [discard, moveTo] : [moveTo];
+  const reason = leaveRefusal(units, context.table);
   if (reason) {
     return items.map((item) => ({ ...item, disabled: true, reason }));
   }
   return items;
+}
+
+/** Why the units cannot leave the table together, or undefined when they can. */
+function leaveRefusal(units: readonly CardView[], table: TableView): string | undefined {
+  // Only a group can be that large: a single card is no group action.
+  if (units.length > MAX_COUNT) {
+    return `A group moves ${MAX_COUNT} cards at most`;
+  }
+  for (const unit of units) {
+    const reason = staysOnTable(unit, table);
+    if (reason) {
+      return reason;
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -499,44 +519,13 @@ export function staysOnTable(card: CardView, table: TableView): string | undefin
 }
 
 /**
- * Discard and Move to for a selected group: one group action over every unit,
- * as a group drop sends (selection.ts, groupAction). An entry shows only when
- * every unit could take it alone, and none shuffles: the server refuses to
- * shuffle a group (resolveGroup). Disabled for more units than one group
- * takes, or while a unit is, or holds, a card that stays on the table.
+ * The Move to submenu of a card or a group. Encounter cards go to no hand;
+ * the viewer's cards to the hand of their own deck (the server picks it). A
+ * deck shows when every unit may return to its home deck (homeDeckFor),
+ * named "decks" when those differ. Only a single card shuffles into its
+ * deck: the server refuses to shuffle a group (resolveGroup).
  */
-function groupLeaveItems(units: readonly CardView[], context: Context): ActionItem[] {
-  const discard: ActionItem = {
-    id: 'discard',
-    label: `Discard ${units.length} cards`,
-    key: 'X',
-    altKeys: ['Backspace'],
-    group: GROUP_LEAVE,
-    run: () => groupOf(units, (unit) => ({ kind: 'discard', card: unit.id })),
-  };
-  const moveTo: ActionItem = {
-    id: 'moveTo',
-    label: 'Move to',
-    group: GROUP_LEAVE,
-    menu: groupMoveMenu(units, context),
-  };
-
-  const discardable = units.every((unit) => discardPileOf(unit, context.table.piles) !== null);
-  const items = discardable ? [discard, moveTo] : [moveTo];
-  if (units.length > MAX_COUNT) {
-    const reason = `A group moves ${MAX_COUNT} cards at most`;
-    return items.map((item) => ({ ...item, disabled: true, reason }));
-  }
-  for (const unit of units) {
-    const reason = staysOnTable(unit, context.table);
-    if (reason) {
-      return items.map((item) => ({ ...item, disabled: true, reason }));
-    }
-  }
-  return items;
-}
-
-function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem[] {
+function moveMenu(units: readonly CardView[], context: Context): ActionItem[] {
   const menu: ActionItem[] = [];
 
   if (units.every((unit) => context.seats.includes(unit.owner))) {
@@ -545,36 +534,41 @@ function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem
       label: 'Hand',
       key: 'H',
       group: 0,
-      run: () => groupOf(units, (unit) => ({ kind: 'toHand', card: unit.id })),
+      run: () => actionOver(units, (unit) => ({ kind: 'toHand', card: unit.id })),
     });
   }
-  // Each unit returns to its own home deck: the viewer's, or the encounter deck.
-  const homes = units.map((unit) =>
-    context.table.piles.find((pile) => pile.id === homeDeckOf(unit)),
-  );
-  const toDecks = units.every((unit, i) => {
-    const own = context.seats.includes(unit.owner);
-    return (own || unit.owner === -1) && homes[i] !== undefined;
-  });
-  if (toDecks) {
-    const first = homes[0];
-    const shared = first && homes.every((home) => home?.id === first.id);
-    const deck = shared ? deckName(first) : 'decks';
+  // The decks show when every unit has a home deck it may return to.
+  const homes = units
+    .map((unit) => homeDeckFor(unit, context.seats, context.table.piles))
+    .filter((home) => home !== undefined);
+  const [first] = homes;
+  if (first && homes.length === units.length) {
+    const deck = homes.every((home) => home.id === first.id) ? deckName(first) : 'decks';
     menu.push(
       {
         id: 'deckTop',
         label: `Top of ${deck}`,
         group: 0,
-        run: () => groupOf(units, (unit) => toDeck(unit, 'top')),
+        run: () => actionOver(units, (unit) => toDeck(unit, 'top')),
       },
       {
         id: 'deckBottom',
         label: `Bottom of ${deck}`,
         key: 'B',
         group: 0,
-        run: () => groupOf(units, (unit) => toDeck(unit, 'bottom')),
+        run: () => actionOver(units, (unit) => toDeck(unit, 'bottom')),
       },
     );
+    const [card] = units;
+    if (card && units.length === 1) {
+      const encounter = card.owner === -1 && !first.label;
+      menu.push({
+        id: 'deckShuffle',
+        label: encounter ? 'Shuffle into encounter deck' : `Shuffle into ${deck}`,
+        group: 0,
+        run: () => toDeck(card, 'shuffle'),
+      });
+    }
   }
 
   const outOfPlay: ActionItem[] = [];
@@ -583,7 +577,7 @@ function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem
       id: 'victory',
       label: 'Victory display',
       group: 0,
-      run: () => groupOf(units, (unit) => toPile(unit, PILE_VICTORY)),
+      run: () => actionOver(units, (unit) => toPile(unit, PILE_VICTORY)),
     });
   }
   const asides = units.every((unit) => hasPile(context.table, asidePileOf(unit, context.seats)));
@@ -592,7 +586,7 @@ function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem
       id: 'aside',
       label: 'Set aside',
       group: 0,
-      run: () => groupOf(units, (unit) => toPile(unit, asidePileOf(unit, context.seats))),
+      run: () => actionOver(units, (unit) => toPile(unit, asidePileOf(unit, context.seats))),
     });
   }
 
@@ -602,8 +596,15 @@ function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem
   return [...menu, ...outOfPlay];
 }
 
-/** One group action: the action each unit would send alone, in unit order. */
-function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Action): Action {
+/**
+ * What the units send: the card's own action for a single card, else one
+ * group action, the action each unit would send alone, in unit order.
+ */
+function actionOver(units: readonly CardView[], actionOf: (unit: CardView) => Action): Action {
+  const [card] = units;
+  if (card && units.length === 1) {
+    return actionOf(card);
+  }
   return { kind: 'group', actions: units.map(actionOf) };
 }
 
@@ -611,64 +612,6 @@ function groupOf(units: readonly CardView[], actionOf: (unit: CardView) => Actio
 export function deckName(home: PileView): string {
   const plain = home.kind === 'deck' || (home.kind === 'encounter' && !home.label);
   return plain ? 'deck' : pileName(home);
-}
-
-function moveMenu(card: CardView, context: Context): ActionItem[] {
-  const own = context.seats.includes(card.owner);
-  const menu: ActionItem[] = [];
-
-  // Encounter cards go to no hand; the viewer's cards to the hand of their own deck (the server picks
-  // it), other players' cards only to theirs.
-  if (own) {
-    menu.push({
-      id: 'hand',
-      label: 'Hand',
-      key: 'H',
-      group: 0,
-      run: () => ({ kind: 'toHand', card: card.id }),
-    });
-  }
-  // A card returns to its home deck, which is private to its owner.
-  const encounter = card.owner === -1;
-  const home = context.table.piles.find((pile) => pile.id === homeDeckOf(card));
-  if ((own || encounter) && home) {
-    const deck = deckName(home);
-    menu.push(
-      { id: 'deckTop', label: `Top of ${deck}`, group: 0, run: () => toDeck(card, 'top') },
-      {
-        id: 'deckBottom',
-        label: `Bottom of ${deck}`,
-        key: 'B',
-        group: 0,
-        run: () => toDeck(card, 'bottom'),
-      },
-      {
-        id: 'deckShuffle',
-        label: encounter && !home.label ? 'Shuffle into encounter deck' : `Shuffle into ${deck}`,
-        group: 0,
-        run: () => toDeck(card, 'shuffle'),
-      },
-    );
-  }
-
-  const outOfPlay: ActionItem[] = [];
-  if (hasPile(context.table, PILE_VICTORY)) {
-    outOfPlay.push({
-      id: 'victory',
-      label: 'Victory display',
-      group: 0,
-      run: () => toPile(card, PILE_VICTORY),
-    });
-  }
-  const aside = asidePileOf(card, context.seats);
-  if (hasPile(context.table, aside)) {
-    outOfPlay.push({ id: 'aside', label: 'Set aside', group: 0, run: () => toPile(card, aside) });
-  }
-
-  if (menu.length > 0 && outOfPlay.length > 0) {
-    menu.push(SEPARATOR);
-  }
-  return [...menu, ...outOfPlay];
 }
 
 /**
@@ -696,6 +639,23 @@ export function homeDeckOf(card: CardView): string {
     return card.home;
   }
   return card.owner === -1 ? PILE_ENCOUNTER : deckId(card.owner);
+}
+
+/**
+ * The home deck (homeDeckOf) the viewer may return the card to: a deck is
+ * private to its owner, so the viewer's own cards and encounter cards only.
+ * Undefined when the card is another player's, or the table lacks that deck.
+ */
+export function homeDeckFor(
+  card: CardView,
+  seats: readonly number[],
+  piles: readonly PileView[],
+): PileView | undefined {
+  if (!seats.includes(card.owner) && card.owner !== -1) {
+    return undefined;
+  }
+  const home = homeDeckOf(card);
+  return piles.find((pile) => pile.id === home);
 }
 
 /**

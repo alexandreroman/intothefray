@@ -12,7 +12,7 @@ import {
   type Point,
   type View,
 } from '../lib/types';
-import { deckDiscardOf, deckName, discardPileOf, homeDeckOf, staysOnTable } from './actions';
+import { deckDiscardOf, deckName, discardPileOf, homeDeckFor, staysOnTable } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
@@ -483,9 +483,8 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     return [];
   }
   const targets: PileTarget[] = [];
-  // A deck is private to its owner: the viewer's own cards and encounter cards only.
-  const home = table.piles.find((p) => p.id === homeDeckOf(card));
-  if (home && (seats.includes(card.owner) || card.owner === -1)) {
+  const home = homeDeckFor(card, seats, table.piles);
+  if (home) {
     const deck = deckName(home);
     targets.push({ pile: home.id, drop: 'top', label: `Top of ${deck}` });
   }
