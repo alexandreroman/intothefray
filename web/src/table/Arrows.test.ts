@@ -11,7 +11,15 @@ import dialogSource from '../components/Dialog.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { Arrow, CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, fakeSession, infoFrom, placed, domRect } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  placed,
+  playingView,
+  seated,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -43,42 +51,21 @@ const CARDS = [
 function makeView(
   extra: { cards?: TableCard[]; arrows?: Arrow[]; spectator?: boolean } = {},
 ): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
       : { role: 'player', name: 'Alex', color: 2, host: true, areas: ['p0'] },
     players: [
-      {
-        name: 'Alex',
-        color: 2,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 1 }],
-      },
-      {
-        name: 'Sam',
-        color: 0,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
+      seated('Alex', 2, [{ area: 'p0', handCount: 1 }], true),
+      seated('Sam', 0, [{ area: 'p1' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: extra.cards ?? CARDS,
-      piles: [],
       hands: extra.spectator ? undefined : { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
       arrows: extra.arrows,
     },
-    log: [],
-  };
+  });
 }
 
 // The screen, at zoom 1: the table's scroller fills it, the surface 20 px in and 40 px down

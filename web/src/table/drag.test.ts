@@ -15,7 +15,7 @@ import {
   type DropRect,
 } from './drag';
 import { spreadRows } from './rows';
-import { card, pile, rect } from './fixtures.testing';
+import { card, pile, playingView, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(
@@ -26,15 +26,11 @@ function makeView(
     spectator?: boolean;
   } = {},
 ): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: extra.cards ?? [],
       piles: extra.piles ?? [],
@@ -42,8 +38,7 @@ function makeView(
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 0, y: 0 },
     },
-    log: [],
-  };
+  });
 }
 
 const TABLE: DropRect = { kind: 'table', rect: rect(0, 300, 1000, 300) };

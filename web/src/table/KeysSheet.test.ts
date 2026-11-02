@@ -4,7 +4,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, View } from '../lib/types';
-import { fakeSession } from './fixtures.testing';
+import { fakeSession, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -31,30 +31,12 @@ const MINE: TableCard = {
 
 /** Alex (p0, the viewer) alone, with one card on the table. */
 function makeView(): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
+    players: [seated('Alex', 0, [{ area: 'p0' }], true)],
     table: {
       cards: [MINE],
-      piles: [],
-      stages: [],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 function sheet(): HTMLElement | null {

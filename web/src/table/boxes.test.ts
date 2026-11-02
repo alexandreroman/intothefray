@@ -1,6 +1,6 @@
 import { canShuffleIn, pileLabel, tileActions, type TileContext } from './boxes';
 import type { CardView, PileView, View } from '../lib/types';
-import { card, pile } from './fixtures.testing';
+import { card, pile, playingView, seated } from './fixtures.testing';
 
 /** A card of that seat's, in one of the piles. */
 function pileCard(id: string, owner: number): CardView {
@@ -19,36 +19,22 @@ const WITH_ENC: PileView[] = [...PILES, pile('enc', { kind: 'encounter' })];
 
 /** Alex plays p0 and p1 (Spider-Man); Sam sits at p2. */
 function makeView(): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [
-          { area: 'p0', heroName: 'Iron Man', ready: true, handCount: 0 },
-          { area: 'p1', heroName: 'Spider-Man', ready: true, handCount: 0 },
+      seated(
+        'Alex',
+        0,
+        [
+          { area: 'p0', heroName: 'Iron Man' },
+          { area: 'p1', heroName: 'Spider-Man' },
         ],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p2', ready: true, handCount: 0 }],
-      },
+        true,
+      ),
+      seated('Sam', 1, [{ area: 'p2' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
-    table: { cards: [], piles: PILES, stages: [], firstPlayer: { x: 0, y: 0 } },
-    log: [],
-  };
+    table: { piles: PILES, firstPlayer: { x: 0, y: 0 } },
+  });
 }
 
 function contextOf(view: View): TileContext {

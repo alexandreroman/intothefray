@@ -7,7 +7,15 @@ import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed, domRect } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -55,30 +63,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
     inDeck('c3', '01022'),
     card('q1', { code: '01100', owner: -1, back: 'encounter', zone: 'pile' }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
     table: {
       cards,
       piles: [
@@ -92,11 +77,9 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v', 'v2'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { x: 860, y: 40 },
       private: extra.private,
     },
-    log: [],
-  };
+  });
 }
 
 function asSpectator(view: View): View {

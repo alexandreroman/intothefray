@@ -8,7 +8,7 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { Action, PackFace, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
+import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -25,22 +25,8 @@ const infoOf = infoFrom(FACES);
 
 /** Rhino with Alex (p0, the viewer and host) alone: a card, the villain, a deck and a discard pile. */
 function makeView(): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
+    players: [seated('Alex', 0, [{ area: 'p0' }], true)],
     table: {
       cards: [
         card('mine', { x: 0 }),
@@ -52,10 +38,8 @@ function makeView(): View {
         pile('disc:p0', { kind: 'discard', owner: 0, x: 720, count: 1, cards: ['gone'] }),
       ],
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 function contextMenu(): HTMLElement | null {

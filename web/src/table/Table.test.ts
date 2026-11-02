@@ -10,7 +10,15 @@ import tableSource from './Table.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
-import { card, domRect, fakeSession, infoFrom, pile } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  playingView,
+  seated,
+} from './fixtures.testing';
 import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
@@ -102,38 +110,18 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     pile('d1', { owner: 1, x: 0, y: 630 }),
     pile('x1', { kind: 'discard', owner: 1, x: 130, y: 630, count: 0 }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 6 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 5 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 6 }], true),
+      seated('Sam', 1, [{ area: 'p1', heroName: 'Ant-Man', handCount: 5 }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 function surface(): HTMLElement {

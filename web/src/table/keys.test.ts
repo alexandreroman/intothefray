@@ -6,7 +6,7 @@ import { footprints, freeSlot, visualBox } from './layout';
 import { openModal } from '../components/modal.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, Point, Size, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
+import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -36,22 +36,8 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
     card('v', { code: '01094', owner: -1, back: 'villain' }),
     card('h', { zone: 'hand' }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
+    players: [seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 1 }], true)],
     table: {
       cards,
       piles: [
@@ -62,9 +48,8 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 700, y: 40 },
     },
-    log: [],
     ...rest,
-  };
+  });
 }
 
 function inHand(id: string): HTMLElement {

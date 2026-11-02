@@ -1,6 +1,6 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
 import { type Anim, diffViews, mergedLines, type OwnDrop } from './animate';
-import { card, pile } from './fixtures.testing';
+import { card, pile, playingView, seated } from './fixtures.testing';
 
 /** A pile of seat 0's, 10 cards, right of the table's origin. */
 function seatPile(id: string, extra: Partial<PileView> = {}): PileView {
@@ -35,30 +35,11 @@ function view(
 ): View {
   const cards = extra.cards ?? [];
   const [alexHand, samHand] = extra.handCounts ?? [0, 0];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: alexHand }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: samHand }],
-      },
+      seated('Alex', 0, [{ area: 'p0', handCount: alexHand }], true),
+      seated('Sam', 1, [{ area: 'p1', handCount: samHand }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles: extra.piles ?? [
@@ -76,7 +57,7 @@ function view(
       ...(extra.look && { private: extra.look }),
     },
     log: extra.log ?? [OLD_LINE],
-  };
+  });
 }
 
 describe('diffViews', () => {

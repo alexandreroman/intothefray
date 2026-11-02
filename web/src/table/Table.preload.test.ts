@@ -7,7 +7,7 @@ import Table from './Table.svelte';
 import { gameCards, loadGameCards, loadIndex } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import type { PackCard, PackFace, View } from '../lib/types';
-import { fakeSession } from './fixtures.testing';
+import { fakeSession, playingView } from './fixtures.testing';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -58,16 +58,12 @@ const POOL: PackCard[] = [
 ];
 
 function makeView(): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'spectator', color: -1, host: false },
     players: [],
     spectators: 1,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
-    table: { cards: [], piles: [], stages: [], firstPlayer: { x: 0, y: 0 } },
-    log: [],
-  };
+    table: { firstPlayer: { x: 0, y: 0 } },
+  });
 }
 
 /** Lets the pool's promise settle and the table react to it. */

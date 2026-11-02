@@ -36,7 +36,7 @@ import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
 import surfaceSource from './Surface.svelte?raw';
 import handSource from './Hand.svelte?raw';
-import { card, fakeSession, pile } from './fixtures.testing';
+import { card, fakeSession, pile, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -119,31 +119,16 @@ const IN_PLAY: TableCard = card('t1', { x: 300 });
 /** Rhino with the viewer, Sam, alone at the table, holding three cards, one card in play. */
 function makeView(): View {
   const hand = [handCard('h1'), handCard('h2'), handCard('h3')];
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Sam', color: 0, host: true, areas: ['p0'] },
     players: [
-      {
-        name: 'Sam',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: hand.length }],
-      },
+      seated('Sam', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: hand.length }], true),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: [...hand, IN_PLAY],
-      piles: [],
-      stages: [],
       hands: { p0: hand.map((card) => card.id) },
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 /** A card of Sam's lying far right: the table's content is 1500 + 112 = 1612 units wide. */

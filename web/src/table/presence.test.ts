@@ -4,7 +4,15 @@ import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
 import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../lib/types';
-import { card, infoFrom, placed, domRect, tallTable } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  infoFrom,
+  placed,
+  playingView,
+  seated,
+  tallTable,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -32,42 +40,21 @@ const CARDS = [
  * viewer is Alex, or a spectator.
  */
 function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 1 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', handCount: 1 }], true),
+      seated('Sam', 1, [{ area: 'p1' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: CARDS,
-      piles: [],
       hands: extra.spectator ? undefined : { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
       arrows: extra.arrows,
     },
-    log: [],
-  };
+  });
 }
 
 /** The network under a real session: what it sends, and a way to answer. */

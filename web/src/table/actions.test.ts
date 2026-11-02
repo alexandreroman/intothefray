@@ -10,7 +10,7 @@ import {
 } from './actions';
 import { knownCard } from '../lib/catalog';
 import type { Action, CardView, PackFace, PileView, View, YouView } from '../lib/types';
-import { card, infoFrom, pile } from './fixtures.testing';
+import { card, infoFrom, pile, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -63,30 +63,11 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
     pile('vic', { kind: 'victory', count: 1, cards: ['q'] }),
     pile('saside', { kind: 'aside', count: 3, cards: ['r', 'o', 'p'] }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 1 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', handCount: 1 }], true),
+      seated('Sam', 1, [{ area: 'p1' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
@@ -95,10 +76,8 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 /** Rhino on the given stage card, each of his three stages a single-faced card. */

@@ -17,7 +17,7 @@ import type {
   Stage,
   View,
 } from '../lib/types';
-import { card, fakeSession, infoFrom } from './fixtures.testing';
+import { card, fakeSession, infoFrom, playingView, seated } from './fixtures.testing';
 
 // Whether the viewer prefers reduced motion: withReducedMotion turns it on.
 const reducedMotion = vi.hoisted(() => ({ on: false }));
@@ -77,30 +77,12 @@ function makeView(
   } = {},
 ): View {
   const [alexHand, samHand] = extra.handCounts ?? [5, 5];
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: alexHand }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: samHand }],
-      },
+      seated('Alex', 0, [{ area: 'p0', handCount: alexHand }], true),
+      seated('Sam', 1, [{ area: 'p1', handCount: samHand }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles: extra.piles ?? PILES,
@@ -110,7 +92,7 @@ function makeView(
       ...(extra.hands && { hands: extra.hands }),
     },
     log: extra.log ?? [START],
-  };
+  });
 }
 
 /** A Web Animation as the stub below starts it: it never ends unless cancelled, or finished by a test. */

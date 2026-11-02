@@ -9,39 +9,26 @@ import {
   seatOf,
 } from './seats';
 import type { View } from '../lib/types';
-import { card, pile } from './fixtures.testing';
+import { card, pile, playingView, seated } from './fixtures.testing';
 
 /** Alex (colour 0) plays two decks, p0 and p1 (Spider-Man); Sam (colour 1) one, p2. */
 function makeView(
   you: View['you'] = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] },
 ): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you,
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [
-          { area: 'p0', hero: '01010', heroName: 'Iron Man', ready: true, handCount: 5 },
-          { area: 'p1', hero: '01001', heroName: 'Spider-Man', ready: true, handCount: 4 },
+      seated(
+        'Alex',
+        0,
+        [
+          { area: 'p0', hero: '01010', heroName: 'Iron Man', handCount: 5 },
+          { area: 'p1', hero: '01001', heroName: 'Spider-Man', handCount: 4 },
         ],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p2', hero: '01029', heroName: 'She-Hulk', ready: true, handCount: 6 }],
-      },
+        true,
+      ),
+      seated('Sam', 1, [{ area: 'p2', hero: '01029', heroName: 'She-Hulk', handCount: 6 }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: [
         card('alex1', { owner: 1 }),
@@ -54,11 +41,9 @@ function makeView(
         pile('deck:p2', { owner: 2 }),
         pile('enc', { kind: 'encounter' }),
       ],
-      stages: [],
       firstPlayer: { x: 0, y: 0 },
     },
-    log: [],
-  };
+  });
 }
 
 const SPECTATOR: View['you'] = { role: 'spectator', color: -1, host: false };

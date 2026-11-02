@@ -3,7 +3,17 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, domRect, fakeSession, infoFrom, pile, placed, tallTable } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  tallTable,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -60,36 +70,14 @@ function makeView(
     piles.push(pile('deck:p1', { owner: 1, x: 600, y: 520 }));
   }
   const inPile = discarded.map((id) => card(id, { code: DISCARD_CODES[id], zone: 'pile' }));
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 }],
-      },
-      ...(extra.withSam
-        ? [
-            {
-              name: 'Sam',
-              color: 1,
-              host: false,
-              ready: true,
-              online: true,
-              decks: [{ area: 'p1' as const, ready: true, handCount: 0 }],
-            },
-          ]
-        : []),
+      seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 3 }], true),
+      ...(extra.withSam ? [seated('Sam', 1, [{ area: 'p1' }])] : []),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: [...(extra.cards ?? CARDS), ...inPile],
       piles,
@@ -98,8 +86,7 @@ function makeView(
       firstPlayer: { x: 860, y: extra.firstPlayerY ?? 340 },
       active: extra.active,
     },
-    log: [],
-  };
+  });
 }
 
 /**

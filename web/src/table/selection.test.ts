@@ -3,18 +3,13 @@ import type { Action, CardView, PileView, View } from '../lib/types';
 import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
 import { cardsInBand, groupAction, groupPileTargets, groupUnits } from './selection';
-import { card, pile, rect } from './fixtures.testing';
+import { card, pile, playingView, rect } from './fixtures.testing';
 import { rowPitch, spreadRows } from './rows';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(cards: CardView[], piles: PileView[]): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
@@ -22,8 +17,7 @@ function makeView(cards: CardView[], piles: PileView[]): View {
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 0, y: 0 },
     },
-    log: [],
-  };
+  });
 }
 
 describe('cardsInBand', () => {

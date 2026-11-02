@@ -7,7 +7,16 @@ import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { TOUCH_MODE_QUERY } from './touch';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
-import { card, domRect, fakeSession, infoFrom, pile, placed } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -41,39 +50,18 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     pile('enc', { kind: 'encounter', x: 900, count: 29 }),
     pile('encd', { kind: 'encounterDiscard', x: 900, y: 200, count: 0, cards: [] }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 1 }], true),
+      seated('Sam', 1, [{ area: 'p1', heroName: 'Ant-Man' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
       hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 async function renderTable(view = makeView()) {

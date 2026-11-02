@@ -6,7 +6,7 @@ import { pileLabel } from './boxes';
 import { dropAction, pileTargets, sourceOf } from './drag';
 import { pileBack } from './face';
 import { chipsByFrame, footprints, ownerFrames, pileBox } from './layout';
-import { card, pile } from './fixtures.testing';
+import { card, pile, playingView } from './fixtures.testing';
 
 /** An encounter card nobody owns, in one of the piles. */
 function encounterCard(id: string, extra: Partial<CardView> = {}): CardView {
@@ -61,12 +61,8 @@ const WRECKER = [
 ];
 
 function makeView(piles: PileView[] = WRECKER): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [],
-    spectators: 0,
     config: {
       scenario: 'wrecking_crew',
       difficulty: 'standard',
@@ -78,11 +74,9 @@ function makeView(piles: PileView[] = WRECKER): View {
       cards: [encounterCard('d1', { home: 'enc:wrecker' })],
       piles,
       hands: { p0: [] },
-      stages: [],
       firstPlayer: { x: 0, y: 0 },
     },
-    log: [],
-  };
+  });
 }
 
 function menu(id: string, view = makeView()): ActionItem[] {

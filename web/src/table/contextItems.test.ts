@@ -9,7 +9,7 @@ import {
 } from './contextItems';
 import { knownCard } from '../lib/catalog';
 import type { CardView, PackFace, View, YouView } from '../lib/types';
-import { card, infoFrom, pile } from './fixtures.testing';
+import { card, infoFrom, pile, playingView } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -30,30 +30,7 @@ const infoOf = infoFrom(FACES);
 
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
 function makeView(): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
     table: {
       cards: [
         card('mine', { tokens: { dmg: 6 }, status: { stunned: 1 } }),
@@ -105,10 +82,8 @@ function makeView(): View {
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 const SPECTATOR: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
