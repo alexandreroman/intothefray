@@ -17,6 +17,7 @@ import {
   type CardView,
   type MarkerName,
   type PileView,
+  type Point,
   type TableView,
 } from '../lib/types';
 import { playerColorToken } from '../lib/playerColor';
@@ -323,12 +324,21 @@ function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HT
 /**
  * Whether a copy flying to a pile shows its face as a pile draws it: where
  * it shows it, on the pile it leaves, or, turning face up, on the pile it
- * lands on. A card revealed on a deck lies there as the pile draws it. The
- * viewer's own drop leaves its ghost, which the table draws.
+ * lands on. A card revealed on a deck lies there as the pile draws it, but
+ * its ghost, the viewer's or another player's, lies as the table draws it:
+ * landscape for a side scheme (from, wider than tall). The viewer's own drop
+ * leaves its ghost, which the table draws.
  */
-function facesAsOnPile(anim: Extract<Anim, { kind: 'fly' }>, card: CardView | undefined): boolean {
-  if (anim.turns === 'up' || card?.onPile !== undefined) {
+function facesAsOnPile(
+  anim: Extract<Anim, { kind: 'fly' }>,
+  card: CardView | undefined,
+  from: Measured | undefined,
+): boolean {
+  if (anim.turns === 'up') {
     return true;
+  }
+  if (card?.onPile !== undefined) {
+    return from === undefined || from.h >= from.w;
   }
   return anim.fromPile !== undefined && !anim.dropped;
 }
@@ -758,8 +768,9 @@ class TableMotion {
             anim.turns === 'up'
               ? (cardsAfter.get(anim.id) ?? cardsBefore.get(anim.id))
               : (cardsBefore.get(anim.id) ?? cardsAfter.get(anim.id));
-          const flight = this.#flight(root, anim.toPile, before.get(anim.id), card, {
-            asOnPile: facesAsOnPile(anim, card),
+          const from = before.get(anim.id);
+          const flight = this.#flight(root, anim.toPile, from, card, {
+            asOnPile: facesAsOnPile(anim, card, from),
             turns: anim.turns,
           });
           if (flight) {
@@ -933,6 +944,31 @@ class TableMotion {
       requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
+  }
+
+  /**
+   * The ghost of a landscape card picked up off the deck it is revealed on
+   * (DragLayer): it turns a quarter clockwise from the deck's portrait slot,
+   * which draws it turned counter-clockwise, to lie landscape, the reverse of
+   * the quarter a landscape card turns on its way to a pile (quarterFrames).
+   * It turns about the point the pointer holds (held, as fractions of its
+   * box), which stays on the same spot of its art. It turns on the rotate
+   * property, as a tilt does, apart from the transform of an exhausted card.
+   */
+  turnOffPile(ghost: HTMLElement, held: Point): void {
+    if (prefersReducedMotion.current) {
+      return;
+    }
+    const transformOrigin = `${held.x * 100}% ${held.y * 100}%`;
+    this.#run(
+      ghost,
+      [
+        { rotate: '-90deg', transformOrigin },
+        { rotate: '0deg', transformOrigin },
+      ],
+      { duration: MOVE_MS, easing: MOVE_EASING },
+      null,
+    );
   }
 
   /**

@@ -24,6 +24,8 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
+  // A side scheme: a landscape card.
+  '01107': [{ name: "Breakin' & Takin'", type: 'side_scheme', size: 'land' }],
 };
 
 const infoOf = infoFrom(FACES);
@@ -558,6 +560,24 @@ describe("other players' presence", () => {
     expect(document.querySelector('.presence .card[data-id="sam"]')).not.toBeNull();
     await vi.advanceTimersByTimeAsync(2_000);
     expect(document.querySelector('.presence .card')).toBeNull();
+  });
+
+  it('draws a side scheme picked up off the deck it is revealed on landscape', async () => {
+    const view = makeView();
+    view.table!.piles = [{ id: 'enc', kind: 'encounter', owner: -1, x: 0, y: 0, count: 20 }];
+    view.table!.cards = [
+      ...CARDS,
+      card('ss', { code: '01107', owner: -1, back: 'encounter', onPile: 'enc' }),
+    ];
+    const { receive } = await renderTable(view);
+
+    receive({ color: 1, name: 'Sam', drag: { cards: ['ss'], x: 500, y: 320 } });
+    await nextFrame();
+    const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="ss"]');
+    // Its corner where Sam's landscape ghost has it, not turned into the deck's portrait slot.
+    expect([ghost?.style.left, ghost?.style.top]).toEqual(['520px', '360px']);
+    expect([ghost?.style.width, ghost?.style.height]).toEqual(['157px', '112px']);
+    expect(ghost?.querySelector('.land-in-portrait')).toBeNull();
   });
 
   it('ignores a dragged marker it does not know, instead of drawing the first player token', async () => {

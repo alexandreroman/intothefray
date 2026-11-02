@@ -1225,6 +1225,42 @@ describe('Table animations', () => {
         expectQuarterThenFlip(container);
       });
 
+      it("revealed on its deck, the viewer's own drop back on it flies from its landscape ghost", async () => {
+        const revealed = scheme({ onPile: 'enc', x: 0, y: 300 });
+        const { next, container } = await renderTable(makeView([revealed], { piles: piles(20) }));
+        interaction.land({
+          action: 1,
+          element: { kind: 'card', id: 'ss' },
+          card: 'ss',
+          lifted: ['ss'],
+          handOrder: null,
+        });
+        // Picked up, it lies landscape (DragLayer.svelte).
+        landGhost(container, 'ss', { x: 250, y: 150 }, { w: 98, h: 70 });
+
+        await next(makeView([], { piles: piles(21) }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(container.querySelector('.fly')?.getAttribute('style')).toContain('left: 250px');
+        // It shows as its ghost does, landscape, not as the deck's slot draws it.
+        expect(container.querySelector('.fly img.land')).not.toBeNull();
+        expect(container.querySelector('.fly .land-in-portrait')).toBeNull();
+        expectQuarterThenFlip(container);
+      });
+
+      it('revealed on its deck, going back into it from its slot turns no quarter', async () => {
+        const revealed = scheme({ onPile: 'enc', x: 0, y: 300 });
+        const { next, container } = await renderTable(makeView([revealed], { piles: piles(20) }));
+
+        await next(makeView([], { piles: piles(21) }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        // It leaves the slot as the slot draws it, already turned a quarter.
+        expect(container.querySelector('.fly .land-in-portrait')).not.toBeNull();
+        const { keyframes, options } = flightOf(container);
+        expect(options.duration).toBe(420);
+        expect(keyframes.map((frame) => frame.offset)).toEqual([0, 0.6, 0.8, 1]);
+        expect(String(keyframes.at(-1)?.transform)).toContain(' rotate(0deg) ');
+      });
+
       it('discarded face up only turns a quarter, as the pile shows it', async () => {
         const { next, container } = await renderTable(makeView([scheme()], { piles: piles(20) }));
 

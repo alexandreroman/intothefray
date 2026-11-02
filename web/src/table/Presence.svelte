@@ -449,8 +449,11 @@
       if (!card) {
         return hiddenCard(id, x, y);
       }
+      // Off the deck it is revealed on, a card lies as the table draws it: landscape for a side
+      // scheme, as the dragging player's ghost (DragLayer).
       if (card.zone === 'table' && first?.zone === 'table') {
-        return { ...card, x: x + card.x - first.x, y: y + drawnGap(rowMap, first.y, card.y) };
+        const dy = drawnGap(rowMap, first.y, card.y);
+        return { ...card, x: x + card.x - first.x, y: y + dy, onPile: undefined };
       }
       return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
     });

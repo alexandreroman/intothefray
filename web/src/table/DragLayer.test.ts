@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
@@ -21,9 +22,25 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
   loadGameCards: vi.fn(),
 }));
 
+// Whether the viewer prefers reduced motion: withReducedMotion turns it on.
+const reducedMotion = vi.hoisted(() => ({ on: false }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return reducedMotion.on;
+    },
+  },
+}));
+
+/** A side scheme: a landscape card. */
+const SIDE_SCHEME = '01107';
+
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
+  [SIDE_SCHEME]: [{ name: "Breakin' & Takin'", type: 'side_scheme', size: 'land' }],
 };
 
 const infoOf = infoFrom(FACES);
@@ -230,6 +247,14 @@ async function moveTo(x: number, y: number, buttons = 1) {
 
 async function release(x: number, y: number) {
   await fireEvent.pointerUp(window, { clientX: x, clientY: y });
+}
+
+/** The drags sent with the session's presence, in order. */
+function dragsSent(session: { sendPresence: ReturnType<typeof vi.fn> }): unknown[] {
+  return session.sendPresence.mock.calls
+    .map(([fields]) => fields as { drag?: unknown })
+    .filter((fields) => 'drag' in fields)
+    .map((fields) => fields.drag);
 }
 
 beforeEach(() => {
@@ -731,6 +756,127 @@ describe('dragging a table card', () => {
     await release(50, 400);
     await fireEvent.click(placed('mine'));
     expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+  });
+});
+
+describe('dragging a side scheme revealed on its deck', () => {
+  /** A Web Animation as the stub below starts it: it never ends. */
+  const animate = vi.fn(() => ({ finished: new Promise<void>(() => {}), cancel: vi.fn() }));
+  let original: typeof Element.prototype.animate;
+
+  beforeEach(() => {
+    original = Element.prototype.animate;
+    Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = original;
+    animate.mockClear();
+    reducedMotion.on = false;
+  });
+
+  /**
+   * Picks up a card revealed on the encounter deck, which lies at 20, 40 on
+   * the screen: the deck's portrait slot, 112 by 157, is held 28 px in from
+   * its left edge, 117 down. A side scheme shows there turned a quarter
+   * counter-clockwise: that is 40 px in from the left edge of the landscape
+   * card, 157 by 112, and 28 down.
+   */
+  async function pickUp(code = SIDE_SCHEME) {
+    const revealed = card('ss', { code, owner: -1, back: 'encounter', onPile: 'enc', x: 0, y: 0 });
+    const table = await renderTable(makeView({ cards: [...CARDS, revealed] }));
+    await press(placed('ss', '.card'), 48, 157);
+    return table;
+  }
+
+  /** A ghost's left, top, width and height, in px, to the thousandth. */
+  function boxOf(ghost: HTMLElement | undefined): number[] {
+    const style = ghost?.style;
+    const sides = [style?.left, style?.top, style?.width, style?.height];
+    return sides.map((side) => Math.round(Number.parseFloat(side ?? '') * 1000) / 1000);
+  }
+
+  it('lies landscape under the pointer, the same spot of its art held', async () => {
+    await pickUp();
+    await moveTo(348, 457);
+    const [ghost] = ghosts();
+    expect(ghost?.dataset.id).toBe('ss');
+    expect(boxOf(ghost)).toEqual([308, 429, 157, 112]);
+    expect(ghost?.classList).toContain('land');
+    expect(ghost?.querySelector('.land-in-portrait')).toBeNull();
+  });
+
+  it('turns a quarter clockwise off the slot, about the point held', async () => {
+    await pickUp();
+    await moveTo(348, 457);
+    await waitFor(() => expect(animate).toHaveBeenCalledOnce());
+    expect(animate.mock.contexts[0]).toBe(ghosts()[0]);
+    const [keyframes, options] = animate.mock.calls[0] as unknown as [
+      Keyframe[],
+      KeyframeAnimationOptions,
+    ];
+    // From the deck's slot, turned a quarter counter-clockwise, to landscape.
+    expect(keyframes.map((frame) => frame.rotate)).toEqual(['-90deg', '0deg']);
+    // About the point held, 40 px in from its left edge and 28 down: 25.48 %, 25 %.
+    for (const frame of keyframes) {
+      const [x = NaN, y = NaN] = String(frame.transformOrigin).split(' ').map(Number.parseFloat);
+      expect(x).toBeCloseTo((40 / 157) * 100);
+      expect(y).toBeCloseTo(25);
+    }
+    expect(options.duration).toBe(250);
+  });
+
+  it('lies landscape at once with reduced motion', async () => {
+    reducedMotion.on = true;
+    await pickUp();
+    await moveTo(348, 457);
+    await tick();
+    expect(boxOf(ghosts()[0]).slice(2)).toEqual([157, 112]);
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('is placed where its landscape ghost lands, the others told of that corner', async () => {
+    const { session } = await pickUp();
+    await moveTo(348, 457);
+    // Its corner at 308, 429 on the screen: 288, 389 on the table, not snapped.
+    expect(dragsSent(session)).toEqual([{ cards: ['ss'], x: 288, y: 389 }]);
+
+    await release(348, 457);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'ss', x: 290, y: 390 },
+      0,
+    );
+    // Set down landscape on its grid spot, 310, 430 on the screen, until the server answers.
+    const [ghost] = ghosts();
+    expect(ghost?.classList).toContain('landed');
+    expect(boxOf(ghost)).toEqual([310, 430, 157, 112]);
+  });
+
+  it('goes back on top of its deck when dropped there, its ghost landscape', async () => {
+    const { session } = await pickUp();
+    await moveTo(90, 200);
+    await release(90, 200);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'toDeck', card: 'ss', where: 'top', pile: 'enc' },
+      0,
+    );
+    // The motion flies it onto the deck from there, turning a quarter (Table.motion.test.ts).
+    expect(boxOf(ghosts()[0])).toEqual([50, 172, 157, 112]);
+  });
+
+  it('keeps a portrait card revealed on its deck in its box, held where it was', async () => {
+    const { session } = await pickUp('01001');
+    await moveTo(348, 457);
+    // Held 28 px in from its left edge, 117 down: its corner at 320, 340 on the screen.
+    expect(boxOf(ghosts()[0])).toEqual([320, 340, 112, 157]);
+    await tick();
+    expect(animate).not.toHaveBeenCalled();
+
+    await release(348, 457);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'ss', x: 300, y: 300 },
+      0,
+    );
   });
 });
 
@@ -1368,16 +1514,6 @@ describe('the hand on touch', () => {
 });
 
 describe('telling the other players about the drag', () => {
-  type Fields = { drag?: unknown };
-
-  /** The drags sent with the session's presence, in order. */
-  function dragsSent(session: { sendPresence: ReturnType<typeof vi.fn> }): unknown[] {
-    return session.sendPresence.mock.calls
-      .map(([fields]) => fields as Fields)
-      .filter((fields) => 'drag' in fields)
-      .map((fields) => fields.drag);
-  }
-
   it('tells where it is over the table, and null once when it leaves it', async () => {
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);

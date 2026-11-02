@@ -5,10 +5,12 @@
   over the whole page at the table's zoom, outside the table's surface, so
   that new views redrawing the table leave it alone. The drop targets are
   measured on the screen and drag.ts decides what the drop sends. Once
-  dropped, it stays drawn where it landed until the server answers.
+  dropped, it stays drawn where it landed until the server answers. A card
+  revealed on a deck is dragged as the table draws it: a side scheme turns
+  from the deck's portrait slot to lie landscape.
 -->
 <script lang="ts">
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import type {
     Action,
     Area,
@@ -50,6 +52,7 @@
   import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
+  import { motion } from './motion.svelte';
   import { ALL_ROWS, drawnGap, type RowMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
@@ -101,6 +104,8 @@
     z: 0,
   };
 
+  /** The layer the ghosts are drawn in. */
+  let layer = $state<HTMLElement>();
   /** The pointer during a drag, on the screen. */
   let pointer = $state<Point | null>(null);
   /** The other players were told of the drag: they must be told of its end. */
@@ -268,6 +273,21 @@
       lifted = [from.card];
     }
     interaction.lift(movedCard(from), lifted);
+    const card = from.kind === 'card' ? cardsById.get(from.card) : undefined;
+    if (card && slotOf(card).rotated) {
+      void turnOffPile(card.id, grab);
+    }
+  }
+
+  /** Once drawn, the ghost of a card picked up off the deck's slot turns to lie landscape. */
+  async function turnOffPile(id: string, held: Point): Promise<void> {
+    await tick();
+    const ghost = layer?.querySelector<HTMLElement>(
+      `.card.ghost:not(.landed)[data-id="${CSS.escape(id)}"]`,
+    );
+    if (ghost) {
+      motion.turnOffPile(ghost, held);
+    }
   }
 
   /** The units of the selection when pressing that card drags it all: a selected card, 2 units at least. */
@@ -301,12 +321,13 @@
       const card = cardsById.get(from.card);
       const surface = surfaceRect(root);
       const corner = card && surface ? onScreen(card, surface) : null;
-      if (corner) {
-        const box = boxOf(from);
-        return {
-          x: (pressedAt.x - corner.x) / (box.w * zoom),
-          y: (pressedAt.y - corner.y) / (box.h * zoom),
+      if (card && corner) {
+        const slot = slotOf(card);
+        const held = {
+          x: (pressedAt.x - corner.x) / (slot.w * zoom),
+          y: (pressedAt.y - corner.y) / (slot.h * zoom),
         };
+        return slot.rotated ? unturned(held) : held;
       }
     }
     if (from.kind === 'marker') {
@@ -337,6 +358,21 @@
     }
     // A pile's card is held by its middle, as in the prototype.
     return { x: 0.5, y: 0.5 };
+  }
+
+  /**
+   * Where a hold on a deck's portrait slot holds the landscape card it shows,
+   * as fractions of each box. The slot shows the card turned a quarter
+   * counter-clockwise (CardFace): the card's top edge is the slot's left
+   * edge, its right edge the slot's top.
+   */
+  function unturned(held: Point): Point {
+    return { x: 1 - held.y, y: held.x };
+  }
+
+  /** The box a table card has where it lies: a card revealed on a deck, the deck's portrait slot. */
+  function slotOf(card: TableCard): Box {
+    return cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile });
   }
 
   /**
@@ -372,9 +408,10 @@
     if (!card) {
       return cardBox('std', {});
     }
-    // A table card keeps the box it has there; a card from the hand or a pile comes into play face up.
+    // A table card keeps its side, lying as the table draws it: a card revealed on a deck leaves
+    // the deck's slot. A card from the hand or a pile comes into play face up.
     if (from.kind === 'card') {
-      return cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile });
+      return cardBox(sizeOf(card), { faceDown: card.faceDown });
     }
     return cardBox(sizeOf(card), {});
   }
@@ -751,10 +788,13 @@
     if (from.kind !== 'card') {
       return [asPlayed(card, x, y)];
     }
-    // The cards tucked under it, and the rest of a group, keep their offsets as drawn.
+    // The cards tucked under it, and the rest of a group, keep their offsets as drawn. Off the
+    // deck it is revealed on, a card lies as the table draws it (boxOf).
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
-      return k ? [{ ...k, x: x + k.x - card.x, y: y + drawnGap(rowMap, card.y, k.y) }] : [];
+      return k
+        ? [{ ...k, x: x + k.x - card.x, y: y + drawnGap(rowMap, card.y, k.y), onPile: undefined }]
+        : [];
     });
   }
 
@@ -816,7 +856,7 @@
 <svelte:window onpointermove={onMove} onpointerup={onUp} onpointercancel={onCancel} />
 
 <!-- The ghosts repeat what is dragged, for the eyes only. -->
-<div class="draglayer" aria-hidden="true">
+<div class="draglayer" aria-hidden="true" bind:this={layer}>
   {#if handGhost}
     {@const face = faceOf(handGhost.card)}
     <div
