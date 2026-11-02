@@ -87,7 +87,7 @@ export function isOutOfPlay(pile: PileView): boolean {
 }
 
 /** Where a card or a pile lies on the table, in table units. */
-export interface Footprint {
+interface Footprint {
   id: string;
   x: number;
   y: number;
