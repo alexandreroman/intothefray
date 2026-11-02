@@ -126,13 +126,11 @@ const UNDID = 'undid ';
  * The animations that take the table from prev to next. ownDrop is what the
  * viewer has just dropped, a card with its stack, and the other cards of a
  * group with it: on the table or in the hand, it already lies where it went;
- * onto a pile, each of its cards flies there from where it was let go. apart
- * is how long the viewer went without a live view between the two, in ms
- * (GameSession.viewGap).
+ * onto a pile, each of its cards flies there from where it was let go.
  */
-export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0): Anim[] {
+export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   const after = next.table;
-  if (!prev.table || !after || apart > MAX_APART_MS) {
+  if (!prev.table || !after) {
     return [];
   }
   // The card that got a new id is followed under that id from the start.

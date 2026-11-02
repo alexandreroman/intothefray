@@ -851,7 +851,7 @@
         void tick().then(rehoverUnderPointer);
         return;
       }
-      const anims = diffViews(prev, next, interaction.landing ?? undefined, session.viewGap);
+      const anims = diffViews(prev, next, interaction.landing ?? undefined);
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {

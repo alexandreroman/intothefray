@@ -1,5 +1,5 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
-import { type Anim, diffViews, MAX_APART_MS, mergedLines, type OwnDrop } from './animate';
+import { type Anim, diffViews, mergedLines, type OwnDrop } from './animate';
 
 function card(id: string, extra: Partial<CardView> = {}): CardView {
   return {
@@ -637,13 +637,6 @@ describe('diffViews', () => {
       // The viewer's own drop too, from where it was let go.
       expect(diffViews(prev, next, droppedCard('back'))).toEqual([{ ...flight, dropped: true }]);
     });
-
-    it('does not turn on a view that comes too long after the last', () => {
-      const prev = withTop('i1', [onPile('i1')]);
-      const next = withTop('i2', [onPile('i2')], 3);
-
-      expect(diffViews(prev, next, undefined, MAX_APART_MS + 1)).toEqual([]);
-    });
   });
 
   describe('a card put at the bottom of a deck', () => {
@@ -797,12 +790,6 @@ describe('diffViews', () => {
 
         expect(diffViews(before, after).filter((anim) => anim.kind === 'under')).toEqual([]);
       });
-    });
-
-    it('does not slip under on a view that comes too long after the last', () => {
-      const next = bottomOf(5, 'put Radar Sense at the bottom of their Sense deck');
-
-      expect(diffViews(prev, next, undefined, MAX_APART_MS + 1)).toEqual([]);
     });
   });
 
@@ -1120,18 +1107,6 @@ describe('diffViews', () => {
         { kind: 'drawAway', pile: 'deck:p0' },
         { kind: 'drawAway', pile: 'deck:p1' },
       ]);
-    });
-
-    it('draws more than 2 s apart yield nothing', () => {
-      const prev = view({ piles: [deck(10)], hands: { p0: [] }, handCounts: [0, 5] });
-      const next = view({
-        cards: [inHand('d')],
-        piles: [deck(9)],
-        hands: { p0: ['d'] },
-        handCounts: [1, 6],
-      });
-
-      expect(diffViews(prev, next, undefined, 2001)).toEqual([]);
     });
   });
 
@@ -1767,17 +1742,6 @@ describe('diffViews', () => {
         { kind: 'enter', id: 's', fromPile: 'deck:p0' },
       ]);
     });
-  });
-
-  it('views more than 2 s apart yield nothing', () => {
-    const prev = view({ cards: [card('a', { x: 0 })] });
-    const next = view({
-      cards: [card('a', { x: 300, tokens: { dmg: 1 } })],
-      log: [OLD_LINE, line('added 1 damage to Spider-Man'), line('shuffled their deck')],
-    });
-
-    expect(diffViews(prev, next, undefined, 2001)).toEqual([]);
-    expect(diffViews(prev, next, undefined, 1999)).toHaveLength(3);
   });
 });
 
