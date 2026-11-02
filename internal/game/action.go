@@ -275,8 +275,7 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 	case ActDiscardTop:
 		return resolveDiscardTop(t, who, a)
 	case ActReorderTop:
-		// Whether it takes a revealed card shows on the table before covering.
-		return resolveReorderTop(original, who, a, rng)
+		return resolveReorderTop(original, t, who, a, rng)
 	case ActShuffle:
 		return resolveShuffle(t, who, a, rng)
 	case ActShuffleBack:
@@ -673,12 +672,14 @@ func resolveDeal(t *Table, a Action) (Action, error) {
 // back into the deck face down (see coveredFor). The reordered cards then get
 // new ids, as a shuffle gives them (see reidentify): nobody can follow the
 // card everybody saw into the deck. a.Cards keeps the new order in the ids
-// the cards had.
-func resolveReorderTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+// the cards had. Whether a takes a revealed card shows on original, the table
+// before covering; the new ids are picked on t, the table as apply will see
+// it, so that they differ from those of the cards covering hides.
+func resolveReorderTop(original, t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if _, err := ownPile(t, who, a.Pile); err != nil {
 		return a, err
 	}
-	if len(t.revealedOn(a.Pile)) > 0 {
+	if len(original.revealedOn(a.Pile)) > 0 {
 		a.Renames, _ = reidentify(t, a.Cards, rng)
 	}
 	return a, nil
