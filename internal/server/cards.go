@@ -17,10 +17,11 @@ import (
 const (
 	// cardPoolVersion is the version of the card pool format.
 	cardPoolVersion = 1
-	// cardPoolCacheControl lets the pool be cached for as long as a game
-	// may live: no action creates a card, so the pool of a game never
-	// changes once its table is set up. Every reply varies on Origin (see
-	// withCORS), so a shared cache keeps one copy per origin.
+	// cardPoolCacheControl lets the pool be cached for a day, the default
+	// idle expiry of a game: no action creates a card, so the pool of a game
+	// never changes once its table is set up, and a longer-lived game only
+	// revalidates it by ETag. Every reply varies on Origin (see withCORS),
+	// so a shared cache keeps one copy per origin.
 	cardPoolCacheControl = "max-age=86400, immutable"
 	// etagBytes is how much of the SHA-256 of the body goes into the ETag.
 	etagBytes = 16
