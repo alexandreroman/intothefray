@@ -2,7 +2,6 @@ package packs_test
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"maps"
@@ -78,9 +77,6 @@ func TestEmbeddedCoreSet(t *testing.T) {
 		// Cerebro labels Storm's faces the wrong way round, so sources.json takes the hero image from 36001B and the
 		// alter ego image from 36001A; the packs then show the manifest image of each face.
 		manifest, err := cdn.LoadManifest("images/manifest.json")
-		if errors.Is(err, fs.ErrNotExist) {
-			t.Skip("no packs/images/manifest.json: Storm's images are checked after `make publish` in intothefray-img")
-		}
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1122,14 +1118,10 @@ func findNull(doc any, path string) (string, bool) {
 	return "", false
 }
 
-// loadImageSources reads the committed packs/images/sources.json, keyed by face code. It skips the test when the
-// file is absent.
+// loadImageSources reads the committed packs/images/sources.json, keyed by face code.
 func loadImageSources(t *testing.T) map[string]cdn.SourceFace {
 	t.Helper()
 	data, err := os.ReadFile("images/sources.json")
-	if errors.Is(err, fs.ErrNotExist) {
-		t.Skip("no packs/images/sources.json: run `make sources` to write it")
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1146,13 +1138,9 @@ func loadImageSources(t *testing.T) map[string]cdn.SourceFace {
 	return sources
 }
 
-// TestEmbeddedImagesOnCDN guards that every image the app shows comes from the image CDN. The committed packs move
-// to the CDN with the first `make publish` in intothefray-img, so the guard only enforces once its manifest exists.
+// TestEmbeddedImagesOnCDN guards that every image the app shows comes from the image CDN.
 func TestEmbeddedImagesOnCDN(t *testing.T) {
 	manifest, err := cdn.LoadManifest("images/manifest.json")
-	if errors.Is(err, fs.ErrNotExist) {
-		t.Skip("no packs/images/manifest.json: the guard enforces after `make publish` in intothefray-img")
-	}
 	if err != nil {
 		t.Fatal(err)
 	}
