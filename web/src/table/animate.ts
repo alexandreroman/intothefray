@@ -232,7 +232,37 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
       anims.push({ kind: 'marker', name, from: was, to: now });
     }
   }
-  return anims;
+  return inPileOrder(anims, after);
+}
+
+/**
+ * The animations with the cards flying onto each pile that lists its cards
+ * put in the order they lie there, bottom first, every other animation left
+ * where it is. The pile is drawn with the cards that have landed on it, its
+ * top being the last of them: they land one after another in the order they
+ * fly, so they must fly in pile order for the last one to land to be the top
+ * it keeps. A card the pile does not list (under the top of a side deck)
+ * lands first. A pile that does not list its cards (a deck) keeps its order.
+ */
+function inPileOrder(anims: Anim[], after: TableView): Anim[] {
+  const ordered = new Map<string, Fly[]>();
+  for (const pile of after.piles) {
+    const cards = pile.cards;
+    if (cards === undefined) {
+      continue;
+    }
+    const flights = anims.filter(
+      (anim): anim is Fly => anim.kind === 'fly' && anim.toPile === pile.id,
+    );
+    // A stable sort: the cards the pile does not list keep their order.
+    flights.sort((a, b) => cards.indexOf(a.id) - cards.indexOf(b.id));
+    ordered.set(pile.id, flights);
+  }
+  // Each flight to a pile takes the place of one of them, in turn.
+  return anims.map((anim) => {
+    const flights = anim.kind === 'fly' ? ordered.get(anim.toPile) : undefined;
+    return flights?.shift() ?? anim;
+  });
 }
 
 /** The lines already shown in prev whose text or time changed in next: a later change merged into them. */
@@ -614,7 +644,9 @@ type Departure = Extract<Anim, { kind: 'enter' | 'fly' | 'away' }>;
  * or the hand, out of a pile that showed them, or out of the viewer's look
  * through a deck. A card come onto the table enters from its pile, and one
  * that another pile lists flies there from it. Placed cards first, then each
- * pile's cards top first, so that the top ones fly when a pile gives many.
+ * pile's cards top first, so that the top ones fly when a pile gives many
+ * (MAX_PILE_FLIGHTS); they land in the order they lie on the pile they go to
+ * (inPileOrder).
  */
 function departures(
   before: TableView,
@@ -726,7 +758,8 @@ function originOf(card: CardView, shrunk: PileView[], tally: Tally): Origin | nu
  * not see (originOf). Onto the table, a card out of a pile enters from it,
  * and one that shows its face turns over as it lands, the viewer's own drop
  * included. Onto a pile that shows it, a card out of a pile flies there on
- * its back, top first, and one out of a hand rises into it. A card drawn into
+ * its back, the top ones when many came (MAX_PILE_FLIGHTS), landing bottom
+ * first (inPileOrder), and one out of a hand rises into it. A card drawn into
  * the viewer's hand is a draw (drawsOf). The viewer's own drop of a deck's
  * hidden top card on a pile that shows it flies there from where it was let
  * go, on its back.

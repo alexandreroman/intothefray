@@ -26,6 +26,9 @@ type: project
   pile, or turns face up where it lands on the table.
 - At most 5 cards fly between the same two piles in one view (a discard
   shuffled back), the top ones.
+- Cards flying onto a pile that shows its cards land in the order they
+  lie there, bottom first, so the last to land is the top the pile keeps
+  (`inPileOrder` in `animate.ts`): a group discard, Discard X from a deck.
 - The diff (`animate.ts` `diffViews`) works from the two views, so undo
   replays the same motions backwards. Only what the views cannot tell
   comes from the new history lines: a card put at the bottom of a deck, a
