@@ -1,6 +1,6 @@
 ---
 name: "Scenario decks and several villains"
-description: "Curated scenario decks kept apart from the classic encounter deck, several villain stages, a manual active counter; Wrecking Crew, Crossbones, Red Skull"
+description: "Curated scenario decks apart from the classic encounter deck, several villain stages, a manual active counter; Wrecking Crew, Crossbones, Red Skull"
 type: project
 ---
 
@@ -37,9 +37,9 @@ type: project
 - A self-contained scenario uses only its own cards: the lobby offers no
   modular, Standard or Expert set, and setup adds no obligation and no
   nemesis set.
-- The Wrecking Crew (`wrecking_crew.json`) is the first user: four
-  villains, each with its own encounter deck, discard pile and side
-  scheme, Breakout last, the active counter under Wrecker, self-contained.
+- The Wrecking Crew (`wrecking_crew.json`) has four villains, each with
+  its own encounter deck, discard pile and side scheme, Breakout last, the
+  active counter under Wrecker, self-contained.
   Crossbones and Red Skull use non-encounter decks next to the classic
   encounter deck (see [[project_red_skull_scenarios]]).
 
