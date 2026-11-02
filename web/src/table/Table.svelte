@@ -469,7 +469,8 @@
     interaction.setTouchMode(touchMode.current);
   });
 
-  // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
+  // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show: the
+  // play area's gutter (--content-gutter), which the top bar's left edge shares.
   const SCROLL_PADDING = 24;
 
   // On a small screen the top bar floats over the play area, and slides away as the table scrolls
@@ -1726,6 +1727,7 @@
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   style:--controls-bottom="{controlsBottom}px"
+  style:--content-gutter="{SCROLL_PADDING}px"
   style:--bar-start="{barStart}px"
   style:--bar-room="{barRoom}px"
   bind:this={app}
@@ -2039,8 +2041,6 @@
     clipped: it never reaches the page, which would scroll.
   */
   .app {
-    /* The play area's gutter, which the top bar's left edge shares. */
-    --content-gutter: 24px;
     /*
       The height of a button in the bars floating at the bottom of the table (the zoom control, the
       narrow screen's Undo, the hero selector): with the same padding and the same room under them
@@ -2108,7 +2108,8 @@
   .table {
     position: relative;
     width: max-content;
-    padding: calc(24px + var(--bar-start)) var(--content-gutter) 24px;
+    padding: calc(var(--content-gutter) + var(--bar-start)) var(--content-gutter)
+      var(--content-gutter);
   }
 
   /*
