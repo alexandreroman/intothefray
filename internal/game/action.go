@@ -285,10 +285,11 @@ var groupableKinds = map[Kind]bool{
 }
 
 // resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
-// kind and one place, each on its own card, none tucked under another's. Every
-// sub-action is resolved for who on the table the previous ones leave, as
-// applyGroup performs them, so that its new ids are those apply expects and
-// differ from those picked before. The first error rejects the whole group.
+// kind and one Where, none a shuffle into a deck, each on its own card, none
+// tucked under another's. Every sub-action is resolved for who on the table
+// the previous ones leave, as applyGroup performs them, so that its new ids
+// are those apply expects and differ from those picked before. The first
+// error rejects the whole group.
 func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if len(a.Actions) < 2 || len(a.Actions) > maxCount {
 		return a, invalid("a group holds 2 to %d actions, not %d", maxCount, len(a.Actions))
@@ -632,9 +633,9 @@ func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 }
 
 // resolveDeal records the card to deal, the top card of the encounter deck
-// a.Pile names (the classic one by default), so
-// that a rebuild deals that card (see resolveReveal). A card revealed on the
-// deck is its top card: it lies back on top here (see coveredFor).
+// a.Pile names (the classic one by default), so that a rebuild deals that
+// card (see resolveReveal). A card revealed on the deck is its top card: it
+// lies back on top here (see coveredFor).
 func resolveDeal(t *Table, a Action) (Action, error) {
 	if a.Area == "" {
 		return a, invalid("a deal needs a recipient")

@@ -1142,9 +1142,10 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 }
 
 // applyDeal deals the recorded encounter card face down, wherever it is in the
-// encounter deck a.Pile names, or the classic one (see applyDraw). A card revealed on the deck is back in it
-// (see coveredFor), so a revealed card can be dealt too. The card goes to the
-// action's position; its area only names the recipient, for the history.
+// encounter deck a.Pile names, or the classic one (see applyDraw). A card
+// revealed on the deck is back in it (see coveredFor), so a revealed card can
+// be dealt too. The card goes to the action's position; its area only names
+// the recipient, for the history.
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown recipient %q", a.Area)

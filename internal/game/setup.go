@@ -11,11 +11,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// Default positions on the table, in table units (see the geometry rules).
+// Default positions on the table, in table units.
 //
 // The table is laid out in rows: the villain's row on top, villainRowHeight
-// high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
-// and its discard pile, then the villain or the identity.
+// high, then one row of rowHeight per seat (one deck, see seats.go), in seat
+// order. Every row starts with its deck and its discard pile, then the
+// villain or the identity.
 //
 // The villain's row is one cursor walking left to right, every position taken
 // up to the grid: the classic encounter deck at deckX with its discard pile
