@@ -173,20 +173,13 @@ func sideDiscardID(seat, i int) string {
 	return fmt.Sprintf("%s%s:%d", sideDiscardPrefix, PlayerArea(seat), i)
 }
 
-// isSideDeckID reports whether id names a side deck.
-func isSideDeckID(id string) bool {
-	return strings.HasPrefix(id, sideDeckPrefix)
-}
-
-// isScenarioDeckID reports whether id names a scenario deck, encounter or not.
-func isScenarioDeckID(id string) bool {
-	return strings.HasPrefix(id, scenarioEncounterPrefix) || strings.HasPrefix(id, scenarioDeckPrefix)
-}
-
-// ruledDeckID reports whether id names a side deck or a scenario deck: a deck
-// whose discard rule its pile records (see Pile.Discard).
+// ruledDeckID reports whether id names a side deck or a scenario deck,
+// encounter or not: a deck whose discard rule its pile records (see
+// Pile.Discard).
 func ruledDeckID(id string) bool {
-	return isSideDeckID(id) || isScenarioDeckID(id)
+	return strings.HasPrefix(id, sideDeckPrefix) ||
+		strings.HasPrefix(id, scenarioEncounterPrefix) ||
+		strings.HasPrefix(id, scenarioDeckPrefix)
 }
 
 // scenarioDeckIDs returns the ids of the deck of a scenario deck with key and
