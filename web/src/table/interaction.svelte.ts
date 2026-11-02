@@ -81,6 +81,11 @@ export type PreviewChange = 'show' | 'clear';
 /** A touch held longer than this, in ms, is a long press, which opens nothing. */
 export const LONG_PRESS_MS = 500;
 
+/** Whether both sets hold the same items: a new set equal to the current one need not redraw. */
+function sameSet<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
+  return a.size === b.size && [...a].every((item) => b.has(item));
+}
+
 /**
  * What the viewer points at on the table, shared by the table, the hand, the
  * context menu and the side panel. Ids rather than faces, so the preview and
@@ -326,10 +331,15 @@ class TableInteraction {
 
   /** The table cards other players drag now; a set equal to the current one changes nothing. */
   liftByOthers(ids: ReadonlySet<string>): void {
-    const same =
-      ids.size === this.liftedByOthers.size && [...ids].every((id) => this.liftedByOthers.has(id));
-    if (!same) {
+    if (!sameSet(ids, this.liftedByOthers)) {
       this.liftedByOthers = ids;
+    }
+  }
+
+  /** The markers other players drag now; a set equal to the current one changes nothing. */
+  liftMarkersByOthers(names: ReadonlySet<MarkerName>): void {
+    if (!sameSet(names, this.markersLiftedByOthers)) {
+      this.markersLiftedByOthers = names;
     }
   }
 
