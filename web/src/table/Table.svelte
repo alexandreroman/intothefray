@@ -1,9 +1,10 @@
 <!--
   The table page: the top bar, the table column (one surface for everyone,
   scrolling both ways) and the side column (history), which collapses to a
-  slim strip. The preview of the hovered card floats over the table's bottom
-  right corner; touch mode previews nothing (touch.ts). On a narrow screen
-  there is no side column.
+  slim strip. The preview of the hovered card floats in a corner of the play
+  area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
+  control, unless that hides the hovered element; touch mode previews nothing
+  (touch.ts). On a narrow screen there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -2371,7 +2372,8 @@
   }
 
   /*
-    The preview, at the bottom right of the table above the zoom control, still while the table
+    The preview, in a corner of the play area that focus.ts chooses (chooseCorner): the bottom
+    right, above the zoom control, unless that hides the hovered element. Still while the table
     scrolls under it. As the zoom control: over the table, under the other players' presence
     (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
     pointer goes through it.
