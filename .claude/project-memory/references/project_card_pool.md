@@ -19,6 +19,9 @@ type: project
 - The SPA publishes only `packs/en/index.json`, for the lobby's scenario
   picker. Lobby hero thumbnails come from `DeckView.heroImage`, which
   `Game.SetDeck` fills from the catalog.
+- `packs.Catalog` decodes the embedded packs once (`sync.OnceValues`,
+  `packs/packs.go`); every caller, server and tests alike, shares the
+  read-only catalog, which nobody modifies.
 
 **Why:** bandwidth. The 63 pack files and the index weigh about 220 KB on
 the wire once compressed (3 MB raw); a game's pool weighs 2 to 5 KB
