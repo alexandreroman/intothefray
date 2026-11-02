@@ -553,12 +553,11 @@ func (n narrator) stageEvent(a Action) logLine {
 
 // areaName names the deck at the seat of area (see seatName).
 func (n narrator) areaName(area Area) string {
-	for seat := range n.game.seatCount() {
-		if PlayerArea(seat) == area {
-			return n.game.seatName(seat)
-		}
+	seat, ok := areaSeat(area)
+	if !ok || seat >= n.game.seatCount() {
+		return "another player"
 	}
-	return n.game.playerName(NoOwner)
+	return n.game.seatName(seat)
 }
 
 // name names card id if everyone could see it before or after the action,

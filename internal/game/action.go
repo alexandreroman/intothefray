@@ -121,12 +121,8 @@ func (w actor) owns(owner int) bool {
 
 // ownsArea reports whether area is the area of one of the actor's seats.
 func (w actor) ownsArea(area Area) bool {
-	for _, seat := range w.seats {
-		if PlayerArea(seat) == area {
-			return true
-		}
-	}
-	return false
+	seat, ok := areaSeat(area)
+	return ok && w.owns(seat)
 }
 
 // homeArea returns the area of the actor's home seat, where their private
@@ -348,12 +344,8 @@ func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) 
 
 // seatedArea reports whether area names a seat at this table.
 func (g *Game) seatedArea(area Area) bool {
-	for seat := range g.seatCount() {
-		if area == PlayerArea(seat) {
-			return true
-		}
-	}
-	return false
+	seat, ok := areaSeat(area)
+	return ok && seat < g.seatCount()
 }
 
 // checkLimits rejects numbers outside the ranges a client may send.

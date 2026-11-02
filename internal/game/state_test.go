@@ -161,3 +161,27 @@ func TestCardCodesOfStartedGame(t *testing.T) {
 		}
 	}
 }
+
+func TestAreaSeat(t *testing.T) {
+	tests := []struct {
+		area Area
+		seat int
+		ok   bool
+	}{
+		{"p0", 0, true},
+		{"p3", 3, true},
+		{"p4", 0, false}, // past maxSeats
+		{"p-1", 0, false},
+		{"p01", 0, false},
+		{"p+1", 0, false},
+		{"p", 0, false},
+		{"villain", 0, false},
+		{"", 0, false},
+	}
+	for _, tt := range tests {
+		seat, ok := areaSeat(tt.area)
+		if seat != tt.seat || ok != tt.ok {
+			t.Errorf("areaSeat(%q) = %d, %v; want %d, %v", tt.area, seat, ok, tt.seat, tt.ok)
+		}
+	}
+}

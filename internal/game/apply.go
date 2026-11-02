@@ -174,12 +174,8 @@ func snap(v int) int {
 
 // validArea reports whether a names a seat.
 func validArea(a Area) bool {
-	for seat := range maxSeats {
-		if a == PlayerArea(seat) {
-			return true
-		}
-	}
-	return false
+	_, ok := areaSeat(a)
+	return ok
 }
 
 // discardPileID returns the id of the pile where c is discarded: for a card

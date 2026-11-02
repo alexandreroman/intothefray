@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
@@ -18,6 +19,21 @@ type Area string
 // PlayerArea returns the area of the player seated at seat (0 → "p0").
 func PlayerArea(seat int) Area {
 	return Area(fmt.Sprintf("p%d", seat))
+}
+
+// areaSeat returns the seat whose area is area ("p0" → 0), and whether area
+// names one of the maxSeats seats a table may have.
+func areaSeat(area Area) (int, bool) {
+	digits, ok := strings.CutPrefix(string(area), "p")
+	if !ok {
+		return 0, false
+	}
+	seat, err := strconv.Atoi(digits)
+	// The round trip refuses the other spellings Atoi reads, such as "p01".
+	if err != nil || !validSeat(seat) || PlayerArea(seat) != area {
+		return 0, false
+	}
+	return seat, true
 }
 
 // NoOwner is the Owner of cards and piles that belong to no player.
