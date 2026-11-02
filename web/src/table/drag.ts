@@ -12,19 +12,11 @@ import {
   type Point,
   type View,
 } from '../lib/types';
-import {
-  deckDiscardOf,
-  deckName,
-  discardPileOf,
-  homeDeckOf,
-  isScenarioDeckId,
-  isSideDeckId,
-  staysOnTable,
-} from './actions';
+import { deckDiscardOf, deckName, discardPileOf, homeDeckOf, staysOnTable } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
-import { areaOf, ownSeats } from './seats';
+import { areaOf, isScenarioDeckId, isSideDeckId, ownSeats, PILE_ENCOUNTER } from './seats';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -318,7 +310,7 @@ function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action 
       return { kind: 'play', card: drag.card, x, y };
     case 'encounter':
       // The classic encounter deck is the default: only a scenario deck names itself.
-      return drag.pile === 'enc'
+      return drag.pile === PILE_ENCOUNTER
         ? { kind: 'deal', area: dealTo, x, y }
         : { kind: 'deal', pile: drag.pile, area: dealTo, x, y };
     case 'deck':

@@ -7,7 +7,19 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { isOutOfPlay } from './layout';
-import { asideId, deckId, discardId, ownSeats, seatPlayer } from './seats';
+import {
+  asideId,
+  deckId,
+  discardId,
+  isScenarioDeckId,
+  isSideDeckId,
+  ownSeats,
+  PILE_ENCOUNTER,
+  PILE_ENCOUNTER_DISCARD,
+  PILE_SCENARIO_ASIDE,
+  PILE_VICTORY,
+  seatPlayer,
+} from './seats';
 import { groupUnits, MAX_COUNT } from './selection';
 import type { Action, CardView, PileView, Stage, TableView, View } from '../lib/types';
 
@@ -582,12 +594,12 @@ function groupMoveMenu(units: readonly CardView[], context: Context): ActionItem
   }
 
   const outOfPlay: ActionItem[] = [];
-  if (hasPile(context.table, 'vic')) {
+  if (hasPile(context.table, PILE_VICTORY)) {
     outOfPlay.push({
       id: 'victory',
       label: 'Victory display',
       group: 0,
-      run: () => groupOf(units, (unit) => toPile(unit, 'vic')),
+      run: () => groupOf(units, (unit) => toPile(unit, PILE_VICTORY)),
     });
   }
   const asides = units.every((unit) => hasPile(context.table, asidePileOf(unit, context.seats)));
@@ -656,12 +668,12 @@ function moveMenu(card: CardView, context: Context): ActionItem[] {
   }
 
   const outOfPlay: ActionItem[] = [];
-  if (hasPile(context.table, 'vic')) {
+  if (hasPile(context.table, PILE_VICTORY)) {
     outOfPlay.push({
       id: 'victory',
       label: 'Victory display',
       group: 0,
-      run: () => toPile(card, 'vic'),
+      run: () => toPile(card, PILE_VICTORY),
     });
   }
   const aside = asidePileOf(card, context.seats);
@@ -689,11 +701,7 @@ export function arrowItem(card: string): ActionItem {
   };
 }
 
-// The piles a card goes to, as the server names them (internal/game/state.go).
-
-const SIDE_DECK_PREFIX = 'side:';
-const SCENARIO_ENCOUNTER_PREFIX = 'enc:';
-const SCENARIO_DECK_PREFIX = 'sdeck:';
+// The piles a card goes to.
 
 /**
  * The deck a card goes back to: the side or scenario deck it belongs to (`home`), else the
@@ -703,7 +711,7 @@ export function homeDeckOf(card: CardView): string {
   if (card.home !== undefined) {
     return card.home;
   }
-  return card.owner === -1 ? 'enc' : deckId(card.owner);
+  return card.owner === -1 ? PILE_ENCOUNTER : deckId(card.owner);
 }
 
 /**
@@ -717,7 +725,7 @@ export function discardPileOf(card: CardView, piles: readonly PileView[]): strin
     const deck = piles.find((pile) => pile.id === home);
     return deck ? deckDiscardOf(deck, piles) : null;
   }
-  const discard = card.owner === -1 ? 'encd' : discardId(card.owner);
+  const discard = card.owner === -1 ? PILE_ENCOUNTER_DISCARD : discardId(card.owner);
   return card.owner === -1 && !piles.some((pile) => pile.id === discard) ? null : discard;
 }
 
@@ -731,22 +739,12 @@ export function deckDiscardOf(deck: PileView, piles: readonly PileView[]): strin
   let discard: string | undefined;
   if (isSideDeckId(deck.id) || isScenarioDeckId(deck.id)) {
     discard = deck.discard;
-  } else if (deck.id === 'enc') {
-    discard = 'encd';
+  } else if (deck.id === PILE_ENCOUNTER) {
+    discard = PILE_ENCOUNTER_DISCARD;
   } else if (deck.kind === 'deck') {
     discard = discardId(deck.owner);
   }
   return discard !== undefined && piles.some((pile) => pile.id === discard) ? discard : null;
-}
-
-/** Whether the pile id is a side deck's: "side:p0:1". */
-export function isSideDeckId(pile: string): boolean {
-  return pile.startsWith(SIDE_DECK_PREFIX);
-}
-
-/** Whether the pile id is a scenario deck's: "enc:wrecker" or "sdeck:weapons". */
-export function isScenarioDeckId(pile: string): boolean {
-  return pile.startsWith(SCENARIO_ENCOUNTER_PREFIX) || pile.startsWith(SCENARIO_DECK_PREFIX);
 }
 
 /** The name of a side deck and of its discard pile: "Invocation", as in "Invocation deck". */
@@ -785,7 +783,7 @@ export function pileName(pile: PileView): string {
 
 /** The set-aside pile for a card: its deck's own for the viewer's cards, the scenario's for any other. */
 function asidePileOf(card: CardView, seats: readonly number[]): string {
-  return seats.includes(card.owner) ? asideId(card.owner) : 'saside';
+  return seats.includes(card.owner) ? asideId(card.owner) : PILE_SCENARIO_ASIDE;
 }
 
 function toDeck(card: CardView, where: 'top' | 'bottom' | 'shuffle'): Action {
@@ -931,7 +929,8 @@ function revealItem(pile: PileView, context: Context): ActionItem {
     label: 'Reveal',
     key: 'R',
     group: GROUP_MAIN,
-    run: () => (pile.id === 'enc' ? { kind: 'reveal' } : { kind: 'reveal', pile: pile.id }),
+    run: () =>
+      pile.id === PILE_ENCOUNTER ? { kind: 'reveal' } : { kind: 'reveal', pile: pile.id },
   };
   if (encounter) {
     reveal.default = true;

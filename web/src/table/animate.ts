@@ -18,11 +18,22 @@ import {
   type View,
   type Zone,
 } from '../lib/types';
-import { discardPileOf, homeDeckOf, isScenarioDeckId, isSideDeckId, sideLabel } from './actions';
+import { discardPileOf, homeDeckOf, sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
-import { ownSeats, seatHero, seatOf, seatPlayer } from './seats';
+import {
+  isScenarioDeckId,
+  isSideDeckId,
+  ownSeats,
+  PILE_ENCOUNTER,
+  PILE_ENCOUNTER_DISCARD,
+  PILE_SCENARIO_ASIDE,
+  PILE_VICTORY,
+  seatHero,
+  seatOf,
+  seatPlayer,
+} from './seats';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 interface Spot {
@@ -960,10 +971,10 @@ function lastNamedPile(line: LogView, view: View, piles: PileView[]): string | n
 }
 
 const SHARED_PILE_NAMES: Record<string, string> = {
-  enc: 'the encounter deck',
-  encd: 'the encounter discard pile',
-  vic: 'the victory display',
-  saside: 'the set-aside cards',
+  [PILE_ENCOUNTER]: 'the encounter deck',
+  [PILE_ENCOUNTER_DISCARD]: 'the encounter discard pile',
+  [PILE_VICTORY]: 'the victory display',
+  [PILE_SCENARIO_ASIDE]: 'the set-aside cards',
 };
 
 const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {

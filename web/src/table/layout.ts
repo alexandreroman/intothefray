@@ -1,6 +1,6 @@
 import { CARD_ASPECT } from '../lib/cardArt';
 import type { CardView, PileKind, PileView, Size } from '../lib/types';
-import { asideId } from './seats';
+import { asideId, PILE_SCENARIO_ASIDE, PILE_VICTORY } from './seats';
 
 /** Table units are multiples of this. */
 export const GRID = 10;
@@ -262,11 +262,11 @@ export interface OutOfPlayChip {
  * the server's (internal/game/state.go).
  */
 export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOfPlayChip[] {
-  const victory = { pile: 'vic', kind: 'victory', label: 'Victory display' } as const;
+  const victory = { pile: PILE_VICTORY, kind: 'victory', label: 'Victory display' } as const;
   const setAside = { kind: 'aside', label: 'Set-aside cards' } as const;
   const wanted =
     owner === -1
-      ? [victory, { ...setAside, pile: 'saside' }]
+      ? [victory, { ...setAside, pile: PILE_SCENARIO_ASIDE }]
       : [{ ...setAside, pile: asideId(owner) }];
   return wanted.flatMap((chip) => {
     const pile = piles.find((p) => p.id === chip.pile);

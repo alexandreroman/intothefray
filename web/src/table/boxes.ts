@@ -17,7 +17,7 @@ import type {
 import { discardPileOf, homeDeckOf, pileName, type TableElement } from './actions';
 import { freeSlot } from './keys';
 import { isOutOfPlay } from './layout';
-import { creditedSeatAmong, ownSeats, seatPlayer } from './seats';
+import { creditedSeatAmong, ownSeats, PILE_ENCOUNTER, seatPlayer } from './seats';
 
 /** A box opened by the client alone: browsing a public pile, or choosing a stage card. */
 export type LocalBox = { kind: 'browse'; pile: string } | { kind: 'stage'; stage: string };
@@ -140,7 +140,10 @@ export function canShuffleIn(
 ): boolean {
   const allowed = pile.owner === -1 || seats.includes(pile.owner);
   return (
-    pile.kind === 'aside' && allowed && pile.count > 0 && piles.some((other) => other.id === 'enc')
+    pile.kind === 'aside' &&
+    allowed &&
+    pile.count > 0 &&
+    piles.some((other) => other.id === PILE_ENCOUNTER)
   );
 }
 
