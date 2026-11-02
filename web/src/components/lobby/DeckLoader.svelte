@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import type { DeckView, UnsupportedCard } from '../../lib/types';
   import Icon from '../Icon.svelte';
   import DeckNames from './DeckNames.svelte';
@@ -62,14 +62,10 @@
       : `${unsupportedCount} cards aren't supported.`,
   );
 
-  onMount(async () => {
-    if (!autofocus) {
-      return;
+  onMount(() => {
+    if (autofocus) {
+      input?.focus();
     }
-    // The input shows once the first render settles.
-    await tick();
-    input?.focus();
-    input?.select();
   });
 
   // The confirmed count last seen, undefined while another slot is the loading one. Only a count
