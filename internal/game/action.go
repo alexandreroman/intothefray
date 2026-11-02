@@ -710,8 +710,8 @@ func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, erro
 	if err != nil {
 		return a, err
 	}
-	if pile.Kind != KindDeck && pile.Kind != KindSideDeck && pile.Kind != KindEncounter &&
-		pile.Kind != KindScenarioDeck {
+	// Only a face-down pile, a deck, is shuffled.
+	if pile.Kind.public() {
 		return a, invalid("pile %q cannot be shuffled", pile.ID)
 	}
 	a.Renames, a.Cards = reidentify(t, pile.Cards, rng)
