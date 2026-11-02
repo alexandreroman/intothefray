@@ -6,6 +6,7 @@
 import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
+import { stackOf } from './drag';
 import { isOutOfPlay } from './layout';
 import {
   asideId,
@@ -485,33 +486,16 @@ function leaveItems(card: CardView, context: Context): ActionItem[] {
  * the menu, the keys and the drag share one rule.
  */
 export function staysOnTable(card: CardView, table: TableView): string | undefined {
-  const held = stageHeldBy(card, table);
-  if (held) {
-    return `The ${held.label.toLowerCase()} card stays on the table: choose another card to show`;
+  const stack = new Set(stackOf(card.id, table.cards));
+  const stage = table.stages.find((s) => stack.has(s.current));
+  if (stage) {
+    return `The ${stage.label.toLowerCase()} card stays on the table: choose another card to show`;
   }
-  const holdsIdentity = table.cards.some((c) => c.identity && isInStackOf(c.id, card.id, table));
+  const holdsIdentity = table.cards.some((c) => c.identity && stack.has(c.id));
   if (holdsIdentity) {
     return 'The identity card stays on the table';
   }
   return undefined;
-}
-
-/** The stage whose shown card is this card or one tucked under it, if any. */
-function stageHeldBy(card: CardView, table: TableView): Stage | undefined {
-  return table.stages.find((stage) => isInStackOf(stage.current, card.id, table));
-}
-
-/** Whether the card id is root or tucked under root, directly or not. */
-function isInStackOf(id: string, root: string, table: TableView): boolean {
-  let current = table.cards.find((c) => c.id === id);
-  while (current) {
-    if (current.id === root) {
-      return true;
-    }
-    const parent = current.parent;
-    current = parent ? table.cards.find((c) => c.id === parent) : undefined;
-  }
-  return false;
 }
 
 /**
