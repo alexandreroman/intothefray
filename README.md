@@ -357,9 +357,9 @@ Three jobs check every run:
   of the Caddyfile.
 
 They run the same checks as `make check`, `make build` and
-`make web-build`. They do not
-regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
-mc4db over the network, so the committed files are used as they are.
+`make web-build`. They do not regenerate `packs/dist`: the generator needs
+its card sources over the network (see Card packs), so the committed files
+are used as they are.
 
 On `main` only, for a push or a manual run (`workflow_dispatch`), the
 `web` job also builds the frontend for GitHub Pages in place of its plain
