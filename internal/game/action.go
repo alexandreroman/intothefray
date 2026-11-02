@@ -53,7 +53,7 @@ type Action struct {
 	Card   string `json:"card,omitempty"`
 	Target string `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
 	Pile   string `json:"pile,omitempty"`   // also the deck whose top card a play takes
-	Area   Area   `json:"area,omitempty"`   // whose hand (draw, handOrder), who is dealt to (deal)
+	Area   Area   `json:"area,omitempty"`   // whose hand (handOrder; filled by resolve for a draw), who is dealt to (deal)
 	X      int    `json:"x,omitempty"`
 	Y      int    `json:"y,omitempty"`
 	// Placed tells that X and Y are where a card tucked under Target was
@@ -65,7 +65,7 @@ type Action struct {
 	// none.
 	FaceUp bool     `json:"faceUp,omitempty"`
 	N      int      `json:"n,omitempty"`
-	Name   string   `json:"name,omitempty"` // token, status or modifier name
+	Name   string   `json:"name,omitempty"` // token, status or modifier name, or the marker moved
 	Delta  int      `json:"delta,omitempty"`
 	Face   int      `json:"face,omitempty"`  // chosen stage face; resulting face of a flip
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
