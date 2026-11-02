@@ -504,21 +504,29 @@ describe('Hand after a reorder', () => {
     expect(interaction.hovered).toEqual({ kind: 'hand', id: 'h3' });
   });
 
-  it('lands the moved card popped at once, with no pop transition, for two frames only', async () => {
+  it('lands the moved card popped at once, with no pop transition, until its style is computed', async () => {
     render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
     expect(rule('.hcard.settling .fan')).toMatch(/^\s*transition: none;\s*$/);
 
-    await dragFirstCardSecond({ clientX: 780, clientY: 800 });
-    expect(cardOf('h1').classList).toContain('settling');
-    expect(handList().querySelectorAll('.settling')).toHaveLength(1);
+    // The classes of each hand card whose fan's style is computed, as it is.
+    const computed: { id: string | undefined; classes: string[] }[] = [];
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+      const card = element.closest('.hcard');
+      if (element.classList.contains('fan') && card instanceof HTMLElement) {
+        computed.push({ id: card.dataset.id, classes: [...card.classList] });
+      }
+      return getComputedStyle(element, pseudo);
+    });
 
-    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
-    await nextFrame();
+    await dragFirstCardSecond({ clientX: 780, clientY: 800 });
     await tick();
-    expect(cardOf('h1').classList).toContain('settling');
-    await nextFrame();
-    await tick();
-    expect(cardOf('h1').classList).not.toContain('settling');
+
+    // Its popped style is computed while the pop transition is off, then the transition is back.
+    expect(computed).toEqual([
+      { id: 'h1', classes: expect.arrayContaining(['kept', 'settling']) as string[] },
+    ]);
+    expect(handList().querySelectorAll('.settling')).toHaveLength(0);
     expect(cardOf('h1').classList).toContain('kept');
   });
 
