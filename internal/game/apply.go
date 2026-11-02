@@ -696,15 +696,22 @@ func (t *Table) takeOverIdentity(c *Card) {
 	c.Identity = true
 }
 
-// statusLocked keeps a card from readying: it is exhausted as usual, but
-// neither an exhaust nor a Ready all readies it.
-const statusLocked = "locked"
-
-// Tokens a stage change treats apart: a villain loses its damage, a main
-// scheme keeps only its acceleration.
+// Names of the tokens and statuses a card can carry. A stage change treats
+// two tokens apart: a villain loses its damage, a main scheme keeps only its
+// acceleration (see carryStageCounters).
 const (
 	tokenDamage       = "dmg"
+	tokenThreat       = "thr"
+	tokenCounter      = "gen"
 	tokenAcceleration = "acc"
+
+	statusStunned   = "stunned"
+	statusConfused  = "confused"
+	statusTough     = "tough"
+	statusRetaliate = "retaliate"
+	// statusLocked keeps a card from readying: it is exhausted as usual, but
+	// neither an exhaust nor a Ready all readies it.
+	statusLocked = "locked"
 )
 
 // Counter names a card can carry.
@@ -712,10 +719,10 @@ var (
 	// tokenNames are the tokens a card can carry: damage, threat, generic
 	// counters and acceleration, which players put on the main scheme when the
 	// encounter deck runs out (bookkeeping only, like the others).
-	tokenNames = []string{tokenDamage, "thr", "gen", tokenAcceleration}
+	tokenNames = []string{tokenDamage, tokenThreat, tokenCounter, tokenAcceleration}
 	// statusNames are the statuses a card can carry, each with a count. The
-	// count of "retaliate" is the card's Retaliate value: sources add up.
-	statusNames = []string{"stunned", "confused", "tough", "retaliate", statusLocked}
+	// count of statusRetaliate is the card's Retaliate value: sources add up.
+	statusNames = []string{statusStunned, statusConfused, statusTough, statusRetaliate, statusLocked}
 	// modifierNames are the stats a modifier changes, in the order cards
 	// print them: the stat column, then the hit points.
 	modifierNames = []string{"atk", "thw", "def", "sch", "rec", "hp"}

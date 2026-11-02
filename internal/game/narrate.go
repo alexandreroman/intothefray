@@ -194,7 +194,8 @@ func mergeKey(a Action) string {
 	}
 }
 
-// counterNoun is how a token or status reads in a history line.
+// counterNoun is how a token or status reads in a history line. A modifier
+// reads as its stat instead (see modifierEvent).
 type counterNoun struct{ one, many string }
 
 func (c counterNoun) count(n int) string {
@@ -204,16 +205,17 @@ func (c counterNoun) count(n int) string {
 	return c.many
 }
 
+// counterNouns has a noun for every name of tokenNames and statusNames.
 var counterNouns = map[string]counterNoun{
-	"dmg":       {"damage", "damage"},
-	"thr":       {"threat", "threat"},
-	"gen":       {"counter", "counters"},
-	"acc":       {"acceleration token", "acceleration tokens"},
-	"stunned":   {"stunned status", "stunned statuses"},
-	"confused":  {"confused status", "confused statuses"},
-	"tough":     {"tough status", "tough statuses"},
-	"retaliate": {"retaliate", "retaliate"},
-	"locked":    {"locked status", "locked statuses"},
+	tokenDamage:       {"damage", "damage"},
+	tokenThreat:       {"threat", "threat"},
+	tokenCounter:      {"counter", "counters"},
+	tokenAcceleration: {"acceleration token", "acceleration tokens"},
+	statusStunned:     {"stunned status", "stunned statuses"},
+	statusConfused:    {"confused status", "confused statuses"},
+	statusTough:       {"tough status", "tough statuses"},
+	statusRetaliate:   {"retaliate", "retaliate"},
+	statusLocked:      {"locked status", "locked statuses"},
 }
 
 // hiddenCard is how the history names a card nobody could see.
