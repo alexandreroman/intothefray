@@ -907,7 +907,7 @@
       return;
     }
     const hit = under?.closest<HTMLElement>(
-      '.surface .card:not(.pile, .ghost)[data-id], .hand .hcard[data-id]',
+      '.surface .card:not(.pile)[data-id], .hand .hcard[data-id]',
     );
     const id = hit?.dataset.id;
     if (!hit || id === undefined) {
@@ -1045,7 +1045,7 @@
       return null;
     }
     const selector = `[data-counter="${target.kind}:${target.name}"]`;
-    return wrap.querySelector<HTMLElement>(`.surface .card[data-id="${target.card}"] ${selector}`);
+    return wrap.querySelector<HTMLElement>(`${tableCard(target.card)} ${selector}`);
   }
 
   function stepCounter(delta: number): void {
@@ -1110,7 +1110,7 @@
     if (!(target instanceof Element)) {
       return null;
     }
-    const hit = target.closest<HTMLElement>('.surface .card:not(.ghost)[data-id]');
+    const hit = target.closest<HTMLElement>('.surface .card[data-id]');
     const id = hit?.dataset.id;
     if (!hit || id === undefined) {
       return null;
@@ -1493,8 +1493,7 @@
       if (!isFree(card)) {
         continue;
       }
-      const selector = `.surface .card:not(.pile, .ghost)[data-id="${CSS.escape(card.id)}"]`;
-      const rect = app?.querySelector(selector)?.getBoundingClientRect();
+      const rect = app?.querySelector(tableCard(card.id))?.getBoundingClientRect();
       if (rect) {
         boxes.push([card.id, rect]);
       }
