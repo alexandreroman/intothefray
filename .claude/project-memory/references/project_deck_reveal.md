@@ -59,9 +59,18 @@ type: project
   another face keeps it revealed.
 - History: "revealed Rhino" on the encounter deck; "revealed X from their
   deck" / "… from their Labor deck" on a player's deck.
+- On its deck, a revealed card lies in the deck's portrait slot (a
+  landscape card turned a quarter). Dragged, it lies as the table draws
+  it: a landscape card (a side scheme) turns a quarter clockwise to lie
+  landscape, about the point held, which stays on the same spot of its
+  art (`motion.turnOffPile`, `MOVE_MS`; none under reduced motion). Other
+  players see its ghost landscape at once. Dropped on the table, it lands
+  where its landscape ghost lies; dropped back on its deck, it flies from
+  that ghost, turning a quarter as any landscape card put on a deck.
 
 **Why:** user decision: a revealed card stands for its deck's top card,
-so every deck action treats it as such.
+so every deck action treats it as such; once picked up, it is a card in
+play and shows as one.
 
 **How to apply:** one generic rule in internal/game: `coveredFor`
 (apply.go) puts the revealed cards back on top of the deck an action acts
