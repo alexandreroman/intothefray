@@ -262,7 +262,6 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 		// A player's arrows are credited to any of their seats. Seat alone
 		// tells the seat of a one-deck player: only a player with several
 		// records them.
-		a.Seats = nil
 		if len(who.seats) > 1 {
 			a.Seats = slices.Clone(who.seats)
 		}
