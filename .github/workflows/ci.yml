@@ -18,8 +18,9 @@ concurrency:
 # A release run is a push or a manual run on main:
 #   github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
 # It publishes the image, deploys the frontend to GitHub Pages, then the
-# backend; a manual run on main republishes them. Job and step conditions
-# cannot share a variable, so each one repeats that expression.
+# backend; a manual run on main republishes them. Only the publish job and
+# the steps of the web job test that expression (conditions cannot share a
+# variable, so each one repeats it); the later jobs follow through needs.
 jobs:
   go:
     runs-on: ubuntu-latest
@@ -184,7 +185,6 @@ jobs:
   # published, so the release order stays image, frontend, then backend.
   pages:
     needs: publish
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -198,7 +198,6 @@ jobs:
 
   deploy-backend:
     needs: pages
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
