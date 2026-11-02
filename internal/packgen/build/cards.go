@@ -22,7 +22,6 @@ import (
 
 const (
 	cerebroImageURL = "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/%s.jpg"
-	marvelcdbHost   = "https://marvelcdb.com"
 	baseCodeLength  = 5 // digits of a code, without its face letter
 )
 
@@ -319,7 +318,7 @@ func recordImage(entry marvelcdb.Card) string {
 	}
 	host := entry.ImageHost
 	if host == "" {
-		host = marvelcdbHost
+		host = marvelcdb.BaseURL
 	}
 	return host + entry.ImageSrc
 }
