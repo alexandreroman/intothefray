@@ -9,8 +9,7 @@
   import CardArt from '../CardArt.svelte';
   import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
-  import type { Rect } from '../../table/drag';
-  import { placeUnder, type DropdownPlace } from '../../table/dropdown';
+  import { placeUnder, type Box, type DropdownPlace } from '../../lib/dropdown';
   import {
     hostName,
     type Difficulty,
@@ -31,7 +30,7 @@
     index: Index;
     onconfigure: (config: LobbyConfig) => void;
     /** The part of the window the Add a set menu stays within, in viewport coordinates. */
-    room: () => Rect;
+    room: () => Box;
   } = $props();
 
   // Version I of each set, the default (spec 4.3).

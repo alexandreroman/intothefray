@@ -24,7 +24,7 @@
     ContextSubmenu,
   } from './contextItems';
   import { intersect, type Rect } from './drag';
-  import { placeAtPoint, placeSubmenu, type DropdownPlace } from './dropdown';
+  import { placeAtPoint, placeSubmenu, type DropdownPlace } from '../lib/dropdown';
 
   let {
     header,
