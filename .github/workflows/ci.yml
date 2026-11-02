@@ -202,7 +202,8 @@ jobs:
     permissions: {}
     steps:
       # GITHUB_TOKEN cannot dispatch to another repository, hence a fine-grained
-      # PAT scoped to intothefray-infra. Without it (a fork), the step only warns.
+      # PAT scoped to intothefray-infra. Without it, the step only warns and the
+      # backend is not deployed.
       - name: Trigger the backend deployment
         env:
           GH_TOKEN: ${{ secrets.INFRA_DISPATCH_TOKEN }}
