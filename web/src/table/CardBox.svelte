@@ -37,7 +37,7 @@
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
   import { DRAG_THRESHOLD } from './drag';
-  import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
+  import { interaction, LANDING_MS } from './interaction.svelte';
   import { isLandscape, isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatHero } from './seats';
 
@@ -234,11 +234,6 @@
   // The tile whose menu was open as the current press began: the press closes it (ContextMenu),
   // and the click it ends must not open it again.
   let menuAtPress: string | null = null;
-  // The press that ended a reorder: its click is no click on a tile.
-  let dragEnded = false;
-  // The kind of pointer of the current press, and when it began: a long touch opens no menu.
-  let pressType = 'mouse';
-  let pressedAt = 0;
 
   // Found again in every redraw: the menu goes with its card, or with its last action.
   const menuTile = $derived.by(() => {
@@ -254,21 +249,18 @@
   });
 
   /** Before the open menu sees the press, in the capture phase of the window. */
-  function onWindowPointerDown(event: PointerEvent): void {
+  function onWindowPointerDown(): void {
     menuAtPress = tileMenu?.key ?? null;
-    dragEnded = false;
-    pressType = event.pointerType || 'mouse';
-    pressedAt = event.timeStamp;
   }
 
   /**
    * A click or a tap on a pile tile opens its menu at the pointer, unless it
-   * ends a reorder or a long touch press (iOS fires that click), or its press
-   * closed that tile's menu; a tile without actions (a spectator's) opens
-   * nothing.
+   * ends a long touch press (iOS fires that click), or its press closed that
+   * tile's menu; a tile without actions (a spectator's) opens nothing. The
+   * click that ends a reorder never gets here (interaction.swallowNextClick).
    */
   function clickTile(tile: Tile, event: MouseEvent): void {
-    if (dragEnded || menuAtPress === tile.key || isLongTouchClick(event, pressType, pressedAt)) {
+    if (menuAtPress === tile.key || interaction.isLongTouchClick(event)) {
       return;
     }
     openTileMenu(tile, { x: event.clientX, y: event.clientY });
@@ -280,7 +272,7 @@
    */
   function rightClickTile(tile: Tile, event: MouseEvent): void {
     event.preventDefault();
-    if (isTouchContextMenu(event, pressType)) {
+    if (interaction.isTouchContextMenu(event)) {
       return;
     }
     openTileMenu(tile, { x: event.clientX, y: event.clientY });
@@ -549,7 +541,7 @@
       return;
     }
     // The click this release fires, on the tile let go over, is the end of the reorder.
-    dragEnded = true;
+    interaction.swallowNextClick();
     if (box.kind !== 'pile') {
       return;
     }

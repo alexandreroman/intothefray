@@ -74,28 +74,8 @@ interface ContextMenuAt {
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'clear';
 
-/**
- * Whether a contextmenu event comes from a touch: a long touch fires one on
- * Android, and only a tap opens a context menu on touch. The event's own
- * pointerType tells where the browser sets it (a PointerEvent, in Chrome);
- * elsewhere, the kind of pointer of the press that began it does.
- */
-export function isTouchContextMenu(event: MouseEvent, pressType: string): boolean {
-  const eventType = event instanceof PointerEvent ? event.pointerType : '';
-  return (eventType || pressType) === 'touch';
-}
-
 /** A touch held longer than this, in ms, is a long press, which opens nothing. */
 export const LONG_PRESS_MS = 500;
-
-/**
- * Whether a click ends a long touch press: iOS fires no contextmenu event,
- * but may fire a click once the finger lifts after a long hold, which must
- * open nothing either. pressedAt is the timeStamp of the press it ends.
- */
-export function isLongTouchClick(click: MouseEvent, pressType: string, pressedAt: number): boolean {
-  return pressType === 'touch' && click.timeStamp - pressedAt > LONG_PRESS_MS;
-}
 
 /**
  * What the viewer points at on the table, shared by the table, the hand, the
@@ -242,14 +222,25 @@ class TableInteraction {
     this.#menuAtPress = this.contextMenu?.element ?? null;
   }
 
-  /** Whether a touch fired that contextmenu event, which then opens no context menu. */
+  /**
+   * Whether a touch fired that contextmenu event, which then opens no context
+   * menu: a long touch fires one on Android, and only a tap opens a context
+   * menu on touch. The event's own pointerType tells where the browser sets it
+   * (a PointerEvent, in Chrome); elsewhere, the kind of pointer of the press
+   * that began it does.
+   */
   isTouchContextMenu(event: MouseEvent): boolean {
-    return isTouchContextMenu(event, this.#pointerType);
+    const eventType = event instanceof PointerEvent ? event.pointerType : '';
+    return (eventType || this.#pointerType) === 'touch';
   }
 
-  /** Whether that click ends a long touch press, which opens nothing. */
-  isLongTouchClick(event: MouseEvent): boolean {
-    return isLongTouchClick(event, this.#pointerType, this.#pressedAt);
+  /**
+   * Whether that click ends a long touch press, which opens nothing: iOS fires
+   * no contextmenu event, but may fire a click once the finger lifts after a
+   * long hold.
+   */
+  isLongTouchClick(click: MouseEvent): boolean {
+    return this.#pointerType === 'touch' && click.timeStamp - this.#pressedAt > LONG_PRESS_MS;
   }
 
   /**
