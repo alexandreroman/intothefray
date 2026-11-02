@@ -182,18 +182,13 @@ func validArea(a Area) bool {
 	return false
 }
 
-// isScenarioDeckID reports whether id names a scenario deck, encounter or not.
-func isScenarioDeckID(id string) bool {
-	return strings.HasPrefix(id, scenarioEncounterPrefix) || strings.HasPrefix(id, scenarioDeckPrefix)
-}
-
 // discardPileID returns the id of the pile where c is discarded: for a card
 // of a side deck or a scenario deck, the pile that deck records (see
 // Pile.Discard), empty when its cards are never discarded; else the discard
 // pile of its owner (the encounter discard pile for a card owned by nobody).
 // A card keeps its home wherever it is discarded to.
 func (t *Table) discardPileID(c *Card) string {
-	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
+	if ruledDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
 			return home.Discard
 		}
@@ -214,7 +209,7 @@ func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	if pile, ok := t.Piles[t.discardPileID(c)]; ok {
 		return pile, false, true
 	}
-	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
+	if ruledDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
 			return home, true, true
 		}
@@ -1208,7 +1203,7 @@ func deckOfDiscard(discardID string) (string, bool) {
 // for a pile that is no deck.
 func discardOf(deck *Pile) string {
 	switch {
-	case isSideDeckID(deck.ID) || isScenarioDeckID(deck.ID):
+	case ruledDeckID(deck.ID):
 		return deck.Discard
 	case deck.ID == PileEncounter:
 		return PileEncounterDiscard

@@ -162,6 +162,17 @@ func isSideDeckID(id string) bool {
 	return strings.HasPrefix(id, sideDeckPrefix)
 }
 
+// isScenarioDeckID reports whether id names a scenario deck, encounter or not.
+func isScenarioDeckID(id string) bool {
+	return strings.HasPrefix(id, scenarioEncounterPrefix) || strings.HasPrefix(id, scenarioDeckPrefix)
+}
+
+// ruledDeckID reports whether id names a side deck or a scenario deck: a deck
+// whose discard rule its pile records (see Pile.Discard).
+func ruledDeckID(id string) bool {
+	return isSideDeckID(id) || isScenarioDeckID(id)
+}
+
 // scenarioDeckIDs returns the ids of the deck of a scenario deck with key and
 // of its discard pile: "enc:w" and "encd:w" for an encounter deck, "sdeck:x"
 // and "sdisc:x" for the others.
