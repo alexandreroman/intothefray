@@ -1,5 +1,5 @@
-// Test fixtures of the table: cards, piles, a session and the card catalog, as most tests build
-// them, and lookups on the drawn table.
+// Test fixtures of the table: cards, piles, a game in play, a session, the card catalog and
+// measured boxes, as most tests build them, and lookups on the drawn table.
 
 import type { CardInfo } from '../lib/catalog';
 import type {
