@@ -12,10 +12,14 @@ export default defineConfig(
   svelte.configs.recommended,
   prettierConfig,
   svelte.configs.prettier,
+  // The config files run in Node, the app in the browser.
   {
-    languageOptions: {
-      globals: { ...globals.browser, ...globals.node },
-    },
+    ignores: ['vite.config.ts', 'eslint.config.js'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['vite.config.ts', 'eslint.config.js'],
+    languageOptions: { globals: globals.node },
   },
   {
     files: ['**/*.svelte', '**/*.svelte.ts'],
@@ -25,7 +29,7 @@ export default defineConfig(
   },
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
 );
