@@ -308,8 +308,8 @@ completes it from mc4db, which shares marvelcdb's schema:
   `_by_ffg` (`thor_by_ffg` is `thor`), and set codes drop `_by_ffg`
   (`daredevil_by_ffg_nemesis` is `daredevil_nemesis`); a pack marvelcdb
   lacks is added under its mc4db code without `_by_ffg`;
-- the image sources of an added card are its Cerebro image and its mc4db
-  scan.
+- the image sources of an added card are its Cerebro image, its mc4db
+  scan and its OCTGN image name.
 
 The report lists the records taken from mc4db, per pack. Cerebro is not
 a card-list source: it holds no official card that both marvelcdb and
