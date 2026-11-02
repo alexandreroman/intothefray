@@ -1,5 +1,5 @@
 import type { ActionReturn } from 'svelte/action';
-import { prefersReducedMotion } from './screen';
+import { prefersReducedMotion } from 'svelte/motion';
 
 /** The selected option of a switch: a pressed button, or a checked radio. */
 const SELECTED = '[aria-pressed="true"], [aria-checked="true"]';
@@ -25,7 +25,7 @@ export function selectionIndicator(node: HTMLElement): ActionReturn {
     if (!selected) {
       return;
     }
-    if (slide && wasShown && !prefersReducedMotion()) {
+    if (slide && wasShown && !prefersReducedMotion.current) {
       indicator.dataset.slides = '';
     } else {
       delete indicator.dataset.slides;

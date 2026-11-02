@@ -19,6 +19,18 @@ import type {
 } from '../lib/types';
 import { card, fakeSession, infoFrom } from './fixtures.testing';
 
+// Whether the viewer prefers reduced motion: withReducedMotion turns it on.
+const reducedMotion = vi.hoisted(() => ({ on: false }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return reducedMotion.on;
+    },
+  },
+}));
+
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
@@ -226,19 +238,11 @@ async function settle(): Promise<void> {
 
 /** Runs a test as with the system setting to reduce motion. */
 async function withReducedMotion(run: () => Promise<void>): Promise<void> {
-  const matchMedia = window.matchMedia;
-  window.matchMedia = (query: string): MediaQueryList =>
-    Object.assign(new EventTarget(), {
-      media: query,
-      matches: query.includes('reduced-motion'),
-      onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-    });
+  reducedMotion.on = true;
   try {
     await run();
   } finally {
-    window.matchMedia = matchMedia;
+    reducedMotion.on = false;
   }
 }
 

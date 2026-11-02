@@ -8,6 +8,7 @@
 // animations only paint over it, never catching the pointer.
 
 import { tick } from 'svelte';
+import { prefersReducedMotion } from 'svelte/motion';
 import { SvelteSet } from 'svelte/reactivity';
 import {
   MARKERS,
@@ -19,7 +20,6 @@ import {
   type TableView,
 } from '../lib/types';
 import { playerColorToken } from '../lib/playerColor';
-import { prefersReducedMotion } from '../lib/screen';
 import type { Anim, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
@@ -591,7 +591,7 @@ class TableMotion {
     tables: { before: TableView | undefined; after: TableView | undefined },
     zoom: number,
   ): Promise<void> {
-    const reduced = prefersReducedMotion();
+    const reduced = prefersReducedMotion.current;
     // Without motion, the state shows at once; the glow is a flash, not a motion.
     const shown = reduced ? anims.filter((anim) => anim.kind === 'glow') : anims;
     // Read within this call only: nothing reacts to it.

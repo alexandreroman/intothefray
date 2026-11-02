@@ -9,7 +9,20 @@ const LEVELS = [
 
 type Level = (typeof LEVELS)[number]['value'];
 
+// Whether the viewer prefers reduced motion, as each test chooses.
+const motion = vi.hoisted(() => ({ reduced: false }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return motion.reduced;
+    },
+  },
+}));
+
 afterEach(() => {
+  motion.reduced = false;
   vi.restoreAllMocks();
 });
 
@@ -118,9 +131,7 @@ describe('Segmented', () => {
   });
 
   it('moves its indicator at once under a reduced-motion preference', async () => {
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query) => ({ matches: query === '(prefers-reduced-motion: reduce)' }) as MediaQueryList,
-    );
+    motion.reduced = true;
     const { rerender } = renderLevels('standard');
     placeAt(screen.getByRole('button', { name: 'Expert' }), { left: 90, width: 70 });
 
