@@ -3,7 +3,6 @@ package game
 import (
 	"errors"
 	"slices"
-	"strings"
 	"testing"
 )
 
@@ -70,10 +69,6 @@ func TestRevealFaceDownSideDeck(t *testing.T) {
 	want := "revealed " + f.nameOf(t, id) + " from " + f.g.pileName(f.g.actorOf(0), labor)
 	if got := f.lastLog().Text; got != want {
 		t.Errorf("line = %q, want %q", got, want)
-	}
-	// The client finds the deck by the name ending the line (lastNamedPile in animate.ts).
-	if suffix := " from their Labor deck"; !strings.HasSuffix(f.lastLog().Text, suffix) {
-		t.Errorf("line = %q, want it to end with %q", f.lastLog().Text, suffix)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)

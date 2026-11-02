@@ -36,7 +36,7 @@ func (f *doFixture) lastInHand(area Area) string {
 }
 
 // renamedID returns the id card id goes by after the last event: the fresh
-// one the event gave it, if any (see freshID), or else id.
+// one the event gave it, if any (see Action.Renames), or else id.
 func (f *doFixture) renamedID(t *testing.T, id string) string {
 	t.Helper()
 	a := f.lastEvent(t).Action
