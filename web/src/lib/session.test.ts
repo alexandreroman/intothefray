@@ -2,44 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { wsUrl } from './api';
 import { getToken, setToken } from './prefs';
 import { GameSession } from './session.svelte';
+import { FakeWebSocket } from './socket.testing';
 import type { DeckView, PlayerView, View } from './types';
-
-class FakeWebSocket {
-  static instances: FakeWebSocket[] = [];
-
-  readyState = 0;
-  sent: Record<string, unknown>[] = [];
-  onopen: (() => void) | null = null;
-  onmessage: ((event: { data: string }) => void) | null = null;
-  onclose: ((event: { code: number }) => void) | null = null;
-
-  constructor(readonly url: string) {
-    FakeWebSocket.instances.push(this);
-  }
-
-  send(data: string): void {
-    this.sent.push(JSON.parse(data) as Record<string, unknown>);
-  }
-
-  close(): void {
-    this.readyState = 3;
-  }
-
-  // Test helpers: what the network does.
-  open(): void {
-    this.readyState = 1;
-    this.onopen?.();
-  }
-
-  receive(message: object): void {
-    this.onmessage?.({ data: JSON.stringify(message) });
-  }
-
-  drop(code = 1006): void {
-    this.readyState = 3;
-    this.onclose?.({ code });
-  }
-}
 
 const deck = (overrides: Partial<DeckView> = {}): DeckView => ({
   ready: false,
@@ -88,8 +52,6 @@ function newSession(gameId = 'g1'): GameSession {
   return session;
 }
 
-const lastSocket = (): FakeWebSocket => FakeWebSocket.instances.at(-1)!;
-
 describe('GameSession', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -102,28 +64,28 @@ describe('GameSession', () => {
 
   it('connects to the game socket', () => {
     newSession('abc');
-    expect(lastSocket().url).toBe(wsUrl('abc'));
+    expect(FakeWebSocket.last.url).toBe(wsUrl('abc'));
   });
 
   it('sends hello with the stored token', () => {
     setToken('hello-game', 'tok-1');
     newSession('hello-game');
-    lastSocket().open();
+    FakeWebSocket.last.open();
 
-    expect(lastSocket().sent).toEqual([{ type: 'hello', token: 'tok-1', name: 'Alex' }]);
+    expect(FakeWebSocket.last.sent).toEqual([{ type: 'hello', token: 'tok-1', name: 'Alex' }]);
   });
 
   it('sends hello without a token for a new viewer', () => {
     newSession('fresh-game');
-    lastSocket().open();
+    FakeWebSocket.last.open();
 
-    expect(lastSocket().sent).toEqual([{ type: 'hello', name: 'Alex' }]);
+    expect(FakeWebSocket.last.sent).toEqual([{ type: 'hello', name: 'Alex' }]);
   });
 
   it('stores the token from welcome', () => {
     const session = newSession('welcome-game');
-    lastSocket().open();
-    lastSocket().receive({ type: 'welcome', token: 'tok-2', role: 'player' });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'welcome', token: 'tok-2', role: 'player' });
 
     expect(getToken('welcome-game')).toBe('tok-2');
     expect(session.status).toBe('open');
@@ -131,18 +93,18 @@ describe('GameSession', () => {
 
   it('reconnects with the stored token', () => {
     newSession('reconnect-game');
-    lastSocket().open();
-    lastSocket().receive({ type: 'welcome', token: 'tok-3', role: 'player' });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'welcome', token: 'tok-3', role: 'player' });
 
-    lastSocket().drop();
+    FakeWebSocket.last.drop();
     expect(FakeWebSocket.instances).toHaveLength(1);
     vi.advanceTimersByTime(499);
     expect(FakeWebSocket.instances).toHaveLength(1);
     vi.advanceTimersByTime(1);
     expect(FakeWebSocket.instances).toHaveLength(2);
 
-    lastSocket().open();
-    expect(lastSocket().sent).toEqual([{ type: 'hello', token: 'tok-3', name: 'Alex' }]);
+    FakeWebSocket.last.open();
+    expect(FakeWebSocket.last.sent).toEqual([{ type: 'hello', token: 'tok-3', name: 'Alex' }]);
   });
 
   it('backs off 0.5, 1, 2, 4 then every 8 seconds, and resets after a view', () => {
@@ -150,7 +112,7 @@ describe('GameSession', () => {
     const expectedDelays = [500, 1000, 2000, 4000, 8000, 8000];
 
     for (const [index, delay] of expectedDelays.entries()) {
-      lastSocket().drop();
+      FakeWebSocket.last.drop();
       expect(session.status).toBe('reconnecting');
       vi.advanceTimersByTime(delay - 1);
       expect(FakeWebSocket.instances).toHaveLength(index + 1);
@@ -158,43 +120,43 @@ describe('GameSession', () => {
       expect(FakeWebSocket.instances).toHaveLength(index + 2);
     }
 
-    lastSocket().open();
-    lastSocket().receive({ type: 'view', version: 1, view: view() });
-    lastSocket().drop();
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
+    FakeWebSocket.last.drop();
     vi.advanceTimersByTime(500);
     expect(FakeWebSocket.instances).toHaveLength(expectedDelays.length + 2);
   });
 
   it('tells how long the view went stale across a reconnection, and no gap while connected', () => {
     const session = newSession();
-    lastSocket().open();
-    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
     expect(session.viewGap).toBe(0);
 
     // Live views are never stale, however quiet the table is between them.
     vi.advanceTimersByTime(10_000);
-    lastSocket().receive({ type: 'view', version: 2, view: view() });
+    FakeWebSocket.last.receive({ type: 'view', version: 2, view: view() });
     expect(session.viewGap).toBe(0);
 
     // Dropped 1 s after the last view, back 0.5 s later, the new view 0.2 s after that.
     vi.advanceTimersByTime(1000);
-    lastSocket().drop();
+    FakeWebSocket.last.drop();
     vi.advanceTimersByTime(500);
-    lastSocket().open();
+    FakeWebSocket.last.open();
     vi.advanceTimersByTime(200);
-    lastSocket().receive({ type: 'view', version: 3, view: view() });
+    FakeWebSocket.last.receive({ type: 'view', version: 3, view: view() });
     expect(session.viewGap).toBe(1700);
 
-    lastSocket().receive({ type: 'view', version: 4, view: view() });
+    FakeWebSocket.last.receive({ type: 'view', version: 4, view: view() });
     expect(session.viewGap).toBe(0);
   });
 
   it('stops reconnecting after close()', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
     session.close();
-    const socket = lastSocket();
-    lastSocket().drop(1000);
+    const socket = FakeWebSocket.last;
+    FakeWebSocket.last.drop(1000);
     vi.advanceTimersByTime(60_000);
 
     expect(socket.readyState).toBe(3);
@@ -204,7 +166,7 @@ describe('GameSession', () => {
 
   it('closes for good on close code 4404', () => {
     const session = newSession();
-    lastSocket().drop(4404);
+    FakeWebSocket.last.drop(4404);
     vi.advanceTimersByTime(60_000);
 
     expect(session.status).toBe('closed');
@@ -214,10 +176,10 @@ describe('GameSession', () => {
 
   it('closes for good on a game-level notFound before any view', () => {
     const session = newSession();
-    lastSocket().open();
-    lastSocket().receive({ type: 'error', code: 'notFound', message: 'No such game.' });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'error', code: 'notFound', message: 'No such game.' });
     // Whatever the close code, no retry follows.
-    lastSocket().drop(1006);
+    FakeWebSocket.last.drop(1006);
     vi.advanceTimersByTime(60_000);
 
     expect(session.status).toBe('closed');
@@ -229,7 +191,7 @@ describe('GameSession', () => {
     'retries after a %s error answering hello, before any view',
     (code) => {
       const session = newSession();
-      const first = lastSocket();
+      const first = FakeWebSocket.last;
       first.open();
       // An error tied to an action id is not about the game itself.
       first.receive({ type: 'error', id: 1, code, message: 'Failed.' });
@@ -249,9 +211,14 @@ describe('GameSession', () => {
 
   it('keeps the session on notFound once a view arrived', () => {
     const session = newSession();
-    lastSocket().open();
-    lastSocket().receive({ type: 'view', version: 1, view: view() });
-    lastSocket().receive({ type: 'error', id: 3, code: 'notFound', message: 'No such card.' });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
+    FakeWebSocket.last.receive({
+      type: 'error',
+      id: 3,
+      code: 'notFound',
+      message: 'No such card.',
+    });
 
     expect(session.status).toBe('open');
     expect(session.lastError?.code).toBe('notFound');
@@ -259,27 +226,27 @@ describe('GameSession', () => {
 
   it('replaces the view and clears the error on the next view', () => {
     const session = newSession();
-    lastSocket().open();
-    lastSocket().receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
     expect(session.lastError?.code).toBe('forbidden');
 
     // The failed hello abandons that socket: the retry brings the view.
     vi.advanceTimersByTime(500);
-    lastSocket().open();
-    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
     expect(session.view?.id).toBe('g1');
     expect(session.lastError).toBeNull();
   });
 
   it('act returns increasing ids and sends the action', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
 
     const first = session.act({ kind: 'draw', n: 1 });
     const second = session.act({ kind: 'shuffle' });
 
     expect([first, second]).toEqual([1, 2]);
-    expect(lastSocket().sent.slice(1)).toEqual([
+    expect(FakeWebSocket.last.sent.slice(1)).toEqual([
       { type: 'action', id: 1, action: { kind: 'draw', n: 1 } },
       { type: 'action', id: 2, action: { kind: 'shuffle' } },
     ]);
@@ -287,11 +254,11 @@ describe('GameSession', () => {
 
   it('act sends seat', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
 
     session.act({ kind: 'exhaust', card: 'c1' }, 1);
 
-    expect(lastSocket().sent.at(-1)).toEqual({
+    expect(FakeWebSocket.last.sent.at(-1)).toEqual({
       type: 'action',
       id: 1,
       action: { kind: 'exhaust', card: 'c1' },
@@ -301,11 +268,11 @@ describe('GameSession', () => {
 
   it('act omits seat when undefined', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
 
     session.act({ kind: 'exhaust', card: 'c1' });
 
-    expect(lastSocket().sent.at(-1)).not.toHaveProperty('seat');
+    expect(FakeWebSocket.last.sent.at(-1)).not.toHaveProperty('seat');
   });
 
   it('act reports null and sends nothing while the socket is not open', () => {
@@ -313,9 +280,9 @@ describe('GameSession', () => {
 
     expect(session.act({ kind: 'draw', n: 1 })).toBeNull();
 
-    lastSocket().open();
+    FakeWebSocket.last.open();
     expect(session.act({ kind: 'draw', n: 1 })).toBe(1);
-    lastSocket().drop();
+    FakeWebSocket.last.drop();
     expect(session.act({ kind: 'draw', n: 1 })).toBeNull();
   });
 
@@ -323,29 +290,29 @@ describe('GameSession', () => {
     const session = newSession();
     expect(session.lobby('start')).toBe(false);
 
-    lastSocket().open();
+    FakeWebSocket.last.open();
     expect(session.lobby('start')).toBe(true);
   });
 
   it('keeps the action id of an error', () => {
     const session = newSession();
-    lastSocket().open();
-    lastSocket().receive({ type: 'view', version: 1, view: view() });
+    FakeWebSocket.last.open();
+    FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
     const id = session.act({ kind: 'draw', n: 1 });
     expect(id).toBe(1);
-    lastSocket().receive({ type: 'error', id, code: 'invalid', message: 'nope' });
+    FakeWebSocket.last.receive({ type: 'error', id, code: 'invalid', message: 'nope' });
 
     expect(session.lastError).toEqual({ id: 1, code: 'invalid', message: 'nope' });
   });
 
   it('ignores the events of a replaced socket', () => {
     const session = newSession();
-    const stale = lastSocket();
+    const stale = FakeWebSocket.last;
     stale.open();
     stale.receive({ type: 'view', version: 1, view: view() });
     stale.drop();
     vi.advanceTimersByTime(500);
-    const fresh = lastSocket();
+    const fresh = FakeWebSocket.last;
     expect(fresh).not.toBe(stale);
 
     stale.receive({ type: 'view', version: 2, view: view([player({ name: 'Old' })]) });
@@ -358,11 +325,11 @@ describe('GameSession', () => {
 
   it('sends lobby operations with their payload', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
     session.lobby('setDeck', { url: 'https://marvelcdb.com/decklist/view/1' });
     session.lobby('start');
 
-    expect(lastSocket().sent.slice(1)).toEqual([
+    expect(FakeWebSocket.last.sent.slice(1)).toEqual([
       { type: 'lobby', op: 'setDeck', url: 'https://marvelcdb.com/decklist/view/1' },
       { type: 'lobby', op: 'start' },
     ]);
@@ -370,21 +337,21 @@ describe('GameSession', () => {
 
   it('lobby sends addDeck', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
 
     expect(session.lobby('addDeck')).toBe(true);
 
-    expect(lastSocket().sent.at(-1)).toEqual({ type: 'lobby', op: 'addDeck' });
+    expect(FakeWebSocket.last.sent.at(-1)).toEqual({ type: 'lobby', op: 'addDeck' });
   });
 
   it('lobby setDeck sends deck', () => {
     const session = newSession();
-    lastSocket().open();
+    FakeWebSocket.last.open();
     const url = 'https://marvelcdb.com/decklist/view/1';
 
     session.lobby('setDeck', { url, deck: 1 });
 
-    expect(lastSocket().sent.at(-1)).toEqual({ type: 'lobby', op: 'setDeck', url, deck: 1 });
+    expect(FakeWebSocket.last.sent.at(-1)).toEqual({ type: 'lobby', op: 'setDeck', url, deck: 1 });
   });
 
   describe('deckError', () => {
@@ -392,28 +359,32 @@ describe('GameSession', () => {
 
     it('is exposed', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({ type: 'deckError', unsupported });
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({ type: 'deckError', unsupported });
 
       expect(session.deckError).toEqual(unsupported);
     });
 
     it('stays while the player deck is unchanged', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({ type: 'view', version: 1, view: view() });
-      lastSocket().receive({ type: 'deckError', unsupported });
-      lastSocket().receive({ type: 'view', version: 2, view: view([player({ ready: true })]) });
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
+      FakeWebSocket.last.receive({ type: 'deckError', unsupported });
+      FakeWebSocket.last.receive({
+        type: 'view',
+        version: 2,
+        view: view([player({ ready: true })]),
+      });
 
       expect(session.deckError).toEqual(unsupported);
     });
 
     it('is cleared when the player deck changes', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({ type: 'view', version: 1, view: view() });
-      lastSocket().receive({ type: 'deckError', unsupported });
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({ type: 'view', version: 1, view: view() });
+      FakeWebSocket.last.receive({ type: 'deckError', unsupported });
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([player({ decks: [deck({ deckName: 'Justice', hero: 'spider-man' })] })]),
@@ -424,14 +395,14 @@ describe('GameSession', () => {
 
     it('ignores the deck changes of other players', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 1,
         view: view([player(), player({ color: 1 })]),
       });
-      lastSocket().receive({ type: 'deckError', unsupported });
-      lastSocket().receive({
+      FakeWebSocket.last.receive({ type: 'deckError', unsupported });
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([player(), player({ color: 1, decks: [deck({ deckName: 'Other' })] })]),
@@ -451,8 +422,8 @@ describe('GameSession', () => {
 
     function sessionWithView(): GameSession {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 1,
         view: view([player(), player({ color: 1 })]),
@@ -463,7 +434,7 @@ describe('GameSession', () => {
     it('takes the error answering setDeck, not lastError', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().receive(importFailed);
+      FakeWebSocket.last.receive(importFailed);
 
       expect(session.deckLoadError).toEqual({
         code: 'deck',
@@ -475,8 +446,8 @@ describe('GameSession', () => {
     it('survives views that do not change the player deck', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().receive(importFailed);
-      lastSocket().receive({
+      FakeWebSocket.last.receive(importFailed);
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([player(), player({ color: 1, decks: [deck({ deckName: 'Other' })] })]),
@@ -488,9 +459,9 @@ describe('GameSession', () => {
     it('is cleared, with deckError, when the next setDeck is sent', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().receive(importFailed);
+      FakeWebSocket.last.receive(importFailed);
       session.lobby('setDeck', { url: 'y' });
-      lastSocket().receive({ type: 'deckError', unsupported });
+      FakeWebSocket.last.receive({ type: 'deckError', unsupported });
       session.lobby('setDeck', { url: 'z' });
 
       expect(session.deckLoadError).toBeNull();
@@ -500,8 +471,8 @@ describe('GameSession', () => {
     it('is cleared when the player deck changes', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().receive(importFailed);
-      lastSocket().receive({
+      FakeWebSocket.last.receive(importFailed);
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([
@@ -519,8 +490,8 @@ describe('GameSession', () => {
     it('takes only the first error after setDeck', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().receive(importFailed);
-      lastSocket().receive({
+      FakeWebSocket.last.receive(importFailed);
+      FakeWebSocket.last.receive({
         type: 'error',
         code: 'forbidden',
         message: 'You are not allowed to do that.',
@@ -533,8 +504,8 @@ describe('GameSession', () => {
     it('is not set by an error once a deckError answered the load', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().receive({ type: 'deckError', unsupported });
-      lastSocket().receive({
+      FakeWebSocket.last.receive({ type: 'deckError', unsupported });
+      FakeWebSocket.last.receive({
         type: 'error',
         code: 'invalid',
         message: 'This request is not valid.',
@@ -546,7 +517,7 @@ describe('GameSession', () => {
 
     it('is not set by an error when no deck load is pending', () => {
       const session = sessionWithView();
-      lastSocket().receive({
+      FakeWebSocket.last.receive({
         type: 'error',
         code: 'invalid',
         message: 'This request is not valid.',
@@ -559,15 +530,15 @@ describe('GameSession', () => {
     it('forgets a pending load when the connection drops', () => {
       const session = sessionWithView();
       session.lobby('setDeck', { url: 'x' });
-      lastSocket().drop();
+      FakeWebSocket.last.drop();
       vi.advanceTimersByTime(500);
-      lastSocket().open();
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([player(), player({ color: 1 })]),
       });
-      lastSocket().receive({
+      FakeWebSocket.last.receive({
         type: 'error',
         code: 'invalid',
         message: 'This request is not valid.',
@@ -588,8 +559,8 @@ describe('GameSession', () => {
 
     function loadingSession(): GameSession {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive(unchanged(1));
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive(unchanged(1));
       session.lobby('setDeck', { url: 'x' });
       return session;
     }
@@ -609,37 +580,37 @@ describe('GameSession', () => {
 
     it('ends with a deckSet for a version the view already holds', () => {
       const session = loadingSession();
-      lastSocket().receive(unchanged(2));
-      lastSocket().receive({ type: 'deckSet', version: 2 });
+      FakeWebSocket.last.receive(unchanged(2));
+      FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
 
       expect(session.deckLoading).toBe(false);
     });
 
     it('ends with the view of the version a deckSet named before it', () => {
       const session = loadingSession();
-      lastSocket().receive({ type: 'deckSet', version: 2 });
+      FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
       expect(session.deckLoading).toBe(true);
 
-      lastSocket().receive(unchanged(2));
+      FakeWebSocket.last.receive(unchanged(2));
 
       expect(session.deckLoading).toBe(false);
     });
 
     it('ignores a deckSet while no load is in flight', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive(unchanged(1));
-      lastSocket().receive({ type: 'deckSet', version: 2 });
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive(unchanged(1));
+      FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
       session.lobby('setDeck', { url: 'x' });
 
-      lastSocket().receive(unchanged(2));
+      FakeWebSocket.last.receive(unchanged(2));
 
       expect(session.deckLoading).toBe(true);
     });
 
     it('ends with a deckError', () => {
       const session = loadingSession();
-      lastSocket().receive({
+      FakeWebSocket.last.receive({
         type: 'deckError',
         unsupported: [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }],
       });
@@ -649,7 +620,7 @@ describe('GameSession', () => {
 
     it('ends with the error that answers the load', () => {
       const session = loadingSession();
-      lastSocket().receive({ type: 'error', code: 'deck', message: 'Nope.' });
+      FakeWebSocket.last.receive({ type: 'error', code: 'deck', message: 'Nope.' });
 
       expect(session.deckLoading).toBe(false);
       expect(session.deckLoadError?.code).toBe('deck');
@@ -657,7 +628,7 @@ describe('GameSession', () => {
 
     it('stays on with a view that changes the player deck, without a deckSet', () => {
       const session = loadingSession();
-      lastSocket().receive({
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([player({ decks: [deck({ deckName: 'Justice', hero: '01001a' })] }), ...others]),
@@ -669,16 +640,16 @@ describe('GameSession', () => {
 
     it('waits past the views below the version its deckSet named', () => {
       const session = loadingSession();
-      lastSocket().receive({ type: 'deckSet', version: 3 });
+      FakeWebSocket.last.receive({ type: 'deckSet', version: 3 });
       // Another change, made before the deck was set.
-      lastSocket().receive({
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 2,
         view: view([player({ decks: [deck({ deckName: 'Justice', hero: '01001a' })] }), ...others]),
       });
       expect(session.deckLoading).toBe(true);
 
-      lastSocket().receive(unchanged(3));
+      FakeWebSocket.last.receive(unchanged(3));
 
       expect(session.deckLoading).toBe(false);
       expect(session.deckLoaded).toBe(1);
@@ -686,11 +657,11 @@ describe('GameSession', () => {
 
     it('takes an error that follows its deckSet as no answer to the load', () => {
       const session = loadingSession();
-      lastSocket().receive({ type: 'deckSet', version: 2 });
-      lastSocket().receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
+      FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
+      FakeWebSocket.last.receive({ type: 'error', code: 'forbidden', message: 'Nope.' });
       expect(session.lastError?.code).toBe('forbidden');
 
-      lastSocket().receive(unchanged(2));
+      FakeWebSocket.last.receive(unchanged(2));
 
       expect(session.deckLoaded).toBe(1);
       expect(session.deckLoadError).toBeNull();
@@ -698,21 +669,21 @@ describe('GameSession', () => {
 
     it('stays on with a view that changes nothing of the player deck', () => {
       const session = loadingSession();
-      lastSocket().receive(unchanged(2));
+      FakeWebSocket.last.receive(unchanged(2));
 
       expect(session.deckLoading).toBe(true);
     });
 
     it('ends when the connection drops, forgetting the version a deckSet named', () => {
       const session = loadingSession();
-      lastSocket().receive({ type: 'deckSet', version: 2 });
-      lastSocket().drop();
+      FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
+      FakeWebSocket.last.drop();
       expect(session.deckLoading).toBe(false);
 
       vi.advanceTimersByTime(500);
-      lastSocket().open();
+      FakeWebSocket.last.open();
       session.lobby('setDeck', { url: 'y' });
-      lastSocket().receive(unchanged(2));
+      FakeWebSocket.last.receive(unchanged(2));
 
       expect(session.deckLoading).toBe(true);
     });
@@ -727,40 +698,40 @@ describe('GameSession', () => {
     describe('deckLoaded', () => {
       it('counts a load confirmed by a deckSet after its view', () => {
         const session = loadingSession();
-        lastSocket().receive(unchanged(2));
-        lastSocket().receive({ type: 'deckSet', version: 2 });
+        FakeWebSocket.last.receive(unchanged(2));
+        FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
 
         expect(session.deckLoaded).toBe(1);
       });
 
       it('counts a load confirmed by a deckSet before its view, once the view comes', () => {
         const session = loadingSession();
-        lastSocket().receive({ type: 'deckSet', version: 2 });
+        FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
         expect(session.deckLoaded).toBe(0);
 
-        lastSocket().receive(unchanged(2));
+        FakeWebSocket.last.receive(unchanged(2));
 
         expect(session.deckLoaded).toBe(1);
       });
 
       it('counts each confirmed load once', () => {
         const session = loadingSession();
-        lastSocket().receive({ type: 'deckSet', version: 2 });
-        lastSocket().receive({
+        FakeWebSocket.last.receive({ type: 'deckSet', version: 2 });
+        FakeWebSocket.last.receive({
           type: 'view',
           version: 2,
           view: view([player({ decks: [deck({ deckName: 'Justice' })] }), ...others]),
         });
-        lastSocket().receive(unchanged(3));
+        FakeWebSocket.last.receive(unchanged(3));
 
         expect(session.deckLoaded).toBe(1);
       });
 
       it('counts no load that ends with an error', () => {
         const session = loadingSession();
-        lastSocket().receive({ type: 'error', code: 'deck', message: 'Nope.' });
+        FakeWebSocket.last.receive({ type: 'error', code: 'deck', message: 'Nope.' });
         session.lobby('setDeck', { url: 'y' });
-        lastSocket().receive({
+        FakeWebSocket.last.receive({
           type: 'deckError',
           unsupported: [{ code: '01001', name: 'Spider-Man', pack: 'core', qty: 1 }],
         });
@@ -770,9 +741,9 @@ describe('GameSession', () => {
 
       it('counts no load cut short by a lost connection or the end of the session', () => {
         const session = loadingSession();
-        lastSocket().drop();
+        FakeWebSocket.last.drop();
         vi.advanceTimersByTime(500);
-        lastSocket().open();
+        FakeWebSocket.last.open();
         session.lobby('setDeck', { url: 'y' });
         session.close();
 
@@ -785,15 +756,15 @@ describe('GameSession', () => {
     it('keeps the latest state of each viewer by colour, stamped with its time', () => {
       vi.setSystemTime(1_000);
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({
         type: 'presence',
         color: 1,
         name: 'Bo',
         cursor: { x: 1, y: 2 },
       });
       vi.setSystemTime(1_500);
-      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
+      FakeWebSocket.last.receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
 
       expect(session.presence.get(1)).toEqual({
         color: 1,
@@ -807,15 +778,15 @@ describe('GameSession', () => {
     it('stamps a ping with the time it came, which later messages keep', () => {
       vi.setSystemTime(1_000);
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({
         type: 'presence',
         color: 1,
         name: 'Bo',
         ping: { x: 5, y: 6 },
       });
       vi.setSystemTime(1_200);
-      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
+      FakeWebSocket.last.receive({ type: 'presence', color: 1, name: 'Bo', preview: 'c1' });
 
       expect(session.presence.get(1)).toMatchObject({
         ping: { x: 5, y: 6 },
@@ -826,25 +797,25 @@ describe('GameSession', () => {
 
     it('drops a player that a view no longer lists', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({
         type: 'view',
         version: 1,
         view: view([player(), player({ color: 1 })]),
       });
-      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo' });
-      lastSocket().receive({ type: 'presence', color: 2, name: 'Cy' });
+      FakeWebSocket.last.receive({ type: 'presence', color: 1, name: 'Bo' });
+      FakeWebSocket.last.receive({ type: 'presence', color: 2, name: 'Cy' });
 
-      lastSocket().receive({ type: 'view', version: 2, view: view([player()]) });
+      FakeWebSocket.last.receive({ type: 'view', version: 2, view: view([player()]) });
 
       expect(session.presence.size).toBe(0);
     });
 
     it('is emptied when the connection drops', () => {
       const session = newSession();
-      lastSocket().open();
-      lastSocket().receive({ type: 'presence', color: 1, name: 'Bo' });
-      lastSocket().drop();
+      FakeWebSocket.last.open();
+      FakeWebSocket.last.receive({ type: 'presence', color: 1, name: 'Bo' });
+      FakeWebSocket.last.drop();
 
       expect(session.presence.size).toBe(0);
     });
@@ -855,8 +826,8 @@ describe('GameSession', () => {
 
     // The presence messages sent since the session opened, without their type.
     function presenceSent(): Record<string, unknown>[] {
-      return lastSocket()
-        .sent.filter((m) => m.type === 'presence')
+      return FakeWebSocket.last.sent
+        .filter((m) => m.type === 'presence')
         .map(({ type: _type, ...fields }) => fields);
     }
 
@@ -866,12 +837,12 @@ describe('GameSession', () => {
     let version = 0;
     function receiveView(next: View): void {
       version += 1;
-      lastSocket().receive({ type: 'view', version, view: next });
+      FakeWebSocket.last.receive({ type: 'view', version, view: next });
     }
 
     function openSession(): GameSession {
       const session = newSession();
-      lastSocket().open();
+      FakeWebSocket.last.open();
       receiveView(watched());
       return session;
     }
@@ -966,9 +937,9 @@ describe('GameSession', () => {
       const session = openSession();
       session.sendPresence({ cursor: { x: 10, y: 10 } });
       session.sendPresence({ drag: drag(10, 10) });
-      lastSocket().drop();
+      FakeWebSocket.last.drop();
       vi.advanceTimersByTime(500);
-      lastSocket().open();
+      FakeWebSocket.last.open();
 
       session.sendPresence({ drag: drag(30, 30) });
       expect(presenceSent()).toEqual([]);
@@ -1082,7 +1053,7 @@ describe('GameSession', () => {
 
       function aloneSession(): GameSession {
         const session = newSession();
-        lastSocket().open();
+        FakeWebSocket.last.open();
         receiveView(alone());
         return session;
       }
@@ -1105,7 +1076,7 @@ describe('GameSession', () => {
 
       it("does not count the viewer's own other tabs", () => {
         const session = newSession();
-        lastSocket().open();
+        FakeWebSocket.last.open();
         // Alex, colour 0 and online, is the viewer: their other tabs never get their presence.
         receiveView(view([player(), player({ name: 'Bo', color: 1, online: false })]));
 
