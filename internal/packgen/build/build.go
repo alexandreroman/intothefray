@@ -116,11 +116,7 @@ func Build(in Inputs) (Result, error) {
 		return Result{}, err
 	}
 
-	positions := make(map[string]int, len(packs))
-	for _, packFile := range packs {
-		positions[packFile.Code] = packFile.Position
-	}
-	index := buildIndex(packs, refs, positions, mainSchemeRecommendations(sets, in.CBSets))
+	index := buildIndex(packs, refs, mainSchemeRecommendations(sets, in.CBSets))
 	localizeIndex(&index, in.Curated.Scenarios, fr)
 	return Result{
 		Packs:    packs,
@@ -497,9 +493,9 @@ func nonNil[T any](items []T) []T {
 func buildIndex(
 	packs []pack.PackFile,
 	refs []pack.ScenarioRef,
-	positions map[string]int,
 	recommendations map[string][]string,
 ) pack.Index {
+	positions := make(map[string]int, len(packs))
 	index := pack.Index{
 		Version:   indexVersion,
 		Packs:     []pack.PackRef{},
@@ -507,6 +503,7 @@ func buildIndex(
 		Sets:      []pack.SetRef{},
 	}
 	for _, packFile := range packs {
+		positions[packFile.Code] = packFile.Position
 		index.Packs = append(index.Packs, pack.PackRef{
 			Code:     packFile.Code,
 			Name:     packFile.Name,
