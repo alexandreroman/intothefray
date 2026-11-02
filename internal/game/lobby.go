@@ -260,7 +260,9 @@ func (g *Game) End(hostToken string) error {
 
 // DefaultConfig is the usual setup of a scenario: its recommended modular
 // sets, standard version I and no expert set; none for a self-contained
-// scenario.
+// scenario. No production code calls it: it is the config tests start from,
+// shared with the internal/server and packs tests. The lobby UI picks its own
+// defaults in ScenarioPicker.svelte.
 func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 	cfg := LobbyConfig{
 		Scenario:   scenario,
