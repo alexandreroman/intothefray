@@ -8,7 +8,6 @@ vi.mock('../lib/api', () => ({ createGame: vi.fn() }));
 const createGameMock = vi.mocked(createGame);
 
 beforeEach(() => {
-  localStorage.clear();
   window.history.pushState(null, '', '/');
 });
 

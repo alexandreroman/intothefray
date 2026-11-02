@@ -47,10 +47,6 @@ function mockSession(fields: object): {
   return session;
 }
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 afterEach(() => {
   sessionMock.mockReset();
 });

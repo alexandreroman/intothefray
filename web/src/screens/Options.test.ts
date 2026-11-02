@@ -27,7 +27,6 @@ function versionText(): string {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   document.documentElement.removeAttribute('data-theme');
   vi.stubEnv('VITE_COMMIT', APP_SHA);
   stubServerCommit(APP_SHA);
