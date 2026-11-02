@@ -3,8 +3,9 @@
   scrolling both ways) and the side column (history), which collapses to a
   slim strip. The preview of the hovered card floats in a corner of the play
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
-  control, unless that hides the hovered element; touch mode previews nothing
-  (touch.ts). On a narrow screen there is no side column.
+  control, unless it would hide the whole hovered element there, and never
+  the hero selector's corner; touch mode previews nothing (touch.ts). On a
+  narrow screen there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -2369,8 +2370,8 @@
 
   /*
     The preview, in a corner of the play area that focus.ts chooses (chooseCorner): the bottom
-    right, above the zoom control, unless that hides the hovered element. Still while the table
-    scrolls under it. As the zoom control: over the table, under the other players' presence
+    right, above the zoom control, unless it would hide the whole hovered element there, and
+    never the hero selector's corner. Still while the table scrolls under it. As the zoom control: over the table, under the other players' presence
     (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
     pointer goes through it.
   */
@@ -2402,7 +2403,7 @@
     width: min(520px, 45%);
   }
 
-  /* Out of the pointer's and the hovered card's way, in another corner (focus.ts). */
+  /* In another corner, when home would hide the whole hovered element (focus.ts). */
   .peek.top-left,
   .peek.bottom-left {
     justify-self: start;
