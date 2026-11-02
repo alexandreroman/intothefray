@@ -1,7 +1,7 @@
 <!--
   The small "− value +" pill above a hovered token, status or modifier. It stays while
-  the pointer is within its reach, the box spanning the pill and its token, and so does the
-  hover of its card. Tapped (touch), it stays until a press lands outside it and its token.
+  the pointer is within its reach, the pill, its token and the room between them, and so does
+  the hover of its card. Tapped (touch), it stays until a press lands outside it and its token.
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
@@ -63,9 +63,12 @@
   });
 
   /**
-   * The pointer is in the box spanning the token and the pill. A tilted token (an exhausted card)
+   * The pointer is on the token's box, on the pill, or in the room between them: in the box spanning
+   * the token and the pill, but beside the token only above it. A tilted token (an exhausted card)
    * has its top edge well below the top of its bounding box: the pointer crosses that room, on
    * neither the token nor the pill, on its way up, and the box covers it whatever the tilt or zoom.
+   * The pill is wider than a narrow token: beside the token, below its top, lie its neighbours in a
+   * row (the modifiers along a landscape card), out of reach.
    */
   function inReach(x: number, y: number): boolean {
     const element = anchor();
@@ -78,7 +81,10 @@
     const right = Math.max(token.right, own.right);
     const top = Math.min(token.top, own.top);
     const bottom = Math.max(token.bottom, own.bottom);
-    return x >= left && x < right && y >= top && y < bottom;
+    const inBox = x >= left && x < right && y >= top && y < bottom;
+    const aboveToken = y < token.top;
+    const overToken = x >= token.left && x < token.right;
+    return inBox && (aboveToken || overToken);
   }
 
   /** The pointer is on the card of the token, which then keeps its hover: no pointerenter brings it back. */
@@ -98,6 +104,17 @@
     } else if (!inside && interaction.onPill) {
       interaction.leavePill(onItsCard(event.target));
     }
+  }
+
+  /**
+   * Off the pill, a mouse or a pen still within reach keeps it: on its way back down to a tilted token,
+   * it crosses the token above, overlapping that room. The window's pointermove follows the reach.
+   */
+  function onPillLeave(event: PointerEvent): void {
+    if (event.pointerType !== 'touch' && inReach(event.clientX, event.clientY)) {
+      return;
+    }
+    interaction.leavePill(onItsCard(event.relatedTarget));
   }
 
   /** Quick clicks on − and + never start a text selection, in any browser. */
@@ -134,7 +151,7 @@
   style:top="{position?.y ?? 0}px"
   class:placed={position !== null}
   onpointerenter={() => interaction.enterPill()}
-  onpointerleave={(event) => interaction.leavePill(onItsCard(event.relatedTarget))}
+  onpointerleave={onPillLeave}
 >
   <button
     class="btn-ghost"

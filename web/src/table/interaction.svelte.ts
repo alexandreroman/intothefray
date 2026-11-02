@@ -17,6 +17,10 @@ interface CounterTarget {
   name: string;
 }
 
+function sameCounter(a: CounterTarget | null, b: CounterTarget): boolean {
+  return a?.card === b.card && a.kind === b.kind && a.name === b.name;
+}
+
 /** A card of the viewer's hand: the only element a tap selects. */
 type HandCard = Extract<TableElement, { kind: 'hand' }>;
 
@@ -170,6 +174,9 @@ class TableInteraction {
   // The element whose context menu was open as the current press began: the press closes it
   // (ContextMenu.svelte), and the click it ends must not open it again.
   #menuAtPress: TableElement | null = null;
+  // The token or status the pointer is on while the pill of another is within reach: it takes the
+  // pill if the pointer leaves that reach on it (leavePill), and not if the pointer leaves it first.
+  #crossed: CounterTarget | null = null;
   #hideTimer: ReturnType<typeof setTimeout> | undefined;
   #counterTimer: ReturnType<typeof setTimeout> | undefined;
   #landingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -487,12 +494,20 @@ class TableInteraction {
   /**
    * The pointer entered a token or a status: its pill shows. A finger
    * entering it is a tap, which pins the pill; another token's tap moves it
-   * there.
+   * there. A mouse or a pen entering it within reach of another token's pill
+   * is crossing it, on its way to that pill: on a tilted card (exhausted), the
+   * token above overlaps the room between a token and its pill. The pill
+   * stays, and the crossed token waits for the pointer to leave the reach.
    */
   enterCounter(target: CounterTarget, event: PointerEvent): void {
     if (!this.#isReal(event) || modal.open) {
       return;
     }
+    if (event.pointerType !== 'touch' && this.onPill && !this.isCounter(target)) {
+      this.#crossed = target;
+      return;
+    }
+    this.#crossed = null;
     this.#cancelCounterHide();
     this.counter = target;
     this.counterPinned = event.pointerType === 'touch';
@@ -501,9 +516,12 @@ class TableInteraction {
   /**
    * The pointer left a token, a status or the pill's reach: the pill goes
    * after the linger, unless the pointer is within its reach or a tap pinned
-   * it.
+   * it. A token crossed and left no longer waits for the pill.
    */
-  leaveCounter(): void {
+  leaveCounter(target?: CounterTarget): void {
+    if (target !== undefined && sameCounter(this.#crossed, target)) {
+      this.#crossed = null;
+    }
     this.#cancelCounterHide();
     this.#counterTimer = setTimeout(() => {
       if (!this.#pillHolds()) {
@@ -522,9 +540,18 @@ class TableInteraction {
    * The pointer left the pill's reach: the pill goes after the linger, and
    * the card it belongs to lingers out with it. Not when the pointer is back
    * on that card, which keeps its hover, nor when it hovers another element
-   * already.
+   * already. On a token it crossed, the pill moves to that token at once.
    */
   leavePill(onItsCard: boolean): void {
+    const crossed = this.#crossed;
+    if (crossed !== null) {
+      this.#crossed = null;
+      this.#cancelCounterHide();
+      this.counter = crossed;
+      this.counterPinned = false;
+      this.onPill = false;
+      return;
+    }
     const card = this.counter?.card;
     this.onPill = false;
     this.leaveCounter();
@@ -537,6 +564,7 @@ class TableInteraction {
   /** Drops the pill at once, pinned or not. */
   hideCounter(): void {
     this.#cancelCounterHide();
+    this.#crossed = null;
     this.counter = null;
     this.counterPinned = false;
   }
@@ -555,10 +583,7 @@ class TableInteraction {
   }
 
   isCounter(target: CounterTarget): boolean {
-    const current = this.counter;
-    return (
-      current?.card === target.card && current.kind === target.kind && current.name === target.name
-    );
+    return sameCounter(this.counter, target);
   }
 
   /**
@@ -721,6 +746,7 @@ class TableInteraction {
     this.previewedByOthers = new Map();
     this.endArrow();
     this.onPill = false;
+    this.#crossed = null;
     this.#pointer = { x: NaN, y: NaN };
     this.#drawnAt = { x: NaN, y: NaN };
     this.#pointerType = 'mouse';
