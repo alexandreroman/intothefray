@@ -3,7 +3,6 @@ import { getPref, setPref } from './prefs';
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  localStorage.clear();
 });
 
 describe('lang', () => {

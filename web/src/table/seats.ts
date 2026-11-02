@@ -17,7 +17,31 @@ export function areaOf(seat: number): Area {
   return `p${seat}`;
 }
 
-// The ids of a seat's own piles, as the server names them (internal/game/state.go).
+// The ids of the piles, as the server names them (internal/game/state.go):
+// the shared piles, a seat's own piles, and the side and scenario decks.
+
+/** The classic encounter deck. */
+export const PILE_ENCOUNTER = 'enc';
+/** The classic encounter deck's discard pile. */
+export const PILE_ENCOUNTER_DISCARD = 'encd';
+/** The victory display. */
+export const PILE_VICTORY = 'vic';
+/** The scenario's set-aside cards. */
+export const PILE_SCENARIO_ASIDE = 'saside';
+
+const SIDE_DECK_PREFIX = 'side:';
+const SCENARIO_ENCOUNTER_PREFIX = 'enc:';
+const SCENARIO_DECK_PREFIX = 'sdeck:';
+
+/** Whether the pile id is a side deck's: "side:p0:1". */
+export function isSideDeckId(pile: string): boolean {
+  return pile.startsWith(SIDE_DECK_PREFIX);
+}
+
+/** Whether the pile id is a scenario deck's: "enc:wrecker" or "sdeck:weapons". */
+export function isScenarioDeckId(pile: string): boolean {
+  return pile.startsWith(SCENARIO_ENCOUNTER_PREFIX) || pile.startsWith(SCENARIO_DECK_PREFIX);
+}
 
 /** The id of the seat's deck: "deck:p1". */
 export function deckId(seat: number): string {

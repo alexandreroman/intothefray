@@ -2,7 +2,7 @@
   import { createGame } from '../lib/api';
   import { playerName } from '../lib/names';
   import { setToken } from '../lib/prefs';
-  import { go } from '../lib/router.svelte';
+  import { gamePath, go } from '../lib/router.svelte';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
 
@@ -15,7 +15,7 @@
     try {
       const game = await createGame(playerName());
       setToken(game.id, game.token);
-      go(`/g/${encodeURIComponent(game.id)}`);
+      go(gamePath(game.id));
     } catch (e) {
       error = `Could not start a game: ${e instanceof Error ? e.message : 'unknown error'}`;
     } finally {
@@ -57,10 +57,7 @@
       <ul class="features">
         <li>
           <span class="icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="4" y="5" width="11" height="15" rx="2" />
-              <path d="M18 7.5l2 .6-3.4 12-6.3-1.8" />
-            </svg>
+            <Icon name="sandbox" />
           </span>
           <div>
             <b>A true sandbox</b>
@@ -69,12 +66,7 @@
         </li>
         <li>
           <span class="icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="9" cy="8" r="3.2" />
-              <path
-                d="M3.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5M16 5.2a3.2 3.2 0 0 1 0 5.8M18 14.4c1.4.7 2.3 2.4 2.6 4.6"
-              />
-            </svg>
+            <Icon name="players" />
           </span>
           <div>
             <b>Up to 4 heroes</b>
@@ -83,10 +75,7 @@
         </li>
         <li>
           <span class="icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
-              <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
-            </svg>
+            <Icon name="link" />
           </span>
           <div>
             <b>Bring your own deck</b>
@@ -285,14 +274,9 @@
     color: var(--spark);
   }
 
-  .icon svg {
+  .icon :global(svg) {
     width: 18px;
     height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   .fan {

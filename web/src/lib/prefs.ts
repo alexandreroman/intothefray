@@ -36,7 +36,7 @@ export function removePref(key: string): void {
   }
 }
 
-/** Forgets the in-memory copies, so that each test starts with no preference. Test-only. */
+/** Forgets the in-memory copies; with localStorage cleared too, a test starts with no preference. Test-only. */
 export function clearPrefMemory(): void {
   memory.clear();
 }

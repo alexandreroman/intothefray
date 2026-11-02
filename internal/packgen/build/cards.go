@@ -20,11 +20,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
-const (
-	cerebroImageURL = "https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/%s.jpg"
-	marvelcdbHost   = "https://marvelcdb.com"
-	baseCodeLength  = 5 // digits of a code, without its face letter
-)
+const baseCodeLength = 5 // digits of a code, without its face letter
 
 // buildCards groups the marvelcdb entries into cards and returns them by pack
 // code, sorted by code. A card is one base code with its faces, except for
@@ -85,17 +81,36 @@ func cerebroIDsOf(cb []cerebro.Card) map[string]string {
 	return ids
 }
 
-// checkCerebroOverrides fails when a curated card names a Cerebro image that
-// Cerebro does not have: the face would silently lose its Cerebro image.
-func checkCerebroOverrides(overrides map[string]curated.CardOverride, cb []cerebro.Card) error {
+// checkCardOverrides fails when a curated card override would silently do
+// nothing: its size, Cerebro or OCTGN override is keyed by a code that is not
+// the code of a face of the records (a misspelt code, or the card code of a
+// multi-face card), or it names a Cerebro image that Cerebro does not have.
+func checkCardOverrides(
+	overrides map[string]curated.CardOverride,
+	mc []marvelcdb.Card,
+	cb []cerebro.Card,
+) error {
+	faceCodes := make(map[string]bool)
+	for _, codes := range faceCodesOf(mc) {
+		for _, code := range codes {
+			faceCodes[code] = true
+		}
+	}
 	cerebroIDs := cerebroIDsOf(cb)
-	for _, faceCode := range slices.Sorted(maps.Keys(overrides)) {
-		id := overrides[faceCode].Cerebro
-		if id == "" {
+
+	for _, code := range slices.Sorted(maps.Keys(overrides)) {
+		override := overrides[code]
+		if override.Size == "" && override.Cerebro == "" && override.Octgn == "" {
 			continue
 		}
-		if _, found := cerebroIDs[strings.ToUpper(id)]; !found {
-			return fmt.Errorf("curated card %s: Cerebro image %s is not a Cerebro card", faceCode, id)
+		if !faceCodes[code] {
+			return fmt.Errorf("curated card %s: size, Cerebro and OCTGN overrides need the code of a face", code)
+		}
+		if override.Cerebro == "" {
+			continue
+		}
+		if _, found := cerebroIDs[strings.ToUpper(override.Cerebro)]; !found {
+			return fmt.Errorf("curated card %s: Cerebro image %s is not a Cerebro card", code, override.Cerebro)
 		}
 	}
 	return nil
@@ -288,7 +303,7 @@ func cerebroImage(entry marvelcdb.Card, cerebroID string, cerebroIDs map[string]
 	if !found {
 		return ""
 	}
-	return fmt.Sprintf(cerebroImageURL, id)
+	return cerebro.ImageURL(id)
 }
 
 // recordImage returns the image of the source record of a face, empty when the
@@ -299,7 +314,7 @@ func recordImage(entry marvelcdb.Card) string {
 	}
 	host := entry.ImageHost
 	if host == "" {
-		host = marvelcdbHost
+		host = marvelcdb.BaseURL
 	}
 	return host + entry.ImageSrc
 }
@@ -315,7 +330,7 @@ func faceSize(entry marvelcdb.Card, override curated.CardOverride) pack.Size {
 
 func sizeOf(typeCode string) pack.Size {
 	switch typeCode {
-	case "main_scheme", "side_scheme", "player_side_scheme":
+	case pack.FaceTypeMainScheme, pack.FaceTypeSideScheme, pack.FaceTypePlayerSideScheme:
 		return pack.SizeLand
 	default:
 		return pack.SizeStd
@@ -327,13 +342,13 @@ func sizeOf(typeCode string) pack.Size {
 // and player cards, but an encounter faction always has an encounter back.
 func backOf(entry marvelcdb.Card) pack.Back {
 	switch entry.TypeCode {
-	case "villain", "main_scheme", "leader":
+	case pack.FaceTypeVillain, pack.FaceTypeMainScheme, pack.FaceTypeLeader:
 		return pack.BackVillain
-	case "obligation":
+	case pack.FaceTypeObligation:
 		return pack.BackEncounter
 	}
 	switch entry.SetType {
-	case "villain", "modular", "standard", "expert", "nemesis":
+	case pack.SetKindVillain, pack.SetKindModular, pack.SetKindStandard, pack.SetKindExpert, pack.SetKindNemesis:
 		return pack.BackEncounter
 	}
 	if entry.FactionCode == "encounter" {

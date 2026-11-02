@@ -81,7 +81,7 @@ Everything below works today, except where noted.
 - Docker (or Podman) with Compose, to run Redis and Caddy locally
 - [Air](https://github.com/air-verse/air) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
-- Node.js 24 and [pnpm](https://pnpm.io/) for the frontend, or
+- Node.js 26 and [pnpm](https://pnpm.io/) for the frontend, or
   [mise](https://mise.jdx.dev/) to install both at the pinned versions
   (`mise install`, see `mise.toml`)
 
@@ -148,7 +148,12 @@ and everything under `/assets/` and `/packs/` are left out: a missing
 asset or pack answers 404.
 
 `make dev` and `make app-up` both bind ports 9000 and 8080: stop one
-before starting the other.
+before starting the other. Under `make app-up`, the containers publish
+Redis and the server on `127.0.0.1` only, and the web port on every
+interface, so a phone on the local network can open the app at the
+machine's address. Under `make dev`, Redis and the web port are
+published the same way, but the server runs on the host through Air
+and listens on every interface.
 
 ### Casper workspaces
 
@@ -217,8 +222,8 @@ To add images, run `make sources`, commit `sources.json`, run
 `make publish` in `intothefray-img`, then `make packs`. `make packs`
 fails when the manifest is missing, and drops a card with a face that has
 no English image ("no image" in the report). The report prints how many
-faces the manifest covers, per language. Once the manifest exists, a
-`packs/` test fails when an embedded image is not under its base URL.
+faces the manifest covers, per language. A `packs/` test fails when an
+embedded image is not under its base URL.
 
 The curated files are the scenarios (`scenarios/`; `mainSchemes` lists the
 main scheme sets a scenario such as an Underling's is played with, and `sets`
@@ -308,8 +313,8 @@ completes it from mc4db, which shares marvelcdb's schema:
   `_by_ffg` (`thor_by_ffg` is `thor`), and set codes drop `_by_ffg`
   (`daredevil_by_ffg_nemesis` is `daredevil_nemesis`); a pack marvelcdb
   lacks is added under its mc4db code without `_by_ffg`;
-- the image sources of an added card are its Cerebro image and its mc4db
-  scan.
+- the image sources of an added card are its Cerebro image, its mc4db
+  scan and its OCTGN image name.
 
 The report lists the records taken from mc4db, per pack. Cerebro is not
 a card-list source: it holds no official card that both marvelcdb and
@@ -357,19 +362,14 @@ Three jobs check every run:
   of the Caddyfile.
 
 They run the same checks as `make check`, `make build` and
-`make web-build`. They do not
-regenerate `packs/dist`: the generator needs marvelcdb, Cerebro and
-mc4db over the network, so the committed files are used as they are.
+`make web-build`. They do not regenerate `packs/dist`: the generator needs
+its card sources over the network (see Card packs), so the committed files
+are used as they are.
 
 On `main` only, for a push or a manual run (`workflow_dispatch`), the
 `web` job also builds the frontend for GitHub Pages in place of its plain
-build, and once the three checks have passed, three more jobs run in turn
-(see Deployment):
-
-- `publish`: pushes the image to GHCR, tagged with the commit SHA and
-  `main`;
-- `pages`: deploys the frontend that the `web` job built;
-- `deploy-backend`: asks the infra repository to deploy the image.
+build, and once the three checks have passed, three more jobs run in turn,
+`publish`, `pages` and `deploy-backend` (see Deployment).
 
 ## Deployment
 

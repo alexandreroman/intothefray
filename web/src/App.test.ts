@@ -1,11 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import App from './App.svelte';
-
-// Moves the address bar as the browser does on back/forward, then tells the router.
-function navigate(path: string): void {
-  window.history.pushState(null, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
+import { navigate } from './lib/router.testing';
 
 describe('App', () => {
   it('shows the title on the home route', () => {

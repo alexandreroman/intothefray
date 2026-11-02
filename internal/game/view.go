@@ -411,7 +411,7 @@ func (c *Card) viewOf(stageKey string) CardView {
 	if c.FaceDown && c.Zone == ZoneTable {
 		cv.Code = ""
 	}
-	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
+	if ruledDeckID(c.Home) {
 		cv.Home = c.Home
 	}
 	return cv

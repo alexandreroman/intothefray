@@ -17,9 +17,7 @@ before the identity. Doctor Strange's Invocation deck has its own discard pile
 card faceup to everyone; the others lie facedown. Every side deck has a back of
 its own (`back` in `side`): every card of the set gets that classic back
 (encounter for Gift, player for the others), captioned at the bottom with the
-deck's name, since no source hosts an image of the printed one. A card of a
-`"none"` deck is never discarded: Discard is not offered, and when it is tucked
-under a card that leaves the table it goes to the bottom of its side deck. The
+deck's name, since no source hosts an image of the printed one. The
 cards a hero set lists in `setAside` (Iceman's Frostbite, Valkyrie's Death-Glow,
 Rogue's Touched, Ironheart's other versions) go to the player's set-aside pile.
 Storm's starting Weather card and other heroes' Setup permanents stay manual.

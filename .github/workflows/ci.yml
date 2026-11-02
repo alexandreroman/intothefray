@@ -18,8 +18,9 @@ concurrency:
 # A release run is a push or a manual run on main:
 #   github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
 # It publishes the image, deploys the frontend to GitHub Pages, then the
-# backend; a manual run on main republishes them. Job and step conditions
-# cannot share a variable, so each one repeats that expression.
+# backend; a manual run on main republishes them. Only the publish job and
+# the steps of the web job test that expression (conditions cannot share a
+# variable, so each one repeats it); the later jobs follow through needs.
 jobs:
   go:
     runs-on: ubuntu-latest
@@ -52,7 +53,6 @@ jobs:
       # configure-pages reads the site settings to find its base path.
       pages: read
     steps:
-      # The full checkout is needed: the web build reads ../packs/dist.
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
@@ -131,7 +131,6 @@ jobs:
           context: .
           platforms: linux/amd64
           build-args: COMMIT=${{ github.sha }}
-          push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -184,7 +183,6 @@ jobs:
   # published, so the release order stays image, frontend, then backend.
   pages:
     needs: publish
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -198,12 +196,12 @@ jobs:
 
   deploy-backend:
     needs: pages
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions: {}
     steps:
       # GITHUB_TOKEN cannot dispatch to another repository, hence a fine-grained
-      # PAT scoped to intothefray-infra. Without it (a fork), the step only warns.
+      # PAT scoped to intothefray-infra. Without it, the step only warns and the
+      # backend is not deployed.
       - name: Trigger the backend deployment
         env:
           GH_TOKEN: ${{ secrets.INFRA_DISPATCH_TOKEN }}

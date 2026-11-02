@@ -9,35 +9,6 @@ import (
 	"testing"
 )
 
-func TestOctgnStem(t *testing.T) {
-	const id = "b768a53b-cb8c-47c5-9b65-f20ed2d89837"
-	tests := []struct {
-		name     string
-		octgnID  string
-		faceCode string
-		sharedID bool
-		want     string
-	}{
-		{"no suffix", id, "01004", false, id},
-		{"shared id, suffix a", id, "12001a", true, id},
-		{"shared id, suffix b", id, "12001b", true, id + ".b"},
-		{"shared id, suffix c", id, "12001c", true, id + ".c"},
-		// Distinct cards sharing a number, such as 01043a-d, each have an OCTGN id of their own.
-		{"own id, suffix b", id, "01043b", false, id},
-		{"own id, suffix d", id, "01043d", false, id},
-		{"no octgn id", "", "01004", false, ""},
-		{"no octgn id on a back face", "", "12001b", true, ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := OctgnStem(tt.octgnID, tt.faceCode, tt.sharedID); got != tt.want {
-				t.Errorf("OctgnStem(%q, %q, %v) = %q, want %q", tt.octgnID, tt.faceCode, tt.sharedID, got, tt.want)
-			}
-		})
-	}
-}
-
 func writeFile(t *testing.T, content string) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "manifest.json")

@@ -53,7 +53,7 @@ type Action struct {
 	Card   string `json:"card,omitempty"`
 	Target string `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
 	Pile   string `json:"pile,omitempty"`   // also the deck whose top card a play takes
-	Area   Area   `json:"area,omitempty"`   // whose hand (draw, handOrder), who is dealt to (deal)
+	Area   Area   `json:"area,omitempty"`   // whose hand (handOrder; filled by resolve for a draw), who is dealt to (deal)
 	X      int    `json:"x,omitempty"`
 	Y      int    `json:"y,omitempty"`
 	// Placed tells that X and Y are where a card tucked under Target was
@@ -65,23 +65,26 @@ type Action struct {
 	// none.
 	FaceUp bool     `json:"faceUp,omitempty"`
 	N      int      `json:"n,omitempty"`
-	Name   string   `json:"name,omitempty"` // token, status or modifier name
+	Name   string   `json:"name,omitempty"` // token, status or modifier name, or the marker moved
 	Delta  int      `json:"delta,omitempty"`
 	Face   int      `json:"face,omitempty"`  // chosen stage face; resulting face of a flip
 	Where  string   `json:"where,omitempty"` // "top" | "bottom" | "shuffle"
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
 	// Renames maps old ids to the new ids resolve gave cards so that nobody
-	// can follow them. A shuffle renames every card of the shuffled pile,
-	// Cards then holding the new order in new ids. A reorder of the top that
-	// takes a revealed card back renames the reordered cards, its Cards
+	// can follow them. An action that covers a revealed card renames the
+	// cards covering hides first (see hiddenByCovering), then the others on
+	// the table that leaves. A shuffle renames every card of the shuffled
+	// pile, Cards then holding the new order in new ids. A reorder of the top
+	// that takes a revealed card back renames the reordered cards, its Cards
 	// staying in their old ids (see resolveReorderTop). The cards an action
 	// takes out of sight on their way get new ids too (see renamedOnTheWay).
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
-	// Seats is filled by an arrow clear of a player holding several decks:
-	// every seat of that player, whose arrows it clears. Without it, an arrow
-	// clear clears the arrows of Seat.
+	// Seats is filled by resolve for an arrow clear of a player holding
+	// several decks: every seat of that player, whose arrows it clears; a
+	// client's value is ignored. Without it, an arrow clear clears the arrows
+	// of Seat.
 	Seats []int `json:"seats,omitempty"`
 	// Exhausted and FaceDown are the state an exhaust or a flip leads to,
 	// filled by resolve: replaying them on a rebuilt table sets that state
@@ -120,12 +123,8 @@ func (w actor) owns(owner int) bool {
 
 // ownsArea reports whether area is the area of one of the actor's seats.
 func (w actor) ownsArea(area Area) bool {
-	for _, seat := range w.seats {
-		if PlayerArea(seat) == area {
-			return true
-		}
-	}
-	return false
+	seat, ok := areaSeat(area)
+	return ok && w.owns(seat)
 }
 
 // homeArea returns the area of the actor's home seat, where their private
@@ -142,6 +141,7 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if g.Table == nil {
 		return Action{}, fmt.Errorf("%w: the game has no table", ErrPhase)
 	}
+	a = withoutUnreadFields(a)
 	if who.seat < 0 || who.seat >= g.seatCount() {
 		return Action{}, forbidden("seat %d is not at this table", who.seat)
 	}
@@ -160,21 +160,65 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	return resolveOnTable(g.Table, who, a, rng)
 }
 
+// namedKinds are the kinds that read Action.Name.
+var namedKinds = map[Kind]bool{
+	ActToken:    true,
+	ActStatus:   true,
+	ActModifier: true,
+	ActMarker:   true,
+}
+
+// withoutUnreadFields returns a without the lists, maps, flags and name its
+// kind does not read: whatever a client sends there would be recorded and
+// replayed for nothing. Renames, Seats, Exhausted and FaceDown are never the
+// client's: resolve fills them for the kinds that read them, Cards too, but
+// for the client's orders of a reorder of a deck's top or of a hand. The
+// sub-actions of a group are resolved, so dropped from, in turn.
+func withoutUnreadFields(a Action) Action {
+	if a.Kind != ActReorderTop && a.Kind != ActHandOrder {
+		a.Cards = nil
+	}
+	if a.Kind != ActGroup {
+		a.Actions = nil
+	}
+	if !namedKinds[a.Kind] {
+		a.Name = ""
+	}
+	a.Renames = nil
+	a.Seats = nil
+	a.Exhausted = nil
+	a.FaceDown = nil
+	return a
+}
+
 // resolveOnTable resolves a, any kind but a group, on the table as apply
-// will see it: with the cards revealed on the deck a acts on back in it (see
-// coveredFor), so that the recorded cards are those apply takes. It picks
-// every new id, a client choosing none: those of a shuffle, and those of the
+// will see it: with the cards revealed on the deck a acts on back in it and
+// the cards covering hides renamed (see coveredFor), so that the recorded
+// cards are those apply takes. It picks every new id, a client choosing none:
+// those of the cards covering hides, those of a shuffle, and those of the
 // cards a takes out of sight (see renamedOnTheWay). A rebuild resolves its
 // shuffles again here too (see replayEvent).
 func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
-	t, err := original.coveredFor(a, PlayerArea(who.seat))
+	t, hidden, err := original.coveredFor(a, PlayerArea(who.seat))
 	if err != nil {
 		return Action{}, err
+	}
+	hiddenRenames := map[string]string{}
+	if len(hidden) > 0 {
+		// t is a copy of original whenever covering hides a card.
+		addFreshIDs(t, hiddenRenames, hidden, rng)
+		renameCards(t, hiddenRenames)
 	}
 	a.Renames = nil
 	resolved, err := resolveKind(original, t, who, a, rng)
 	if err != nil {
 		return resolved, err
+	}
+	if len(hiddenRenames) > 0 {
+		if resolved.Renames == nil {
+			resolved.Renames = make(map[string]string, len(hiddenRenames))
+		}
+		maps.Copy(resolved.Renames, hiddenRenames)
 	}
 	if ids := t.renamedOnTheWay(resolved); len(ids) > 0 {
 		if resolved.Renames == nil {
@@ -231,8 +275,7 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 	case ActDiscardTop:
 		return resolveDiscardTop(t, who, a)
 	case ActReorderTop:
-		// Whether it takes a revealed card shows on the table before covering.
-		return resolveReorderTop(original, who, a, rng)
+		return resolveReorderTop(original, t, who, a, rng)
 	case ActShuffle:
 		return resolveShuffle(t, who, a, rng)
 	case ActShuffleBack:
@@ -255,10 +298,11 @@ var groupableKinds = map[Kind]bool{
 }
 
 // resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
-// kind and one place, each on its own card, none tucked under another's. Every
-// sub-action is resolved for who on the table the previous ones leave, as
-// applyGroup performs them, so that its new ids are those apply expects and
-// differ from those picked before. The first error rejects the whole group.
+// kind and one Where, none a shuffle into a deck, each on its own card, none
+// tucked under another's. Every sub-action is resolved for who on the table
+// the previous ones leave, as applyGroup performs them, so that its new ids
+// are those apply expects and differ from those picked before. The first
+// error rejects the whole group.
 func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if len(a.Actions) < 2 || len(a.Actions) > maxCount {
 		return a, invalid("a group holds 2 to %d actions, not %d", maxCount, len(a.Actions))
@@ -314,12 +358,8 @@ func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) 
 
 // seatedArea reports whether area names a seat at this table.
 func (g *Game) seatedArea(area Area) bool {
-	for seat := range g.seatCount() {
-		if area == PlayerArea(seat) {
-			return true
-		}
-	}
-	return false
+	seat, ok := areaSeat(area)
+	return ok && seat < g.seatCount()
 }
 
 // checkLimits rejects numbers outside the ranges a client may send.
@@ -606,9 +646,9 @@ func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 }
 
 // resolveDeal records the card to deal, the top card of the encounter deck
-// a.Pile names (the classic one by default), so
-// that a rebuild deals that card (see resolveReveal). A card revealed on the
-// deck is its top card: it lies back on top here (see coveredFor).
+// a.Pile names (the classic one by default), so that a rebuild deals that
+// card (see resolveReveal). A card revealed on the deck is its top card: it
+// lies back on top here (see coveredFor).
 func resolveDeal(t *Table, a Action) (Action, error) {
 	if a.Area == "" {
 		return a, invalid("a deal needs a recipient")
@@ -632,12 +672,14 @@ func resolveDeal(t *Table, a Action) (Action, error) {
 // back into the deck face down (see coveredFor). The reordered cards then get
 // new ids, as a shuffle gives them (see reidentify): nobody can follow the
 // card everybody saw into the deck. a.Cards keeps the new order in the ids
-// the cards had.
-func resolveReorderTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
+// the cards had. Whether a takes a revealed card shows on original, the table
+// before covering; the new ids are picked on t, the table as apply will see
+// it, so that they differ from those of the cards covering hides.
+func resolveReorderTop(original, t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if _, err := ownPile(t, who, a.Pile); err != nil {
 		return a, err
 	}
-	if len(t.revealedOn(a.Pile)) > 0 {
+	if len(original.revealedOn(a.Pile)) > 0 {
 		a.Renames, _ = reidentify(t, a.Cards, rng)
 	}
 	return a, nil
@@ -676,8 +718,8 @@ func resolveShuffle(t *Table, who actor, a Action, rng *rand.Rand) (Action, erro
 	if err != nil {
 		return a, err
 	}
-	if pile.Kind != KindDeck && pile.Kind != KindSideDeck && pile.Kind != KindEncounter &&
-		pile.Kind != KindScenarioDeck {
+	// Only a face-down pile, a deck, is shuffled.
+	if pile.Kind.public() {
 		return a, invalid("pile %q cannot be shuffled", pile.ID)
 	}
 	a.Renames, a.Cards = reidentify(t, pile.Cards, rng)

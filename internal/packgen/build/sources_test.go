@@ -75,6 +75,38 @@ func TestSourcesListsEveryFace(t *testing.T) {
 	}
 }
 
+func TestOctgnStem(t *testing.T) {
+	const id = "b768a53b-cb8c-47c5-9b65-f20ed2d89837"
+	tests := []struct {
+		name     string
+		octgnID  string
+		faceCode string
+		override string
+		sharedID bool
+		want     string
+	}{
+		{"no suffix", id, "01004", "", false, id},
+		{"shared id, suffix a", id, "12001a", "", true, id},
+		{"shared id, suffix b", id, "12001b", "", true, id + ".b"},
+		{"shared id, suffix c", id, "12001c", "", true, id + ".c"},
+		// Distinct cards sharing a number, such as 01043a-d, each have an OCTGN id of their own.
+		{"own id, suffix b", id, "01043b", "", false, id},
+		{"own id, suffix d", id, "01043d", "", false, id},
+		{"no octgn id", "", "01004", "", false, ""},
+		{"no octgn id on a back face", "", "12001b", "", true, ""},
+		{"curated stem", id, "12001b", "864612001b", true, "864612001b"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			entry := marvelcdb.Card{Code: tt.faceCode, OctgnID: tt.octgnID}
+			if got := octgnStem(entry, tt.override, tt.sharedID); got != tt.want {
+				t.Errorf("octgnStem(%s, %q, %v) = %q, want %q", tt.faceCode, tt.override, tt.sharedID, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestSourcesOctgnStem(t *testing.T) {
 	in := Inputs{MC: []marvelcdb.Card{
 		// Distinct cards sharing a number: each has an OCTGN id of its own,
@@ -130,6 +162,32 @@ func TestSourcesUnknownCerebroOverride(t *testing.T) {
 
 	if err == nil || !strings.Contains(err.Error(), "99999Z") {
 		t.Fatalf("Sources error = %v, want the unknown Cerebro image 99999Z refused", err)
+	}
+}
+
+func TestSourcesRejectsOverrideOfNoFace(t *testing.T) {
+	tests := []struct {
+		name     string
+		code     string
+		override curated.CardOverride
+	}{
+		{"unknown face code", "01097c", curated.CardOverride{Octgn: "8646001097c"}},
+		{"card code of a multi-face card", "01097", curated.CardOverride{Size: pack.SizeLand}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			in := Inputs{
+				MC:      marvelcdbCards(t, "01097", "01097a", "01097b"),
+				Curated: curated.Curated{Cards: map[string]curated.CardOverride{tt.code: tt.override}},
+			}
+
+			_, err := Sources(in)
+
+			want := "curated card " + tt.code + ": size, Cerebro and OCTGN overrides need the code of a face"
+			if err == nil || !strings.Contains(err.Error(), want) {
+				t.Fatalf("Sources error = %v, want one containing %q", err, want)
+			}
+		})
 	}
 }
 

@@ -8,60 +8,42 @@ import {
   seatHero,
   seatOf,
 } from './seats';
-import type { CardView, PileView, View } from '../lib/types';
-
-function card(id: string, owner: number): CardView {
-  return { id, code: '01001', face: 0, back: 'player', owner, zone: 'table', x: 0, y: 0, z: 1 };
-}
-
-function pile(id: string, owner: number): PileView {
-  return { id, kind: 'deck', owner, x: 0, y: 0, count: 10 };
-}
+import type { View } from '../lib/types';
+import { card, pile, playingView, seated } from './fixtures.testing';
 
 /** Alex (colour 0) plays two decks, p0 and p1 (Spider-Man); Sam (colour 1) one, p2. */
 function makeView(
   you: View['you'] = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] },
 ): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you,
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [
-          { area: 'p0', hero: '01010', heroName: 'Iron Man', ready: true, handCount: 5 },
-          { area: 'p1', hero: '01001', heroName: 'Spider-Man', ready: true, handCount: 4 },
+      seated(
+        'Alex',
+        0,
+        [
+          { area: 'p0', hero: '01010', heroName: 'Iron Man', handCount: 5 },
+          { area: 'p1', hero: '01001', heroName: 'Spider-Man', handCount: 4 },
         ],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p2', hero: '01029', heroName: 'She-Hulk', ready: true, handCount: 6 }],
-      },
+        true,
+      ),
+      seated('Sam', 1, [{ area: 'p2', hero: '01029', heroName: 'She-Hulk', handCount: 6 }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: [
-        card('alex1', 1),
-        card('sam', 2),
-        card('enemy', -1),
-        { ...card('h', 1), zone: 'hand' },
+        card('alex1', { owner: 1 }),
+        card('sam', { owner: 2 }),
+        card('enemy', { owner: -1 }),
+        card('h', { owner: 1, zone: 'hand' }),
       ],
-      piles: [pile('deck:p1', 1), pile('deck:p2', 2), { ...pile('enc', -1), kind: 'encounter' }],
-      stages: [],
+      piles: [
+        pile('deck:p1', { owner: 1 }),
+        pile('deck:p2', { owner: 2 }),
+        pile('enc', { kind: 'encounter' }),
+      ],
       firstPlayer: { x: 0, y: 0 },
     },
-    log: [],
-  };
+  });
 }
 
 const SPECTATOR: View['you'] = { role: 'spectator', color: -1, host: false };

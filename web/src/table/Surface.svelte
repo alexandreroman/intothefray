@@ -34,7 +34,6 @@
   } from '../lib/types';
   import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
-  import { backCaption } from './face';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -46,6 +45,7 @@
     owners,
     topOf,
     faceOf,
+    captionOf,
     onbrowse,
     width,
     height,
@@ -62,6 +62,8 @@
     topOf: (pile: Pile) => TableCard | undefined;
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
+    /** The caption of a card's back, from every pile: its side deck may lie in a row not shown. */
+    captionOf: (card: TableCard) => string | undefined;
     /** Opens the Browse box of an out-of-play pile, from its chip. */
     onbrowse: (pile: string) => void;
     /** The surface size, in table units. */
@@ -155,7 +157,7 @@
     <CardView
       {card}
       face={faceOf(card)}
-      caption={backCaption(card, piles)}
+      caption={captionOf(card)}
       draggable={canDrag({ kind: 'card', id: card.id })}
     />
   {/each}
@@ -236,11 +238,11 @@
     surface's top, past the scroller's 24px padding at the largest zoom (2). Counter-scaled far
     out, the line takes 30 × 11/12 ≈ 27.5 screen px, which the padding and those 20 units still
     hold at 30 %. As wide as the frame, or wider when the chips and --name-min need it. Above
-    every card, whose z-index the server raises with each move.
+    every card (Table.svelte).
   */
   .chips {
     position: absolute;
-    z-index: 100000;
+    z-index: var(--above-cards);
     width: max(
       var(--frame-w),
       calc(var(--chips) * var(--chip-room) + var(--name-min) + 8 * var(--lu))
@@ -270,11 +272,6 @@
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     pointer-events: auto;
-  }
-
-  .chip :global(svg) {
-    width: 20px;
-    height: 20px;
   }
 
   /*

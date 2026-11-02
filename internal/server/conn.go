@@ -26,7 +26,10 @@ const (
 	// maxMessageBytes bounds a message from a viewer.
 	maxMessageBytes = 64 << 10
 	// readTimeout is how long a viewer may stay silent. It is enforced with
-	// pings: each must be answered before the next one is due.
+	// pings: each must be answered before the next one is due. The read loop
+	// also reads the pongs, so a message it handles, such as a deck import
+	// (bounded by the decks package's import timeout of 20 s), must take
+	// less than pongTimeout.
 	readTimeout  = 60 * time.Second
 	pingInterval = 30 * time.Second
 	pongTimeout  = readTimeout - pingInterval

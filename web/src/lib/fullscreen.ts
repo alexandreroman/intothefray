@@ -5,6 +5,7 @@
 // press then reaches the page, which leaves fullscreen itself unless a layer
 // took the key (preventDefault), and a long press still leaves it natively.
 // Firefox and Safari have no such API: Escape keeps leaving fullscreen there.
+// See the project_escape_in_fullscreen memory note (.claude/project-memory).
 
 import { on } from 'svelte/events';
 

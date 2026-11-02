@@ -25,12 +25,8 @@ Caddyfile validation).
   after the web checks, so the frontend is verified once per commit.
   `ci.yml` is the only workflow; a manual run of it on `main`
   republishes everything.
-- `packs.Catalog` decodes the embedded packs once (a `sync.OnceValues`
-  in `packs/packs.go`), and every caller, server and tests alike, shares
-  that read-only catalog: decoding it once keeps the race-enabled suite
-  fast. No caller modifies the catalog.
 - CI does not compare `packs/dist` with `packs/curated`: packgen fetches
-  marvelcdb and Cerebro over the network (`packs/.cache` is gitignored).
+  its card sources over the network (`packs/.cache` is gitignored).
 - The Caddyfile is validated through the compose `web` service, so the
   Caddy version is pinned in `compose.yaml` only.
 - Action and dependency updates are manual (no Dependabot).

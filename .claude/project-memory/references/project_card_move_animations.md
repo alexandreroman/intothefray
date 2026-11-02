@@ -26,9 +26,13 @@ type: project
   pile, or turns face up where it lands on the table.
 - At most 5 cards fly between the same two piles in one view (a discard
   shuffled back), the top ones.
-- The diff (`animate.ts` `diffViews`) works from the two views, not from
-  history lines (the bottom of a deck aside), so undo replays the same
-  motions backwards.
+- The diff (`animate.ts` `diffViews`) works from the two views, so undo
+  replays the same motions backwards. Only what the views cannot tell
+  comes from the new history lines: a card put at the bottom of a deck, a
+  shuffle, whether a line is an undo, and the colour of the change glow
+  (the actor of the last new line). The client matches the server's
+  English wording of those lines (`internal/game/narrate.go` names the
+  verbs).
 - The viewer's own drop never animates twice (`OwnDrop`): on the table
   or in the hand it already lies where it went; onto a pile, each of
   its cards flies there from where it was let go (its landed ghost).

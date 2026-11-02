@@ -1,5 +1,6 @@
 // Package mc4db is a client for the mc4db public API, a marvelcdb fork that
-// hosts scans of the printed cards in several languages.
+// completes marvelcdb with official cards and gives French card, pack and set
+// names.
 package mc4db
 
 import (

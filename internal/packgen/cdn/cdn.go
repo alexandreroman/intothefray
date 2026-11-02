@@ -49,21 +49,6 @@ type sourcesFile struct {
 	Faces   []SourceFace `json:"faces"`
 }
 
-// OctgnStem returns the OCTGN image file stem of a face. The OCTGN packs name the image of a face after its OCTGN
-// id. When several faces of a card share one id (sharedID), the first face keeps the bare id and the others add
-// ".<letter>" (suffix b, c, ...). A face with an id of its own always has the bare id, whatever its letter. It
-// returns "" when the face has no OCTGN id.
-func OctgnStem(octgnID string, faceCode string, sharedID bool) string {
-	if octgnID == "" || faceCode == "" || !sharedID {
-		return octgnID
-	}
-	suffix := faceCode[len(faceCode)-1]
-	if suffix >= 'b' && suffix <= 'z' {
-		return octgnID + "." + string(suffix)
-	}
-	return octgnID
-}
-
 // LoadManifest reads the image manifest at path. A missing file gives an error wrapping fs.ErrNotExist.
 func LoadManifest(path string) (Manifest, error) {
 	data, err := os.ReadFile(path) //nolint:gosec // path is the generator's own input file

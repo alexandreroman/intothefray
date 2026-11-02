@@ -17,7 +17,19 @@ import type {
   Stage,
   View,
 } from '../lib/types';
-import { card, fakeSession, infoFrom } from './fixtures.testing';
+import { card, fakeSession, infoFrom, playingView, seated } from './fixtures.testing';
+
+// Whether the viewer prefers reduced motion: withReducedMotion turns it on.
+const reducedMotion = vi.hoisted(() => ({ on: false }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return reducedMotion.on;
+    },
+  },
+}));
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -65,30 +77,12 @@ function makeView(
   } = {},
 ): View {
   const [alexHand, samHand] = extra.handCounts ?? [5, 5];
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: alexHand }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: samHand }],
-      },
+      seated('Alex', 0, [{ area: 'p0', handCount: alexHand }], true),
+      seated('Sam', 1, [{ area: 'p1', handCount: samHand }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles: extra.piles ?? PILES,
@@ -98,7 +92,7 @@ function makeView(
       ...(extra.hands && { hands: extra.hands }),
     },
     log: extra.log ?? [START],
-  };
+  });
 }
 
 /** A Web Animation as the stub below starts it: it never ends unless cancelled, or finished by a test. */
@@ -180,7 +174,6 @@ let originals: {
 };
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
   originals = {
@@ -226,19 +219,11 @@ async function settle(): Promise<void> {
 
 /** Runs a test as with the system setting to reduce motion. */
 async function withReducedMotion(run: () => Promise<void>): Promise<void> {
-  const matchMedia = window.matchMedia;
-  window.matchMedia = (query: string): MediaQueryList =>
-    Object.assign(new EventTarget(), {
-      media: query,
-      matches: query.includes('reduced-motion'),
-      onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-    });
+  reducedMotion.on = true;
   try {
     await run();
   } finally {
-    window.matchMedia = matchMedia;
+    reducedMotion.on = false;
   }
 }
 

@@ -1,15 +1,21 @@
-// Test fixtures of the table: cards, piles, a session and the card catalog, as most tests build
-// them, and lookups on the drawn table.
+// Test fixtures of the table: cards, piles, a game in play, a session, the card catalog and
+// measured boxes, as most tests build them, and lookups on the drawn table.
 
 import type { CardInfo } from '../lib/catalog';
 import type {
   Action,
+  Area,
   CardView,
+  DeckView,
   PackFace,
   PileView,
+  PlayerView,
   PresenceState,
   SessionError,
+  TableView,
+  View,
 } from '../lib/types';
+import type { Rect } from './drag';
 
 /** A face-up Spider-Man of seat 0's, on the table at its origin. */
 export function card(id: string, extra: Partial<CardView> = {}): CardView {
@@ -30,6 +36,49 @@ export function card(id: string, extra: Partial<CardView> = {}): CardView {
 /** A deck of 30 cards nobody owns, at the table's origin. */
 export function pile(id: string, extra: Partial<PileView> = {}): PileView {
   return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 30, ...extra };
+}
+
+/**
+ * A player at the table, ready and online, with a ready deck in each area of `decks`; a deck
+ * holds no card in hand unless it says otherwise.
+ */
+export function seated(
+  name: string,
+  color: number,
+  decks: (Partial<DeckView> & { area: Area })[],
+  host = false,
+): PlayerView {
+  return {
+    name,
+    color,
+    host,
+    ready: true,
+    online: true,
+    decks: decks.map((deck) => ({ ready: true, handCount: 0, ...deck })),
+  };
+}
+
+/** The fields of a view a test gives: `table` holds only the table's fields it changes. */
+type ViewFields = Partial<Omit<View, 'table'>> & { table?: Partial<TableView> };
+
+/**
+ * Rhino in play, seen by Alex (colour 0, the host, p0) with Sam (colour 1, p1) at the table, their
+ * hands empty, on an empty table. `extra` replaces the view's fields, and `extra.table` the
+ * table's.
+ */
+export function playingView(extra: ViewFields = {}): View {
+  const { table, ...fields } = extra;
+  return {
+    id: 'g1',
+    phase: 'playing',
+    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+    players: [seated('Alex', 0, [{ area: 'p0' }], true), seated('Sam', 1, [{ area: 'p1' }])],
+    spectators: 0,
+    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+    table: { cards: [], piles: [], stages: [], firstPlayer: { x: 860, y: 40 }, ...table },
+    log: [],
+    ...fields,
+  };
 }
 
 /** A session whose actions all go out, as action 1; nothing answers them. */
@@ -76,19 +125,17 @@ export function placed(id: string, selector = ''): HTMLElement {
   return element;
 }
 
-/** A measured box, as getBoundingClientRect gives, with its sides as plain fields. */
+/**
+ * A measured box, as getBoundingClientRect gives: a real DOMRect, whose sides are getters on its
+ * prototype, which a spread of the rect loses.
+ */
 export function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  };
+  return new DOMRect(left, top, width, height);
+}
+
+/** A box on the screen by its sides, as the drag code measures one. */
+export function rect(left: number, top: number, width: number, height: number): Rect {
+  return { left, top, right: left + width, bottom: top + height };
 }
 
 /**

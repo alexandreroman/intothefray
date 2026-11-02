@@ -14,7 +14,14 @@
     | 'undo'
     | 'ready-all'
     | 'trophy'
-    | 'hourglass';
+    | 'hourglass'
+    | 'sandbox'
+    | 'players'
+    | 'link'
+    | 'info'
+    | 'dice'
+    | 'plus'
+    | 'copy';
 </script>
 
 <script lang="ts">
@@ -105,7 +112,38 @@
     />
     <path d="M6 3h12M6 21h12" />
     <path d="M7 3C7 7.5 11 8.5 11 12S7 16.5 7 21M17 3c0 4.5-4 5.5-4 9s4 4.5 4 9" />
-  {:else}
+  {:else if name === 'sandbox'}
+    <!-- A card, and another one fanned out behind it: cards to move freely. -->
+    <rect x="4" y="5" width="11" height="15" rx="2" />
+    <path d="M18 7.5l2 .6-3.4 12-6.3-1.8" />
+  {:else if name === 'players'}
+    <!-- A person, and another one behind. -->
+    <circle cx="9" cy="8" r="3.2" />
+    <path
+      d="M3.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5M16 5.2a3.2 3.2 0 0 1 0 5.8M18 14.4c1.4.7 2.3 2.4 2.6 4.6"
+    />
+  {:else if name === 'link'}
+    <!-- Two chain links. -->
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  {:else if name === 'info'}
+    <!-- An "i" in a circle. -->
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5M12 8h.01" />
+  {:else if name === 'dice'}
+    <!-- A die showing four. -->
+    <rect x="4" y="4" width="16" height="16" rx="3.5" />
+    <circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="15" r="1.2" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="9" r="1.2" fill="currentColor" stroke="none" />
+    <circle cx="9" cy="15" r="1.2" fill="currentColor" stroke="none" />
+  {:else if name === 'plus'}
+    <path d="M12 5v14M5 12h14" />
+  {:else if name === 'copy'}
+    <!-- A sheet in front of another one. -->
+    <rect x="8" y="8" width="12" height="12" rx="2" />
+    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+  {:else if name === 'back'}
     <!-- An arrow pointing left. -->
     <path d="M19 12H5M11 6l-6 6 6 6" />
   {/if}

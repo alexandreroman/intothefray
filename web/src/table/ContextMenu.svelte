@@ -24,7 +24,7 @@
     ContextSubmenu,
   } from './contextItems';
   import { intersect, type Rect } from './drag';
-  import { placeAtPoint, placeSubmenu, type DropdownPlace } from './dropdown';
+  import { placeAtPoint, placeSubmenu, type DropdownPlace } from '../lib/dropdown';
 
   let {
     header,
@@ -459,8 +459,8 @@
 <style>
   /*
     Over the table, the hand and a card box's tiles: flat items on the ink panel, a key on a dark
-    chip at the right. Cut to the room it has, it scrolls inside (dropdown.ts). Its padding and its
-    border make MENU_INSET there: a submenu's first item lines up with its row.
+    chip at the right. Cut to the room it has, it scrolls inside (lib/dropdown.ts). Its padding and
+    its border make MENU_INSET there: a submenu's first item lines up with its row.
   */
   .table-menu {
     position: fixed;

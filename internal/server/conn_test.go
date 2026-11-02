@@ -21,7 +21,6 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
-	"github.com/alexandreroman/intothefray/packs"
 )
 
 const (
@@ -435,10 +434,7 @@ func TestSetDeckAcknowledged(t *testing.T) {
 
 func TestStartThenAct(t *testing.T) {
 	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cat := testCatalog(t)
 	created := createGame(t, ts, "Alex")
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")
@@ -674,10 +670,7 @@ func drain(t *testing.T, ws *websocket.Conn) (int, error) {
 func startSolo(t *testing.T, host *testClient) received {
 	t.Helper()
 
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cat := testCatalog(t)
 	host.setDeck(map[string]any{"url": deckLink})
 	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
 	host.expect("view")
@@ -761,10 +754,7 @@ func TestActionSeatAbsent(t *testing.T) {
 
 func TestActionSeatForeign(t *testing.T) {
 	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cat := testCatalog(t)
 	created := createGame(t, ts, "Alex")
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")

@@ -206,6 +206,20 @@ func TestArrowClearAllOwnSeats(t *testing.T) {
 	}
 }
 
+func TestArrowClearIgnoresClientSeats(t *testing.T) {
+	f := newDoFixture(t)
+	hosts, bobs := identityOf(t, f.g, 0), identityOf(t, f.g, 1)
+	f.mustDo(t, "h", Action{Kind: ActArrowAdd, Card: hosts, Target: bobs}, at(1))
+
+	// Bob holds one deck: the seats he names are not his to clear.
+	f.mustDo(t, "b", Action{Kind: ActArrowClear, Seats: []int{0, 1}}, at(2))
+
+	want := []Arrow{{From: hosts, To: bobs, Seat: 0}}
+	if got := f.g.Table.Arrows; !slices.Equal(got, want) {
+		t.Errorf("arrows = %v, want the host's arrow %v", got, want)
+	}
+}
+
 func TestNarrateHeroNames(t *testing.T) {
 	f := multiDeckFixture(t)
 	g := f.g

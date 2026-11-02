@@ -40,6 +40,7 @@ export interface PackCard {
   back: Back;
   quantity: number;
   aliases?: string[];
+  setAside?: string[]; // player card: cards a deck with it sets aside at setup
 }
 
 export interface PackRef {
@@ -192,6 +193,7 @@ export interface PlayerView {
 export interface FaceRef {
   card: string;
   face: number;
+  with?: string; // the key of the stage this in-play card is laid out after
 }
 
 /**
@@ -357,8 +359,8 @@ export interface Action {
   card?: string;
   target?: string; // card id (attach, arrow, play under it) or pile id
   /**
-   * For draw, a side deck, without it the credited seat's deck; for reveal, the viewer's deck or
-   * side deck, without it the encounter deck.
+   * For draw, a side deck, without it the credited seat's deck; for play, the deck whose top card
+   * is played; for reveal, the viewer's deck or side deck, without it the encounter deck.
    */
   pile?: string;
   area?: Area; // whose hand (handOrder), or who is dealt a card (deal)

@@ -59,9 +59,10 @@
 </div>
 
 <style>
+  /* Above every card (Table.svelte), as the server raises the cards' z-index with each move. */
   .marker {
     position: absolute;
-    z-index: 500;
+    z-index: var(--above-cards);
     touch-action: none;
     filter: var(--token-shadow);
     transition: transform 0.12s;

@@ -8,6 +8,7 @@
 // animations only paint over it, never catching the pointer.
 
 import { tick } from 'svelte';
+import { prefersReducedMotion } from 'svelte/motion';
 import { SvelteSet } from 'svelte/reactivity';
 import {
   MARKERS,
@@ -19,7 +20,6 @@ import {
   type TableView,
 } from '../lib/types';
 import { playerColorToken } from '../lib/playerColor';
-import { prefersReducedMotion } from '../lib/screen';
 import type { Anim, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
@@ -265,6 +265,15 @@ function hasMoved(was: Measured, now: Measured): boolean {
 function playingTilt(element: HTMLElement): number {
   const angle = Number.parseFloat(getComputedStyle(element).rotate);
   return Number.isFinite(angle) ? angle : 0;
+}
+
+/**
+ * The transform an element has of its own, which a turn keeps: an exhausted table card's tilt, a
+ * hand card's placement; '' for none.
+ */
+function ownTransform(element: HTMLElement): string {
+  const transform = getComputedStyle(element).transform;
+  return transform === 'none' ? '' : transform;
 }
 
 function measure(element: HTMLElement, zoom: number): Measured {
@@ -591,7 +600,7 @@ class TableMotion {
     tables: { before: TableView | undefined; after: TableView | undefined },
     zoom: number,
   ): Promise<void> {
-    const reduced = prefersReducedMotion();
+    const reduced = prefersReducedMotion.current;
     // Without motion, the state shows at once; the glow is a flash, not a motion.
     const shown = reduced ? anims.filter((anim) => anim.kind === 'glow') : anims;
     // Read within this call only: nothing reacts to it.
@@ -1086,12 +1095,12 @@ class TableMotion {
     if (!element) {
       return;
     }
-    const tilt = getComputedStyle(element).transform;
-    const rest = tilt && tilt !== 'none' ? tilt : 'none';
-    const turned = `${FLIP_PERSPECTIVE} rotateY(90deg) scale(1.05)${rest === 'none' ? '' : ` ${rest}`}`;
+    // An exhausted card's tilt turns with it.
+    const own = ownTransform(element);
+    const turned = `${FLIP_PERSPECTIVE} rotateY(90deg) scale(1.05) ${own}`.trimEnd();
     const turn = this.#run(
       element,
-      [{ transform: turned }, { transform: rest }],
+      [{ transform: turned }, { transform: own || 'none' }],
       { duration: TURN_IN_MS, easing: MOVE_EASING },
       cardSubject(id),
       true,
@@ -1114,8 +1123,7 @@ class TableMotion {
     if (!element || typeof element.animate !== 'function') {
       return;
     }
-    const computed = getComputedStyle(element).transform;
-    const own = computed && computed !== 'none' ? computed : '';
+    const own = ownTransform(element);
     const turned = (angle: string) => {
       const turn = `${FLIP_PERSPECTIVE} rotateY(${angle})`;
       if (!own) {

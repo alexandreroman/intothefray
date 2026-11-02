@@ -8,8 +8,8 @@ import {
   type ContextEntry,
 } from './contextItems';
 import { knownCard } from '../lib/catalog';
-import type { Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
-import { card, infoFrom } from './fixtures.testing';
+import type { CardView, PackFace, View, YouView } from '../lib/types';
+import { card, infoFrom, pile, playingView } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -28,36 +28,9 @@ const FACES: Record<string, Partial<PackFace>[]> = {
 
 const infoOf = infoFrom(FACES);
 
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 5, ...extra };
-}
-
 /** Rhino with Alex (p0, the viewer) and Sam (p1). */
 function makeView(): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
     table: {
       cards: [
         card('mine', { tokens: { dmg: 6 }, status: { stunned: 1 } }),
@@ -109,20 +82,16 @@ function makeView(): View {
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
-const ALEX: { areas: Area[]; role: Role } = { areas: ['p0'], role: 'player' };
-const SPECTATOR: { role: Role } = { role: 'spectator' };
+const SPECTATOR: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
 
-function entriesFor(
-  element: TableElement,
-  you: { areas?: Area[]; role: Role } = ALEX,
-): ContextEntry[] {
-  return contextItems(element, actionsFor(element, makeView(), you, 'en'));
+/** The entries of the element, for Alex, the viewer of makeView, or for `you` when given. */
+function entriesFor(element: TableElement, you?: YouView): ContextEntry[] {
+  const view = makeView();
+  return contextItems(element, actionsFor(element, you ? { ...view, you } : view, 'en'));
 }
 
 /**

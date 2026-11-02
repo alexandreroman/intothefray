@@ -198,7 +198,7 @@
     box-shadow: 0 24px 60px #000c;
   }
 
-  /* The prototype's .mbox: a column whose middle part scrolls. */
+  /* A wide box: a column whose middle part scrolls. */
   .box.wide {
     display: flex;
     flex-direction: column;

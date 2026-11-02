@@ -6,3 +6,6 @@
 !internal/
 !packs/packs.go
 !packs/dist/
+# Tests and their data are not needed to build the binary.
+**/*_test.go
+**/testdata

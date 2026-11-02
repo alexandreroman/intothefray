@@ -11,11 +11,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// Default positions on the table, in table units (see the geometry rules).
+// Default positions on the table, in table units.
 //
 // The table is laid out in rows: the villain's row on top, villainRowHeight
-// high, then one row of rowHeight per seat (one deck, see seats.go), in seat order. Every row starts with its deck
-// and its discard pile, then the villain or the identity.
+// high, then one row of rowHeight per seat (one deck, see seats.go), in seat
+// order. Every row starts with its deck and its discard pile, then the
+// villain or the identity.
 //
 // The villain's row is one cursor walking left to right, every position taken
 // up to the grid: the classic encounter deck at deckX with its discard pile
@@ -122,15 +123,6 @@ func rowTop(row int) int {
 	}
 	return villainRowHeight + rowHeight*(row-1)
 }
-
-const (
-	faceTypeHero     = "hero"
-	faceTypeAlterEgo = "alter_ego"
-)
-
-// setKindMainScheme is the kind of a main scheme set, which the host picks
-// among the modular sets for a scenario with main schemes.
-const setKindMainScheme = "main_scheme"
 
 // mainSchemeStageLabel labels the stage of the chosen main scheme set, keyed
 // pack.MainSchemeStage.
@@ -298,7 +290,8 @@ func (b *tableBuilder) pushToPile(pileID string, c *Card) {
 	b.table.pushOnPile(b.table.Piles[pileID], c)
 }
 
-// placeOnTable puts a new card on the table.
+// placeOnTable puts a new card on the table, face up on the given face, with
+// no tokens: players place the starting threat by hand.
 func (b *tableBuilder) placeOnTable(c *Card, face int, x, y int) {
 	c.Face = face
 	b.table.placeOnTable(c, x, y)
@@ -569,7 +562,7 @@ func (b *tableBuilder) setupMainScheme(setCode string) (map[string]bool, error) 
 		if err != nil {
 			return nil, err
 		}
-		if len(def.Faces) > 0 && def.Faces[0].Type == faceTypeMainScheme {
+		if len(def.Faces) > 0 && def.Faces[0].Type == pack.FaceTypeMainScheme {
 			codes = append(codes, def.Code)
 		}
 	}
@@ -741,11 +734,9 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 		if err != nil {
 			return nil, err
 		}
-		if err := b.placeFace(c, def, top.Face, x, rowY(villainRow)); err != nil {
-			return nil, err
-		}
+		b.placeOnTable(c, top.Face, x, rowY(villainRow))
 		stage.Current = c.ID
-		stage.Villain = len(def.Faces) > 0 && def.Faces[0].Type == faceTypeVillain
+		stage.Villain = len(def.Faces) > 0 && def.Faces[0].Type == pack.FaceTypeVillain
 		current = c
 	}
 	if current == nil {
@@ -775,9 +766,7 @@ func (b *tableBuilder) putInPlay(ref pack.FaceRef, home string) (*Card, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := b.placeFace(c, def, ref.Face, x, rowY(villainRow)); err != nil {
-		return nil, err
-	}
+	b.placeOnTable(c, ref.Face, x, rowY(villainRow))
 	return c, nil
 }
 
@@ -826,16 +815,6 @@ func firstPlayerSpot(identitySize pack.Size, x, y int) Point {
 // ceilToGrid rounds a positive table coordinate up to the grid.
 func ceilToGrid(v int) int {
 	return (v + gridSize - 1) / gridSize * gridSize
-}
-
-// placeFace puts a new encounter card on the table, face up on the given
-// face, with no tokens: players place the starting threat by hand.
-func (b *tableBuilder) placeFace(c *Card, def pack.Card, face, x, y int) error {
-	if face < 0 || face >= len(def.Faces) {
-		return invalid("card %s has no face %d", def.Code, face)
-	}
-	b.placeOnTable(c, face, x, y)
-	return nil
 }
 
 // setupPlayer creates the identity, the nemesis cards, the obligation, the
@@ -1051,14 +1030,14 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 // hero or an alter ego.
 func isIdentityCard(def pack.Card) bool {
 	return slices.ContainsFunc(def.Faces, func(face pack.Face) bool {
-		return face.Type == faceTypeHero || face.Type == faceTypeAlterEgo
+		return face.Type == pack.FaceTypeHero || face.Type == pack.FaceTypeAlterEgo
 	})
 }
 
 // alterEgoFace returns the index of the alter-ego face, or 0 if there is none.
 func alterEgoFace(def pack.Card) int {
 	for i, face := range def.Faces {
-		if face.Type == faceTypeAlterEgo {
+		if face.Type == pack.FaceTypeAlterEgo {
 			return i
 		}
 	}

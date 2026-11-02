@@ -22,6 +22,16 @@ type: project
 - Played as the deck's top (a deck-top play, or Play from a Search box),
   the revealed card lands face up and its history line names it (see
   [[project_face_down_cards]] for the other cards of a hidden deck).
+- Every deck action that covers a revealed card (a draw, a discard of
+  the top, a deal, a Top X reorder, a shuffle, a shuffle in, a card put
+  on top of the deck or shuffled into it) gives new ids to the cards
+  that covering hides: the cards tucked under the revealed card that drop
+  to the bottom of a deck, and the revealed card itself under a card put
+  on top of it. A shuffle of the deck they drop into renames them anyway.
+- An open Look (Top X) or Search box keeps following a revealed card
+  covered by a card put on top, under its new id. Only a view that
+  already holds the card gets that id; the cards tucked under it leave
+  the views as they drop out of sight.
 - A Top X reorder of a deck with a revealed card takes that card back
   into the deck, face down, wherever the reorder puts it. Such a reorder
   is a tracked, undoable action with a line ("put X back into their
@@ -55,10 +65,14 @@ so every deck action treats it as such.
 
 **How to apply:** one generic rule in internal/game: `coveredFor`
 (apply.go) puts the revealed cards back on top of the deck an action acts
-on (`actedDeck`), in a copy of the table, for both resolve
-(`resolveOnTable`) and apply; views and a deck-top play use `deckCards`,
-and `applyPlay` plays a revealed card as it lies. `resolveReorderTop`
-records the renames of a reorder that takes a revealed card back. On the
-web, `deckCount` (actions.ts) counts the revealed card in count limits and
-in the pile menu header. See also [[project_face_down_cards]] and
-[[project_action_bars]].
+on (`actedDeck`), in a copy of the table, and names the cards covering
+hides (`hiddenByCovering`). `resolveOnTable` picks their new ids and
+renames them before resolving the kind, `apply` gives them before
+performing it (`splitRenames`), the open views first for the revealed
+cards (`revealedRenames`, `renameInViews`), and a rebuild renames them
+again on the table it meets (`renamedAgain`). Views and a deck-top play use
+`deckCards`, and `applyPlay` plays a revealed card as it lies.
+`resolveReorderTop` records the renames of a reorder that takes a
+revealed card back. On the web, `deckCount` (actions.ts) counts the
+revealed card in count limits and in the pile menu header. See also
+[[project_face_down_cards]] and [[project_action_bars]].

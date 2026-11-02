@@ -18,11 +18,22 @@ import {
   type View,
   type Zone,
 } from '../lib/types';
-import { discardPileOf, homeDeckOf, isScenarioDeckId, isSideDeckId, sideLabel } from './actions';
+import { discardPileOf, homeDeckOf, sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
-import { ownSeats, seatHero, seatOf, seatPlayer } from './seats';
+import {
+  isScenarioDeckId,
+  isSideDeckId,
+  ownSeats,
+  PILE_ENCOUNTER,
+  PILE_ENCOUNTER_DISCARD,
+  PILE_SCENARIO_ASIDE,
+  PILE_VICTORY,
+  seatHero,
+  seatOf,
+  seatPlayer,
+} from './seats';
 
 /** Where a card lies in a view: its zone, and its spot when it is on the table. */
 interface Spot {
@@ -115,13 +126,11 @@ const UNDID = 'undid ';
  * The animations that take the table from prev to next. ownDrop is what the
  * viewer has just dropped, a card with its stack, and the other cards of a
  * group with it: on the table or in the hand, it already lies where it went;
- * onto a pile, each of its cards flies there from where it was let go. apart
- * is how long the viewer went without a live view between the two, in ms
- * (GameSession.viewGap).
+ * onto a pile, each of its cards flies there from where it was let go.
  */
-export function diffViews(prev: View, next: View, ownDrop?: OwnDrop, apart = 0): Anim[] {
+export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   const after = next.table;
-  if (!prev.table || !after || apart > MAX_APART_MS) {
+  if (!prev.table || !after) {
     return [];
   }
   // The card that got a new id is followed under that id from the start.
@@ -960,10 +969,10 @@ function lastNamedPile(line: LogView, view: View, piles: PileView[]): string | n
 }
 
 const SHARED_PILE_NAMES: Record<string, string> = {
-  enc: 'the encounter deck',
-  encd: 'the encounter discard pile',
-  vic: 'the victory display',
-  saside: 'the set-aside cards',
+  [PILE_ENCOUNTER]: 'the encounter deck',
+  [PILE_ENCOUNTER_DISCARD]: 'the encounter discard pile',
+  [PILE_VICTORY]: 'the victory display',
+  [PILE_SCENARIO_ASIDE]: 'the set-aside cards',
 };
 
 const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {

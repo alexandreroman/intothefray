@@ -1,6 +1,6 @@
 import { CARD_ASPECT } from '../lib/cardArt';
-import type { CardView, PileKind, PileView, Size } from '../lib/types';
-import { asideId } from './seats';
+import type { CardView, PileKind, PileView, Size, TableView } from '../lib/types';
+import { asideId, PILE_SCENARIO_ASIDE, PILE_VICTORY } from './seats';
 
 /** Table units are multiples of this. */
 export const GRID = 10;
@@ -87,7 +87,7 @@ export function isOutOfPlay(pile: PileView): boolean {
 }
 
 /** Where a card or a pile lies on the table, in table units. */
-export interface Footprint {
+interface Footprint {
   id: string;
   x: number;
   y: number;
@@ -262,11 +262,11 @@ export interface OutOfPlayChip {
  * the server's (internal/game/state.go).
  */
 export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOfPlayChip[] {
-  const victory = { pile: 'vic', kind: 'victory', label: 'Victory display' } as const;
+  const victory = { pile: PILE_VICTORY, kind: 'victory', label: 'Victory display' } as const;
   const setAside = { kind: 'aside', label: 'Set-aside cards' } as const;
   const wanted =
     owner === -1
-      ? [victory, { ...setAside, pile: 'saside' }]
+      ? [victory, { ...setAside, pile: PILE_SCENARIO_ASIDE }]
       : [{ ...setAside, pile: asideId(owner) }];
   return wanted.flatMap((chip) => {
     const pile = piles.find((p) => p.id === chip.pile);
@@ -630,4 +630,57 @@ export function restingFanPositions(
     y: slot.y * spread,
     angle: slot.angle,
   }));
+}
+
+// The free slot of a player's row: room for the played card with 40 free on
+// each side, as the setup leaves between the cards it puts in play
+// (internal/game/setup.go). Turned 15° when exhausted, a portrait card reaches
+// about 18 further on each side: 40 lets two neighbours both be exhausted
+// without overlapping. The row is as high as a portrait card.
+const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
+const SLOT_GAP = 40;
+
+/**
+ * The free slot for a played card, from the hand or from a pile box: the
+ * first spot of the player's row, from its deck on, where the card, as wide as
+ * it lands, keeps 40 free on each side. The spots tried are the deck's x and
+ * the spot 40 past the right edge of each thing in the row, taken up to the
+ * grid, from left to right: the card lands right after the last card or pile
+ * of the row, or in the first hole wide enough before it. On a fresh row, the
+ * deck, the discard pile, any side piles and the identity lie closer together
+ * than that, so the card lands after the identity. The row is the height of
+ * the player's deck (the top of the table, from x 0, without one). Every
+ * table card and pile reaching into the row is in the way, and so is every
+ * marker.
+ */
+export function freeSlot(
+  played: CardView,
+  table: Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>,
+  seat: number,
+  sizeOf: (card: CardView) => Size,
+): { x: number; y: number } {
+  const { cards, piles, firstPlayer, active } = table;
+  // Played from the hand or explicitly from a pile, a card lands face up (applyPlay, internal/game/apply.go).
+  const width = cardBox(sizeOf(played), { faceDown: false }).w;
+  const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
+  const start = deck?.x ?? 0;
+  const y = deck?.y ?? 0;
+  const markers = [
+    { id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX },
+    ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
+  ];
+  const items = [...footprints(cards, piles, sizeOf), ...markers].filter(
+    (item) => item.y < y + SLOT_ROW_HEIGHT && visualBox(item).bottom > y,
+  );
+  const isFree = (x: number) =>
+    items.every((item) => {
+      const box = visualBox(item);
+      return box.right <= x - SLOT_GAP || box.left >= x + width + SLOT_GAP;
+    });
+  const pastItems = items
+    .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
+    .filter((x) => x >= start);
+  const candidates = [start, ...pastItems].sort((a, b) => a - b);
+  // The last spot lies past every item, so there is always a free one.
+  return { x: candidates.find(isFree) ?? Math.max(...candidates), y };
 }

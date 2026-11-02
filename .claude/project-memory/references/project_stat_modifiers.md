@@ -11,7 +11,9 @@ type: project
   points, badge "HP"), in that order: the printed stat column, then HP.
   They are bookkeeping only: no rules effect.
 - A modifier is clamped to ±99 and deleted at 0; like tokens and
-  statuses, modifiers are cleared when the card leaves the table.
+  statuses, modifiers are cleared when the card leaves the table. At ±99
+  the client offers no step further: the menu greys that ±1 entry with
+  its reason, the pill disables its − or +.
 - The card menu has an "Add a modifier" submenu (+1 per stat, a
   separator, −1 per stat) with no keyboard shortcuts; its −1 entries
   start a negative modifier.
@@ -33,7 +35,8 @@ type: project
 such as a hero's +1 DEF or a villain's −1 ATK.
 
 **How to apply:** keep `modifierNames` (internal/game/apply.go) and
-`MODIFIERS` (web/src/table/actions.ts) in step; a new counter kind
+`MODIFIERS` (web/src/table/actions.ts) in step, and `MAX_MODIFIER` equal
+to the server's clamp (`maxCount`); a new counter kind
 mirrors every place `ActToken` and the counter target kinds are handled,
 and decides whether it carries over on a stage change
 (see [[project_stage_carry_over]]).

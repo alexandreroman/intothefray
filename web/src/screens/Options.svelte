@@ -44,10 +44,66 @@
     );
   });
 
-  function onNameInput(): void {
-    // Not trimmed here, so that a space can be typed between two words.
-    name = stripEmoji(name);
+  /** The name input's value and selection. */
+  interface NameEdit {
+    value: string;
+    start: number;
+    end: number;
+  }
+
+  // The name input as it was just before the edit being typed, set by beforeinput.
+  let beforeEdit: NameEdit | undefined;
+
+  function onNameBeforeInput(event: Event & { currentTarget: HTMLInputElement }): void {
+    const input = event.currentTarget;
+    beforeEdit = {
+      value: input.value,
+      start: input.selectionStart ?? input.value.length,
+      end: input.selectionEnd ?? input.value.length,
+    };
+  }
+
+  function onNameInput(event: Event & { currentTarget: HTMLInputElement }): void {
+    // Not trimmed here, so that a space can be typed between two words. Limited in code points,
+    // as the server counts them, not by maxlength, which counts UTF-16 units.
+    const input = event.currentTarget;
+    const typed = stripEmoji(input.value);
+    const edit = beforeEdit;
+    beforeEdit = undefined;
+    if (Array.from(typed).length <= MAX_NAME_LENGTH || edit === undefined) {
+      name = Array.from(typed).slice(0, MAX_NAME_LENGTH).join('');
+    } else {
+      // Written to the input here, with its selection, as bind:value would put the caret at the end.
+      const fitted = keepWhatFits(edit, typed);
+      name = fitted.value;
+      input.value = fitted.value;
+      input.setSelectionRange(fitted.start, fitted.end);
+    }
     savePlayerName(name);
+  }
+
+  /**
+   * The name after an edit that goes over the limit, as maxlength leaves it: the text inserted over
+   * the selection is kept as far as it fits, with the caret after it. An edit that inserts nothing
+   * that fits, or is not an insertion over the selection, is refused: the name and its selection
+   * stay as they were.
+   */
+  function keepWhatFits(edit: NameEdit, typed: string): NameEdit {
+    const head = edit.value.slice(0, edit.start);
+    const tail = edit.value.slice(edit.end);
+    const isInsertion =
+      typed.length >= head.length + tail.length && typed.startsWith(head) && typed.endsWith(tail);
+    if (!isInsertion) {
+      return edit;
+    }
+    const room = Math.max(0, MAX_NAME_LENGTH - Array.from(head + tail).length);
+    const insertedText = typed.slice(head.length, typed.length - tail.length);
+    const inserted = Array.from(insertedText).slice(0, room).join('');
+    if (inserted === '') {
+      return edit;
+    }
+    const caret = head.length + inserted.length;
+    return { value: head + inserted + tail, start: caret, end: caret };
   }
 
   function pickRandomName(): void {
@@ -79,10 +135,7 @@
         <h1 class="display">SUIT UP</h1>
       </div>
       <p class="note">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 11v5M12 8h.01" />
-        </svg>
+        <Icon name="info" />
         Saved in this browser only. Changes apply right away.
       </p>
     </div>
@@ -96,9 +149,9 @@
         <input
           type="text"
           id="name"
-          maxlength={MAX_NAME_LENGTH}
           placeholder="e.g. Alex"
           bind:value={name}
+          onbeforeinput={onNameBeforeInput}
           oninput={onNameInput}
         />
         <button
@@ -107,13 +160,7 @@
           title="Pick a new random name"
           onclick={pickRandomName}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="3.5" />
-            <circle cx="9" cy="9" r="1.2" />
-            <circle cx="15" cy="15" r="1.2" />
-            <circle cx="15" cy="9" r="1.2" />
-            <circle cx="9" cy="15" r="1.2" />
-          </svg>
+          <Icon name="dice" />
         </button>
       </div>
     </div>
@@ -236,14 +283,9 @@
     color: var(--muted);
   }
 
-  .note svg {
-    flex: none;
+  .note :global(svg) {
     width: 16px;
     height: 16px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
   }
 
   /* A setting: its label and help on the left, its control on the right, or below on a phone. */
@@ -320,18 +362,9 @@
     justify-content: center;
   }
 
-  .dice svg {
+  .dice :global(svg) {
     width: 20px;
     height: 20px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linejoin: round;
-  }
-
-  .dice circle {
-    fill: currentColor;
-    stroke: none;
   }
 
   .themes {

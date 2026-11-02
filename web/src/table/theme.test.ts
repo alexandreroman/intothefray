@@ -2,10 +2,6 @@ import { backUrl, firstPlayerUrl } from './theme';
 
 const ASSETS = 'https://img.intothefray.xyz/assets/';
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 describe('table theme assets', () => {
   it('theme uses the CDN', () => {
     expect(backUrl('player', 'official')).toBe(ASSETS + 'back-player.avif');

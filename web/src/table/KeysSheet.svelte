@@ -7,7 +7,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
-  import { STATUSES, TOKENS } from './actions';
+  import { KEYS, STATUSES, TOKENS } from './actions';
 
   let {
     anchor,
@@ -61,13 +61,13 @@
     [
       'Card under the mouse',
       [
-        { what: 'Exhaust / ready', keys: ['E'] },
-        { what: 'Flip', keys: ['F'] },
-        { what: 'Draw an arrow to another card', keys: ['A'] },
-        { what: 'Discard', keys: ['X', '⌫'] },
-        { what: 'Back to hand', keys: ['H'] },
-        { what: 'Bottom of the deck', keys: ['B'] },
-        { what: 'Change the villain or scheme card', keys: ['V'] },
+        { what: 'Exhaust / ready', keys: [KEYS.exhaust] },
+        { what: 'Flip', keys: [KEYS.flip] },
+        { what: 'Draw an arrow to another card', keys: [KEYS.arrow] },
+        { what: 'Discard', keys: [KEYS.discard, '⌫'] },
+        { what: 'Back to hand', keys: [KEYS.hand] },
+        { what: 'Bottom of the deck', keys: [KEYS.bottom] },
+        { what: 'Change the villain or scheme card', keys: [KEYS.stage] },
       ],
     ],
     [
@@ -80,21 +80,21 @@
     [
       'Card in your hand',
       [
-        { what: 'Play', keys: ['P'] },
-        { what: 'Discard', keys: ['X', '⌫'] },
+        { what: 'Play', keys: [KEYS.play] },
+        { what: 'Discard', keys: [KEYS.discard, '⌫'] },
       ],
     ],
     [
       'Deck under the mouse',
       [
-        { what: 'Draw 1', keys: ['W'] },
-        { what: 'Draw several cards', keys: ['⇧ W'] },
-        { what: 'Discard the top card', keys: ['X', '⌫'] },
-        { what: 'Discard several cards', keys: ['⇧ X'] },
-        { what: 'Reveal the top card', keys: ['R'] },
-        { what: 'Look at the top cards', keys: ['L'] },
-        { what: 'Search', keys: ['K'] },
-        { what: 'Shuffle', keys: ['U'] },
+        { what: 'Draw 1', keys: [KEYS.draw] },
+        { what: 'Draw several cards', keys: [`⇧ ${KEYS.draw}`] },
+        { what: 'Discard the top card', keys: [KEYS.discard, '⌫'] },
+        { what: 'Discard several cards', keys: [`⇧ ${KEYS.discard}`] },
+        { what: 'Reveal the top card', keys: [KEYS.reveal] },
+        { what: 'Look at the top cards', keys: [KEYS.look] },
+        { what: 'Search', keys: [KEYS.search] },
+        { what: 'Shuffle', keys: [KEYS.shuffle] },
       ],
     ],
     [

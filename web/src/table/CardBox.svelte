@@ -12,7 +12,16 @@
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
   import { scrollFade } from '../lib/scrollFade';
-  import type { Action, CardView, PackFace, PileView, Point, Size, View } from '../lib/types';
+  import type {
+    Action,
+    CardView,
+    PackFace,
+    PileView,
+    Point,
+    SessionError,
+    Size,
+    View,
+  } from '../lib/types';
   import {
     canShuffleIn,
     compareCardNumbers,
@@ -28,7 +37,7 @@
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
   import { DRAG_THRESHOLD } from './drag';
-  import { isLongTouchClick, isTouchContextMenu, LANDING_MS } from './interaction.svelte';
+  import { interaction, LANDING_MS } from './interaction.svelte';
   import { isLandscape, isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatHero } from './seats';
 
@@ -40,6 +49,7 @@
     readOnly,
     selected,
     act,
+    lastError,
     onclose,
   }: {
     box: ShownBox;
@@ -52,6 +62,8 @@
     /** The viewer's selected deck: a card of a pile that is not theirs is played to its row. */
     selected: number | null;
     act: (action: Action) => number | null;
+    /** The server's last error: one answering the reorder sent drops its order. */
+    lastError: SessionError | null;
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
   } = $props();
@@ -222,11 +234,6 @@
   // The tile whose menu was open as the current press began: the press closes it (ContextMenu),
   // and the click it ends must not open it again.
   let menuAtPress: string | null = null;
-  // The press that ended a reorder: its click is no click on a tile.
-  let dragEnded = false;
-  // The kind of pointer of the current press, and when it began: a long touch opens no menu.
-  let pressType = 'mouse';
-  let pressedAt = 0;
 
   // Found again in every redraw: the menu goes with its card, or with its last action.
   const menuTile = $derived.by(() => {
@@ -242,21 +249,18 @@
   });
 
   /** Before the open menu sees the press, in the capture phase of the window. */
-  function onWindowPointerDown(event: PointerEvent): void {
+  function onWindowPointerDown(): void {
     menuAtPress = tileMenu?.key ?? null;
-    dragEnded = false;
-    pressType = event.pointerType || 'mouse';
-    pressedAt = event.timeStamp;
   }
 
   /**
    * A click or a tap on a pile tile opens its menu at the pointer, unless it
-   * ends a reorder or a long touch press (iOS fires that click), or its press
-   * closed that tile's menu; a tile without actions (a spectator's) opens
-   * nothing.
+   * ends a long touch press (iOS fires that click), or its press closed that
+   * tile's menu; a tile without actions (a spectator's) opens nothing. The
+   * click that ends a reorder never gets here (interaction.swallowNextClick).
    */
   function clickTile(tile: Tile, event: MouseEvent): void {
-    if (dragEnded || menuAtPress === tile.key || isLongTouchClick(event, pressType, pressedAt)) {
+    if (menuAtPress === tile.key || interaction.isLongTouchClick(event)) {
       return;
     }
     openTileMenu(tile, { x: event.clientX, y: event.clientY });
@@ -268,7 +272,7 @@
    */
   function rightClickTile(tile: Tile, event: MouseEvent): void {
     event.preventDefault();
-    if (isTouchContextMenu(event, pressType)) {
+    if (interaction.isTouchContextMenu(event)) {
       return;
     }
     openTileMenu(tile, { x: event.clientX, y: event.clientY });
@@ -358,16 +362,29 @@
 
   let drag = $state<TileDrag | null>(null);
 
-  // The order sent to the server, shown until its new view arrives (for the cards it was sent from).
-  let pending = $state.raw<{ order: string[]; from: readonly string[] } | null>(null);
+  /**
+   * The order sent to the server, shown until its new view arrives (for the
+   * cards it was sent from), or the server refuses the action of that id.
+   */
+  let pending = $state.raw<{ order: string[]; from: readonly string[]; action: number } | null>(
+    null,
+  );
+  // An answer that never comes: the box shows the server's order again.
   let pendingTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const pendingShown = $derived(
+    pending !== null &&
+      box.kind === 'pile' &&
+      pending.from === box.cards &&
+      lastError?.id !== pending.action,
+  );
 
   const shownTiles = $derived.by((): Tile[] => {
     if (drag?.lifted) {
       const byKey = new Map(matching.map((t) => [t.key, t]));
       return drag.order.flatMap((key) => byKey.get(key) ?? []);
     }
-    if (pending && box.kind === 'pile' && pending.from === box.cards) {
+    if (pending && pendingShown) {
       const order = pending.order;
       return [...matching].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
     }
@@ -524,7 +541,7 @@
       return;
     }
     // The click this release fires, on the tile let go over, is the end of the reorder.
-    dragEnded = true;
+    interaction.swallowNextClick();
     if (box.kind !== 'pile') {
       return;
     }
@@ -538,10 +555,13 @@
     }
     let next = 0;
     const order = all.map((id) => (shown.includes(id) ? (shown[next++] ?? id) : id));
-    pending = { order, from: box.cards };
+    const sent = act({ kind: 'reorderTop', pile: box.pile.id, cards: order });
+    if (sent === null) {
+      return;
+    }
+    pending = { order, from: box.cards, action: sent };
     clearTimeout(pendingTimer);
     pendingTimer = setTimeout(() => (pending = null), LANDING_MS);
-    act({ kind: 'reorderTop', pile: box.pile.id, cards: order });
   }
 
   // ---- Footer ----

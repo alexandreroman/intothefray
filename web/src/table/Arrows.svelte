@@ -69,7 +69,8 @@
       return null;
     }
     return (
-      root.querySelector(`.draglayer .card[data-id="${id}"]`) ?? root.querySelector(tableCard(id))
+      root.querySelector(`.draglayer .card[data-id="${CSS.escape(id)}"]`) ??
+      root.querySelector(tableCard(id))
     );
   }
 

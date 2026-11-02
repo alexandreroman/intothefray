@@ -104,20 +104,26 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 }
 
 // sentUnderDecks returns the cards tucked under c that go to the bottom of a
-// deck when a takes c off the table (see tuckedDestination), but those a
+// deck when a takes c off the table (see tuckedUnderDecks), but those a
 // shuffle into c's deck gathers.
 func (t *Table) sentUnderDecks(c *Card, a Action) []string {
 	if c.Zone != ZoneTable {
 		return nil
 	}
-	var shuffled []string
+	ids := t.tuckedUnderDecks(c)
 	if deck, ok := t.Piles[c.Home]; ok && a.Kind == ActToDeck && a.Where == whereShuffle {
-		shuffled = t.shuffledIntoDeck(c, deck)
+		shuffled := t.shuffledIntoDeck(c, deck)
+		ids = slices.DeleteFunc(ids, func(id string) bool { return slices.Contains(shuffled, id) })
 	}
+	return ids
+}
+
+// tuckedUnderDecks returns the cards tucked under c, a table card, that go to
+// the bottom of a deck when c leaves the table (see tuckedDestination).
+func (t *Table) tuckedUnderDecks(c *Card) []string {
 	var ids []string
 	for _, child := range t.descendants(c.ID) {
-		_, bottom, ok := t.tuckedDestination(child)
-		if ok && bottom && !slices.Contains(shuffled, child.ID) {
+		if _, bottom, ok := t.tuckedDestination(child); ok && bottom {
 			ids = append(ids, child.ID)
 		}
 	}
@@ -140,12 +146,13 @@ func (t *Table) checkRenamedOnTheWay(a Action) (map[string]string, error) {
 }
 
 // renamedAgain returns a, recorded on another table, with the new ids of the
-// cards it takes out of sight on t (see renamedOnTheWay): a card still among
-// them keeps the new id it was given, so that later events still name it,
-// and a card now among them gets one from rng. The sub-actions of a group
-// are each renamed on the table the previous ones leave, as applyGroup
-// performs them. A rebuild uses it for an event whose cards tucked under the
-// card it moves changed (see replayEvent).
+// cards it takes out of sight on t: those covering hides (see coveredFor) and
+// those it takes on its way (see renamedOnTheWay). A card still among them
+// keeps the new id it was given, so that later events still name it, and a
+// card now among them gets one from rng. The sub-actions of a group are each
+// renamed on the table the previous ones leave, as applyGroup performs them.
+// A rebuild uses it for an event whose cards tucked under the card it moves,
+// or under the card revealed on its deck, changed (see replayEvent).
 func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 	if a.Kind == ActGroup {
 		staged := t.Clone()
@@ -163,28 +170,60 @@ func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 		a.Actions = subs
 		return a, nil
 	}
-	if !takesAway[a.Kind] || producesShuffle(a) {
+	// replayEvent resolves a shuffle again instead, and a group holds none:
+	// this keeps a shuffle's renames, which give its pile a new order, out of
+	// the renaming below should another caller ever pass one.
+	if producesShuffle(a) {
 		return a, nil
 	}
-	covered, err := t.coveredFor(a, a.Area)
+	covered, hidden, err := t.coveredFor(a, a.Area)
 	if err != nil {
 		return a, err
 	}
 	renames := map[string]string{}
-	var added []string
-	for _, id := range covered.renamedOnTheWay(a) {
-		if renamed, ok := a.Renames[id]; ok {
-			renames[id] = renamed
-		} else {
-			added = append(added, id)
+	keepOrAddIDs(covered, renames, a.Renames, hidden, rng)
+	if len(hidden) > 0 {
+		// covered is a copy of t whenever covering hides a card.
+		renameCards(covered, renames)
+	}
+	switch {
+	case takesAway[a.Kind]:
+		keepOrAddIDs(covered, renames, a.Renames, covered.renamedOnTheWay(a), rng)
+	case a.Kind == ActReorderTop:
+		// A reorder renames the cards it reorders, or none (see
+		// resolveReorderTop): apply checks them.
+		for _, id := range a.Cards {
+			if renamed, ok := a.Renames[id]; ok {
+				renames[id] = renamed
+			}
 		}
 	}
-	addFreshIDs(covered, renames, added, rng)
 	a.Renames = nil
 	if len(renames) > 0 {
 		a.Renames = renames
 	}
 	return a, nil
+}
+
+// keepOrAddIDs adds to renames a new id for each of ids: the one recorded
+// gave it, if any, or else a fresh one from rng (see addFreshIDs).
+func keepOrAddIDs(t *Table, renames, recorded map[string]string, ids []string, rng *rand.Rand) {
+	var added []string
+	for _, id := range ids {
+		if renamed, ok := recorded[id]; ok {
+			renames[id] = renamed
+		} else {
+			added = append(added, id)
+		}
+	}
+	addFreshIDs(t, renames, added, rng)
+}
+
+// renamesCards reports whether a is of a kind that may give cards new ids
+// itself: one that takes a card away, a shuffle, or a reorder of a deck's top
+// (see resolveReorderTop).
+func renamesCards(a Action) bool {
+	return takesAway[a.Kind] || producesShuffle(a) || a.Kind == ActReorderTop
 }
 
 // takesAway are the kinds that may take a card out of its place, and with it

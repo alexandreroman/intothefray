@@ -2,7 +2,6 @@ import { clearPrefMemory, getPref, getToken, removePref, setPref, setToken } fro
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  localStorage.clear();
 });
 
 describe('prefs', () => {

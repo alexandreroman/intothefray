@@ -1,13 +1,16 @@
 <script lang="ts">
   import { href } from '../lib/router.svelte';
 
-  // No state: the end screen only points back to home.
+  // A screen where the game is over, or was never there: it only points back to home.
+  let { caption, title, text }: { caption: string; title?: string; text: string } = $props();
 </script>
 
 <main class="screen table-bg">
-  <span class="caption">Game over</span>
-  <h1 class="display">THIS GAME HAS ENDED</h1>
-  <p>Start a new one from the home screen.</p>
+  <span class="caption">{caption}</span>
+  {#if title}
+    <h1 class="display">{title}</h1>
+  {/if}
+  <p>{text}</p>
   <a class="btn-primary" href={href('/')}>Back to home</a>
 </main>
 

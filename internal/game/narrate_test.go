@@ -337,3 +337,25 @@ func TestLogPartRefJSON(t *testing.T) {
 		t.Errorf("parts JSON = %s, want %s", data, want)
 	}
 }
+
+// TestEveryCounterHasANoun checks that a history line can name every token
+// and status (counterNouns), and that a modifier, which reads as its stat
+// (modifierEvent), names it.
+func TestEveryCounterHasANoun(t *testing.T) {
+	for _, name := range slices.Concat(tokenNames, statusNames) {
+		if noun, ok := counterNouns[name]; !ok || noun.one == "" || noun.many == "" {
+			t.Errorf("counter %q has no noun: %+v", name, noun)
+		}
+	}
+	if got, want := len(counterNouns), len(tokenNames)+len(statusNames); got != want {
+		t.Errorf("%d counter nouns, want one per token and status: %d", got, want)
+	}
+
+	f := newDoFixture(t)
+	for i, name := range modifierNames {
+		f.mustDo(t, "h", Action{Kind: ActModifier, Card: f.villain(), Name: name, Delta: 1}, at(i))
+		if got, want := f.lastLog().Text, " +1 "+strings.ToUpper(name); !strings.HasSuffix(got, want) {
+			t.Errorf("modifier %q line = %q, want it to end with %q", name, got, want)
+		}
+	}
+}

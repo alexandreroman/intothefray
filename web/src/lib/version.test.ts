@@ -1,4 +1,3 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import { appCommit, fetchServerCommit, shortCommit } from './version';
 
 const SHA = '0123456789abcdef0123456789abcdef01234567';

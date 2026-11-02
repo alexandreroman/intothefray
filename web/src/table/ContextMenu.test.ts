@@ -4,10 +4,19 @@ import Table from './Table.svelte';
 import menuSource from './ContextMenu.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
-import { TOUCH_MODE_QUERY } from './touch';
+import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -41,53 +50,18 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     pile('enc', { kind: 'encounter', x: 900, count: 29 }),
     pile('encd', { kind: 'encounterDiscard', x: 900, y: 200, count: 0, cards: [] }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 1 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 1 }], true),
+      seated('Sam', 1, [{ area: 'p1', heroName: 'Ant-Man' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
       hands: { p0: ['h'] },
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
-}
-
-function rect(left: number, top: number, width: number, height: number): DOMRect {
-  return {
-    left,
-    top,
-    width,
-    height,
-    right: left + width,
-    bottom: top + height,
-    x: left,
-    y: top,
-    toJSON: () => ({}),
-  } as DOMRect;
+  });
 }
 
 async function renderTable(view = makeView()) {
@@ -96,13 +70,13 @@ async function renderTable(view = makeView()) {
     this: HTMLElement,
   ) {
     if (this.classList.contains('tablewrap')) {
-      return rect(0, 50, 1000, 700);
+      return domRect(0, 50, 1000, 700);
     }
     if (this.classList.contains('table-menu')) {
       // 200 wide, where it is placed.
-      return rect(parseFloat(this.style.left) || 0, parseFloat(this.style.top) || 0, 200, 0);
+      return domRect(parseFloat(this.style.left) || 0, parseFloat(this.style.top) || 0, 200, 0);
     }
-    return rect(0, 0, 0, 0);
+    return domRect(0, 0, 0, 0);
   });
   const session = fakeSession();
   const result = render(Table, { session, view });
@@ -205,6 +179,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
   interaction.reset();
@@ -1050,15 +1025,15 @@ describe('the arrow mode', () => {
       this: HTMLElement,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 50, 1000, 700);
+        return domRect(0, 50, 1000, 700);
       }
       if (this.classList.contains('arrowhint')) {
-        return rect(0, 0, 300, 34);
+        return domRect(0, 0, 300, 34);
       }
       if (this.dataset.id === 'mine') {
-        return rect(400, 400, 100, 140);
+        return domRect(400, 400, 100, 140);
       }
-      return rect(0, 0, 0, 0);
+      return domRect(0, 0, 0, 0);
     });
     vi.useFakeTimers();
     await fireEvent.pointerEnter(placed('mine'));
@@ -1084,16 +1059,7 @@ describe('the arrow mode', () => {
   });
 
   it('speaks of taps and no Esc key in touch mode', async () => {
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query) =>
-        Object.assign(new EventTarget(), {
-          media: query,
-          matches: query === TOUCH_MODE_QUERY,
-          onchange: null,
-          addListener: () => {},
-          removeListener: () => {},
-        }) as unknown as MediaQueryList,
-    );
+    mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     await click(placed('mine'), 120, 80, { pointerType: 'touch' });
     await fireEvent.click(menuItem(contextMenu()!, 'Draw an arrow'));

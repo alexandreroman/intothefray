@@ -5,20 +5,22 @@
   "Into The Fray".
 -->
 <script lang="ts">
-  let {
-    variant = 'horizontal',
-    size,
-  }: {
-    /** The mark alone, or with the wordmark on one line (top bars) or two (home). */
-    variant?: 'horizontal' | 'stacked' | 'mark';
-    /**
-     * In pixels: the mark's size for the mark alone, else the font size of "FRAY". 'inherit'
-     * takes the parent's font size instead, for a size set in CSS.
-     */
-    size?: number | 'inherit';
-  } = $props();
+  /**
+   * In pixels: the mark's size for the mark alone, else the font size of "FRAY". 'inherit' takes
+   * the parent's font size instead, for a size set in CSS.
+   */
+  type Size = number | 'inherit';
 
-  const DEFAULT_SIZE = { horizontal: 28, stacked: 120, mark: 64 };
+  type Props =
+    // The mark with the wordmark on one line, for the top bars: it has a size of its own.
+    | { variant?: 'horizontal'; size?: Size }
+    // The mark alone, or with the wordmark on two lines (home): each place sets its size.
+    | { variant: 'stacked' | 'mark'; size: Size };
+
+  let { variant = 'horizontal', size }: Props = $props();
+
+  // The top bars' "FRAY", in pixels.
+  const HORIZONTAL_SIZE = 28;
   // The mark's size for a "FRAY" of 1px, from the approved lockups.
   const MARK_RATIO = { horizontal: 32 / 28, stacked: 190 / 172, mark: 1 };
   // The spark is lost in a small mark.
@@ -29,7 +31,7 @@
   const bottomClipId = `${uid}-bottom`;
 
   // Unset when inherited: the size is then unknown here.
-  let fontSize = $derived(size === 'inherit' ? undefined : (size ?? DEFAULT_SIZE[variant]));
+  let fontSize = $derived(size === 'inherit' ? undefined : (size ?? HORIZONTAL_SIZE));
   // In pixels, or in em of the inherited font size.
   let markSize = $derived(
     fontSize === undefined ? `${MARK_RATIO[variant]}em` : fontSize * MARK_RATIO[variant],

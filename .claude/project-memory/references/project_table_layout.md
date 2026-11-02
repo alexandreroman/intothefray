@@ -82,9 +82,10 @@ type: project
   100%, following the width live. The % button reads "Fit to width" at
   ≤ 600 px and "Back to 100%" (key 0) elsewhere. Minimum zoom 30% at
   ≤ 600 px wide, else 50%. Owner names and chips keep ≥ 11 px text at
-  any zoom. At ≤ 600 px wide or ≤ 500 px tall, Undo and the zoom control
-  form one bar at the bottom right above the resting hand, and hand cards
-  are sized from the window.
+  any zoom. At ≤ 600 px wide or ≤ 500 px tall, the zoom control (with
+  the floating Undo when the history panel is hidden, ≤ 900 px wide)
+  forms one bar at the bottom right above the resting hand, and hand
+  cards are sized from the window.
 - Touch mode (no hover, coarse pointer) shows no card preview and no
   keyboard-shortcuts button; bar buttons are 44 px.
 

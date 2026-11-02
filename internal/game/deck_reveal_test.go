@@ -3,7 +3,6 @@ package game
 import (
 	"errors"
 	"slices"
-	"strings"
 	"testing"
 )
 
@@ -70,10 +69,6 @@ func TestRevealFaceDownSideDeck(t *testing.T) {
 	want := "revealed " + f.nameOf(t, id) + " from " + f.g.pileName(f.g.actorOf(0), labor)
 	if got := f.lastLog().Text; got != want {
 		t.Errorf("line = %q, want %q", got, want)
-	}
-	// The client finds the deck by the name ending the line (lastNamedPile in animate.ts).
-	if suffix := " from their Labor deck"; !strings.HasSuffix(f.lastLog().Text, suffix) {
-		t.Errorf("line = %q, want it to end with %q", f.lastLog().Text, suffix)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)
@@ -444,12 +439,121 @@ func TestPutOnTopOfTheDeckCoversTheRevealedCard(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(3))
 
-	drawn = f.renamedID(t, drawn)
-	if got := topCards(f.g.Table.Piles["deck:p0"], 2); !slices.Equal(got, []string{drawn, id}) {
-		t.Errorf("top = %v, want [%s %s]", got, drawn, id)
+	// Back in the deck, face down, the revealed card goes by a new id: nobody
+	// can follow it there.
+	drawn, covered := f.renamedID(t, drawn), f.renamedID(t, id)
+	if covered == id {
+		t.Errorf("the covered card keeps its id %s", id)
+	}
+	if got := topCards(f.g.Table.Piles["deck:p0"], 2); !slices.Equal(got, []string{drawn, covered}) {
+		t.Errorf("top = %v, want [%s %s]", got, drawn, covered)
+	}
+	for _, token := range []string{"h", "b"} {
+		checkNeverSeenAgain(t, f.g, token, id)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// TestLookFollowsTheCoveredRevealedCard puts a card on top of a deck whose
+// revealed card its owner is looking at: the look keeps the covered card,
+// under its new id, and nobody sees its old id again.
+func TestLookFollowsTheCoveredRevealedCard(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	drawn := f.lastInHand("p0")
+	id := f.revealTop(t, "h", "deck:p0", 2)
+	f.mustDo(t, "h", Action{Kind: ActLook, Pile: "deck:p0", N: 3}, at(3))
+	looked := slices.Clone(f.g.ViewFor("h").Table.Private.Cards)
+
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(4))
+
+	covered := f.renamedID(t, id)
+	want := append([]string{covered}, looked[1:]...)
+	if got := f.g.ViewFor("h").Table.Private.Cards; !slices.Equal(got, want) {
+		t.Errorf("look = %v, want %v", got, want)
+	}
+	for _, view := range f.g.Table.Views {
+		if slices.Contains(view.Cards, id) {
+			t.Errorf("view %+v still holds the old id %s", view, id)
+		}
+	}
+	for _, token := range []string{"h", "b"} {
+		checkNeverSeenAgain(t, f.g, token, id)
+	}
+	// Only the viewer learns the covered card's new id.
+	checkNeverSeenAgain(t, f.g, "b", covered)
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard covers a revealed
+// card with every deck action that puts it back into its deck: the Labor card
+// tucked under it, never discarded, drops to the bottom of its own deck, out
+// of sight, under a new id.
+func TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard(t *testing.T) {
+	tests := []struct {
+		name   string
+		reveal string // the deck revealed on; "" for the encounter deck
+		// action returns the deck action; drawn is a card of p0's deck in hand.
+		action func(f *doFixture, drawn string) Action
+	}{
+		{"draw", "deck:p0", func(*doFixture, string) Action { return Action{Kind: ActDraw, N: 1} }},
+		{"discard the top", "deck:p0", func(*doFixture, string) Action {
+			return Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 1}
+		}},
+		{"put on top", "deck:p0", func(_ *doFixture, drawn string) Action {
+			return Action{Kind: ActToDeck, Card: drawn, Where: whereTop}
+		}},
+		{"shuffle into the deck", "deck:p0", func(_ *doFixture, drawn string) Action {
+			return Action{Kind: ActToDeck, Card: drawn, Where: whereShuffle}
+		}},
+		{"reorder the top", "deck:p0", func(f *doFixture, _ string) Action {
+			top := topOf(f.g.Table.deckCards(f.g.Table.Piles["deck:p0"]), 2)
+			return Action{Kind: ActReorderTop, Pile: "deck:p0", Cards: []string{top[1], top[0]}}
+		}},
+		{"shuffle", "deck:p0", func(*doFixture, string) Action { return Action{Kind: ActShuffle, Pile: "deck:p0"} }},
+		{"shuffle the discard back", "deck:p0", func(*doFixture, string) Action {
+			return Action{Kind: ActShuffleBack, Pile: "disc:p0"}
+		}},
+		{"deal", "", func(*doFixture, string) Action { return Action{Kind: ActDeal, Area: "p0", X: 600, Y: 400} }},
+		{"discard the encounter top", "", func(*doFixture, string) Action {
+			return Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}
+		}},
+		{"shuffle the encounter deck", "", func(*doFixture, string) Action {
+			return Action{Kind: ActShuffle, Pile: PileEncounter}
+		}},
+		{"shuffle set-aside cards in", "", func(*doFixture, string) Action {
+			return Action{Kind: ActShuffleIn, Pile: playerAsideID("p0")}
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+			labor := f.sideDeckLabeled(t, "Labor")
+			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+			drawn := f.lastInHand("p0")
+			revealed := f.revealTop(t, "h", tt.reveal, 2)
+			tucked := drawSide(t, f, "h", labor, 3)
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: tucked, Target: revealed}, at(4))
+
+			f.mustDo(t, "h", tt.action(f, drawn), at(5))
+
+			renamed := f.renamedID(t, tucked)
+			if renamed == tucked {
+				t.Errorf("the tucked Labor card keeps its id %s", tucked)
+			}
+			if got := f.g.Table.Piles[labor].Cards[0]; got != renamed {
+				t.Errorf("bottom of the Labor deck = %s, want the tucked card %s", got, renamed)
+			}
+			checkNeverSeenAgain(t, f.g, "h", tucked)
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
+	}
 }
 
 func TestRevealedCardPutOnTopOfItsDeckGoesBackThere(t *testing.T) {

@@ -28,7 +28,7 @@ import {
   type TestScreen,
 } from '../lib/screen.testing';
 import { knownCard, loadGameCards, loadIndex } from '../lib/catalog';
-import type { CardView as TableCard, PileView, View } from '../lib/types';
+import type { CardView as TableCard, View } from '../lib/types';
 import tableSource from './Table.svelte?raw';
 import pickerSource from './HeroPicker.svelte?raw';
 import sidePanelSource from './SidePanel.svelte?raw';
@@ -36,7 +36,7 @@ import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
 import surfaceSource from './Surface.svelte?raw';
 import handSource from './Hand.svelte?raw';
-import { fakeSession } from './fixtures.testing';
+import { card, fakeSession, pile, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -110,50 +110,25 @@ function mockScrollerWidth(initial: number): (width: number) => void {
 }
 
 function handCard(id: string): TableCard {
-  return { id, face: 0, back: 'player', owner: 0, zone: 'hand', x: 0, y: 0, z: 0 };
+  return card(id, { zone: 'hand', z: 0 });
 }
 
 /** A face-up card of Sam's in play: hovered, it is previewed (a hand card or a back is not). */
-const IN_PLAY: TableCard = {
-  id: 't1',
-  code: '01001',
-  face: 0,
-  back: 'player',
-  owner: 0,
-  zone: 'table',
-  x: 300,
-  y: 0,
-  z: 1,
-};
+const IN_PLAY: TableCard = card('t1', { x: 300 });
 
 /** Rhino with the viewer, Sam, alone at the table, holding three cards, one card in play. */
 function makeView(): View {
   const hand = [handCard('h1'), handCard('h2'), handCard('h3')];
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Sam', color: 0, host: true, areas: ['p0'] },
     players: [
-      {
-        name: 'Sam',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: hand.length }],
-      },
+      seated('Sam', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: hand.length }], true),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: [...hand, IN_PLAY],
-      piles: [],
-      stages: [],
       hands: { p0: hand.map((card) => card.id) },
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 /** A card of Sam's lying far right: the table's content is 1500 + 112 = 1612 units wide. */
@@ -166,18 +141,14 @@ function viewWithFarCardAt(x: number): View {
   return view;
 }
 
-function pile(id: string, fields: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: 0, x: 0, y: 500, count: 0, ...fields };
-}
-
 /** Sam's deck and discard pile in their frame, a set-aside pile (a chip), and a card far right. */
 function makeWideView(): View {
   const view = makeView();
   view.table!.cards.push(FAR_RIGHT);
   view.table!.piles.push(
-    pile('deck:p0', { kind: 'deck', x: 0 }),
-    pile('disc:p0', { kind: 'discard', x: 130, cards: [] }),
-    pile('aside:p0', { kind: 'aside', x: 0, count: 0, cards: [] }),
+    pile('deck:p0', { owner: 0, y: 500, count: 0 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, x: 130, y: 500, count: 0, cards: [] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, y: 500, count: 0, cards: [] }),
   );
   return view;
 }
@@ -201,7 +172,6 @@ function peek(container: HTMLElement): HTMLElement | null {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockReturnValue(null);
   vi.mocked(loadIndex).mockReturnValue(new Promise(() => {}));

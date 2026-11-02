@@ -9,8 +9,7 @@
   import CardArt from '../CardArt.svelte';
   import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
-  import type { Rect } from '../../table/drag';
-  import { placeUnder, type DropdownPlace } from '../../table/dropdown';
+  import { placeUnder, type Box, type DropdownPlace } from '../../lib/dropdown';
   import {
     hostName,
     type Difficulty,
@@ -25,13 +24,13 @@
     view,
     index,
     onconfigure,
-    room = windowRoom,
+    room,
   }: {
     view: View;
     index: Index;
     onconfigure: (config: LobbyConfig) => void;
     /** The part of the window the Add a set menu stays within, in viewport coordinates. */
-    room?: () => Rect;
+    room: () => Box;
   } = $props();
 
   // Version I of each set, the default (spec 4.3).
@@ -42,7 +41,7 @@
     { value: 'expert', label: 'Expert' },
   ];
   const SETTINGS_SLIDE_MS = 250;
-  // The Add a set menu's gap under its button, and its height cap, as .menu's max-height.
+  // The Add a set menu's gap under its button, and its height cap: it scrolls inside beyond it.
   const MENU_GAP = 4;
   const MENU_MAX_HEIGHT = 320;
 
@@ -252,10 +251,6 @@
 
   function removeModular(code: string): void {
     configure({ modulars: config.modulars.filter((m) => m !== code) });
-  }
-
-  function windowRoom(): Rect {
-    return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
   }
 
   let addWrap = $state<HTMLElement>();
@@ -479,9 +474,7 @@
                     bind:this={menu}
                     style:left="{menuPlace?.left ?? 0}px"
                     style:top="{menuPlace?.top ?? 0}px"
-                    style:max-height={menuPlace?.maxHeight == null
-                      ? undefined
-                      : `${menuPlace.maxHeight}px`}
+                    style:max-height="{menuPlace?.maxHeight ?? MENU_MAX_HEIGHT}px"
                   >
                     {#each modularGroups as group (group.pack.code)}
                       {@const headingId = `${uid}-pack-${group.pack.code}`}
@@ -634,7 +627,7 @@
 
   .vil.on {
     border: 2px solid var(--sel);
-    box-shadow: 0 0 0 4px #49c6ff29;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--sel) 16%, transparent);
   }
 
   .vil.unsupported {
@@ -829,7 +822,6 @@
     position: absolute;
     z-index: 10;
     visibility: hidden;
-    max-height: 320px;
     overflow-y: auto;
     background: var(--panel-2);
     border: 1px solid var(--line-strong);

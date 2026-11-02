@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import type { CardView, PileView, TableView, View } from '../lib/types';
 import {
   dealRecipient,
@@ -9,23 +8,13 @@ import {
   insertIndex,
   isDownward,
   pileTargets,
-  snap,
   sourceOf,
   stackOf,
   type DragSource,
   type DropRect,
-  type Rect,
 } from './drag';
 import { spreadRows } from './rows';
-import { card } from './fixtures.testing';
-
-function rect(left: number, top: number, width: number, height: number): Rect {
-  return { left, top, right: left + width, bottom: top + height };
-}
-
-function pile(id: string, extra: Partial<PileView> = {}): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 10, ...extra };
-}
+import { card, pile, playingView, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(
@@ -36,15 +25,11 @@ function makeView(
     spectator?: boolean;
   } = {},
 ): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: extra.spectator
       ? { role: 'spectator', color: -1, host: false }
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards: extra.cards ?? [],
       piles: extra.piles ?? [],
@@ -52,8 +37,7 @@ function makeView(
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 0, y: 0 },
     },
-    log: [],
-  };
+  });
 }
 
 const TABLE: DropRect = { kind: 'table', rect: rect(0, 300, 1000, 300) };
@@ -62,14 +46,6 @@ const TABLE: DropRect = { kind: 'table', rect: rect(0, 300, 1000, 300) };
 const DEAL_TO = 'p1';
 
 const TABLE_CARD: DragSource = { kind: 'card', card: 'c', x: 100, y: 40 };
-
-describe('snap', () => {
-  it('rounds to the 10-unit grid', () => {
-    expect(snap(123)).toBe(120);
-    expect(snap(125)).toBe(130);
-    expect(snap(-4)).toBe(-0);
-  });
-});
 
 describe('dropTarget', () => {
   const pileRect: DropRect = {

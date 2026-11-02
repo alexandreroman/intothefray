@@ -8,12 +8,6 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// faceTypeMainScheme is the marvelcdb type of a main scheme face.
-const faceTypeMainScheme = "main_scheme"
-
-// faceTypeVillain is the marvelcdb type of a villain face.
-const faceTypeVillain = "villain"
-
 // topCount writes "the top card" or "the top N cards".
 func topCount(n int) string {
 	if n == 1 {
@@ -27,7 +21,10 @@ func topCount(n int) string {
 // adds the deck's hero: "their Spider-Man deck", "Alex's Spider-Man deck". A
 // side pile goes by its label: "their Invocation deck", "Alex's Doctor Strange
 // Invocation discard pile". The client parses these names (narratedName in
-// web/src/table/animate.ts).
+// web/src/table/animate.ts), and matches the verbs of the lines that name
+// them: a line starting "shuffled ", a line "put … at the bottom of " a pile,
+// and the line of an undo, starting "undid ". Rewording any of them here
+// breaks the table's animations.
 func (g *Game) pileName(who actor, id string) string {
 	switch id {
 	case PileEncounter:
@@ -194,7 +191,8 @@ func mergeKey(a Action) string {
 	}
 }
 
-// counterNoun is how a token or status reads in a history line.
+// counterNoun is how a token or status reads in a history line. A modifier
+// reads as its stat instead (see modifierEvent).
 type counterNoun struct{ one, many string }
 
 func (c counterNoun) count(n int) string {
@@ -204,16 +202,17 @@ func (c counterNoun) count(n int) string {
 	return c.many
 }
 
+// counterNouns has a noun for every name of tokenNames and statusNames.
 var counterNouns = map[string]counterNoun{
-	"dmg":       {"damage", "damage"},
-	"thr":       {"threat", "threat"},
-	"gen":       {"counter", "counters"},
-	"acc":       {"acceleration token", "acceleration tokens"},
-	"stunned":   {"stunned status", "stunned statuses"},
-	"confused":  {"confused status", "confused statuses"},
-	"tough":     {"tough status", "tough statuses"},
-	"retaliate": {"retaliate", "retaliate"},
-	"locked":    {"locked status", "locked statuses"},
+	tokenDamage:       {"damage", "damage"},
+	tokenThreat:       {"threat", "threat"},
+	tokenCounter:      {"counter", "counters"},
+	tokenAcceleration: {"acceleration token", "acceleration tokens"},
+	statusStunned:     {"stunned status", "stunned statuses"},
+	statusConfused:    {"confused status", "confused statuses"},
+	statusTough:       {"tough status", "tough statuses"},
+	statusRetaliate:   {"retaliate", "retaliate"},
+	statusLocked:      {"locked status", "locked statuses"},
 }
 
 // hiddenCard is how the history names a card nobody could see.
@@ -553,12 +552,11 @@ func (n narrator) stageEvent(a Action) logLine {
 
 // areaName names the deck at the seat of area (see seatName).
 func (n narrator) areaName(area Area) string {
-	for seat := range n.game.seatCount() {
-		if PlayerArea(seat) == area {
-			return n.game.seatName(seat)
-		}
+	seat, ok := areaSeat(area)
+	if !ok || seat >= n.game.seatCount() {
+		return "another player"
 	}
-	return n.game.playerName(NoOwner)
+	return n.game.seatName(seat)
 }
 
 // name names card id if everyone could see it before or after the action,
@@ -607,7 +605,7 @@ func (n narrator) stageName(c *Card) phrase {
 	switch {
 	case face.Stage == "":
 		return name
-	case face.Type == faceTypeMainScheme:
+	case face.Type == pack.FaceTypeMainScheme:
 		return join(name, words(" ("+face.Stage+")"))
 	default:
 		return join(name, words(" (stage "+face.Stage+")"))

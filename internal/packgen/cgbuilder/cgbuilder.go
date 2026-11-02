@@ -24,8 +24,8 @@ const BaseURL = "https://mc.cgbuilder.fr"
 // 1000 cards.
 const variantNumbers = 1000
 
-// ErrNoCard is the error of a card list page without any card.
-var ErrNoCard = errors.New("no card found on the card list page")
+// errNoCard is the error of a card list page without any card.
+var errNoCard = errors.New("no card found on the card list page")
 
 // Pack is a cgbuilder pack. Its ID is not tied to the marvelcdb pack codes or
 // positions, though it often matches the position.
@@ -84,13 +84,13 @@ func Fetch(ctx context.Context, c *fetch.Client, base string) (Site, error) {
 	var site Site
 	var err error
 
-	if site.Packs, err = fetchPage(ctx, c, base+"/cycle/", ParsePacks); err != nil {
+	if site.Packs, err = fetchPage(ctx, c, base+"/cycle/", parsePacks); err != nil {
 		return Site{}, fmt.Errorf("cgbuilder packs: %w", err)
 	}
 
 	for _, p := range site.Packs {
-		cards, err := fetchPage(ctx, c, fmt.Sprintf("%s/liste_carte/%d/", base, p.ID), ParseCards)
-		if errors.Is(err, ErrNoCard) {
+		cards, err := fetchPage(ctx, c, fmt.Sprintf("%s/liste_carte/%d/", base, p.ID), parseCards)
+		if errors.Is(err, errNoCard) {
 			continue
 		}
 		if err != nil {
@@ -102,7 +102,7 @@ func Fetch(ctx context.Context, c *fetch.Client, base string) (Site, error) {
 		return Site{}, errors.New("cgbuilder packs: no card found on any card list page")
 	}
 
-	if site.Sets, err = fetchPage(ctx, c, base+"/set_modulaire/", ParseSets); err != nil {
+	if site.Sets, err = fetchPage(ctx, c, base+"/set_modulaire/", parseSets); err != nil {
 		return Site{}, fmt.Errorf("cgbuilder sets: %w", err)
 	}
 	return site, nil
@@ -125,9 +125,9 @@ func fetchPage[T any](ctx context.Context, c *fetch.Client, url string, parse fu
 	return parsed, nil
 }
 
-// ParsePacks returns the packs of the cycle page. A page without any pack
+// parsePacks returns the packs of the cycle page. A page without any pack
 // fails, as the site layout has likely changed.
-func ParsePacks(page []byte) ([]Pack, error) {
+func parsePacks(page []byte) ([]Pack, error) {
 	var packs []Pack
 	for _, match := range packLink.FindAllSubmatch(page, -1) {
 		id, err := strconv.Atoi(string(match[1]))
@@ -142,9 +142,9 @@ func ParsePacks(page []byte) ([]Pack, error) {
 	return packs, nil
 }
 
-// ParseCards returns the cards of a card list page, the alternate printings
-// left out. A page without any card fails with ErrNoCard.
-func ParseCards(page []byte) ([]Card, error) {
+// parseCards returns the cards of a card list page, the alternate printings
+// left out. A page without any card fails with errNoCard.
+func parseCards(page []byte) ([]Card, error) {
 	var cards []Card
 	for _, tag := range cardTag.FindAllSubmatch(page, -1) {
 		card, err := parseCard(tag)
@@ -156,7 +156,7 @@ func ParseCards(page []byte) ([]Card, error) {
 		}
 	}
 	if len(cards) == 0 {
-		return nil, ErrNoCard
+		return nil, errNoCard
 	}
 	return cards, nil
 }
@@ -206,9 +206,9 @@ func unescapeName(quoted string) string {
 	return unquoted.String()
 }
 
-// ParseSets returns the sets of the modular set page. A page without any set
+// parseSets returns the sets of the modular set page. A page without any set
 // fails, as the site layout has likely changed.
-func ParseSets(page []byte) ([]Set, error) {
+func parseSets(page []byte) ([]Set, error) {
 	var sets []Set
 	for _, match := range setLink.FindAllSubmatch(page, -1) {
 		id, err := strconv.Atoi(string(match[1]))

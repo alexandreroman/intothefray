@@ -37,6 +37,24 @@ describe('TokenPill', () => {
     expect(pill.textContent?.replace(/\s/g, '')).toBe('−−2+');
   });
 
+  it('offers no step past the ±99 the server clamps a modifier to', () => {
+    renderModifierPill(99);
+    expect(screen.getByRole('button', { name: 'Add 1' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Remove 1' })).toHaveProperty('disabled', false);
+  });
+
+  it('offers no step below −99 on a modifier', () => {
+    renderModifierPill(-99);
+    expect(screen.getByRole('button', { name: 'Remove 1' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Add 1' })).toHaveProperty('disabled', false);
+  });
+
+  it('keeps both steps on a token of 99, which has no upper bound', () => {
+    renderPill(99);
+    expect(screen.getByRole('button', { name: 'Add 1' })).toHaveProperty('disabled', false);
+    expect(screen.getByRole('button', { name: 'Remove 1' })).toHaveProperty('disabled', false);
+  });
+
   it('steps by one in each direction', async () => {
     const onstep = renderPill();
     await fireEvent.click(screen.getByRole('button', { name: 'Remove 1' }));

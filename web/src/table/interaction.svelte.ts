@@ -35,7 +35,11 @@ export interface Held {
   start: { x: number; y: number };
   /** Past the threshold: it is being dragged. */
   moved: boolean;
-  /** The card it moves, as the drag started; null for the encounter deck's hidden top card. */
+  /**
+   * The card it moves, as the drag started; null for a deck's unknown top
+   * card (the encounter deck, a scenario deck, a player's deck or side deck),
+   * or a marker.
+   */
   card: string | null;
   /** The table and hand cards that move with it, hidden while their ghost follows the pointer. */
   lifted: readonly string[];
@@ -74,27 +78,12 @@ interface ContextMenuAt {
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'clear';
 
-/**
- * Whether a contextmenu event comes from a touch: a long touch fires one on
- * Android, and only a tap opens a context menu on touch. The event's own
- * pointerType tells where the browser sets it (a PointerEvent, in Chrome);
- * elsewhere, the kind of pointer of the press that began it does.
- */
-export function isTouchContextMenu(event: MouseEvent, pressType: string): boolean {
-  const eventType = event instanceof PointerEvent ? event.pointerType : '';
-  return (eventType || pressType) === 'touch';
-}
-
 /** A touch held longer than this, in ms, is a long press, which opens nothing. */
 export const LONG_PRESS_MS = 500;
 
-/**
- * Whether a click ends a long touch press: iOS fires no contextmenu event,
- * but may fire a click once the finger lifts after a long hold, which must
- * open nothing either. pressedAt is the timeStamp of the press it ends.
- */
-export function isLongTouchClick(click: MouseEvent, pressType: string, pressedAt: number): boolean {
-  return pressType === 'touch' && click.timeStamp - pressedAt > LONG_PRESS_MS;
+/** Whether both sets hold the same items: a new set equal to the current one need not redraw. */
+function sameSet<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
+  return a.size === b.size && [...a].every((item) => b.has(item));
 }
 
 /**
@@ -108,8 +97,6 @@ class TableInteraction {
   hovered = $state.raw<TableElement | null>(null);
   /** The element previewed: the preview shows its face, and nothing for a card back. */
   previewed = $state.raw<TableElement | null>(null);
-  /** Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen. */
-  touchMode = $state(false);
   /** The cards of the hovered history line, ringed on the table. */
   highlighted = $state.raw<ReadonlySet<string>>(new Set());
   /**
@@ -174,6 +161,8 @@ class TableInteraction {
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
+  // Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen.
+  #touchMode = false;
   // When the current press began: the timeStamp of its event.
   #pressedAt = 0;
   // The click that ends a drag, or that picks an arrow's target, is not a click on what lies there.
@@ -242,14 +231,25 @@ class TableInteraction {
     this.#menuAtPress = this.contextMenu?.element ?? null;
   }
 
-  /** Whether a touch fired that contextmenu event, which then opens no context menu. */
+  /**
+   * Whether a touch fired that contextmenu event, which then opens no context
+   * menu: a long touch fires one on Android, and only a tap opens a context
+   * menu on touch. The event's own pointerType tells where the browser sets it
+   * (a PointerEvent, in Chrome); elsewhere, the kind of pointer of the press
+   * that began it does.
+   */
   isTouchContextMenu(event: MouseEvent): boolean {
-    return isTouchContextMenu(event, this.#pointerType);
+    const eventType = event instanceof PointerEvent ? event.pointerType : '';
+    return (eventType || this.#pointerType) === 'touch';
   }
 
-  /** Whether that click ends a long touch press, which opens nothing. */
-  isLongTouchClick(event: MouseEvent): boolean {
-    return isLongTouchClick(event, this.#pointerType, this.#pressedAt);
+  /**
+   * Whether that click ends a long touch press, which opens nothing: iOS fires
+   * no contextmenu event, but may fire a click once the finger lifts after a
+   * long hold.
+   */
+  isLongTouchClick(click: MouseEvent): boolean {
+    return this.#pointerType === 'touch' && click.timeStamp - this.#pressedAt > LONG_PRESS_MS;
   }
 
   /**
@@ -331,10 +331,15 @@ class TableInteraction {
 
   /** The table cards other players drag now; a set equal to the current one changes nothing. */
   liftByOthers(ids: ReadonlySet<string>): void {
-    const same =
-      ids.size === this.liftedByOthers.size && [...ids].every((id) => this.liftedByOthers.has(id));
-    if (!same) {
+    if (!sameSet(ids, this.liftedByOthers)) {
       this.liftedByOthers = ids;
+    }
+  }
+
+  /** The markers other players drag now; a set equal to the current one changes nothing. */
+  liftMarkersByOthers(names: ReadonlySet<MarkerName>): void {
+    if (!sameSet(names, this.markersLiftedByOthers)) {
+      this.markersLiftedByOthers = names;
     }
   }
 
@@ -363,8 +368,9 @@ class TableInteraction {
 
   /**
    * The cards that the drag, or the drop waiting for the server, took from
-   * that pile: the pile is drawn without them. Null stands for the encounter
-   * deck's hidden top card.
+   * that pile: the pile is drawn without them. Null stands for a deck's
+   * unknown top card (the encounter deck, a scenario deck, a player's deck or
+   * side deck).
    */
   takenFrom(pile: string): (string | null)[] {
     return this.#moving()
@@ -692,7 +698,7 @@ class TableInteraction {
 
   /** Enters or leaves touch mode; entering it drops the preview shown, if any. */
   setTouchMode(on: boolean): void {
-    this.touchMode = on;
+    this.#touchMode = on;
     if (on) {
       this.previewed = null;
     }
@@ -701,7 +707,7 @@ class TableInteraction {
   /** Forgets everything: a previous game's state must not show in the next one. */
   reset(): void {
     this.release();
-    this.touchMode = false;
+    this.#touchMode = false;
     this.letGo();
     this.endLanding();
     this.kept = null;
@@ -723,7 +729,7 @@ class TableInteraction {
 
   /** A hand card is never previewed: the raised hand shows it large enough. Nothing is, in touch mode. */
   #changePreview(element: TableElement, preview: PreviewChange): void {
-    if (preview === 'clear' || element.kind === 'hand' || this.touchMode) {
+    if (preview === 'clear' || element.kind === 'hand' || this.#touchMode) {
       this.previewed = null;
     } else {
       this.previewed = element;

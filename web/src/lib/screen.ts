@@ -1,14 +1,19 @@
-// The screen sizes and the viewer's preferences the app adapts to, as media queries.
+// The screen sizes the app adapts to, as media queries for scripts (MediaQuery). The @media
+// rules of the components' styles write the same sizes out, as CSS takes no variable there.
 
 /**
  * A phone either way up: up to 600px wide (a phone upright) or up to 500px tall (a phone on its
  * side, 320 to 440px tall, where a tablet on its side is 744px tall or more). On such a screen
  * the top bar hides on scroll (TopBar.svelte) and floats over the table, whose hand cards follow
- * the window and whose bottom controls gather in one bar (Table.svelte).
+ * the window and whose bottom controls gather in one bar above the resting hand (Table.svelte).
  */
 export const SMALL_SCREEN_QUERY = '(max-width: 600px), (max-height: 500px)';
 
-/** Whether the viewer asks the system for reduced motion: moves then happen at once, without animation. */
-export function prefersReducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+/** A narrow screen, up to 900px wide: the table's side column goes, the history is not shown. */
+export const NARROW_SCREEN_QUERY = '(max-width: 900px)';
+
+/**
+ * A phone held upright, up to 600px wide: the table zooms further out and fits its width until the
+ * viewer zooms.
+ */
+export const PHONE_QUERY = '(max-width: 600px)';

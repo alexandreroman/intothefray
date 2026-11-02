@@ -20,7 +20,8 @@ import (
 
 const (
 	requestTimeout = 10 * time.Second
-	// importTimeout bounds a whole import, including the card lookups.
+	// importTimeout bounds a whole import, including the card lookups. It
+	// must stay below the server's pongTimeout; see internal/server/conn.go.
 	importTimeout = 20 * time.Second
 	// maxCardLookups caps the requests made to name unsupported cards.
 	maxCardLookups = 20

@@ -601,23 +601,20 @@ func TestSetupKlawSideSchemeStaysInEncounterDeck(t *testing.T) {
 	}
 }
 
-// TestSetupPlacesNoStartingThreat checks that a card the setup places carries
-// no tokens, even when its face prints a starting threat: players place all
-// threat by hand.
+// TestSetupPlacesNoStartingThreat checks that no card the setup places
+// carries tokens, though main schemes print a starting threat: players place
+// all threat by hand.
 func TestSetupPlacesNoStartingThreat(t *testing.T) {
 	cat := newCatalog(t)
-	b := &tableBuilder{cat: cat, rng: newTestRNG(), table: newEmptyTable(3)}
-
-	// 01108 prints a starting threat of 2 per player.
-	c, def, err := b.newEncounterCard("01108")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := b.placeFace(c, def, 0, 0, 0); err != nil {
-		t.Fatal(err)
-	}
-	if len(c.Tokens) != 0 {
-		t.Errorf("tokens = %v, want none", c.Tokens)
+	for _, scenario := range []string{"rhino", "klaw"} {
+		t.Run(scenario, func(t *testing.T) {
+			table := startedGame(t, DefaultConfig(cat, scenario)).Table
+			for _, id := range slices.Sorted(maps.Keys(table.Cards)) {
+				if c := table.Cards[id]; c.Zone == ZoneTable && len(c.Tokens) != 0 {
+					t.Errorf("card %s (%s) carries tokens %v, want none", id, c.Code, c.Tokens)
+				}
+			}
+		})
 	}
 }
 
@@ -643,25 +640,34 @@ func TestStartRequiresDecks(t *testing.T) {
 	}
 }
 
-// twoDeckGame returns a started game where Alex ("a", host) plays two
-// Spider-Man decks, seats 0 and 1, and Sam ("s") one, seat 2.
-func twoDeckGame(t *testing.T) *Game {
+// threeSeatGame returns a started Rhino game where Alex ("a", host) plays
+// seats 0 and 1 and Sam ("s") seat 2, with the given decks.
+func threeSeatGame(t *testing.T, decks [3]DeckChoice) *Game {
 	t.Helper()
 	cat := newCatalog(t)
 	g := twoSlotLobby(t)
 	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
 	}
-	for _, slot := range []struct {
+	slots := []struct {
 		token string
-		deck  int
-	}{{"a", 0}, {"a", 1}, {"s", 0}} {
-		seatDeck(t, g, slot.token, slot.deck, spiderManDeck(t, cat), cat)
+		slot  int
+	}{{"a", 0}, {"a", 1}, {"s", 0}}
+	for i, slot := range slots {
+		seatDeck(t, g, slot.token, slot.slot, decks[i], cat)
 	}
 	if err := g.Start("a", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
 	}
 	return g
+}
+
+// twoDeckGame returns threeSeatGame with a Spider-Man deck at every seat:
+// Alex plays two of them.
+func twoDeckGame(t *testing.T) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	return threeSeatGame(t, [3]DeckChoice{spiderManDeck(t, cat), spiderManDeck(t, cat), spiderManDeck(t, cat)})
 }
 
 func TestStartNeedsEverySlot(t *testing.T) {

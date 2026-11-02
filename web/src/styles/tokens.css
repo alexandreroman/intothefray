@@ -368,7 +368,7 @@ a.btn-primary {
 /* A bar floating over the table (zoom control, Undo, hero selector): its buttons on a raised panel. */
 .floatbar {
   padding: 4px;
-  background: #141a28eb;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
   border: 1px solid var(--line);
   border-radius: 12px;
   box-shadow: 0 6px 16px #0008;

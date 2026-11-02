@@ -10,10 +10,6 @@ import {
 } from './names';
 import { getPref, setPref } from './prefs';
 
-afterEach(() => {
-  localStorage.clear();
-});
-
 describe('randomName', () => {
   it('returns two Title Case words', () => {
     for (let i = 0; i < 50; i++) {

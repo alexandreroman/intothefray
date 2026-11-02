@@ -1,10 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import ActiveCounterArt from './ActiveCounterArt.svelte';
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 function token(): SVGElement {
   return screen.getByRole('img', { name: 'Active counter' }) as unknown as SVGElement;
 }

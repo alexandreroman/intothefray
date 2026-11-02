@@ -5,10 +5,19 @@ import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import surfaceSource from './Surface.svelte?raw';
+import markerSource from './MarkerToken.svelte?raw';
+import tableSource from './Table.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
-import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
-import { fakeSession, infoFrom } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  playingView,
+  seated,
+} from './fixtures.testing';
 import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
@@ -81,14 +90,6 @@ const FACES: Record<string, Partial<PackFace>[]> = {
 
 const infoOf = infoFrom(FACES);
 
-function card(id: string, extra: Partial<TableCard>): TableCard {
-  return { id, face: 0, back: 'player', owner: -1, zone: 'table', x: 0, y: 0, z: 1, ...extra };
-}
-
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 3, ...extra };
-}
-
 /**
  * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
  * lays them out: the villain's row at the top, Alex's row from 380, then
@@ -96,8 +97,8 @@ function pile(id: string, extra: Partial<PileView>): PileView {
  */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
-    card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
-    card('s', { code: '01097', back: 'encounter', x: 460, y: 30 }),
+    card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
+    card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
     card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
     card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
@@ -108,38 +109,18 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     pile('d1', { owner: 1, x: 0, y: 630 }),
     pile('x1', { kind: 'discard', owner: 1, x: 130, y: 630, count: 0 }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
+  return playingView({
     you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 6 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 5 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 6 }], true),
+      seated('Sam', 1, [{ area: 'p1', heroName: 'Ant-Man', handCount: 5 }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 function surface(): HTMLElement {
@@ -228,7 +209,6 @@ function noPreview(): boolean {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
   vi.mocked(loadIndex).mockResolvedValue(INDEX);
@@ -385,6 +365,15 @@ describe('Table', () => {
     expect(coarse).toMatch(/z-index: -1;/);
   });
 
+  it('draws the chips and the markers above every card, whose z-index only grows', () => {
+    // One value for both, set once on the table's root.
+    expect(/\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1]).toMatch(/--above-cards: 100000;/);
+    const chips = /\n {2}\.chips \{([^}]*)\}/.exec(surfaceSource)?.[1];
+    expect(chips).toMatch(/z-index: var\(--above-cards\);/);
+    const marker = /\n {2}\.marker \{([^}]*)\}/.exec(markerSource)?.[1];
+    expect(marker).toMatch(/z-index: var\(--above-cards\);/);
+  });
+
   it('a spectator opens the out-of-play piles from their chips too', async () => {
     const view = withOutOfPlay(makeView());
     view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
@@ -510,13 +499,15 @@ describe('Table', () => {
       throw new Error('no table wrap');
     }
 
-    await fireEvent.wheel(wrap, { deltaY: -100 });
+    // fireEvent tells whether the default went ahead: a plain wheel scrolls, Ctrl + wheel keeps
+    // the page from zooming.
+    expect(await fireEvent.wheel(wrap, { deltaY: -100 })).toBe(true);
     expect(zoomLabel().textContent).toBe('100%');
 
-    await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true });
+    expect(await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true })).toBe(false);
     expect(zoomLabel().textContent).toBe('120%');
 
-    await fireEvent.wheel(wrap, { deltaY: 1000, metaKey: true });
+    expect(await fireEvent.wheel(wrap, { deltaY: 1000, metaKey: true })).toBe(false);
     expect(zoomLabel().textContent).toBe('50%');
   });
 
@@ -592,7 +583,7 @@ describe('Table', () => {
   it("captions a side deck's own back on its pile and on its face-down cards", async () => {
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 630 }),
         // Its deck is not on the table: its back has no caption.
         card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 630 }),
@@ -624,17 +615,51 @@ describe('Table', () => {
     expect(plain.closest<HTMLElement>('[data-id]')?.dataset.id).toBe('g');
   });
 
+  it('captions a face-down card whose side deck lies in a hidden row', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
+        // In the villain row, which shows; its side deck lies in Sam's row, which does not.
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 30 }),
+      ],
+      piles: [
+        pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+        pile('d0', { owner: 0, x: 0, y: 410 }),
+        pile('d1', { owner: 1, x: 0, y: 630 }),
+        pile('side:p1:0', {
+          kind: 'sideDeck',
+          owner: 1,
+          x: 260,
+          y: 630,
+          count: 2,
+          label: 'Labor',
+          back: 'player',
+        }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
+    expect(shownIds()).toContain('l');
+    expect(shownIds()).not.toContain('side:p1:0');
+    const back = surface().querySelector('[data-id="l"] .caption');
+    expect(back?.textContent).toBe('LABOR');
+  });
+
   it('moves the Focus panel to a corner clear of the hovered card', async () => {
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 0, 1000, 800);
+        return domRect(0, 0, 1000, 800);
       }
       // Rhino lies under the bottom right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 112, 157) : rect(0, 0, 0, 0);
+      return (this as HTMLElement).dataset.id === 'v'
+        ? domRect(800, 500, 112, 157)
+        : domRect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -658,15 +683,13 @@ describe('Table', () => {
   });
 
   it('stays put as the pointer moves: only the hovered card counts', async () => {
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 0, 1000, 800);
+        return domRect(0, 0, 1000, 800);
       }
-      return rect(0, 0, 10, 10);
+      return domRect(0, 0, 10, 10);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);
@@ -1127,7 +1150,6 @@ describe('Table view modes', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    clearPrefMemory();
   });
 
   function viewButton(name: string): HTMLElement {
@@ -1181,7 +1203,7 @@ describe('Table view modes', () => {
     });
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         card('b', { code: '01001', owner: 1, x: 300, y: 410 }),
         card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
       ],
@@ -1350,17 +1372,7 @@ describe('Table view modes', () => {
       const top = inSurface ? Number.parseFloat(style.top) || 0 : 0;
       const width = inSurface ? Number.parseFloat(style.width) || 0 : 1000;
       const height = inSurface ? Number.parseFloat(style.height) || 0 : 900;
-      return {
-        left,
-        top,
-        width,
-        height,
-        right: left + width,
-        bottom: top + height,
-        x: left,
-        y: top,
-        toJSON: () => ({}),
-      } as DOMRect;
+      return domRect(left, top, width, height);
     });
     const session = fakeSession();
     render(Table, { session, view: makeView() });
@@ -1394,8 +1406,8 @@ describe('several decks', () => {
   function makeTwoDeckView(): View {
     const view = makeView({
       cards: [
-        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
-        card('s', { code: '01097', back: 'encounter', x: 460, y: 30 }),
+        card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
+        card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
         card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
         card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
         card('c', { code: '01001', owner: 2, x: 300, y: 850 }),
@@ -1501,16 +1513,16 @@ describe('several decks', () => {
   });
 
   it('keeps the Focus panel off the bottom left corner while the selector shows in the All view', async () => {
-    const rect = (left: number, top: number, width: number, height: number) =>
-      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
       if (this.classList.contains('tablewrap')) {
-        return rect(0, 0, 1000, 800);
+        return domRect(0, 0, 1000, 800);
       }
       // Rhino lies under the bottom right corner.
-      return (this as HTMLElement).dataset.id === 'v' ? rect(800, 500, 112, 157) : rect(0, 0, 0, 0);
+      return (this as HTMLElement).dataset.id === 'v'
+        ? domRect(800, 500, 112, 157)
+        : domRect(0, 0, 0, 0);
     });
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(320);
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(450);

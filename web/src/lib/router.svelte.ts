@@ -9,6 +9,11 @@ const BASE = import.meta.env.BASE_URL;
 
 const GAME_PATH = /^g\/([^/]+)$/;
 
+/** The app path of a game: '/g/<id>'. */
+export function gamePath(id: string): AppPath {
+  return `/g/${encodeURIComponent(id)}`;
+}
+
 /** The base-prefixed URL of an app path, for links and the History API. */
 export function href(path: AppPath): string {
   return BASE + path.slice(1);

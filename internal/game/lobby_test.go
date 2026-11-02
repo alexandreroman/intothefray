@@ -649,7 +649,7 @@ func TestHeroImageFallsBackToFirstFace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if card.Faces[0].Type == faceTypeHero {
+	if card.Faces[0].Type == pack.FaceTypeHero {
 		t.Fatalf("card %s has a hero face", card.Code)
 	}
 

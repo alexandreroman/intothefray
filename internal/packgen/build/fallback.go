@@ -15,6 +15,11 @@ import (
 // daredevil_by_ffg_nemesis is daredevil_nemesis.
 const officialTag = "_by_ffg"
 
+// marvelcdbCode returns the marvelcdb spelling of an mc4db pack or set code.
+func marvelcdbCode(mc4dbCode string) string {
+	return strings.ReplaceAll(mc4dbCode, officialTag, "")
+}
+
 // withFallback completes the marvelcdb records and packs with the official
 // mc4db records of the cards marvelcdb lacks. It lists the records it adds,
 // sorted by pack and code, and the candidates it cannot add, sorted by
@@ -64,7 +69,7 @@ func withFallback(
 
 		record := card.Card
 		record.PackCode = packCode
-		record.SetCode = strings.ReplaceAll(record.SetCode, officialTag, "")
+		record.SetCode = marvelcdbCode(record.SetCode)
 		record.ImageHost = mc4db.BaseURL
 		cards = append(cards, record)
 		added = append(added, report.Fallback{Pack: packCode, Code: record.Code})
@@ -125,7 +130,7 @@ func (m *packMapper) packCodeOf(mc4dbCode string) (string, bool) {
 	}
 	// The same pack under another name, e.g. thor_by_ffg named "Thor Hero
 	// Pack" for marvelcdb's thor: adding it would make two packs of one code.
-	code := strings.ReplaceAll(mc4dbCode, officialTag, "")
+	code := marvelcdbCode(mc4dbCode)
 	if m.codes[code] {
 		return code, true
 	}

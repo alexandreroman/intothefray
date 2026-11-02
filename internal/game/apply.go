@@ -24,12 +24,23 @@ const (
 
 // apply performs a on t. It is all-or-nothing: every check runs before the
 // first mutation, so an error leaves t untouched. A deck action sees the cards
-// revealed on its deck back on top of it (see coveredFor).
+// revealed on its deck back on top of it, the cards covering hides under their
+// new ids (see coveredFor).
 func apply(t *Table, a Action) error {
-	covered, err := t.coveredFor(a, a.Area)
+	covered, hidden, err := t.coveredFor(a, a.Area)
 	if err != nil {
 		return err
 	}
+	hiddenRenames, rest, err := splitRenames(covered, a.Renames, hidden)
+	if err != nil {
+		return err
+	}
+	// covered is a copy of t whenever covering hides a card.
+	if len(hiddenRenames) > 0 {
+		renameInViews(covered, revealedRenames(t, hiddenRenames))
+		renameCards(covered, hiddenRenames)
+	}
+	a.Renames = rest
 	if err := applyAction(covered, a); err != nil {
 		return err
 	}
@@ -39,9 +50,56 @@ func apply(t *Table, a Action) error {
 	return nil
 }
 
+// splitRenames splits renames, those of an action that covers its deck, in
+// two: first the new ids of hidden, the cards covering hides (see
+// coveredFor), checked as fresh on t (see checkFreshIDs), then the others,
+// nil when there are none.
+func splitRenames(t *Table, renames map[string]string, hidden []string) (map[string]string, map[string]string, error) {
+	if len(hidden) == 0 {
+		return nil, renames, nil
+	}
+	hiddenRenames := make(map[string]string, len(hidden))
+	rest := maps.Clone(renames)
+	for _, id := range hidden {
+		renamed, ok := rest[id]
+		if !ok {
+			return nil, nil, invalid("card %q is not renamed", id)
+		}
+		hiddenRenames[id] = renamed
+		delete(rest, id)
+	}
+	if _, err := checkFreshIDs(t, hiddenRenames, hidden); err != nil {
+		return nil, nil, err
+	}
+	if len(rest) == 0 {
+		rest = nil
+	}
+	return hiddenRenames, rest, nil
+}
+
+// revealedRenames returns the renames among renames of the cards revealed on
+// a deck of t. Covered by a card put on top, such a card stays in its deck: an
+// open view that holds it keeps following it under its new id (see
+// renameInViews). The cards tucked under it drop out of the views as they
+// drop out of sight.
+func revealedRenames(t *Table, renames map[string]string) map[string]string {
+	revealed := map[string]string{}
+	for old, id := range renames {
+		if t.Cards[old].OnPile != "" {
+			revealed[old] = id
+		}
+	}
+	return revealed
+}
+
 // applyAction performs a on t, as apply does, on the table as a sees it. The
 // cards it takes out of sight get their new ids last (see renamedOnTheWay).
+// An action of a kind that renames no card carries no renames: a rebuild
+// then gives the event the renames of the table it meets (see renamedAgain).
 func applyAction(t *Table, a Action) error {
+	if len(a.Renames) > 0 && !renamesCards(a) {
+		return invalid("%q action renames no card", a.Kind)
+	}
 	renames, err := t.checkRenamedOnTheWay(a)
 	if err != nil {
 		return err
@@ -173,17 +231,8 @@ func snap(v int) int {
 
 // validArea reports whether a names a seat.
 func validArea(a Area) bool {
-	for seat := range maxSeats {
-		if a == PlayerArea(seat) {
-			return true
-		}
-	}
-	return false
-}
-
-// isScenarioDeckID reports whether id names a scenario deck, encounter or not.
-func isScenarioDeckID(id string) bool {
-	return strings.HasPrefix(id, scenarioEncounterPrefix) || strings.HasPrefix(id, scenarioDeckPrefix)
+	_, ok := areaSeat(a)
+	return ok
 }
 
 // discardPileID returns the id of the pile where c is discarded: for a card
@@ -192,7 +241,7 @@ func isScenarioDeckID(id string) bool {
 // pile of its owner (the encounter discard pile for a card owned by nobody).
 // A card keeps its home wherever it is discarded to.
 func (t *Table) discardPileID(c *Card) string {
-	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
+	if ruledDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
 			return home.Discard
 		}
@@ -213,7 +262,7 @@ func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	if pile, ok := t.Piles[t.discardPileID(c)]; ok {
 		return pile, false, true
 	}
-	if isSideDeckID(c.Home) || isScenarioDeckID(c.Home) {
+	if ruledDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
 			return home, true, true
 		}
@@ -704,15 +753,22 @@ func (t *Table) takeOverIdentity(c *Card) {
 	c.Identity = true
 }
 
-// statusLocked keeps a card from readying: it is exhausted as usual, but
-// neither an exhaust nor a Ready all readies it.
-const statusLocked = "locked"
-
-// Tokens a stage change treats apart: a villain loses its damage, a main
-// scheme keeps only its acceleration.
+// Names of the tokens and statuses a card can carry. A stage change treats
+// two tokens apart: a villain loses its damage, a main scheme keeps only its
+// acceleration (see carryStageCounters).
 const (
 	tokenDamage       = "dmg"
+	tokenThreat       = "thr"
+	tokenCounter      = "gen"
 	tokenAcceleration = "acc"
+
+	statusStunned   = "stunned"
+	statusConfused  = "confused"
+	statusTough     = "tough"
+	statusRetaliate = "retaliate"
+	// statusLocked keeps a card from readying: it is exhausted as usual, but
+	// neither an exhaust nor a Ready all readies it.
+	statusLocked = "locked"
 )
 
 // Counter names a card can carry.
@@ -720,10 +776,10 @@ var (
 	// tokenNames are the tokens a card can carry: damage, threat, generic
 	// counters and acceleration, which players put on the main scheme when the
 	// encounter deck runs out (bookkeeping only, like the others).
-	tokenNames = []string{tokenDamage, "thr", "gen", tokenAcceleration}
+	tokenNames = []string{tokenDamage, tokenThreat, tokenCounter, tokenAcceleration}
 	// statusNames are the statuses a card can carry, each with a count. The
-	// count of "retaliate" is the card's Retaliate value: sources add up.
-	statusNames = []string{"stunned", "confused", "tough", "retaliate", statusLocked}
+	// count of statusRetaliate is the card's Retaliate value: sources add up.
+	statusNames = []string{statusStunned, statusConfused, statusTough, statusRetaliate, statusLocked}
 	// modifierNames are the stats a modifier changes, in the order cards
 	// print them: the stat column, then the hit points.
 	modifierNames = []string{"atk", "thw", "def", "sch", "rec", "hp"}
@@ -1092,19 +1148,21 @@ func (t *Table) deckCards(pile *Pile) []string {
 // counts as that deck's top card: when a takes, reorders or shuffles the top
 // of a deck with cards revealed on it (see actedDeck), they lie back on top
 // of that deck, face down, in a copy of t. Otherwise it returns t itself.
-// hand is the hand of the deck a draw naming no pile takes from.
-func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
+// hand is the hand of the deck a draw naming no pile takes from. It also
+// returns the cards covering hides (see hiddenByCovering), which get new ids
+// before a is performed: resolveOnTable picks them, apply gives them.
+func (t *Table) coveredFor(a Action, hand Area) (*Table, []string, error) {
 	deckID := t.actedDeck(a, hand)
 	covering := t.revealedOn(deckID)
 	if len(covering) == 0 {
-		return t, nil
+		return t, nil, nil
 	}
 	if _, err := t.pile(deckID); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for _, c := range covering {
 		if err := t.checkLeave(c); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -1113,7 +1171,30 @@ func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
 	for _, c := range covering {
 		covered.putOnPile(deck, covered.Cards[c.ID])
 	}
-	return covered, nil
+	return covered, t.hiddenByCovering(a, deckID, covering), nil
+}
+
+// hiddenByCovering returns the cards that covering deckID for a takes out of
+// sight under ids everybody saw (see renamedOnTheWay): the cards tucked under
+// the covering cards that drop to the bottom of a deck (see tuckedUnderDecks),
+// and the covering cards themselves when a puts a card over them. It leaves
+// out a's own card, which a moves on, and the cards a shuffle of deckID
+// renames anyway.
+func (t *Table) hiddenByCovering(a Action, deckID string, covering []*Card) []string {
+	var ids []string
+	for _, c := range covering {
+		if a.Kind == ActToDeck && a.Where == whereTop {
+			ids = append(ids, c.ID)
+		}
+		for _, id := range t.tuckedUnderDecks(c) {
+			// A card drops to the bottom of its home deck.
+			shuffled := producesShuffle(a) && t.Cards[id].Home == deckID
+			if id != a.Card && !shuffled {
+				ids = append(ids, id)
+			}
+		}
+	}
+	return ids
 }
 
 // actedDeck returns the id of the deck whose top a takes, reorders or
@@ -1145,9 +1226,10 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 }
 
 // applyDeal deals the recorded encounter card face down, wherever it is in the
-// encounter deck a.Pile names, or the classic one (see applyDraw). A card revealed on the deck is back in it
-// (see coveredFor), so a revealed card can be dealt too. The card goes to the
-// action's position; its area only names the recipient, for the history.
+// encounter deck a.Pile names, or the classic one (see applyDraw). A card
+// revealed on the deck is back in it (see coveredFor), so a revealed card can
+// be dealt too. The card goes to the action's position; its area only names
+// the recipient, for the history.
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown recipient %q", a.Area)
@@ -1202,7 +1284,7 @@ func deckOfDiscard(discardID string) (string, bool) {
 // for a pile that is no deck.
 func discardOf(deck *Pile) string {
 	switch {
-	case isSideDeckID(deck.ID) || isScenarioDeckID(deck.ID):
+	case ruledDeckID(deck.ID):
 		return deck.Discard
 	case deck.ID == PileEncounter:
 		return PileEncounterDiscard
@@ -1335,7 +1417,9 @@ func applyReorderTop(t *Table, a Action) error {
 }
 
 // renameInViews gives the renamed cards of the open views their new ids: the
-// player who reordered the top of their deck keeps looking at those cards.
+// player who reordered the top of their deck, or who looks at a revealed card
+// covered by a card put on top, keeps looking at those cards. A view that did
+// not hold a card learns none of its ids.
 func renameInViews(t *Table, renames map[string]string) {
 	for _, view := range t.Views {
 		for i, id := range view.Cards {

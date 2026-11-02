@@ -1,9 +1,11 @@
 <!--
   The table page: the top bar, the table column (one surface for everyone,
   scrolling both ways) and the side column (history), which collapses to a
-  slim strip. The preview of the hovered card floats over the table's bottom
-  right corner; touch mode previews nothing (touch.ts). On a narrow screen
-  there is no side column.
+  slim strip. The preview of the hovered card floats in a corner of the play
+  area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
+  control, unless it would hide the whole hovered element there, and never
+  the hero selector's corner; touch mode previews nothing (touch.ts). On a
+  narrow screen there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -19,7 +21,7 @@
   import { localizedFace, localizedName } from '../lib/localize';
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
-  import { SMALL_SCREEN_QUERY } from '../lib/screen';
+  import { NARROW_SCREEN_QUERY, PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -127,7 +129,7 @@
     TABLE_EDGE_BOTTOM,
     type Corner,
   } from './focus';
-  import SidePanel from './SidePanel.svelte';
+  import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
   import { TOUCH_MODE_QUERY } from './touch';
   import ZoomControl from './ZoomControl.svelte';
@@ -450,13 +452,9 @@
 
   // ---- The screen ----
 
-  // The breakpoints of the @media rules below. On a narrow screen the side
-  // column goes: the history is not shown.
-  const narrow = new MediaQuery('max-width: 900px');
-  // A phone held upright: the table zooms further out, and fits its width until the viewer zooms.
-  const phone = new MediaQuery('max-width: 600px');
-  // A phone either way up: the top bar floats over the play area, the hand's cards follow the
-  // window, and the controls at the bottom right gather in one bar above the resting hand.
+  // The screen sizes of lib/screen.ts, which the @media rules below write out too.
+  const narrow = new MediaQuery(NARROW_SCREEN_QUERY);
+  const phone = new MediaQuery(PHONE_QUERY);
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
 
@@ -469,7 +467,8 @@
     interaction.setTouchMode(touchMode.current);
   });
 
-  // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show.
+  // The scroller pads the surface, so that glows, tilted cards and outlines near an edge show: the
+  // play area's gutter (--content-gutter), which the top bar's left edge shares.
   const SCROLL_PADDING = 24;
 
   // On a small screen the top bar floats over the play area, and slides away as the table scrolls
@@ -721,13 +720,12 @@
    * The room under the controls at the bottom of the table (the zoom control,
    * the narrow Undo, the hero selector), in px. On a small screen they sit
    * above the resting hand, which would cover them otherwise: above the strip
-   * restingStrip gives for the base card, which the resting hand, drawn from its
-   * raised cards (handRestDrop), does not rise past.
+   * restingStrip gives for the base card (restingRoom, as a hand shows only
+   * with own decks), which the resting hand, drawn from its raised cards
+   * (handRestDrop), does not rise past.
    */
   const controlsBottom = $derived(
-    small.current && handSeats.length > 0
-      ? restingStrip(baseHandCard.h, baseHandDrop) + ABOVE_HAND
-      : TABLE_EDGE_BOTTOM,
+    small.current && handSeats.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM,
   );
 
   // ---- The Focus panel's corner ----
@@ -742,10 +740,6 @@
   // The panel's size, kept from the last time it showed; a portrait card's until then.
   let focusWidth = $state(320);
   let focusHeight = $state(450);
-  // The play area and the hovered element on the screen, measured when they may have moved
-  // (hover, scroll, zoom, resize, the bar sliding).
-  let focusArea: Rect | null = null;
-  let focusHovered: DOMRect | null = null;
 
   /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
   function hoveredRect(): DOMRect | null {
@@ -757,36 +751,35 @@
     return app.querySelector(selector)?.getBoundingClientRect() ?? null;
   }
 
-  /** Measures the play area and the hovered element, then places the panel. */
+  /**
+   * Measures the play area and the hovered element, then places the panel: called whenever they
+   * may have moved (hover, scroll, zoom, resize, the bar sliding).
+   */
   function measureFocus(): void {
     // Nothing previewed, nothing to place: it is measured again as soon as a card is.
     if (!preview) {
       return;
     }
-    // The part under the top bar, while it floats over the play area, does not show.
-    const area = wrap?.getBoundingClientRect();
-    focusArea = area
-      ? { left: area.left, top: area.top + barRoom, right: area.right, bottom: area.bottom }
-      : null;
-    focusHovered = hoveredRect();
-    placeFocus();
-  }
-
-  /** Places the panel against the rects last measured. */
-  function placeFocus(): void {
-    if (!preview || !focusArea) {
+    const box = wrap?.getBoundingClientRect();
+    if (!box) {
       return;
     }
-    const next = chooseCorner({
+    // The part under the top bar, while it floats over the play area, does not show.
+    const area: Rect = {
+      left: box.left,
+      top: box.top + barRoom,
+      right: box.right,
+      bottom: box.bottom,
+    };
+    focusCorner = chooseCorner({
       current: focusCorner,
-      area: focusArea,
+      area,
       size: { w: focusWidth, h: focusHeight },
-      hovered: focusHovered,
+      hovered: hoveredRect(),
       controls: homeControls,
       // The hero selector at the bottom left.
       taken: pickerShown ? ['bottom-left'] : [],
     });
-    focusCorner = next;
   }
 
   /** The panel's margins in its corner: off the play area's edges and the top bar, and above the controls at home. */
@@ -851,7 +844,7 @@
         void tick().then(rehoverUnderPointer);
         return;
       }
-      const anims = diffViews(prev, next, interaction.landing ?? undefined, session.viewGap);
+      const anims = diffViews(prev, next, interaction.landing ?? undefined);
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {
@@ -906,7 +899,7 @@
       return;
     }
     const hit = under?.closest<HTMLElement>(
-      '.surface .card:not(.pile, .ghost)[data-id], .hand .hcard[data-id]',
+      '.surface .card:not(.pile)[data-id], .hand .hcard[data-id]',
     );
     const id = hit?.dataset.id;
     if (!hit || id === undefined) {
@@ -983,11 +976,10 @@
     // flip?): reading the catalog state here recomputes the items once it loads.
     void catalog;
     const hovered = interaction.hovered;
-    const role = view.you.role;
-    if (!hovered || role === undefined) {
+    if (!hovered) {
       return [];
     }
-    return actionsFor(hovered, view, { areas: view.you.areas, role }, lang, interaction.group);
+    return actionsFor(hovered, view, lang, interaction.group);
   });
 
   // ---- The arrow mode's hint ----
@@ -1045,7 +1037,7 @@
       return null;
     }
     const selector = `[data-counter="${target.kind}:${target.name}"]`;
-    return wrap.querySelector<HTMLElement>(`.surface .card[data-id="${target.card}"] ${selector}`);
+    return wrap.querySelector<HTMLElement>(`${tableCard(target.card)} ${selector}`);
   }
 
   function stepCounter(delta: number): void {
@@ -1068,17 +1060,10 @@
   type ContextContent = { entries: ContextEntry[]; note?: string };
 
   function contextContentOf(element: TableElement): ContextContent | null {
-    const role = view.you.role;
-    if (role === undefined || element.kind === 'hand') {
+    if (element.kind === 'hand') {
       return null;
     }
-    const items = actionsFor(
-      element,
-      view,
-      { areas: view.you.areas, role },
-      lang,
-      interaction.group,
-    );
+    const items = actionsFor(element, view, lang, interaction.group);
     if (!Array.isArray(items)) {
       return { entries: [], note: items.text };
     }
@@ -1117,7 +1102,7 @@
     if (!(target instanceof Element)) {
       return null;
     }
-    const hit = target.closest<HTMLElement>('.surface .card:not(.ghost)[data-id]');
+    const hit = target.closest<HTMLElement>('.surface .card[data-id]');
     const id = hit?.dataset.id;
     if (!hit || id === undefined) {
       return null;
@@ -1500,8 +1485,7 @@
       if (!isFree(card)) {
         continue;
       }
-      const selector = `.surface .card:not(.pile, .ghost)[data-id="${CSS.escape(card.id)}"]`;
-      const rect = app?.querySelector(selector)?.getBoundingClientRect();
+      const rect = app?.querySelector(tableCard(card.id))?.getBoundingClientRect();
       if (rect) {
         boxes.push([card.id, rect]);
       }
@@ -1705,16 +1689,6 @@
     wheelTarget = Math.min(ZOOM_MAX, Math.max(zoomMin, from * Math.exp(-event.deltaY * 0.01)));
     void setZoom(wheelTarget, event.clientX, event.clientY);
   }
-
-  // Not an onwheel attribute: preventing the page zoom needs a non-passive listener.
-  $effect(() => {
-    if (!wrap) {
-      return;
-    }
-    const target = wrap;
-    target.addEventListener('wheel', onWheel, { passive: false });
-    return () => target.removeEventListener('wheel', onWheel);
-  });
 </script>
 
 <svelte:window
@@ -1744,6 +1718,7 @@
   style:--edge="{TABLE_EDGE}px"
   style:--edge-bottom="{TABLE_EDGE_BOTTOM}px"
   style:--controls-bottom="{controlsBottom}px"
+  style:--content-gutter="{SCROLL_PADDING}px"
   style:--bar-start="{barStart}px"
   style:--bar-room="{barRoom}px"
   bind:this={app}
@@ -1773,6 +1748,7 @@
     onpointerdowncapture={onTablePointerDown}
     onclick={onTableClick}
     oncontextmenu={onTableContextMenu}
+    onwheel={onWheel}
     onscroll={measureFocus}
   >
     <div class="table">
@@ -1782,6 +1758,7 @@
         {owners}
         {topOf}
         {faceOf}
+        {captionOf}
         onbrowse={openBrowseBox}
         width={surface.w}
         height={surface.h}
@@ -1845,8 +1822,8 @@
         <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
         <button
           class="btn-ghost"
-          aria-label="Undo last action"
-          data-tip={view.canUndo ? 'Undo last action' : 'Nothing of yours to undo'}
+          aria-label={UNDO_TIP}
+          data-tip={view.canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
           aria-disabled={!view.canUndo}
           onclick={() => {
             if (view.canUndo) {
@@ -1990,6 +1967,7 @@
         readOnly={view.you.role !== 'player'}
         {selected}
         act={actInBox}
+        lastError={session.lastError}
         onclose={closeBox}
       />
     {/key}
@@ -2054,14 +2032,17 @@
     clipped: it never reaches the page, which would scroll.
   */
   .app {
-    /* The play area's gutter, which the top bar's left edge shares. */
-    --content-gutter: 24px;
     /*
       The height of a button in the bars floating at the bottom of the table (the zoom control, the
       narrow screen's Undo, the hero selector): with the same padding and the same room under them
       (--edge-bottom), the bars share their top and bottom edges.
     */
     --bar-button: 32px;
+    /*
+      Above every card, whose z-index the server raises with each move (it only grows): the
+      out-of-play chips (Surface.svelte) and the markers (MarkerToken.svelte).
+    */
+    --above-cards: 100000;
     display: grid;
     height: 100vh;
     height: 100dvh;
@@ -2118,7 +2099,8 @@
   .table {
     position: relative;
     width: max-content;
-    padding: calc(24px + var(--bar-start)) var(--content-gutter) 24px;
+    padding: calc(var(--content-gutter) + var(--bar-start)) var(--content-gutter)
+      var(--content-gutter);
   }
 
   /*
@@ -2387,8 +2369,9 @@
   }
 
   /*
-    The preview, at the bottom right of the table above the zoom control, still while the table
-    scrolls under it. As the zoom control: over the table, under the other players' presence
+    The preview, in a corner of the play area that focus.ts chooses (chooseCorner): the bottom
+    right, above the zoom control, unless it would hide the whole hovered element there, and
+    never the hero selector's corner. Still while the table scrolls under it. As the zoom control: over the table, under the other players' presence
     (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
     pointer goes through it.
   */
@@ -2420,7 +2403,7 @@
     width: min(520px, 45%);
   }
 
-  /* Out of the pointer's and the hovered card's way, in another corner (focus.ts). */
+  /* In another corner, when home would hide the whole hovered element (focus.ts). */
   .peek.top-left,
   .peek.bottom-left {
     justify-self: start;

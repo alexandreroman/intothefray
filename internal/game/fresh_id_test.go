@@ -36,7 +36,7 @@ func (f *doFixture) lastInHand(area Area) string {
 }
 
 // renamedID returns the id card id goes by after the last event: the fresh
-// one the event gave it, if any (see freshID), or else id.
+// one the event gave it, if any (see Action.Renames), or else id.
 func (f *doFixture) renamedID(t *testing.T, id string) string {
 	t.Helper()
 	a := f.lastEvent(t).Action
@@ -348,6 +348,64 @@ func TestUndoThatTucksACardBackRenamesItUnderItsDeck(t *testing.T) {
 	if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
 		t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
 	}
+	if _, ok := f.g.Table.Cards[sense]; ok {
+		t.Errorf("Sense card %s keeps its id under its deck", sense)
+	}
+	if bottom := f.g.Table.Cards[f.g.Table.Piles[senseDeck].Cards[0]]; bottom.Code != code {
+		t.Errorf("bottom of the Sense deck = %+v, want the Sense card %s", bottom, code)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// dealEvent returns the live deal event of the history.
+func dealEvent(t *testing.T, g *Game) Event {
+	t.Helper()
+	for _, e := range g.History.Events {
+		if e.Action.Kind == ActDeal && e.live() {
+			return e
+		}
+	}
+	t.Fatal("no deal in the history")
+	return Event{}
+}
+
+// Host deals the enemy, which drops the Sense card tucked under it to the
+// bottom of its deck under a new id. Bob's undo takes the card back into his
+// hand: the deal stays, and renames nothing any more.
+func TestUndoKeepsAnotherPlayersDealOfTheEnemyHoldingATuckedCard(t *testing.T) {
+	f, sense, _ := senseUnderEnemy(t)
+	f.mustDo(t, "h", Action{Kind: ActDeal, Area: "p0", X: 600, Y: 400}, at(10))
+	if f.renamedID(t, sense) == sense {
+		t.Fatalf("the deal leaves the Sense card %s its id under its deck", sense)
+	}
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(11))
+
+	checkNoneDropped(t, f.g)
+	if c, ok := f.g.Table.Cards[sense]; !ok || c.Zone != ZoneHand {
+		t.Errorf("Sense card %s = %+v, want it back in Bob's hand", sense, c)
+	}
+	if renames := dealEvent(t, f.g).Action.Renames; renames != nil {
+		t.Errorf("the deal still renames %v", renames)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// Bob's undo tucks the Sense card under the enemy again, which Host dealt
+// since: the deal drops the card under its deck with a new id.
+func TestUndoThatTucksACardBackUnderADealtCardRenamesIt(t *testing.T) {
+	f, sense, _ := senseUnderEnemy(t)
+	code := f.g.Table.Cards[sense].Code
+	f.mustDo(t, "b", Action{Kind: ActToHand, Card: sense}, at(4))
+	f.mustDo(t, "h", Action{Kind: ActDeal, Area: "p0", X: 600, Y: 400}, at(10))
+
+	f.mustDo(t, "b", Action{Kind: ActUndo}, at(11))
+
+	checkNoneDropped(t, f.g)
 	if _, ok := f.g.Table.Cards[sense]; ok {
 		t.Errorf("Sense card %s keeps its id under its deck", sense)
 	}

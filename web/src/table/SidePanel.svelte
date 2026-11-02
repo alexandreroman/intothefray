@@ -3,6 +3,13 @@
   Collapsed, a slim strip holds only the buttons that expand it and undo.
   The preview of the hovered card floats over the table (Table.svelte).
 -->
+<script module lang="ts">
+  /** The Undo button's label, here and on the narrow table's top bar (Table.svelte). */
+  export const UNDO_TIP = 'Undo last action';
+  /** The tip of the Undo button when the viewer has nothing to undo. */
+  export const NOTHING_TO_UNDO = 'Nothing of yours to undo';
+</script>
+
 <script lang="ts">
   import { tick } from 'svelte';
   import Icon from '../components/Icon.svelte';
@@ -33,9 +40,6 @@
     /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
     nameOf?: (ref: FaceRef) => string | undefined;
   } = $props();
-
-  const UNDO_TIP = 'Undo last action';
-  const NOTHING_TO_UNDO = 'Nothing of yours to undo';
 
   let collapseButton = $state<HTMLButtonElement>();
   let expandButton = $state<HTMLButtonElement>();

@@ -10,12 +10,11 @@ include .env
 export
 endif
 
-# Local overrides, loaded only for the development targets of DEV_TARGETS:
-# the stack (app-*), build, web-build and packs targets read .env only.
+# Local overrides, loaded only for the development targets of DEV_TARGETS;
+# every other target reads .env only.
 # Sequential include means later assignments win.
 DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs
-GOALS := $(or $(MAKECMDGOALS),$(.DEFAULT_GOAL))
-ifneq (,$(filter $(DEV_TARGETS),$(GOALS)))
+ifneq (,$(filter $(DEV_TARGETS),$(MAKECMDGOALS)))
 ifneq (,$(wildcard .env.local))
 include .env.local
 export
@@ -59,10 +58,10 @@ app-logs: ## Follow logs from the full stack
 
 ##@ Develop
 
+# Trap reaps the whole process group (kill 0) on exit or signal, so no
+# orphaned processes survive Ctrl-C or a child crash.
 .PHONY: dev
 dev: infra-up web-install ## Start infra, then run the API (hot reload) and the web build (reload the page)
-	# Trap reaps the whole process group (kill 0) on exit or signal, so no
-	# orphaned processes survive Ctrl-C or a child crash.
 	@trap 'kill 0' EXIT INT TERM; \
 		( air; kill 0 ) & \
 		( cd web && pnpm watch; kill 0 ) & \
@@ -85,7 +84,7 @@ web-build: web-install ## Build the web app into web/dist/
 ##@ Data
 
 .PHONY: packs
-packs: ## Regenerate card packs from marvelcdb, mc4db, Cerebro and the image manifest
+packs: ## Regenerate the card packs (packs/dist) from the card sources and the image manifest
 	go run ./cmd/packgen
 
 .PHONY: sources

@@ -2,22 +2,12 @@ import { render, screen } from '@testing-library/svelte';
 import CardView from './CardView.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox } from './layout';
+import { card } from './fixtures.testing';
 
 const HERO_BACK = 'https://img.intothefray.xyz/assets/back-player.avif';
 
 function tableCard(extra: Partial<TableCard> = {}): TableCard {
-  return {
-    id: 'c1',
-    code: '01001a',
-    face: 0,
-    back: 'player',
-    owner: 0,
-    zone: 'table',
-    x: 120,
-    y: 40,
-    z: 7,
-    ...extra,
-  };
+  return card('c1', { code: '01001a', x: 120, y: 40, z: 7, ...extra });
 }
 
 function face(extra: Partial<PackFace> = {}): PackFace {
@@ -31,10 +21,6 @@ function cardElement(container: HTMLElement): HTMLElement {
   }
   return el;
 }
-
-beforeEach(() => {
-  localStorage.clear();
-});
 
 describe('CardView', () => {
   it("a face-down side card shows its back captioned with its deck's label", () => {

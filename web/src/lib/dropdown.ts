@@ -4,7 +4,13 @@
 // it fits neither way. Pure: ContextMenu.svelte and ScenarioPicker.svelte
 // measure and call it.
 
-import type { Rect } from './drag';
+/** A box on the screen, in viewport coordinates. A DOMRect is one. */
+export interface Box {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
 
 /** The room kept between a menu and the edges of the room it is given, in px. */
 export const MENU_EDGE = 8;
@@ -32,7 +38,7 @@ export interface DropdownPlace {
 export function placeAtPoint(
   point: { x: number; y: number },
   size: { w: number; h: number },
-  room: Rect,
+  room: Box,
 ): DropdownPlace {
   // A point is an anchor of no size, the menu right against it.
   const anchor = { left: point.x, top: point.y, right: point.x, bottom: point.y };
@@ -47,9 +53,9 @@ export function placeAtPoint(
  * when it fits on neither side of the anchor, it is moved inside the room.
  */
 export function placeUnder(
-  anchor: Rect,
+  anchor: Box,
   size: { w: number; h: number },
-  room: Rect,
+  room: Box,
   gap: number,
 ): DropdownPlace {
   const left = flip(anchor.left, anchor.right - size.w, size.w, room.left, room.right);
@@ -76,10 +82,10 @@ export function placeUnder(
  * to stay inside the room, and cut to the room's height when taller.
  */
 export function placeSubmenu(
-  menu: Rect,
-  row: Rect,
+  menu: Box,
+  row: Box,
   size: { w: number; h: number },
-  room: Rect,
+  room: Box,
 ): DropdownPlace {
   const left = flip(menu.right, menu.left - size.w, size.w, room.left, room.right);
 

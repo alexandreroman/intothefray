@@ -6,7 +6,7 @@
   import { href } from '../lib/router.svelte';
   import Segmented from './Segmented.svelte';
   import { overflowTip } from '../lib/overflowTip';
-  import { ScrollAutoHide } from '../lib/autoHide.svelte';
+  import { ScrollAutoHide, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
   import {
     canFullscreen,
@@ -115,6 +115,7 @@
 <header
   class:auto-hide={small.current}
   class:hidden
+  style:height="{TOP_BAR_HEIGHT}px"
   onfocusin={focusEntered}
   onfocusout={focusLeft}
 >
@@ -199,9 +200,8 @@
 {/if}
 
 <style>
-  /* The background and the border span the window. The height is TOP_BAR_HEIGHT (lib/autoHide). */
+  /* The background and the border span the window. */
   header {
-    height: 56px;
     background: var(--bg);
     border-bottom: 1px solid var(--panel-2);
   }

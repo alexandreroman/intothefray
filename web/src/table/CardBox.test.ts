@@ -7,7 +7,15 @@ import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed, domRect } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -55,30 +63,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
     inDeck('c3', '01022'),
     card('q1', { code: '01100', owner: -1, back: 'encounter', zone: 'pile' }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 0 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
     table: {
       cards,
       piles: [
@@ -92,11 +77,9 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v', 'v2'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { x: 860, y: 40 },
       private: extra.private,
     },
-    log: [],
-  };
+  });
 }
 
 function asSpectator(view: View): View {
@@ -111,6 +94,11 @@ async function renderTable(view = makeView()) {
   return {
     session,
     rerender: (next: View) => result.rerender({ session, view: next }),
+    /** The server refuses the action of that id; the view stays as it is. */
+    refuse: async (id: number, current: View) => {
+      session.lastError = { id, code: 'invalid', message: 'refused' };
+      await result.rerender({ session: { ...session }, view: current });
+    },
     unmount: () => result.unmount(),
   };
 }
@@ -335,6 +323,42 @@ describe('CardBox', () => {
     expect(document.querySelector('.tile-ghost')).toBeNull();
     // The new order stays while the server answers.
     expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+  });
+
+  /** Drags Web-Shooter, the top card, to the end of the look box. */
+  async function reorderWebShooterLast(): Promise<void> {
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    await fireEvent.pointerDown(image, { clientX: 60, clientY: 150, button: 0 });
+    await fireEvent.pointerMove(window, { clientX: 400, clientY: 150, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: 400, clientY: 150 });
+  }
+
+  it('shows the old order at once when a reorder is not sent', async () => {
+    const { session } = await renderTable(makeView({ private: LOOK }));
+    session.act.mockReturnValue(null as never);
+    layOutTiles();
+
+    await reorderWebShooterLast();
+
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Backflip']);
+  });
+
+  it('shows the server order at once when the server refuses a reorder', async () => {
+    const view = makeView({ private: LOOK });
+    const { session, refuse } = await renderTable(view);
+    session.act.mockReturnValue(7 as never);
+    layOutTiles();
+
+    await reorderWebShooterLast();
+    expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+
+    // An error answering another action changes nothing.
+    await refuse(6, view);
+    expect(tileNames()).toEqual(['Swinging Web Kick', 'Backflip', 'Web-Shooter']);
+
+    await refuse(7, view);
+    expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Backflip']);
   });
 
   it('a reorder starts past the table drag threshold', async () => {

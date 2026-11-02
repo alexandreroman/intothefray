@@ -4,6 +4,7 @@ import Lobby from './Lobby.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { loadIndex } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
+import { FakeWebSocket } from '../lib/socket.testing';
 import type {
   DeckView,
   Index,
@@ -139,27 +140,6 @@ interface FakeSession {
   lobby: ReturnType<typeof vi.fn>;
 }
 
-/** Just enough of a WebSocket to feed a real GameSession from a test. */
-class FakeSocket {
-  static last: FakeSocket;
-  readyState = 1;
-  onopen: (() => void) | null = null;
-  onmessage: ((event: { data: string }) => void) | null = null;
-  onclose: ((event: { code: number }) => void) | null = null;
-
-  constructor() {
-    FakeSocket.last = this;
-  }
-
-  send(): void {}
-
-  close(): void {}
-
-  receive(message: object): void {
-    this.onmessage?.({ data: JSON.stringify(message) });
-  }
-}
-
 function lobbyView(players: PlayerView[]): View {
   return {
     id: 'g1',
@@ -175,21 +155,21 @@ function lobbyView(players: PlayerView[]): View {
 /** Renders the lobby on a live session, the way Game does, and returns a way to push views. */
 function renderLive() {
   const session = new GameSession('g1', 'Alex', {
-    WebSocket: FakeSocket as unknown as typeof WebSocket,
+    WebSocket: FakeWebSocket as unknown as typeof WebSocket,
   });
   session.connect();
-  FakeSocket.last.onopen?.();
-  FakeSocket.last.receive({ type: 'view', version: 1, view: lobbyView([alex, sam]) });
+  FakeWebSocket.last.open();
+  FakeWebSocket.last.receive({ type: 'view', version: 1, view: lobbyView([alex, sam]) });
   const { rerender } = render(Lobby, { session, view: session.view! });
   return {
     session,
     async receive(message: object): Promise<void> {
-      FakeSocket.last.receive(message);
+      FakeWebSocket.last.receive(message);
       await rerender({ session, view: session.view! });
     },
     /** Loses the connection; the session then waits to reconnect. */
     async drop(): Promise<void> {
-      FakeSocket.last.onclose?.({ code: 1006 });
+      FakeWebSocket.last.drop();
       await rerender({ session, view: session.view! });
     },
   };

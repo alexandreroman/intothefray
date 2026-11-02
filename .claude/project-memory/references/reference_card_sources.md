@@ -51,12 +51,9 @@ type: reference
 - mc4db answers 429 to Go's default User-Agent; the generator sends
   `intothefray-packgen (+https://github.com/alexandreroman/intothefray)`.
 - Cerebro has no French images.
-- Every card image, the card backs and the first player token are served
-  by the image CDN `https://img.intothefray.xyz`. The packs hold CDN URLs
-  only, from `packs/images/manifest.json`. `web/src/table/theme.ts` uses
-  the fixed keys `https://img.intothefray.xyz/assets/<name>.avif`, with
-  `<name>` one of `back-player`, `back-encounter`, `back-villain` and
-  `first-player`.
+- Every image the app loads comes from the image CDN (see
+  [[project_image_cdn]]); the packs hold CDN URLs only, from
+  `packs/images/manifest.json`.
 - For each face, the generator lists the candidate image sources in
   `packs/images/sources.json` (`make sources`): the Cerebro image, the
   source record's image (marvelcdb, or mc4db for fallback cards), the

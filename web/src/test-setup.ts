@@ -21,9 +21,11 @@ window.matchMedia ??= (query: string): MediaQueryList =>
     removeListener: () => {},
   });
 
-// lib/prefs keeps every value in memory too, for the page lifetime: without
+// Preferences last for the whole test file: localStorage, which getPref reads
+// first, and the in-memory copy lib/prefs keeps for the page lifetime. Without
 // this, a value set by one test would still be read by the next.
 beforeEach(() => {
+  localStorage.clear();
   clearPrefMemory();
 });
 

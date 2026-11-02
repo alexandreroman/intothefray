@@ -18,9 +18,12 @@ import (
 // CardOverride replaces values derived from the sources for one card or face
 // code.
 type CardOverride struct {
+	// Size is the size to give the face instead of the one of its card type.
+	// It is only valid on the code of a face.
 	Size pack.Size `json:"size,omitempty"`
 	// Cerebro is the Cerebro image id to use for the face instead of the one
-	// matching its code, for cards whose Cerebro images are swapped.
+	// matching its code, for cards whose Cerebro images are swapped. It is
+	// only valid on the code of a face.
 	Cerebro string `json:"cerebro,omitempty"`
 	// Octgn is the OCTGN image file stem to use for the face instead of the
 	// one derived from its octgn_id, for cards whose source records carry a
@@ -46,7 +49,8 @@ type ScenarioDef struct {
 	Piles    []pack.Pile                    `json:"piles"`
 	Start    map[pack.Difficulty]pack.Start `json:"start"`
 	SetAside []string                       `json:"setAside,omitempty"`
-	// Decks are the scenario's own decks, laid out by the stage piles that name them.
+	// Decks are the scenario's own decks; a stage pile that names one is laid
+	// out with it.
 	Decks []pack.ScenarioDeck `json:"decks,omitempty"`
 	// SelfContained scenarios use only their own cards: no modular set is picked.
 	SelfContained bool `json:"selfContained,omitempty"`
@@ -60,7 +64,8 @@ type ScenarioDef struct {
 // SetDef completes a generated set with hand-written setup data.
 type SetDef struct {
 	// InPlay lists, per difficulty, the cards of the set that start in play
-	// instead of in the encounter deck (the "Setup." keyword).
+	// instead of in the encounter deck (the "Setup." keyword, or a main scheme
+	// set's own setup environment).
 	InPlay map[pack.Difficulty][]pack.FaceRef `json:"inPlay,omitempty"`
 	// Unlisted keeps the set out of the lobby, e.g. the PvP standard set.
 	Unlisted bool `json:"unlisted,omitempty"`

@@ -5,7 +5,7 @@ describe('Logo', () => {
   it.each(['horizontal', 'stacked'] as const)(
     'shows the mark and the wordmark when %s',
     (variant) => {
-      render(Logo, { variant });
+      render(Logo, { variant, size: 28 });
 
       const logo = screen.getByRole('img', { name: 'Into The Fray' });
       expect(logo.querySelector('svg')).not.toBeNull();
@@ -31,7 +31,7 @@ describe('Logo', () => {
   });
 
   it('is one image: its parts are hidden from assistive technologies', () => {
-    render(Logo, { variant: 'stacked' });
+    render(Logo, { variant: 'stacked', size: 120 });
 
     const logo = screen.getByRole('img', { name: 'Into The Fray' });
     expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');

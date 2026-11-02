@@ -23,11 +23,9 @@ type: project
   `taskmaster.json`): setup shuffles it into the encounter deck, and the
   lobby offers only Weapon Master as his modular set.
 - Manual: Absorbing Man's random starting environment, the Hydra Patrol
-  side scheme Taskmaster's Setup has players search for, Zola's Hydra Prison and Ultimate Bio-Servants, and bringing weapons and
-  side schemes into play: a drag of the scenario deck plays its top card
-  face up (under the card it is dropped on, if any), or Reveal on the deck
-  lays it face up over the deck, then a drag of that card moves it or
-  attaches it.
+  side scheme Taskmaster's Setup has players search for, Zola's Hydra
+  Prison and Ultimate Bio-Servants, and bringing weapons and side schemes
+  into play (see [[project_scenario_decks]]).
 - Campaign mode is out of scope.
 
 **Why:** user decision: as little automation as possible; whatever a

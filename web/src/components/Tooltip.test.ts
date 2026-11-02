@@ -3,8 +3,20 @@ import Tooltip from './Tooltip.svelte';
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
   document.body.replaceChildren();
 });
+
+/** Gives every tooltip bubble a height; jsdom lays nothing out. */
+function bubbleHeight(height: number): void {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return this.getAttribute('role') === 'tooltip'
+      ? new DOMRect(0, 0, 60, height)
+      : new DOMRect(0, 0, 0, 0);
+  });
+}
 
 function button(tip: string, kbd?: string): HTMLElement {
   const element = document.createElement('button');
@@ -45,6 +57,27 @@ describe('Tooltip', () => {
     await fireEvent.pointerOver(low);
     await vi.advanceTimersByTimeAsync(350);
     expect(screen.getByRole('tooltip').classList.contains('below')).toBe(false);
+  });
+
+  it('speaks from above whenever the bubble fits between the element and the window top', async () => {
+    vi.useFakeTimers();
+    render(Tooltip);
+    const element = button('Fullscreen');
+    const shownAt = async (top: number): Promise<HTMLElement> => {
+      element.getBoundingClientRect = () => new DOMRect(100, top, 40, 40);
+      await fireEvent.pointerOver(element);
+      await vi.advanceTimersByTimeAsync(350);
+      const tip = screen.getByRole('tooltip');
+      await fireEvent.pointerOver(document.body);
+      return tip;
+    };
+
+    bubbleHeight(20);
+    expect((await shownAt(40)).classList.contains('below')).toBe(false);
+    expect((await shownAt(20)).classList.contains('below')).toBe(true);
+
+    bubbleHeight(40);
+    expect((await shownAt(50)).classList.contains('below')).toBe(true);
   });
 
   it('hides when the pointer moves away or presses', async () => {

@@ -3,13 +3,14 @@ import {
   actionsFor,
   counterName,
   keyLabel,
+  MAX_MODIFIER,
   withSign,
   type ActionItem,
   type TableElement,
 } from './actions';
 import { knownCard } from '../lib/catalog';
-import type { Action, Area, CardView, PackFace, PileView, Role, View } from '../lib/types';
-import { card, infoFrom } from './fixtures.testing';
+import type { Action, CardView, PackFace, PileView, View, YouView } from '../lib/types';
+import { card, infoFrom, pile, playingView, seated } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -38,10 +39,6 @@ const FACES: Record<string, Partial<PackFace>[]> = {
 
 const infoOf = infoFrom(FACES);
 
-function pile(id: string, extra: Partial<PileView>): PileView {
-  return { id, kind: 'deck', owner: -1, x: 0, y: 0, count: 5, ...extra };
-}
-
 /** Rhino with two players, Alex (p0) and Sam (p1), and every pile of a real table. */
 function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
@@ -66,30 +63,11 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
     pile('vic', { kind: 'victory', count: 1, cards: ['q'] }),
     pile('saside', { kind: 'aside', count: 3, cards: ['r', 'o', 'p'] }),
   ];
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
+  return playingView({
     players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', ready: true, handCount: 1 }],
-      },
-      {
-        name: 'Sam',
-        color: 1,
-        host: false,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p1', ready: true, handCount: 0 }],
-      },
+      seated('Alex', 0, [{ area: 'p0', handCount: 1 }], true),
+      seated('Sam', 1, [{ area: 'p1' }]),
     ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
     table: {
       cards,
       piles,
@@ -98,10 +76,8 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
         { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
         { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
       ],
-      firstPlayer: { x: 860, y: 40 },
     },
-    log: [],
-  };
+  });
 }
 
 /** Rhino on the given stage card, each of his three stages a single-faced card. */
@@ -121,14 +97,12 @@ function villainStages(current: string): View {
   return view;
 }
 
-const ALEX: { areas: Area[]; role: Role } = { areas: ['p0'], role: 'player' };
+/** Kim, watching the game. */
+const KIM: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
 
-function itemsFor(
-  el: TableElement,
-  view = makeView(),
-  you: { areas?: readonly Area[]; role: Role } = ALEX,
-): ActionItem[] {
-  const result = actionsFor(el, view, you, 'en');
+/** The items of el, for the viewer of the view, or for `you` when given. */
+function itemsFor(el: TableElement, view = makeView(), you?: YouView): ActionItem[] {
+  const result = actionsFor(el, you ? { ...view, you } : view, 'en');
   if (!Array.isArray(result)) {
     throw new Error(`expected items, got the text "${result.text}"`);
   }
@@ -321,6 +295,22 @@ describe('actionsFor', () => {
       name: 'hp',
       delta: -1,
     });
+  });
+
+  it('greys the modifier step past the ±99 the server clamps a modifier to', () => {
+    const disabled = (mods: Record<string, number>) => {
+      const view = makeView({ cards: [card('mine', { mods })] });
+      const modifiers = menuOf(itemsFor({ kind: 'card', id: 'mine' }, view), 'modifiers');
+      return modifiers.filter((it) => it.disabled).map((it) => ({ id: it.id, reason: it.reason }));
+    };
+
+    expect(disabled({ atk: MAX_MODIFIER - 1, def: -(MAX_MODIFIER - 1) })).toEqual([]);
+    expect(disabled({ atk: MAX_MODIFIER })).toEqual([
+      { id: 'atk+1', reason: 'The ATK modifier is already +99' },
+    ]);
+    expect(disabled({ atk: -MAX_MODIFIER })).toEqual([
+      { id: 'atk-1', reason: 'The ATK modifier is already \u221299' },
+    ]);
   });
 
   it('an exhausted card shows ready and the counter submenus give the counts', () => {
@@ -818,7 +808,7 @@ describe('actionsFor', () => {
       cards: [card('r', { code: '01100', owner: -1, onPile: 'enc' })],
       piles: [pile('enc', { kind: 'encounter', count: 20 })],
     });
-    const items = actionsFor({ kind: 'pile', id: 'enc' }, view, ALEX, 'fr');
+    const items = actionsFor({ kind: 'pile', id: 'enc' }, view, 'fr');
     if (!Array.isArray(items)) {
       throw new Error(`expected items, got the text "${items.text}"`);
     }
@@ -848,18 +838,17 @@ describe('actionsFor', () => {
   it('out-of-play piles have no actions: they are not drawn on the table', () => {
     for (const id of ['vic', 'saside', 'aside:p0', 'aside:p1']) {
       expect(itemsFor({ kind: 'pile', id })).toEqual([]);
-      const spectator: { role: Role } = { role: 'spectator' };
-      expect(itemsFor({ kind: 'pile', id }, makeView(), spectator)).toEqual([]);
+      expect(itemsFor({ kind: 'pile', id }, makeView(), KIM)).toEqual([]);
     }
   });
 
   it("other player's deck shows the belongs text, set-aside cards or not", () => {
     // The full table has Sam's set-aside cards: they do not open from his deck.
-    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, makeView(), ALEX, 'en')).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, makeView(), 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
     const view = makeView({ piles: [pile('deck:p1', { owner: 1, count: 30 })] });
-    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, view, ALEX, 'en')).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'deck:p1' }, view, 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
   });
@@ -869,7 +858,7 @@ describe('actionsFor', () => {
       piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 0 })],
     });
 
-    expect(actionsFor({ kind: 'pile', id: 'disc:p0' }, view, ALEX, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'pile', id: 'disc:p0' }, view, 'en')).toEqual([]);
   });
 
   it('an empty deck or discard pile has no actions, even with out-of-play piles', () => {
@@ -884,27 +873,25 @@ describe('actionsFor', () => {
     });
 
     for (const id of ['deck:p0', 'disc:p0', 'enc']) {
-      expect(actionsFor({ kind: 'pile', id }, view, ALEX, 'en'), id).toEqual([]);
+      expect(actionsFor({ kind: 'pile', id }, view, 'en'), id).toEqual([]);
     }
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
-    const spectator: { role: Role } = { role: 'spectator' };
-    expect(itemsFor({ kind: 'pile', id: 'enc' }, view, spectator)).toEqual([]);
+    view.you = KIM;
+    expect(itemsFor({ kind: 'pile', id: 'enc' }, view)).toEqual([]);
   });
 
   it('spectator only browses public piles', () => {
     const view = makeView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
-    const spectator: { role: Role } = { role: 'spectator' };
+    view.you = KIM;
 
-    expect(actionsFor({ kind: 'card', id: 'mine' }, view, spectator, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 'mine' }, view, 'en')).toEqual([]);
     // Decks list no cards: nothing to browse.
-    const ids = (id: string) => itemsFor({ kind: 'pile', id }, view, spectator).map((it) => it.id);
+    const ids = (id: string) => itemsFor({ kind: 'pile', id }, view).map((it) => it.id);
     expect(ids('deck:p0')).toEqual([]);
     expect(ids('enc')).toEqual([]);
     expect(ids('disc:p0')).toEqual(['browse']);
     expect(ids('encd')).toEqual(['browse']);
     for (const id of ['disc:p0', 'encd']) {
-      const items = itemsFor({ kind: 'pile', id }, view, spectator);
+      const items = itemsFor({ kind: 'pile', id }, view);
       expect(items[0]?.run?.()).toEqual({ local: 'browseBox', pile: id });
       // Spectators have no game keys (P5b-R6): the menu shows none.
       expect(items[0]?.key).toBeUndefined();
@@ -913,26 +900,31 @@ describe('actionsFor', () => {
 
   it('spectator gets no stage action on the villain and the main scheme', () => {
     const view = makeView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
-    const spectator: { role: Role } = { role: 'spectator' };
+    view.you = KIM;
 
-    expect(actionsFor({ kind: 'card', id: 'v' }, view, spectator, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 'v' }, view, 'en')).toEqual([]);
     // Not even Flip, which a player gets on the two-faced main scheme.
-    expect(actionsFor({ kind: 'card', id: 's' }, view, spectator, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 's' }, view, 'en')).toEqual([]);
   });
 
   it('hand card gets no actions', () => {
-    expect(actionsFor({ kind: 'hand', id: 'h' }, makeView(), ALEX, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'hand', id: 'h' }, makeView(), 'en')).toEqual([]);
   });
 
   it('an element that is gone gets no actions', () => {
-    expect(actionsFor({ kind: 'card', id: 'gone' }, makeView(), ALEX, 'en')).toEqual([]);
-    expect(actionsFor({ kind: 'pile', id: 'gone' }, makeView(), ALEX, 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'card', id: 'gone' }, makeView(), 'en')).toEqual([]);
+    expect(actionsFor({ kind: 'pile', id: 'gone' }, makeView(), 'en')).toEqual([]);
   });
 });
 
 describe('a player with two decks', () => {
-  const TWO_DECKS: { areas: Area[]; role: Role } = { areas: ['p0', 'p1'], role: 'player' };
+  const TWO_DECKS: YouView = {
+    role: 'player',
+    name: 'Alex',
+    color: 0,
+    host: true,
+    areas: ['p0', 'p1'],
+  };
 
   /** Alex plays p0 and p1 (Spider-Man), Sam p2. */
   function twoDeckView(piles?: PileView[]): View {
@@ -996,7 +988,7 @@ describe('a player with two decks', () => {
 
   it("other player's deck belongs", () => {
     const view = twoDeckView([pile('deck:p2', { owner: 2, count: 30 })]);
-    expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, view, TWO_DECKS, 'en')).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, { ...view, you: TWO_DECKS }, 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
     const move = menuOf(itemsFor({ kind: 'card', id: 'sams' }, view, TWO_DECKS), 'moveTo');
@@ -1116,7 +1108,7 @@ describe('side decks', () => {
   });
 
   it("another player's side deck belongs to them", () => {
-    expect(actionsFor({ kind: 'pile', id: 'side:p1:0' }, view(), ALEX, 'en')).toEqual({
+    expect(actionsFor({ kind: 'pile', id: 'side:p1:0' }, view(), 'en')).toEqual({
       text: 'Belongs to Sam: only they can use it.',
     });
   });
@@ -1132,10 +1124,8 @@ describe('side decks', () => {
 
   it('a spectator browses a side discard pile, never the top card a side deck shows', () => {
     const watching = view();
-    watching.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
-    const spectator: { role: Role } = { role: 'spectator' };
-    const ids = (id: string) =>
-      itemsFor({ kind: 'pile', id }, watching, spectator).map((it) => it.id);
+    watching.you = KIM;
+    const ids = (id: string) => itemsFor({ kind: 'pile', id }, watching).map((it) => it.id);
     expect(ids('side:p0:0')).toEqual([]);
     expect(ids('sided:p0:0')).toEqual(['browse']);
   });
@@ -1193,7 +1183,7 @@ describe('a selected group', () => {
     });
 
   function groupItems(el: string, group: string[]): ActionItem[] {
-    const result = actionsFor({ kind: 'card', id: el }, groupView(), ALEX, 'en', new Set(group));
+    const result = actionsFor({ kind: 'card', id: el }, groupView(), 'en', new Set(group));
     if (!Array.isArray(result)) {
       throw new Error(`expected items, got the text "${result.text}"`);
     }
@@ -1253,7 +1243,7 @@ describe('a selected group', () => {
     const many = Array.from({ length: 100 }, (_, i) => card(`m${i}`, { z: i }));
     const view = makeView({ cards: many });
     const ids = many.map((unit) => unit.id);
-    const result = actionsFor({ kind: 'card', id: 'm0' }, view, ALEX, 'en', new Set(ids));
+    const result = actionsFor({ kind: 'card', id: 'm0' }, view, 'en', new Set(ids));
     if (!Array.isArray(result)) {
       throw new Error(`expected items, got the text "${result.text}"`);
     }

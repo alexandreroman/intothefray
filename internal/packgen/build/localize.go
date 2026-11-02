@@ -6,7 +6,6 @@ import (
 	"maps"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
@@ -126,7 +125,7 @@ func mc4dbFrenchNames(in Inputs) nameSource {
 		source.packs[code] = mc4dbPack.Name
 	}
 	for _, set := range in.FrenchMC4DBSets {
-		source.sets[strings.ReplaceAll(set.Code, officialTag, "")] = set.Name
+		source.sets[marvelcdbCode(set.Code)] = set.Name
 	}
 	return source
 }
@@ -251,15 +250,15 @@ func faceCodesOf(mc []marvelcdb.Card) map[string][]string {
 func localizeIndex(index *pack.Index, defs []curated.ScenarioDef, fr frenchSources) {
 	for i := range index.Packs {
 		ref := &index.Packs[i]
-		ref.Localized = localizedName(ref.Name, fr.packName(ref.Code, ref.Name))
+		ref.Localized = localizedName(fr.packName(ref.Code, ref.Name))
 	}
 	for i := range index.Sets {
 		ref := &index.Sets[i]
-		ref.Localized = localizedName(ref.Name, fr.setName(ref.Code, ref.Name))
+		ref.Localized = localizedName(fr.setName(ref.Code, ref.Name))
 	}
 
-	// A curated scenario may be named differently from its villain set; any
-	// other scenario is named after its set.
+	// A curated scenario's ID may differ from its villain set code; its name is
+	// the set's.
 	villainSets := make(map[string]string, len(defs))
 	for _, def := range defs {
 		villainSets[def.ID] = def.VillainSet
@@ -270,14 +269,15 @@ func localizeIndex(index *pack.Index, defs []curated.ScenarioDef, fr frenchSourc
 		if !found {
 			setCode = ref.ID
 		}
-		ref.Localized = localizedName(ref.Name, fr.setName(setCode, ref.Name))
+		ref.Localized = localizedName(fr.setName(setCode, ref.Name))
 	}
 }
 
 // localizedName returns the French override of an index entry, nil when the
-// French name is unknown or the same as the English one.
-func localizedName(english, frenchName string) map[string]pack.Localized {
-	if frenchName == "" || frenchName == english {
+// entry is untranslated, as frenchSources returns "" for a name that only
+// respells the English one.
+func localizedName(frenchName string) map[string]pack.Localized {
+	if frenchName == "" {
 		return nil
 	}
 	return map[string]pack.Localized{french: {Name: frenchName}}

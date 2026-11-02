@@ -25,7 +25,7 @@ type: project
   the lobby's start bar (`room` prop from `Lobby.svelte`), under its button
   or above it when only that side fits, else on the roomier side cut to
   scroll; shifted to stay inside the window (`placeUnder` in
-  `web/src/table/dropdown.ts`).
+  `web/src/lib/dropdown.ts`).
 
 **Why:** user decision: the full list is long, and the pack is how players
 find a set; the star is enough to spot a recommendation.

@@ -260,7 +260,9 @@ func (g *Game) End(hostToken string) error {
 
 // DefaultConfig is the usual setup of a scenario: its recommended modular
 // sets, standard version I and no expert set; none for a self-contained
-// scenario.
+// scenario. No production code calls it: it is the config tests start from,
+// shared with the internal/server and packs tests. The lobby UI picks its own
+// defaults in ScenarioPicker.svelte.
 func DefaultConfig(cat *pack.Catalog, scenario string) LobbyConfig {
 	cfg := LobbyConfig{
 		Scenario:   scenario,
@@ -286,7 +288,7 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 	// An empty Standard or Expert set means the game plays without it, as
 	// some scenarios allow.
 	if cfg.Standard != "" {
-		if err := requireSetKind(cat, cfg.Standard, "standard"); err != nil {
+		if err := requireSetKind(cat, cfg.Standard, pack.SetKindStandard); err != nil {
 			return err
 		}
 	}
@@ -298,7 +300,7 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 		}
 	case pack.Expert:
 		if cfg.Expert != "" {
-			if err := requireSetKind(cat, cfg.Expert, "expert"); err != nil {
+			if err := requireSetKind(cat, cfg.Expert, pack.SetKindExpert); err != nil {
 				return err
 			}
 		}
@@ -326,7 +328,7 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 			}
 			continue
 		}
-		if err := requireSetKind(cat, code, "modular"); err != nil {
+		if err := requireSetKind(cat, code, pack.SetKindModular); err != nil {
 			return err
 		}
 	}
@@ -337,7 +339,7 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 // the main scheme of a scenario played with main schemes.
 func isMainSchemeSet(cat *pack.Catalog, code string) bool {
 	set, ok := cat.Set(code)
-	return ok && set.Kind == setKindMainScheme
+	return ok && set.Kind == pack.SetKindMainScheme
 }
 
 // mainSchemeSet returns the main scheme set among the modular sets of cfg,
@@ -408,7 +410,7 @@ func heroTitleOf(cat *pack.Catalog, identity string) (heroTitle, bool) {
 	title := heroTitle{name: face.Name, subtitle: face.Subname}
 	if title.subtitle == "" {
 		for _, f := range card.Faces {
-			if f.Type == faceTypeAlterEgo {
+			if f.Type == pack.FaceTypeAlterEgo {
 				title.subtitle = f.Name
 				break
 			}
@@ -459,7 +461,7 @@ func heroImage(cat *pack.Catalog, identity string) string {
 // no face is a hero face. The card must have a face.
 func heroFace(card pack.Card) pack.Face {
 	for _, f := range card.Faces {
-		if f.Type == faceTypeHero {
+		if f.Type == pack.FaceTypeHero {
 			return f
 		}
 	}

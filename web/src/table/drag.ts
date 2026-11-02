@@ -12,19 +12,11 @@ import {
   type Point,
   type View,
 } from '../lib/types';
-import {
-  deckDiscardOf,
-  deckName,
-  discardPileOf,
-  homeDeckOf,
-  isScenarioDeckId,
-  isSideDeckId,
-  staysOnTable,
-} from './actions';
+import { deckDiscardOf, deckName, discardPileOf, homeDeckFor, staysOnTable } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
-import { areaOf, ownSeats } from './seats';
+import { areaOf, isScenarioDeckId, isSideDeckId, ownSeats, PILE_ENCOUNTER } from './seats';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
 export const DRAG_THRESHOLD = 4;
@@ -102,7 +94,7 @@ export type DragSource =
 // It mirrors rowContentY in internal/game/setup.go.
 const ROW_LABEL_ROOM = 30;
 
-export function snap(v: number): number {
+function snap(v: number): number {
   return Math.round(v / GRID) * GRID;
 }
 
@@ -318,7 +310,7 @@ function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action 
       return { kind: 'play', card: drag.card, x, y };
     case 'encounter':
       // The classic encounter deck is the default: only a scenario deck names itself.
-      return drag.pile === 'enc'
+      return drag.pile === PILE_ENCOUNTER
         ? { kind: 'deal', area: dealTo, x, y }
         : { kind: 'deal', pile: drag.pile, area: dealTo, x, y };
     case 'deck':
@@ -491,9 +483,8 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     return [];
   }
   const targets: PileTarget[] = [];
-  // A deck is private to its owner: the viewer's own cards and encounter cards only.
-  const home = table.piles.find((p) => p.id === homeDeckOf(card));
-  if (home && (seats.includes(card.owner) || card.owner === -1)) {
+  const home = homeDeckFor(card, seats, table.piles);
+  if (home) {
     const deck = deckName(home);
     targets.push({ pile: home.id, drop: 'top', label: `Top of ${deck}` });
   }

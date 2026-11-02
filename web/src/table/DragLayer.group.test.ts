@@ -6,7 +6,17 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, pile, fakeSession, infoFrom, placed, tallTable } from './fixtures.testing';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  tallTable,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -39,22 +49,8 @@ const PILES = [
 
 /** Alex (p0) with Rhino. */
 function makeView(cards: TableCard[] = CARDS): View {
-  return {
-    id: 'g1',
-    phase: 'playing',
-    you: { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
-    players: [
-      {
-        name: 'Alex',
-        color: 0,
-        host: true,
-        ready: true,
-        online: true,
-        decks: [{ area: 'p0', heroName: 'Spider-Man', ready: true, handCount: 3 }],
-      },
-    ],
-    spectators: 0,
-    config: { scenario: 'rhino', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+  return playingView({
+    players: [seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 3 }], true)],
     table: {
       cards,
       piles: PILES,
@@ -62,14 +58,7 @@ function makeView(cards: TableCard[] = CARDS): View {
       stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
       firstPlayer: { x: 860, y: 340 },
     },
-    log: [],
-  };
-}
-
-// A real DOMRect, as a browser measures it: its sides are getters on its prototype, which a
-// spread of the rect loses.
-function domRect(left: number, top: number, width: number, height: number): DOMRect {
-  return new DOMRect(left, top, width, height);
+  });
 }
 
 const SURFACE = { left: 20, top: 40 };
@@ -143,7 +132,6 @@ async function release(x: number, y: number) {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
   tallTable();

@@ -467,7 +467,7 @@
       return null;
     }
     const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
-    return { x: (corner.x - origin.left) / zoom, y: (corner.y - origin.top) / zoom };
+    return toTable(corner, origin, zoom);
   }
 
   /** The marker a drag carries, by its name; none for a name that is not a marker. */
@@ -557,7 +557,7 @@
     glide = !tableMoved;
     tableMoved = false;
     interaction.liftByOthers(tableCardsOf(next.ghosts));
-    interaction.markersLiftedByOthers = new Set(next.tokens.map((token) => token.name));
+    interaction.liftMarkersByOthers(new Set(next.tokens.map((token) => token.name)));
     // Each card or pile draws its ring itself, which follows it as it moves (CardView, PileView).
     interaction.previewByOthers(previews);
 
@@ -640,7 +640,7 @@
     cancelAnimationFrame(frame);
     clearTimeout(wakeTimer);
     interaction.liftByOthers(new Set());
-    interaction.markersLiftedByOthers = new Set();
+    interaction.liftMarkersByOthers(new Set());
     interaction.previewByOthers(new Map());
   });
 </script>
