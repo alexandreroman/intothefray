@@ -11,11 +11,6 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/marvelcdb"
 )
 
-const (
-	heroKind        = "hero"
-	heroSpecialKind = "hero_special"
-)
-
 // buildSets groups the marvelcdb cards into their sets and returns them by
 // pack code, sorted by set code. A set belongs to the pack of its lowest-code
 // card, and lists each card once under its canonical code. Cards of packs
@@ -68,7 +63,7 @@ func buildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
 			continue
 		}
 		existingSets[card.SetCode] = true
-		if _, found := obligations[card.SetCode]; !found && card.TypeCode == "obligation" {
+		if _, found := obligations[card.SetCode]; !found && card.TypeCode == pack.FaceTypeObligation {
 			obligations[card.SetCode] = code
 		}
 	}
@@ -77,7 +72,7 @@ func buildHeroes(mc []marvelcdb.Card) map[string][]pack.Hero {
 	seen := make(map[string]bool)
 	for _, card := range sortedByCode(mc) {
 		code, isCard := canonical[card.Code]
-		if !isCard || card.TypeCode != "hero" {
+		if !isCard || card.TypeCode != pack.FaceTypeHero {
 			continue
 		}
 		// Both faces of a hero such as Ant-Man (12001a, 12001b) are "hero"

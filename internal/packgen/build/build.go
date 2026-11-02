@@ -167,7 +167,7 @@ func mainSchemeCardsOf(cards map[string][]pack.Card) map[string]bool {
 	codes := make(map[string]bool)
 	for _, packCards := range cards {
 		for _, card := range packCards {
-			if len(card.Faces) > 0 && card.Faces[0].Type == mainSchemeKind {
+			if len(card.Faces) > 0 && card.Faces[0].Type == pack.FaceTypeMainScheme {
 				codes[card.Code] = true
 			}
 		}
@@ -236,7 +236,7 @@ func applySetDefs(
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
 		if def.MainScheme {
-			set.Kind = mainSchemeKind
+			set.Kind = pack.SetKindMainScheme
 		}
 		set.InPlay = def.InPlay
 		set.Unlisted = def.Unlisted
@@ -273,8 +273,8 @@ func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
 // checkSide makes sure only a hero_special set becomes a side deck: other
 // kinds already have a place at setup.
 func checkSide(set pack.Set, side *pack.SideDeck) error {
-	if side != nil && set.Kind != heroSpecialKind {
-		return fmt.Errorf("side deck needs a %s set, not a %s set", heroSpecialKind, set.Kind)
+	if side != nil && set.Kind != pack.SetKindHeroSpecial {
+		return fmt.Errorf("side deck needs a %s set, not a %s set", pack.SetKindHeroSpecial, set.Kind)
 	}
 	return nil
 }
@@ -298,8 +298,8 @@ func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) e
 	if len(setAside) == 0 {
 		return nil
 	}
-	if set.Kind != heroKind {
-		return fmt.Errorf("set-aside cards need a %s set, not a %s set", heroKind, set.Kind)
+	if set.Kind != pack.SetKindHero {
+		return fmt.Errorf("set-aside cards need a %s set, not a %s set", pack.SetKindHero, set.Kind)
 	}
 	for _, code := range setAside {
 		if !cardCodes[code] {
@@ -528,5 +528,6 @@ func buildIndex(
 // isLobbyKind tells whether the lobby can offer sets of this kind. Unlisted
 // sets stay out of the lobby whatever their kind.
 func isLobbyKind(kind string) bool {
-	return kind == modularKind || kind == "standard" || kind == "expert" || kind == mainSchemeKind
+	return kind == pack.SetKindModular || kind == pack.SetKindStandard || kind == pack.SetKindExpert ||
+		kind == pack.SetKindMainScheme
 }

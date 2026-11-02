@@ -12,13 +12,9 @@ import (
 	"github.com/alexandreroman/intothefray/internal/packgen/report"
 )
 
-const (
-	villainKind    = "villain"
-	leaderKind     = "leader"
-	underlingKind  = "underling"
-	modularKind    = "modular"
-	mainSchemeKind = "main_scheme"
-)
+// cerebroVillainType is in the type of a Cerebro villain set, any case:
+// "Villain Set".
+const cerebroVillainType = "villain"
 
 // villainSet is a scenario candidate, a villain, leader or underling set, with
 // the pack it belongs to.
@@ -177,7 +173,7 @@ func villainSetsOf(sets map[string][]pack.Set, cardsByCode map[string]pack.Card)
 	var villains []villainSet
 	for packCode, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind != villainKind && set.Kind != leaderKind && set.Kind != underlingKind {
+			if set.Kind != pack.SetKindVillain && set.Kind != pack.SetKindLeader && set.Kind != pack.SetKindUnderling {
 				continue
 			}
 			villains = append(villains, villainSet{
@@ -202,7 +198,7 @@ func (v villainSet) sortKey() string {
 func firstVillainCard(set pack.Set, cardsByCode map[string]pack.Card) *pack.Card {
 	for _, code := range slices.Sorted(slices.Values(set.Cards)) {
 		card, found := cardsByCode[code]
-		if found && (card.Faces[0].Type == villainKind || card.Faces[0].Type == leaderKind) {
+		if found && (card.Faces[0].Type == pack.FaceTypeVillain || card.Faces[0].Type == pack.FaceTypeLeader) {
 			return &card
 		}
 	}
@@ -266,7 +262,7 @@ func missingSetCodes(def curated.ScenarioDef, setKinds map[string]string) []stri
 // kind.
 func badMainSchemes(def curated.ScenarioDef, setKinds map[string]string) []string {
 	return slices.DeleteFunc(slices.Sorted(slices.Values(def.MainSchemes)), func(code string) bool {
-		return setKinds[code] == mainSchemeKind
+		return setKinds[code] == pack.SetKindMainScheme
 	})
 }
 
@@ -277,7 +273,7 @@ func modularCodesByName(sets map[string][]pack.Set) map[string]string {
 	codes := make(map[string]string)
 	for _, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind != modularKind {
+			if set.Kind != pack.SetKindModular {
 				continue
 			}
 			name := strings.ToLower(set.Name)
@@ -298,7 +294,7 @@ func mainSchemeRecommendations(sets map[string][]pack.Set, cb []cerebro.Set) map
 	recommendations := make(map[string][]string)
 	for _, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind == mainSchemeKind {
+			if set.Kind == pack.SetKindMainScheme {
 				recommendations[set.Code] = recommendedOf(set.Name, cb, cerebroNames, modularCodes)
 			}
 		}
@@ -325,7 +321,7 @@ func recommendedOf(
 ) []string {
 	recommended := []string{}
 	for _, set := range cb {
-		if !strings.EqualFold(set.Name, villainName) || !strings.Contains(strings.ToLower(set.Type), villainKind) {
+		if !strings.EqualFold(set.Name, villainName) || !strings.Contains(strings.ToLower(set.Type), cerebroVillainType) {
 			continue
 		}
 		for _, id := range set.Recommends {

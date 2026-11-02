@@ -331,7 +331,7 @@ func faceSize(entry marvelcdb.Card, override curated.CardOverride) pack.Size {
 
 func sizeOf(typeCode string) pack.Size {
 	switch typeCode {
-	case "main_scheme", "side_scheme", "player_side_scheme":
+	case pack.FaceTypeMainScheme, pack.FaceTypeSideScheme, pack.FaceTypePlayerSideScheme:
 		return pack.SizeLand
 	default:
 		return pack.SizeStd
@@ -343,13 +343,13 @@ func sizeOf(typeCode string) pack.Size {
 // and player cards, but an encounter faction always has an encounter back.
 func backOf(entry marvelcdb.Card) pack.Back {
 	switch entry.TypeCode {
-	case "villain", "main_scheme", "leader":
+	case pack.FaceTypeVillain, pack.FaceTypeMainScheme, pack.FaceTypeLeader:
 		return pack.BackVillain
-	case "obligation":
+	case pack.FaceTypeObligation:
 		return pack.BackEncounter
 	}
 	switch entry.SetType {
-	case "villain", "modular", "standard", "expert", "nemesis":
+	case pack.SetKindVillain, pack.SetKindModular, pack.SetKindStandard, pack.SetKindExpert, pack.SetKindNemesis:
 		return pack.BackEncounter
 	}
 	if entry.FactionCode == "encounter" {

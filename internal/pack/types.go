@@ -67,6 +67,18 @@ type Threat struct {
 	PerPlayer bool `json:"perPlayer"`
 }
 
+// Face types the code reads (Face.Type): marvelcdb type_code values.
+const (
+	FaceTypeHero             = "hero"
+	FaceTypeAlterEgo         = "alter_ego"
+	FaceTypeVillain          = "villain"
+	FaceTypeLeader           = "leader"
+	FaceTypeMainScheme       = "main_scheme"
+	FaceTypeSideScheme       = "side_scheme"
+	FaceTypePlayerSideScheme = "player_side_scheme"
+	FaceTypeObligation       = "obligation"
+)
+
 // Face is one printed side of a card.
 type Face struct {
 	Name           string   `json:"name"`
@@ -105,6 +117,21 @@ type Card struct {
 	Aliases  []string `json:"aliases,omitempty"`  // face codes and reprint codes resolving here
 	SetAside []string `json:"setAside,omitempty"` // player card: cards a deck with it sets aside at setup
 }
+
+// Set kinds the code reads (Set.Kind, SetRef.Kind): marvelcdb
+// card_set_type_name_code values.
+const (
+	SetKindHero        = "hero"
+	SetKindHeroSpecial = "hero_special"
+	SetKindVillain     = "villain"
+	SetKindLeader      = "leader"
+	SetKindUnderling   = "underling"
+	SetKindModular     = "modular"
+	SetKindStandard    = "standard"
+	SetKindExpert      = "expert"
+	SetKindMainScheme  = "main_scheme"
+	SetKindNemesis     = "nemesis"
+)
 
 // Set is a named group of cards (hero, villain, modular, standard, expert...).
 type Set struct {
