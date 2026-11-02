@@ -1493,6 +1493,53 @@ describe('diffViews', () => {
       expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'c4', toPile: 'deck:p0' }]);
     });
 
+    describe('a card put on top of a deck of its owner other than its home', () => {
+      // Red Skull's Side-scheme deck belongs to nobody, as Hydra Patrol does; Alex has a Labor
+      // deck, face down.
+      const schemes = (count: number) =>
+        seatPile('sdeck:schemes', { kind: 'scenarioDeck', owner: -1, label: 'Side-scheme', count });
+      const labor = (count: number) =>
+        seatPile('side:p0:0', { kind: 'sideDeck', label: 'Labor', count });
+      const encounterDiscard = (cards: string[]) =>
+        seatPile('encd', { kind: 'encounterDiscard', owner: -1, count: cards.length, cards });
+      const patrol = { code: '01001', owner: -1, back: 'encounter' } as const;
+
+      it('flies from the table to that deck, not to its home', () => {
+        const prev = view({
+          cards: [card('patrol', patrol)],
+          piles: [encounter(10), schemes(4)],
+        });
+        const next = view({ piles: [encounter(10), schemes(5)] });
+        const flight = { kind: 'fly', id: 'patrol', toPile: 'sdeck:schemes', turns: 'down' };
+
+        expect(diffViews(prev, next)).toEqual([flight]);
+        expect(diffViews(prev, next, droppedCard('patrol'))).toEqual([
+          { ...flight, dropped: true },
+        ]);
+      });
+
+      it('flies from a discard pile to that deck', () => {
+        const prev = view({
+          cards: [onPile('patrol', patrol)],
+          piles: [encounter(10), encounterDiscard(['patrol']), schemes(4)],
+        });
+        const next = view({ piles: [encounter(10), encounterDiscard([]), schemes(5)] });
+
+        expect(diffViews(prev, next)).toEqual([
+          { kind: 'fly', id: 'patrol', toPile: 'sdeck:schemes', fromPile: 'encd', turns: 'down' },
+        ]);
+      });
+
+      it("flies from the table to the player's side deck", () => {
+        const prev = view({ cards: [card('c4', { code: '01001' })], piles: [deck(10), labor(5)] });
+        const next = view({ piles: [deck(10), labor(6)] });
+
+        expect(diffViews(prev, next)).toEqual([
+          { kind: 'fly', id: 'c4', toPile: 'side:p0:0', turns: 'down' },
+        ]);
+      });
+    });
+
     it('a face-down table card discarded flies there, turning face up', () => {
       const prev = view({
         cards: [card('c4', { code: '01001', faceDown: true })],

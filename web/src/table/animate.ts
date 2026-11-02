@@ -18,7 +18,7 @@ import {
   type View,
   type Zone,
 } from '../lib/types';
-import { discardPileOf, homeDeckOf, sideLabel } from './actions';
+import { decksOf, discardPileOf, homeDeckOf, sideLabel } from './actions';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
@@ -672,7 +672,8 @@ function departures(
 }
 
 /**
- * Where a card gone from the view went: its home deck when that deck grew, a
+ * Where a card gone from the view went: a deck that takes it (decksOf: its
+ * home deck first, else another deck of its owner) when that deck grew, a
  * card from a pile flying from it; else, from the table or the hand, the
  * hand of its owner when that hand, which the viewer does not see, grew.
  */
@@ -688,11 +689,13 @@ function vanished(
   if (from === home) {
     return null;
   }
-  if (takeOne(tally.growth, home)) {
-    if (from !== undefined && !admitFlight(tally, from, home)) {
+  const deck = decksOf(was, after.piles).find((pile) => (tally.growth.get(pile.id) ?? 0) > 0);
+  if (deck) {
+    takeOne(tally.growth, deck.id);
+    if (from !== undefined && !admitFlight(tally, from, deck.id)) {
       return null;
     }
-    return flyOf(was.id, home, from, before, after);
+    return flyOf(was.id, deck.id, from, before, after);
   }
   if (from === undefined && takeOne(tally.rises, was.owner)) {
     return { kind: 'away', id: was.id };

@@ -22,7 +22,7 @@ import {
   seatPlayer,
 } from './seats';
 import { groupUnits, MAX_COUNT } from './selection';
-import type { Action, CardView, PileView, Stage, TableView, View } from '../lib/types';
+import type { Action, CardView, PileKind, PileView, Stage, TableView, View } from '../lib/types';
 
 /**
  * What the actions are for: a table card, a pile or a card of the viewer's
@@ -685,8 +685,15 @@ export function homeDeckOf(card: CardView): string {
 }
 
 /**
- * The home deck (homeDeckOf) the viewer may return the card to: a deck is
- * private to its owner, so the viewer's own cards and encounter cards only.
+ * Whether the viewer, seated at `seats`, may put the card into a deck: a deck is private to its
+ * owner, so the viewer's own cards and cards of nobody's (encounter and scenario cards) only.
+ */
+function mayPutInDeck(card: CardView, seats: readonly number[]): boolean {
+  return seats.includes(card.owner) || card.owner === -1;
+}
+
+/**
+ * The home deck (homeDeckOf) the viewer may return the card to (mayPutInDeck).
  * Undefined when the card is another player's, or the table lacks that deck.
  */
 export function homeDeckFor(
@@ -694,11 +701,42 @@ export function homeDeckFor(
   seats: readonly number[],
   piles: readonly PileView[],
 ): PileView | undefined {
-  if (!seats.includes(card.owner) && card.owner !== -1) {
+  if (!mayPutInDeck(card, seats)) {
     return undefined;
   }
   const home = homeDeckOf(card);
   return piles.find((pile) => pile.id === home);
+}
+
+/** The kinds of pile a card can be put into: on top, at the bottom or shuffled in. */
+const DECK_KINDS: readonly PileKind[] = ['deck', 'sideDeck', 'encounter', 'scenarioDeck'];
+
+/**
+ * The decks on the table that take the card, as the server has it: those of the card's owner, so a
+ * player's deck and side decks for that player's card, the encounter and scenario decks for a card
+ * of nobody's. Its home deck (homeDeckOf) comes first.
+ */
+export function decksOf(card: CardView, piles: readonly PileView[]): PileView[] {
+  const decks = piles.filter((pile) => DECK_KINDS.includes(pile.kind) && pile.owner === card.owner);
+  const home = homeDeckOf(card);
+  const homeDeck = decks.filter((deck) => deck.id === home);
+  const others = decks.filter((deck) => deck.id !== home);
+  return [...homeDeck, ...others];
+}
+
+/**
+ * The decks (decksOf) the viewer may put the card into (mayPutInDeck): none for another player's
+ * card.
+ */
+export function decksFor(
+  card: CardView,
+  seats: readonly number[],
+  piles: readonly PileView[],
+): PileView[] {
+  if (!mayPutInDeck(card, seats)) {
+    return [];
+  }
+  return decksOf(card, piles);
 }
 
 /**

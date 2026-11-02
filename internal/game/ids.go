@@ -80,8 +80,8 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 	case ActToDeck:
 		// On a side deck that shows its top card, a card put on top, or under
 		// no card, lies in everybody's sight.
-		home, ok := t.Piles[c.Home]
-		inSight := ok && home.TopFaceUp && (a.Where == whereTop || len(home.Cards) == 0)
+		deck, ok := t.Piles[toDeckID(c, a)]
+		inSight := ok && deck.TopFaceUp && (a.Where == whereTop || len(deck.Cards) == 0)
 		if a.Where != whereShuffle && !inSight {
 			ids = append(ids, c.ID)
 		}
@@ -105,13 +105,16 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 
 // sentUnderDecks returns the cards tucked under c that go to the bottom of a
 // deck when a takes c off the table (see tuckedUnderDecks), but those a
-// shuffle into c's deck gathers.
+// shuffle of c into a deck gathers.
 func (t *Table) sentUnderDecks(c *Card, a Action) []string {
 	if c.Zone != ZoneTable {
 		return nil
 	}
 	ids := t.tuckedUnderDecks(c)
-	if deck, ok := t.Piles[c.Home]; ok && a.Kind == ActToDeck && a.Where == whereShuffle {
+	if a.Kind != ActToDeck || a.Where != whereShuffle {
+		return ids
+	}
+	if deck, ok := t.Piles[toDeckID(c, a)]; ok {
 		shuffled := t.shuffledIntoDeck(c, deck)
 		ids = slices.DeleteFunc(ids, func(id string) bool { return slices.Contains(shuffled, id) })
 	}

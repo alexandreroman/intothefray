@@ -360,7 +360,8 @@ export interface Action {
   target?: string; // card id (attach, arrow, play under it) or pile id
   /**
    * For draw, a side deck, without it the credited seat's deck; for play, the deck whose top card
-   * is played; for reveal, the viewer's deck or side deck, without it the encounter deck.
+   * is played; for reveal, the viewer's deck or side deck, without it the encounter deck; for
+   * toDeck, the deck the card goes into, one of its owner's, without it the card's home deck.
    */
   pile?: string;
   area?: Area; // whose hand (handOrder), or who is dealt a card (deal)

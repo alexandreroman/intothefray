@@ -12,7 +12,14 @@ import {
   type Point,
   type View,
 } from '../lib/types';
-import { deckDiscardOf, deckName, discardPileOf, homeDeckFor, staysOnTable } from './actions';
+import {
+  deckDiscardOf,
+  deckName,
+  decksFor,
+  discardPileOf,
+  homeDeckOf,
+  staysOnTable,
+} from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
@@ -63,7 +70,8 @@ export type DropRect =
   | { kind: 'toHand'; rect: Rect }
   /** The table itself, where it shows. */
   | { kind: 'table'; rect: Rect }
-  | { kind: 'pile'; pile: string; drop: PileDrop; label: string; rect: Rect }
+  /** A pile, as pileTargets has it (`exact`: see PileTarget). */
+  | { kind: 'pile'; pile: string; drop: PileDrop; label: string; exact?: boolean; rect: Rect }
   | { kind: 'card'; card: string; z: number; rect: Rect };
 
 export type TableRect = Extract<DropRect, { kind: 'table' }>;
@@ -123,7 +131,9 @@ function distance(rect: Rect, point: Point): number {
 /**
  * What a drop at the point lands on: the hand, if it is a target, then the
  * nearest pile up to 20 px away, the topmost card under the point, or else
- * the table itself. Null outside the table.
+ * the table itself. Null outside the table. An exact pile (a deck that is not
+ * the dragged card's home) counts only right under the point, and only when
+ * no card lies there: a card revealed on that deck takes the tuck.
  */
 export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
   const hand = targets.find(
@@ -137,23 +147,36 @@ export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
     return null;
   }
 
+  const topCard = topCardAt(point, targets);
   let nearestPile: PileRect | null = null;
   let nearestDistance = PILE_MARGIN;
+  for (const target of targets) {
+    if (target.kind !== 'pile') {
+      continue;
+    }
+    if (target.exact && (topCard !== null || !contains(target.rect, point))) {
+      continue;
+    }
+    const d = distance(target.rect, point);
+    if (d <= nearestDistance) {
+      nearestPile = target;
+      nearestDistance = d;
+    }
+  }
+  return nearestPile ?? topCard ?? table;
+}
+
+/** The topmost card under the point, null when none lies there. */
+function topCardAt(point: Point, targets: DropRect[]): CardRect | null {
   let topCard: CardRect | null = null;
   for (const target of targets) {
-    if (target.kind === 'pile') {
-      const d = distance(target.rect, point);
-      if (d <= nearestDistance) {
-        nearestPile = target;
-        nearestDistance = d;
-      }
-    } else if (target.kind === 'card' && contains(target.rect, point)) {
+    if (target.kind === 'card' && contains(target.rect, point)) {
       if (topCard === null || target.z > topCard.z) {
         topCard = target;
       }
     }
   }
-  return nearestPile ?? topCard ?? table;
+  return topCard;
 }
 
 /**
@@ -161,8 +184,8 @@ export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
  * is drawn, in table units, `dealTo` the player an encounter card dealt there
  * goes to (see dealRecipient), and `rows` where the view mode draws the rows.
  * Null when nothing would change: no target, the spot it was taken from, or
- * its own place in the hand. A card revealed on its deck lies on that deck, so
- * dropped where it lies it goes back on top, as Move to's Top of deck does.
+ * its own place in the hand. A card revealed on a deck lies on that deck, so
+ * dropped where it lies it goes back on top of the deck it lies on.
  */
 export function dropAction(
   drag: DragSource,
@@ -264,8 +287,8 @@ function reorder(drag: Extract<DragSource, { kind: 'hand' }>, index: number): Ac
 }
 
 function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
-  // A pile's top card dropped back onto its pile stays where it is. A card revealed on its deck
-  // goes back on top of it, as its Move to ▾ "Top of deck" does.
+  // A pile's top card dropped back onto its pile stays where it is. A card revealed on a deck
+  // goes back on top of the deck it lies on.
   if (drag.kind === 'pile' && drag.pile === pile) {
     return null;
   }
@@ -275,7 +298,7 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
   }
   switch (drop) {
     case 'top':
-      return { kind: 'toDeck', card: drag.card, where: 'top' };
+      return { kind: 'toDeck', card: drag.card, where: 'top', pile };
     case 'discard':
       return { kind: 'discard', card: drag.card };
     case 'pile':
@@ -439,12 +462,19 @@ export interface PileTarget {
   pile: string;
   drop: PileDrop;
   label: string;
+  /**
+   * Set on a deck that is not the dragged card's home: a drop goes onto it only right over it, and
+   * a card lying there wins over it (dropTarget). Other piles take a drop up to 20 px away.
+   */
+  exact?: boolean;
 }
 
 /**
- * The piles a dragged card can go to, as its Move to ▾ menu has them: its
- * home deck, on top (the viewer's own cards and encounter cards only), and
- * its discard pile, when it has one; none when it stays on the table. The top
+ * The piles a dragged card can go to: the top of every deck that takes it
+ * (decksFor: those of its owner, its home deck first; the viewer's own cards
+ * and cards of nobody's only), any deck but its home an exact target (see
+ * PileTarget), and its discard pile, when it has one; none
+ * when it stays on the table. Move to ▾ offers its home deck only. The top
  * card of a deck goes to the pile that deck discards to (deckDiscardOf): a
  * player's deck to its discard pile, the encounter deck's to the encounter
  * discard pile, a side or scenario deck's to the pile it names. A scenario
@@ -483,10 +513,15 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     return [];
   }
   const targets: PileTarget[] = [];
-  const home = homeDeckFor(card, seats, table.piles);
-  if (home) {
-    const deck = deckName(home);
-    targets.push({ pile: home.id, drop: 'top', label: `Top of ${deck}` });
+  const home = homeDeckOf(card);
+  for (const deck of decksFor(card, seats, table.piles)) {
+    const target: PileTarget = { pile: deck.id, drop: 'top', label: `Top of ${deckName(deck)}` };
+    if (deck.id !== home) {
+      // Side decks lie next to the identity, scenario decks among the villain's cards: a card
+      // dropped near one is placed on the table, not put into it.
+      target.exact = true;
+    }
+    targets.push(target);
   }
   // The out-of-play piles are not drawn: Move to ▾ sends a card there.
   const discard = discardPileOf(card, table.piles);

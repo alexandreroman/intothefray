@@ -167,7 +167,8 @@ function clamp(value: number, low: number, high: number): number {
 
 /**
  * The piles a group drag can go to: those every unit can go to on its own
- * (pileTargets), with the same drop. None when a unit cannot be dragged.
+ * (pileTargets), with the same drop. A deck is exact (see PileTarget) unless
+ * it is the home of every unit. None when a unit cannot be dragged.
  */
 export function groupPileTargets(units: readonly string[], view: View): PileTarget[] {
   let common: PileTarget[] | null = null;
@@ -177,12 +178,24 @@ export function groupPileTargets(units: readonly string[], view: View): PileTarg
       return [];
     }
     const targets = pileTargets(source, view);
-    common =
-      common === null
-        ? targets
-        : common.filter((kept) =>
-            targets.some((t) => t.pile === kept.pile && t.drop === kept.drop),
-          );
+    common = common === null ? targets : commonTargets(common, targets);
   }
   return common ?? [];
+}
+
+/** The targets found in both lists, exact when exact in either. */
+function commonTargets(kept: PileTarget[], targets: PileTarget[]): PileTarget[] {
+  const common: PileTarget[] = [];
+  for (const target of kept) {
+    const same = targets.find((t) => t.pile === target.pile && t.drop === target.drop);
+    if (same === undefined) {
+      continue;
+    }
+    if (same.exact && !target.exact) {
+      common.push({ ...target, exact: true });
+    } else {
+      common.push(target);
+    }
+  }
+  return common;
 }
