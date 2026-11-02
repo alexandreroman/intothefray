@@ -2,15 +2,11 @@ package pack
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"path"
 	"strings"
 )
-
-// ErrUnknownCard is returned when a code matches no card of the catalog.
-var ErrUnknownCard = errors.New("unknown card")
 
 // aliasTarget is what a card code (canonical or alias) resolves to.
 type aliasTarget struct {
@@ -169,7 +165,7 @@ func (c *Catalog) Index() Index {
 func (c *Catalog) Card(code string) (card Card, face int, err error) {
 	target, ok := c.aliases[strings.ToLower(code)]
 	if !ok {
-		return Card{}, 0, fmt.Errorf("%w: %s", ErrUnknownCard, code)
+		return Card{}, 0, fmt.Errorf("unknown card: %s", code)
 	}
 	return c.cards[target.code], target.face, nil
 }

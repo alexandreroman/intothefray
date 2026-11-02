@@ -1,7 +1,6 @@
 package pack
 
 import (
-	"errors"
 	"os"
 	"testing"
 	"testing/fstest"
@@ -49,8 +48,8 @@ func TestCatalogUnknownCard(t *testing.T) {
 	catalog := loadTestCatalog(t)
 
 	_, _, err := catalog.Card("99999")
-	if !errors.Is(err, ErrUnknownCard) {
-		t.Errorf("Card(99999) error = %v, want ErrUnknownCard", err)
+	if err == nil || err.Error() != "unknown card: 99999" {
+		t.Errorf("Card(99999) error = %v, want unknown card: 99999", err)
 	}
 }
 
