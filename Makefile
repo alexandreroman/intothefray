@@ -84,7 +84,7 @@ web-build: web-install ## Build the web app into web/dist/
 ##@ Data
 
 .PHONY: packs
-packs: ## Regenerate card packs from marvelcdb, mc4db, Cerebro and the image manifest
+packs: ## Regenerate the card packs (packs/dist) from the card sources and the image manifest
 	go run ./cmd/packgen
 
 .PHONY: sources
