@@ -81,7 +81,7 @@ Everything below works today, except where noted.
 - Docker (or Podman) with Compose, to run Redis and Caddy locally
 - [Air](https://github.com/air-verse/air) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
-- Node.js 24 and [pnpm](https://pnpm.io/) for the frontend, or
+- Node.js 26 and [pnpm](https://pnpm.io/) for the frontend, or
   [mise](https://mise.jdx.dev/) to install both at the pinned versions
   (`mise install`, see `mise.toml`)
 
