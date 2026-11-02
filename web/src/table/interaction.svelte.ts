@@ -35,7 +35,11 @@ export interface Held {
   start: { x: number; y: number };
   /** Past the threshold: it is being dragged. */
   moved: boolean;
-  /** The card it moves, as the drag started; null for the encounter deck's hidden top card. */
+  /**
+   * The card it moves, as the drag started; null for a deck's unknown top
+   * card (the encounter deck, a scenario deck, a player's deck or side deck),
+   * or a marker.
+   */
   card: string | null;
   /** The table and hand cards that move with it, hidden while their ghost follows the pointer. */
   lifted: readonly string[];
@@ -88,8 +92,6 @@ class TableInteraction {
   hovered = $state.raw<TableElement | null>(null);
   /** The element previewed: the preview shows its face, and nothing for a card back. */
   previewed = $state.raw<TableElement | null>(null);
-  /** Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen. */
-  touchMode = $state(false);
   /** The cards of the hovered history line, ringed on the table. */
   highlighted = $state.raw<ReadonlySet<string>>(new Set());
   /**
@@ -154,6 +156,8 @@ class TableInteraction {
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
+  // Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen.
+  #touchMode = false;
   // When the current press began: the timeStamp of its event.
   #pressedAt = 0;
   // The click that ends a drag, or that picks an arrow's target, is not a click on what lies there.
@@ -354,8 +358,9 @@ class TableInteraction {
 
   /**
    * The cards that the drag, or the drop waiting for the server, took from
-   * that pile: the pile is drawn without them. Null stands for the encounter
-   * deck's hidden top card.
+   * that pile: the pile is drawn without them. Null stands for a deck's
+   * unknown top card (the encounter deck, a scenario deck, a player's deck or
+   * side deck).
    */
   takenFrom(pile: string): (string | null)[] {
     return this.#moving()
@@ -683,7 +688,7 @@ class TableInteraction {
 
   /** Enters or leaves touch mode; entering it drops the preview shown, if any. */
   setTouchMode(on: boolean): void {
-    this.touchMode = on;
+    this.#touchMode = on;
     if (on) {
       this.previewed = null;
     }
@@ -692,7 +697,7 @@ class TableInteraction {
   /** Forgets everything: a previous game's state must not show in the next one. */
   reset(): void {
     this.release();
-    this.touchMode = false;
+    this.#touchMode = false;
     this.letGo();
     this.endLanding();
     this.kept = null;
@@ -714,7 +719,7 @@ class TableInteraction {
 
   /** A hand card is never previewed: the raised hand shows it large enough. Nothing is, in touch mode. */
   #changePreview(element: TableElement, preview: PreviewChange): void {
-    if (preview === 'clear' || element.kind === 'hand' || this.touchMode) {
+    if (preview === 'clear' || element.kind === 'hand' || this.#touchMode) {
       this.previewed = null;
     } else {
       this.previewed = element;
