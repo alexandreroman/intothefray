@@ -742,10 +742,6 @@
   // The panel's size, kept from the last time it showed; a portrait card's until then.
   let focusWidth = $state(320);
   let focusHeight = $state(450);
-  // The play area and the hovered element on the screen, measured when they may have moved
-  // (hover, scroll, zoom, resize, the bar sliding).
-  let focusArea: Rect | null = null;
-  let focusHovered: DOMRect | null = null;
 
   /** The hovered card or pile, on the screen. A hovered hand card has no preview to place. */
   function hoveredRect(): DOMRect | null {
@@ -757,36 +753,35 @@
     return app.querySelector(selector)?.getBoundingClientRect() ?? null;
   }
 
-  /** Measures the play area and the hovered element, then places the panel. */
+  /**
+   * Measures the play area and the hovered element, then places the panel: called whenever they
+   * may have moved (hover, scroll, zoom, resize, the bar sliding).
+   */
   function measureFocus(): void {
     // Nothing previewed, nothing to place: it is measured again as soon as a card is.
     if (!preview) {
       return;
     }
-    // The part under the top bar, while it floats over the play area, does not show.
-    const area = wrap?.getBoundingClientRect();
-    focusArea = area
-      ? { left: area.left, top: area.top + barRoom, right: area.right, bottom: area.bottom }
-      : null;
-    focusHovered = hoveredRect();
-    placeFocus();
-  }
-
-  /** Places the panel against the rects last measured. */
-  function placeFocus(): void {
-    if (!preview || !focusArea) {
+    const box = wrap?.getBoundingClientRect();
+    if (!box) {
       return;
     }
-    const next = chooseCorner({
+    // The part under the top bar, while it floats over the play area, does not show.
+    const area: Rect = {
+      left: box.left,
+      top: box.top + barRoom,
+      right: box.right,
+      bottom: box.bottom,
+    };
+    focusCorner = chooseCorner({
       current: focusCorner,
-      area: focusArea,
+      area,
       size: { w: focusWidth, h: focusHeight },
-      hovered: focusHovered,
+      hovered: hoveredRect(),
       controls: homeControls,
       // The hero selector at the bottom left.
       taken: pickerShown ? ['bottom-left'] : [],
     });
-    focusCorner = next;
   }
 
   /** The panel's margins in its corner: off the play area's edges and the top bar, and above the controls at home. */
