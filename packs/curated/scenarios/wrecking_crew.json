@@ -17,7 +17,8 @@
         "wrecker"
       ],
       "discard": "own",
-      "encounter": true
+      "encounter": true,
+      "compact": true
     },
     {
       "key": "thunderball",
@@ -26,7 +27,8 @@
         "thunderball"
       ],
       "discard": "own",
-      "encounter": true
+      "encounter": true,
+      "compact": true
     },
     {
       "key": "piledriver",
@@ -35,7 +37,8 @@
         "piledriver"
       ],
       "discard": "own",
-      "encounter": true
+      "encounter": true,
+      "compact": true
     },
     {
       "key": "bulldozer",
@@ -44,7 +47,8 @@
         "bulldozer"
       ],
       "discard": "own",
-      "encounter": true
+      "encounter": true,
+      "compact": true
     }
   ],
   "piles": [

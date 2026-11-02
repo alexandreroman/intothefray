@@ -22,7 +22,9 @@ import (
 // (if the scenario has one), then the scenario decks no stage names, each with
 // its discard pile if it has one, then each stage in order: its own deck group
 // first, then the stage card, then the cards in play laid out "with" it, and
-// finally the other cards in play. A scenario deck is compact, 80 by 112, its
+// finally the other cards in play. A scenario deck is as large as the classic
+// encounter deck, its discard pile as far right of it as the encounter discard
+// pile is; a compact one (see pack.ScenarioDeck.Compact) is 80 by 112, its
 // discard pile compactDiscardStepX right of it. A deck group lies pileZoneGap
 // after what precedes it; a stage card pileZoneGap after piles and inPlayGap
 // after a card; cards in play inPlayGap apart. The classic scenarios have no
@@ -93,7 +95,7 @@ const (
 	// taken up to the grid, where the first card in play of a classic villain's row lies: 660.
 	inPlayStartX = (classicSchemeX + landscapeWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
 
-	// A scenario deck is compact, and its discard pile lies compactDiscardStepX right of it.
+	// A compact scenario deck is compactWidth wide, and its discard pile lies compactDiscardStepX right of it.
 	compactWidth        = 80
 	compactDiscardStepX = 100
 
@@ -616,27 +618,32 @@ func (b *tableBuilder) requireNoVillainLeftover(setCode string) error {
 }
 
 // addDeckGroup lays out the piles of a scenario deck at the cursor of the
-// villain's row: the deck, then its own discard pile, if it has one,
-// compactDiscardStepX right of it. The deck records where its cards are
-// discarded (see Pile.Discard): to its own discard pile, else to the
-// encounter discard pile, its owner's, unless its rule is "none" or the
-// scenario has no classic encounter deck (setupScenario then removes that
-// pile before laying out the decks).
+// villain's row: the deck, then its own discard pile, if it has one, right of
+// it. They take the size and spacing of the classic encounter piles, or are
+// compact when the deck is (see pack.ScenarioDeck.Compact). The deck records
+// where its cards are discarded (see Pile.Discard): to its own discard pile,
+// else to the encounter discard pile, its owner's, unless its rule is "none"
+// or the scenario has no classic encounter deck (setupScenario then removes
+// that pile before laying out the decks).
 func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 	deckID, discardID := scenarioDeckIDs(deck.Key, deck.Encounter)
 	deckKind, discardKind := KindScenarioDeck, KindScenarioDiscard
 	if deck.Encounter {
 		deckKind, discardKind = KindEncounter, KindEncounterDiscard
 	}
+	width, discardStepX := portraitWidth, discardX-deckX
+	if deck.Compact {
+		width, discardStepX = compactWidth, compactDiscardStepX
+	}
 	y := rowY(villainRow)
-	x := b.slot(compactWidth, pileZoneGap, deckX)
+	x := b.slot(width, pileZoneGap, deckX)
 	pile := b.table.addPile(deckID, deckKind, NoOwner, x, y)
-	pile.Label, pile.Compact = deck.Label, true
+	pile.Label, pile.Compact = deck.Label, deck.Compact
 	switch deck.Discard {
 	case pack.DiscardOwn:
-		discard := b.table.addPile(discardID, discardKind, NoOwner, x+compactDiscardStepX, y)
-		discard.Label, discard.Compact = deck.Label, true
-		b.inPlayRight = discard.X + compactWidth
+		discard := b.table.addPile(discardID, discardKind, NoOwner, x+discardStepX, y)
+		discard.Label, discard.Compact = deck.Label, deck.Compact
+		b.inPlayRight = discard.X + width
 		pile.Discard = discardID
 	case pack.DiscardOwner:
 		if _, ok := b.table.Piles[PileEncounterDiscard]; ok {

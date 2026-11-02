@@ -12,8 +12,9 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// setupCatalog returns a small catalog: a classic scenario, a self-contained one with two villains whose decks and
-// side schemes lie in the row, one whose encounter deck leaves a villain-set card over, one with an ordered deck, and
+// setupCatalog returns a small catalog: a classic scenario, a self-contained one with two villains whose compact decks
+// and side schemes lie in the row, the same one with decks of the standard size, one whose encounter deck leaves a
+// villain-set card over, one with an ordered deck, and
 // a classic one whose scenario decks take villain-set cards, by set and by card, and a modular set's cards, and two
 // that require an encounter set: a classic one and a self-contained one with its own encounter deck.
 func setupCatalog(t *testing.T) *pack.Catalog {
@@ -98,6 +99,27 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 			},
 			{
 				ID: "twice", VillainSet: "vs_t", SelfContained: true, Active: "v1",
+				Piles: []pack.Pile{
+					{Key: "v1", Label: "One", Cards: []string{"10001", "10002"}, Deck: "da"},
+					{Key: "v2", Label: "Two", Cards: []string{"10004", "10005"}, Deck: "db"},
+					{Key: "scheme", Label: "Scheme", Cards: []string{"10010"}},
+				},
+				Decks: []pack.ScenarioDeck{
+					{
+						Key: "da", Label: "Deck A", Sets: []string{"sa"}, Encounter: true, Discard: pack.DiscardOwn,
+						Compact: true,
+					},
+					{Key: "db", Label: "Deck B", Cards: []string{"12001", "12002"}, Compact: true},
+				},
+				Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+					Top: map[string]pack.FaceRef{
+						"v1": {Card: "10001"}, "v2": {Card: "10004"}, "scheme": {Card: "10010"},
+					},
+					InPlay: []pack.FaceRef{{Card: "10003", With: "v1"}, {Card: "10006", With: "v2"}},
+				}},
+			},
+			{
+				ID: "twice_standard", VillainSet: "vs_t", SelfContained: true, Active: "v1",
 				Piles: []pack.Pile{
 					{Key: "v1", Label: "One", Cards: []string{"10001", "10002"}, Deck: "da"},
 					{Key: "v2", Label: "Two", Cards: []string{"10004", "10005"}, Deck: "db"},
@@ -277,6 +299,63 @@ func TestScenarioDeckGroups(t *testing.T) {
 	}
 	if got := table.Cards[cardWithCode(t, table, "10006").ID].X; got != 890 {
 		t.Errorf("side scheme of v2 x = %d, want 890", got)
+	}
+}
+
+func TestStandardScenarioDeckGroups(t *testing.T) {
+	table := mustScenarioTable(t, "twice_standard")
+
+	// The deck of v1 at 0, its discard pile 130 right of it, as the classic encounter piles; the deck of v2
+	// pileZoneGap past the side scheme of v1, taken up to the grid: 667 to 670.
+	for id, want := range map[string]int{"enc:da": 0, "encd:da": 130, "sdeck:db": 670} {
+		p := table.Piles[id]
+		if p == nil {
+			t.Fatalf("no pile %s", id)
+		}
+		if p.X != want || p.Y != 30 || p.Compact {
+			t.Errorf("%s = %+v, want x %d, y 30, not compact", id, p, want)
+		}
+	}
+	// v1 pileZoneGap past the discard pile (ends 242): 292 to 300; its side scheme inPlayGap past it: 452 to 460
+	// (landscape, ends 617). v2 pileZoneGap past its deck (ends 782): 832 to 840; its side scheme 992 to 1000
+	// (ends 1157); the main scheme 1197 to 1200.
+	for key, want := range map[string]int{"v1": 300, "v2": 840, "scheme": 1200} {
+		if got := stageX(t, table, key); got != want {
+			t.Errorf("stage %s x = %d, want %d", key, got, want)
+		}
+	}
+	if got := table.Cards[cardWithCode(t, table, "10003").ID].X; got != 460 {
+		t.Errorf("side scheme of v1 x = %d, want 460", got)
+	}
+	if got := table.Cards[cardWithCode(t, table, "10006").ID].X; got != 1000 {
+		t.Errorf("side scheme of v2 x = %d, want 1000", got)
+	}
+	if want := (Point{X: 300 + 20, Y: 30 + 157 + 23}); table.Active == nil || *table.Active != want {
+		t.Errorf("Active = %+v, want %+v", table.Active, want)
+	}
+}
+
+func TestStandardScenarioDecksAfterClassicEncounterPiles(t *testing.T) {
+	table := mustScenarioTable(t, "decks")
+
+	// The classic encounter discard pile ends at 242. ss pileZoneGap past it: 292 to 300, its discard pile 130 right
+	// of it, at 430 (ends 542); wx 592 to 600 (ends 712); mx 762 to 770 (ends 882).
+	for id, want := range map[string]int{
+		PileEncounter: 0, PileEncounterDiscard: 130, "sdeck:ss": 300, "sdisc:ss": 430, "sdeck:wx": 600, "sdeck:mx": 770,
+	} {
+		p := table.Piles[id]
+		if p == nil {
+			t.Fatalf("no pile %s", id)
+		}
+		if p.X != want || p.Y != 30 || p.Compact {
+			t.Errorf("%s = %+v, want x %d, y 30, not compact", id, p, want)
+		}
+	}
+	// The villain pileZoneGap past the last deck: 932 to 940; the main scheme inPlayGap past it: 1092 to 1100.
+	for key, want := range map[string]int{"villain": 940, "scheme": 1100} {
+		if got := stageX(t, table, key); got != want {
+			t.Errorf("stage %s x = %d, want %d", key, got, want)
+		}
 	}
 }
 

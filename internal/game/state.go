@@ -188,7 +188,8 @@ type Pile struct {
 	// Back is the printed back the cards of a side deck share, which the
 	// client captions with the deck's label; empty when they keep their own.
 	Back pack.Back `json:"back,omitempty"`
-	// Compact is a scenario deck or discard pile, drawn 80 x 112.
+	// Compact is a compact scenario deck or discard pile, drawn 80 x 112 (see
+	// pack.ScenarioDeck.Compact).
 	Compact bool `json:"compact,omitempty"`
 	// Discard is the id of the pile the cards of a side deck or a scenario
 	// deck are discarded to, set at setup from the deck's discard rule: its

@@ -249,7 +249,9 @@ func TestModularCodesKeepLowestCodeOfDuplicatedName(t *testing.T) {
 func TestScenarioCopiesDecksSelfContainedAndActive(t *testing.T) {
 	f := newScenarioFixture(t)
 	def := rhinoDef()
-	def.Decks = []pack.ScenarioDeck{{Key: "d", Label: "D", Sets: []string{"rhino"}, Encounter: true, Discard: pack.DiscardOwn}}
+	def.Decks = []pack.ScenarioDeck{
+		{Key: "d", Label: "D", Sets: []string{"rhino"}, Encounter: true, Discard: pack.DiscardOwn, Compact: true},
+	}
 	def.SelfContained = true
 	def.Active = "villain"
 
