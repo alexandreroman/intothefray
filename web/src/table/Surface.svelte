@@ -238,11 +238,11 @@
     surface's top, past the scroller's 24px padding at the largest zoom (2). Counter-scaled far
     out, the line takes 30 × 11/12 ≈ 27.5 screen px, which the padding and those 20 units still
     hold at 30 %. As wide as the frame, or wider when the chips and --name-min need it. Above
-    every card, whose z-index the server raises with each move.
+    every card (Table.svelte).
   */
   .chips {
     position: absolute;
-    z-index: 100000;
+    z-index: var(--above-cards);
     width: max(
       var(--frame-w),
       calc(var(--chips) * var(--chip-room) + var(--name-min) + 8 * var(--lu))

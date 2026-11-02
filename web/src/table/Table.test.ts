@@ -5,6 +5,8 @@ import { interaction, LINGER_MS } from './interaction.svelte';
 import { knownCard, loadGameCards, loadIndex, type CardInfo } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import surfaceSource from './Surface.svelte?raw';
+import markerSource from './MarkerToken.svelte?raw';
+import tableSource from './Table.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
 import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
@@ -383,6 +385,15 @@ describe('Table', () => {
     // Invisible, and under the chips' faces.
     expect(coarse).not.toMatch(/background|border/);
     expect(coarse).toMatch(/z-index: -1;/);
+  });
+
+  it('draws the chips and the markers above every card, whose z-index only grows', () => {
+    // One value for both, set once on the table's root.
+    expect(/\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1]).toMatch(/--above-cards: 100000;/);
+    const chips = /\n {2}\.chips \{([^}]*)\}/.exec(surfaceSource)?.[1];
+    expect(chips).toMatch(/z-index: var\(--above-cards\);/);
+    const marker = /\n {2}\.marker \{([^}]*)\}/.exec(markerSource)?.[1];
+    expect(marker).toMatch(/z-index: var\(--above-cards\);/);
   });
 
   it('a spectator opens the out-of-play piles from their chips too', async () => {

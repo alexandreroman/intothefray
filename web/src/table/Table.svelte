@@ -2056,6 +2056,11 @@
       (--edge-bottom), the bars share their top and bottom edges.
     */
     --bar-button: 32px;
+    /*
+      Above every card, whose z-index the server raises with each move (it only grows): the
+      out-of-play chips (Surface.svelte) and the markers (MarkerToken.svelte).
+    */
+    --above-cards: 100000;
     display: grid;
     height: 100vh;
     height: 100dvh;
