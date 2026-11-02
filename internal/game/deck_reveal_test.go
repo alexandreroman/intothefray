@@ -456,6 +456,39 @@ func TestPutOnTopOfTheDeckCoversTheRevealedCard(t *testing.T) {
 	checkReplay(t, f)
 }
 
+// TestLookFollowsTheCoveredRevealedCard puts a card on top of a deck whose
+// revealed card its owner is looking at: the look keeps the covered card,
+// under its new id, and nobody sees its old id again.
+func TestLookFollowsTheCoveredRevealedCard(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	drawn := f.lastInHand("p0")
+	id := f.revealTop(t, "h", "deck:p0", 2)
+	f.mustDo(t, "h", Action{Kind: ActLook, Pile: "deck:p0", N: 3}, at(3))
+	looked := slices.Clone(f.g.ViewFor("h").Table.Private.Cards)
+
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(4))
+
+	covered := f.renamedID(t, id)
+	want := append([]string{covered}, looked[1:]...)
+	if got := f.g.ViewFor("h").Table.Private.Cards; !slices.Equal(got, want) {
+		t.Errorf("look = %v, want %v", got, want)
+	}
+	for _, view := range f.g.Table.Views {
+		if slices.Contains(view.Cards, id) {
+			t.Errorf("view %+v still holds the old id %s", view, id)
+		}
+	}
+	for _, token := range []string{"h", "b"} {
+		checkNeverSeenAgain(t, f.g, token, id)
+	}
+	// Only the viewer learns the covered card's new id.
+	checkNeverSeenAgain(t, f.g, "b", covered)
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
 // TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard covers a revealed
 // card with every deck action that puts it back into its deck: the Labor card
 // tucked under it, never discarded, drops to the bottom of its own deck, out

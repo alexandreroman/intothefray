@@ -37,6 +37,7 @@ func apply(t *Table, a Action) error {
 	}
 	// covered is a copy of t whenever covering hides a card.
 	if len(hiddenRenames) > 0 {
+		renameInViews(covered, revealedRenames(t, hiddenRenames))
 		renameCards(covered, hiddenRenames)
 	}
 	a.Renames = rest
@@ -74,6 +75,21 @@ func splitRenames(t *Table, renames map[string]string, hidden []string) (map[str
 		rest = nil
 	}
 	return hiddenRenames, rest, nil
+}
+
+// revealedRenames returns the renames among renames of the cards revealed on
+// a deck of t. Covered by a card put on top, such a card stays in its deck: an
+// open view that holds it keeps following it under its new id (see
+// renameInViews). The cards tucked under it drop out of the views as they
+// drop out of sight.
+func revealedRenames(t *Table, renames map[string]string) map[string]string {
+	revealed := map[string]string{}
+	for old, id := range renames {
+		if t.Cards[old].OnPile != "" {
+			revealed[old] = id
+		}
+	}
+	return revealed
 }
 
 // applyAction performs a on t, as apply does, on the table as a sees it. The
@@ -1401,7 +1417,9 @@ func applyReorderTop(t *Table, a Action) error {
 }
 
 // renameInViews gives the renamed cards of the open views their new ids: the
-// player who reordered the top of their deck keeps looking at those cards.
+// player who reordered the top of their deck, or who looks at a revealed card
+// covered by a card put on top, keeps looking at those cards. A view that did
+// not hold a card learns none of its ids.
 func renameInViews(t *Table, renames map[string]string) {
 	for _, view := range t.Views {
 		for i, id := range view.Cards {
