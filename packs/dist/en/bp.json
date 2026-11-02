@@ -429,7 +429,10 @@
         }
       ],
       "back": "player",
-      "quantity": 1
+      "quantity": 1,
+      "setAside": [
+        "51036"
+      ]
     },
     {
       "code": "51018",
