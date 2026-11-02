@@ -124,15 +124,6 @@ func rowTop(row int) int {
 	return villainRowHeight + rowHeight*(row-1)
 }
 
-const (
-	faceTypeHero     = "hero"
-	faceTypeAlterEgo = "alter_ego"
-)
-
-// setKindMainScheme is the kind of a main scheme set, which the host picks
-// among the modular sets for a scenario with main schemes.
-const setKindMainScheme = "main_scheme"
-
 // mainSchemeStageLabel labels the stage of the chosen main scheme set, keyed
 // pack.MainSchemeStage.
 const mainSchemeStageLabel = "Main scheme"
@@ -571,7 +562,7 @@ func (b *tableBuilder) setupMainScheme(setCode string) (map[string]bool, error) 
 		if err != nil {
 			return nil, err
 		}
-		if len(def.Faces) > 0 && def.Faces[0].Type == faceTypeMainScheme {
+		if len(def.Faces) > 0 && def.Faces[0].Type == pack.FaceTypeMainScheme {
 			codes = append(codes, def.Code)
 		}
 	}
@@ -745,7 +736,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 		}
 		b.placeOnTable(c, top.Face, x, rowY(villainRow))
 		stage.Current = c.ID
-		stage.Villain = len(def.Faces) > 0 && def.Faces[0].Type == faceTypeVillain
+		stage.Villain = len(def.Faces) > 0 && def.Faces[0].Type == pack.FaceTypeVillain
 		current = c
 	}
 	if current == nil {
@@ -1039,14 +1030,14 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 // hero or an alter ego.
 func isIdentityCard(def pack.Card) bool {
 	return slices.ContainsFunc(def.Faces, func(face pack.Face) bool {
-		return face.Type == faceTypeHero || face.Type == faceTypeAlterEgo
+		return face.Type == pack.FaceTypeHero || face.Type == pack.FaceTypeAlterEgo
 	})
 }
 
 // alterEgoFace returns the index of the alter-ego face, or 0 if there is none.
 func alterEgoFace(def pack.Card) int {
 	for i, face := range def.Faces {
-		if face.Type == faceTypeAlterEgo {
+		if face.Type == pack.FaceTypeAlterEgo {
 			return i
 		}
 	}
