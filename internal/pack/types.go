@@ -113,7 +113,8 @@ type Set struct {
 	Kind  string   `json:"kind"`
 	Cards []string `json:"cards"`
 	// InPlay lists, per difficulty, the cards of the set that start in play
-	// instead of in the encounter deck (the "Setup." keyword).
+	// instead of in the encounter deck (the "Setup." keyword, or a main scheme
+	// set's own setup environment).
 	InPlay map[Difficulty][]FaceRef `json:"inPlay,omitempty"`
 	// Unlisted sets are left out of the lobby, e.g. the PvP standard set.
 	Unlisted bool      `json:"unlisted,omitempty"`

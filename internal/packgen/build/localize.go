@@ -257,8 +257,8 @@ func localizeIndex(index *pack.Index, defs []curated.ScenarioDef, fr frenchSourc
 		ref.Localized = localizedName(fr.setName(ref.Code, ref.Name))
 	}
 
-	// A curated scenario may be named differently from its villain set; any
-	// other scenario is named after its set.
+	// A curated scenario's ID may differ from its villain set code; its name is
+	// the set's.
 	villainSets := make(map[string]string, len(defs))
 	for _, def := range defs {
 		villainSets[def.ID] = def.VillainSet
