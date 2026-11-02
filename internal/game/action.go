@@ -165,10 +165,10 @@ func resolve(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 // will see it: with the cards revealed on the deck a acts on back in it (see
 // coveredFor), so that the recorded cards are those apply takes. It picks
 // every new id, a client choosing none: those of a shuffle, and those of the
-// cards a takes out of sight (see renamedOnTheWay). A rebuild resolves its
+// cards a takes out of sight (see renamedBy). A rebuild resolves its
 // shuffles again here too (see replayEvent).
 func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
-	t, err := original.coveredFor(a, PlayerArea(who.seat))
+	t, hidden, err := original.coveredFor(a, PlayerArea(who.seat))
 	if err != nil {
 		return Action{}, err
 	}
@@ -177,7 +177,7 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 	if err != nil {
 		return resolved, err
 	}
-	if ids := t.renamedOnTheWay(resolved); len(ids) > 0 {
+	if ids := t.renamedBy(resolved, hidden); len(ids) > 0 {
 		if resolved.Renames == nil {
 			resolved.Renames = make(map[string]string, len(ids))
 		}

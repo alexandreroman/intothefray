@@ -26,11 +26,11 @@ const (
 // first mutation, so an error leaves t untouched. A deck action sees the cards
 // revealed on its deck back on top of it (see coveredFor).
 func apply(t *Table, a Action) error {
-	covered, err := t.coveredFor(a, a.Area)
+	covered, hidden, err := t.coveredFor(a, a.Area)
 	if err != nil {
 		return err
 	}
-	if err := applyAction(covered, a); err != nil {
+	if err := applyAction(covered, a, hidden); err != nil {
 		return err
 	}
 	if covered != t {
@@ -39,10 +39,11 @@ func apply(t *Table, a Action) error {
 	return nil
 }
 
-// applyAction performs a on t, as apply does, on the table as a sees it. The
-// cards it takes out of sight get their new ids last (see renamedOnTheWay).
-func applyAction(t *Table, a Action) error {
-	renames, err := t.checkRenamedOnTheWay(a)
+// applyAction performs a on t, as apply does, on the table as a sees it;
+// hidden are the cards covering took out of sight (see coveredFor). The cards
+// a takes out of sight get their new ids last (see renamedBy).
+func applyAction(t *Table, a Action, hidden []string) error {
+	renames, err := t.checkRenamedOnTheWay(a, hidden)
 	if err != nil {
 		return err
 	}
@@ -1092,20 +1093,25 @@ func (t *Table) deckCards(pile *Pile) []string {
 // counts as that deck's top card: when a takes, reorders or shuffles the top
 // of a deck with cards revealed on it (see actedDeck), they lie back on top
 // of that deck, face down, in a copy of t. Otherwise it returns t itself.
-// hand is the hand of the deck a draw naming no pile takes from.
-func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
+// hand is the hand of the deck a draw naming no pile takes from. It also
+// returns the cards it takes out of sight: the revealed cards, and the cards
+// tucked under them that go to the bottom of a deck (see tuckedUnderDecks).
+func (t *Table) coveredFor(a Action, hand Area) (*Table, []string, error) {
 	deckID := t.actedDeck(a, hand)
 	covering := t.revealedOn(deckID)
 	if len(covering) == 0 {
-		return t, nil
+		return t, nil, nil
 	}
 	if _, err := t.pile(deckID); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+	var hidden []string
 	for _, c := range covering {
 		if err := t.checkLeave(c); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		hidden = append(hidden, c.ID)
+		hidden = append(hidden, t.tuckedUnderDecks(c)...)
 	}
 
 	covered := t.Clone()
@@ -1113,7 +1119,7 @@ func (t *Table) coveredFor(a Action, hand Area) (*Table, error) {
 	for _, c := range covering {
 		covered.putOnPile(deck, covered.Cards[c.ID])
 	}
-	return covered, nil
+	return covered, hidden, nil
 }
 
 // actedDeck returns the id of the deck whose top a takes, reorders or

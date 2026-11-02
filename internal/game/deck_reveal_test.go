@@ -444,12 +444,49 @@ func TestPutOnTopOfTheDeckCoversTheRevealedCard(t *testing.T) {
 
 	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(3))
 
-	drawn = f.renamedID(t, drawn)
-	if got := topCards(f.g.Table.Piles["deck:p0"], 2); !slices.Equal(got, []string{drawn, id}) {
-		t.Errorf("top = %v, want [%s %s]", got, drawn, id)
+	// Back in the deck, face down, the revealed card goes by a new id: nobody
+	// can follow it there.
+	drawn, covered := f.renamedID(t, drawn), f.renamedID(t, id)
+	if covered == id {
+		t.Errorf("the covered card keeps its id %s", id)
+	}
+	if got := topCards(f.g.Table.Piles["deck:p0"], 2); !slices.Equal(got, []string{drawn, covered}) {
+		t.Errorf("top = %v, want [%s %s]", got, drawn, covered)
+	}
+	for _, token := range []string{"h", "b"} {
+		checkNeverSeenAgain(t, f.g, token, id)
 	}
 	checkIntegrity(t, f.g.Table)
 	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// A card put on top of the deck covers the revealed card, which drops the
+// card tucked under it: a Labor card, never discarded, goes to the bottom of
+// its deck, under a new id.
+func TestPutOnTopOfTheDeckRenamesTheCardsTuckedUnderTheRevealedCard(t *testing.T) {
+	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	labor := f.sideDeckLabeled(t, "Labor")
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	drawn := f.lastInHand("p0")
+	id := f.revealTop(t, "h", "deck:p0", 2)
+	tucked := drawSide(t, f, "h", labor, 3)
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: tucked, Target: id}, at(4))
+
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: drawn, Where: whereTop}, at(5))
+
+	renamed := f.renamedID(t, tucked)
+	if renamed == tucked {
+		t.Errorf("the tucked Labor card keeps its id %s", tucked)
+	}
+	if got := f.g.Table.Piles[labor].Cards[0]; got != renamed {
+		t.Errorf("bottom of the Labor deck = %s, want the tucked card %s", got, renamed)
+	}
+	checkNeverSeenAgain(t, f.g, "h", tucked)
+	checkNeverSeenAgain(t, f.g, "h", id)
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
 }
 
 func TestRevealedCardPutOnTopOfItsDeckGoesBackThere(t *testing.T) {
