@@ -84,6 +84,27 @@ export interface ActionItem {
   run?: () => Action | { ask: CountQuestion } | LocalAction;
 }
 
+/**
+ * The key of each card and pile action, as its menu entry shows it and the
+ * keys sheet lists it (KeysSheet.svelte). Several actions share a key, each
+ * on its own kind of element: W draws a revealed card or from a deck, X
+ * discards a card or a deck's top card, and with Shift, Draw X and Discard X.
+ */
+export const KEYS = {
+  exhaust: 'E',
+  flip: 'F',
+  arrow: 'A',
+  discard: 'X',
+  hand: 'H',
+  bottom: 'B',
+  stage: 'V',
+  draw: 'W',
+  reveal: 'R',
+  look: 'L',
+  search: 'K',
+  shuffle: 'U',
+} as const;
+
 // Groups of a card in play, in menu order: Exhaust and Flip (or the stage
 // choice) turn the card, the token, status and modifier submenus mark it,
 // Discard and Move to take it away.
@@ -335,7 +356,7 @@ function drawRevealedItem(card: CardView): ActionItem {
   return {
     id: 'draw',
     label: 'Draw',
-    key: 'W',
+    key: KEYS.draw,
     default: true,
     group: GROUP_TURN,
     run: () => ({ kind: 'draw', n: 1, pile: card.onPile }),
@@ -347,7 +368,7 @@ function exhaustItem(card: CardView): ActionItem {
   return {
     id: 'exhaust',
     label: card.exhausted ? 'Ready' : 'Exhaust',
-    key: 'E',
+    key: KEYS.exhaust,
     disabled: stuck,
     reason: stuck ? 'Locked: this card does not ready' : undefined,
     default: true,
@@ -366,7 +387,7 @@ function stageItem(): ActionItem {
   return {
     id: 'stage',
     label: 'Change card…',
-    key: 'V',
+    key: KEYS.stage,
     group: GROUP_TURN,
     run: () => ({ local: 'stageBox' }),
   };
@@ -387,7 +408,7 @@ function stageFlipItem(card: CardView, stage: Stage): ActionItem | null {
   return {
     id: 'flip',
     label: 'Flip',
-    key: 'F',
+    key: KEYS.flip,
     group: GROUP_TURN,
     run: () => ({ kind: 'chooseStage', stage: stage.key, card: card.id, face }),
   };
@@ -410,7 +431,7 @@ function flipItem(card: CardView): ActionItem {
   return {
     id: 'flip',
     label: 'Flip',
-    key: 'F',
+    key: KEYS.flip,
     group: GROUP_TURN,
     // The server picks the face the card ends on (resolveFlip).
     run: () => ({ kind: 'flip', card: card.id }),
@@ -483,7 +504,7 @@ function leaveItems(units: readonly CardView[], context: Context): ActionItem[] 
   const discard: ActionItem = {
     id: 'discard',
     label: units.length >= 2 ? `Discard ${units.length} cards` : 'Discard',
-    key: 'X',
+    key: KEYS.discard,
     altKeys: ['Backspace'],
     group: GROUP_LEAVE,
     run: () => actionOver(units, (unit) => ({ kind: 'discard', card: unit.id })),
@@ -552,7 +573,7 @@ function moveMenu(units: readonly CardView[], context: Context): ActionItem[] {
     menu.push({
       id: 'hand',
       label: 'Hand',
-      key: 'H',
+      key: KEYS.hand,
       group: 0,
       run: () => actionOver(units, (unit) => ({ kind: 'toHand', card: unit.id })),
     });
@@ -574,7 +595,7 @@ function moveMenu(units: readonly CardView[], context: Context): ActionItem[] {
       {
         id: 'deckBottom',
         label: `Bottom of ${deck}`,
-        key: 'B',
+        key: KEYS.bottom,
         group: 0,
         run: () => actionOver(units, (unit) => toDeck(unit, 'bottom')),
       },
@@ -642,7 +663,7 @@ export function arrowItem(card: string): ActionItem {
   return {
     id: 'arrow',
     label: 'Draw an arrow',
-    key: 'A',
+    key: KEYS.arrow,
     group: GROUP_POINT,
     run: () => ({ local: 'arrow', card }),
   };
@@ -846,7 +867,7 @@ function drawOneItem(sideDeck?: PileView): ActionItem {
   return {
     id: 'draw1',
     label: 'Draw 1',
-    key: 'W',
+    key: KEYS.draw,
     default: true,
     group: GROUP_MAIN,
     run: () => drawAction(1, sideDeck),
@@ -866,7 +887,7 @@ function drawCountItem(pile: PileView, table: TableView): ActionItem {
   return {
     id: 'drawN',
     label: 'Draw X',
-    key: 'W',
+    key: KEYS.draw,
     shift: true,
     group: GROUP_MAIN,
     run: () => ({
@@ -891,7 +912,7 @@ function revealItem(pile: PileView, context: Context): ActionItem {
   const reveal: ActionItem = {
     id: 'reveal',
     label: 'Reveal',
-    key: 'R',
+    key: KEYS.reveal,
     group: GROUP_MAIN,
     run: () =>
       pile.id === PILE_ENCOUNTER ? { kind: 'reveal' } : { kind: 'reveal', pile: pile.id },
@@ -920,7 +941,7 @@ function lookTopItem(pile: PileView, pileName: string, table: TableView): Action
   return {
     id: 'lookTop',
     label: 'Top X',
-    key: 'L',
+    key: KEYS.look,
     group: GROUP_LOOK,
     run: () => ({
       ask: {
@@ -940,7 +961,7 @@ function discardOneItem(pile: PileView): ActionItem {
   return {
     id: 'discard1',
     label: 'Discard 1',
-    key: 'X',
+    key: KEYS.discard,
     altKeys: ['Backspace'],
     group: GROUP_MORE,
     run: () => ({ kind: 'discardTop', pile: pile.id, n: 1 }),
@@ -955,7 +976,7 @@ function discardTopItem(pile: PileView, pileName: string, table: TableView): Act
   return {
     id: 'discardTop',
     label: 'Discard X',
-    key: 'X',
+    key: KEYS.discard,
     shift: true,
     group: GROUP_MORE,
     run: () => ({
@@ -975,7 +996,7 @@ function shuffleItem(pile: PileView): ActionItem {
   return {
     id: 'shuffle',
     label: 'Shuffle',
-    key: 'U',
+    key: KEYS.shuffle,
     group: GROUP_MORE,
     run: () => ({ kind: 'shuffle', pile: pile.id }),
   };
@@ -1000,7 +1021,7 @@ function searchItem(pile: PileView): ActionItem {
   return {
     id: 'search',
     label: 'Search',
-    key: 'K',
+    key: KEYS.search,
     group: GROUP_LOOK,
     run: () => ({ kind: 'search', pile: pile.id }),
   };
