@@ -8,10 +8,12 @@ import {
   rowOfSeat,
   rowPitch,
   saveViewMode,
+  shownItems,
   spreadRows,
   storedViewMode,
   VILLAIN_ROW_HEIGHT,
   villainPitch,
+  type RowMap,
 } from './rows';
 
 function deck(owner: number, y: number): PileView {
@@ -222,5 +224,53 @@ describe('rows', () => {
     expect(localStorage.getItem('itf-view')).toBe('focus');
     saveViewMode('all');
     expect(storedViewMode()).toBe('all');
+  });
+});
+
+describe('shownItems', () => {
+  // Draws every height 10 units lower, and hides the heights of 1000 and more.
+  const lower: RowMap = { toDisplay: (y) => (y < 1000 ? y + 10 : null), toTable: (y) => y - 10 };
+  const higher: RowMap = { toDisplay: (y) => y - 10, toTable: (y) => y + 10 };
+
+  it('copies each item at its drawn height, and drops those hidden', () => {
+    const shown = shownItems<{ id: string; y: number }>();
+    const items = [
+      { id: 'a', y: 0 },
+      { id: 'b', y: 1200 },
+    ];
+
+    expect(shown(items, lower)).toEqual([{ id: 'a', y: 10 }]);
+    expect(items[0]).toEqual({ id: 'a', y: 0 });
+  });
+
+  it('keeps the copy of the same item drawn at the same height', () => {
+    const shown = shownItems<{ id: string; y: number }>();
+    const item = { id: 'a', y: 0 };
+
+    const [first] = shown([item], lower);
+    const [second] = shown([item], { ...lower });
+
+    expect(second).toBe(first);
+  });
+
+  it('makes a new copy of the same item drawn at another height', () => {
+    const shown = shownItems<{ id: string; y: number }>();
+    const item = { id: 'a', y: 100 };
+
+    const [first] = shown([item], lower);
+    const [second] = shown([item], higher);
+
+    expect(second).not.toBe(first);
+    expect(second).toEqual({ id: 'a', y: 90 });
+  });
+
+  it('makes a new copy of a new item, even with the same data', () => {
+    const shown = shownItems<{ id: string; y: number }>();
+
+    const [first] = shown([{ id: 'a', y: 0 }], lower);
+    const [second] = shown([{ id: 'a', y: 0 }], lower);
+
+    expect(second).not.toBe(first);
+    expect(second).toEqual(first);
   });
 });

@@ -97,6 +97,7 @@
     rowOfSeat,
     rowPitch,
     saveViewMode,
+    shownItems,
     spreadRows,
     storedViewMode,
     type ViewMode,
@@ -420,17 +421,20 @@
     selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
-  /** What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. */
-  function shown<T extends { y: number }>(items: T[]): T[] {
-    return items.flatMap((item) => {
-      const y = rowMap.toDisplay(item.y);
-      return y === null ? [] : [{ ...item, y }];
-    });
-  }
+  // What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. A
+  // card or pile keeps its drawn copy while it stays the same, so its view does not redraw.
+  const shownPiles = shownItems<PileView>();
+  const shownCards = shownItems<TableCard>();
 
   // Out-of-play piles are not drawn: the chips on their owner's frame open them.
-  const tablePiles = $derived(shown(piles.filter((pile) => !isOutOfPlay(pile))));
-  const tableCards = $derived(shown(cards.filter((card) => card.zone === 'table')));
+  const tablePiles = $derived.by(() => {
+    const inPlay = piles.filter((pile) => !isOutOfPlay(pile));
+    return shownPiles(inPlay, rowMap);
+  });
+  const tableCards = $derived.by(() => {
+    const onTable = cards.filter((card) => card.zone === 'table');
+    return shownCards(onTable, rowMap);
+  });
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived.by(() => {
@@ -581,9 +585,9 @@
     const result: Partial<Record<MarkerName, Point>> = {};
     for (const name of MARKERS) {
       const at = table ? markerPoint(table, name) : undefined;
-      const [placed] = at ? shown([at]) : [];
-      if (placed) {
-        result[name] = placed;
+      const y = at ? rowMap.toDisplay(at.y) : null;
+      if (at && y !== null) {
+        result[name] = { ...at, y };
       }
     }
     return result;
