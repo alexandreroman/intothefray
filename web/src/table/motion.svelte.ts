@@ -3,9 +3,10 @@
 // their new place or out of a pile onto the table, copies of cards flying to
 // a pile, out of one into the hand, or between two piles, and copies going
 // into or out of a hand the viewer does not see. An out-of-play pile is not
-// drawn: the chip on its owner's frame stands for it. Nothing here holds the
-// table up: the new view is drawn at once, in its final state, and the
-// animations only paint over it, never catching the pointer.
+// drawn: the chip on its owner's frame stands for it, and a card leaves it at
+// a card's size (measureOrigin). Nothing here holds the table up: the new
+// view is drawn at once, in its final state, and the animations only paint
+// over it, never catching the pointer.
 
 import { tick } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
@@ -24,7 +25,7 @@ import { playerColorToken } from '../lib/playerColor';
 import type { Anim, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
-import { EXHAUST_DEGREES } from './layout';
+import { EXHAUST_DEGREES, PORTRAIT_CARD } from './layout';
 import { tableCard, tablePile } from './screen';
 
 /** A card moving to its new place (FLIP). */
@@ -287,6 +288,21 @@ function measure(element: HTMLElement, zoom: number): Measured {
     w: element.offsetWidth ? element.offsetWidth * scale : rect.width,
     h: element.offsetHeight ? element.offsetHeight * scale : rect.height,
   };
+}
+
+/**
+ * Where a card leaves from (originOf, pilePlace): where it shows, or, out of
+ * an out-of-play pile, a card on the chip that stands for the pile. The chip
+ * is wider than tall and smaller than a card, but a card leaves it as a card:
+ * it travels at a card's size, from the chip's middle, and a portrait card
+ * does not count as landscape for the quarter turn (PileFlight.quarter).
+ */
+function measureOrigin(element: HTMLElement, zoom: number): Measured {
+  if (!element.matches('.surface .chip[data-pile]')) {
+    return measure(element, zoom);
+  }
+  const chip = measure(element, zoom);
+  return { cx: chip.cx, cy: chip.cy, w: PORTRAIT_CARD.w * zoom, h: PORTRAIT_CARD.h * zoom };
 }
 
 /**
@@ -614,13 +630,13 @@ class TableMotion {
     // Without motion, the state shows at once; the glow is a flash, not a motion.
     const shown = reduced ? anims.filter((anim) => anim.kind === 'glow') : anims;
     // Read within this call only: nothing reacts to it.
-    // Where each card about to travel shows now (originOf).
+    // Where each card about to travel shows now (originOf, measureOrigin).
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const before = new Map<string, Measured>();
     for (const anim of shown) {
       const element = root ? originOf(root, anim, tables.before?.piles ?? []) : null;
       if (element && 'id' in anim) {
-        before.set(anim.id, measure(element, zoom));
+        before.set(anim.id, measureOrigin(element, zoom));
       }
     }
     // A card drawn or put on a pile with no card on the table goes from where the pile shows (pilePlace).
@@ -630,7 +646,7 @@ class TableMotion {
       const pile = pileOf(anim);
       const element = pile === null ? null : root?.querySelector<HTMLElement>(pilePlace(pile));
       if (pile !== null && element) {
-        pilesBefore.set(pile, measure(element, zoom));
+        pilesBefore.set(pile, measureOrigin(element, zoom));
       }
     }
     // Another player's drop goes from where their ghost lies, as for a card.
