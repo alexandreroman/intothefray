@@ -4,28 +4,12 @@
 // that list, and the hand cards, which have no menu, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
-import type { Action, CardView, Size, TableView, View } from '../lib/types';
+import type { Action, CardView, Size, View } from '../lib/types';
 import { countersOf, discardPileOf, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
-import {
-  ACTIVE_COUNTER_BOX,
-  cardBox,
-  FIRST_PLAYER_BOX,
-  footprints,
-  GRID,
-  PORTRAIT_CARD,
-  visualBox,
-} from './layout';
+import { freeSlot } from './layout';
 import { areaOf, ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
-
-// The free slot of a player's row: room for the played card with 40 free on
-// each side, as the setup leaves between the cards it puts in play
-// (internal/game/setup.go). Turned 15° when exhausted, a portrait card reaches
-// about 18 further on each side: 40 lets two neighbours both be exhausted
-// without overlapping. The row is as high as a portrait card.
-const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
-const SLOT_GAP = 40;
 
 // Shift + these arrows step through the heroes of the hero selector, or in "All" the viewer's decks.
 const HERO_STEPS: Record<string, -1 | 1> = {
@@ -294,49 +278,4 @@ function handKey(key: string, id: string, table: KeyTable): boolean {
 /** The own seat whose hand holds the card, if any. */
 function handSeatOf(id: string, view: View): number | undefined {
   return ownSeats(view).find((seat) => view.table?.hands?.[areaOf(seat)]?.includes(id));
-}
-
-/**
- * The free slot for a played card, from the hand or from a pile box: the
- * first spot of the player's row, from its deck on, where the card, as wide as
- * it lands, keeps 40 free on each side. The spots tried are the deck's x and
- * the spot 40 past the right edge of each thing in the row, taken up to the
- * grid, from left to right: the card lands right after the last card or pile
- * of the row, or in the first hole wide enough before it. On a fresh row, the
- * deck, the discard pile, any side piles and the identity lie closer together
- * than that, so the card lands after the identity. The row is the height of
- * the player's deck (the top of the table, from x 0, without one). Every
- * table card and pile reaching into the row is in the way, and so is every
- * marker.
- */
-export function freeSlot(
-  played: CardView,
-  table: Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>,
-  seat: number,
-  sizeOf: (card: CardView) => Size,
-): { x: number; y: number } {
-  const { cards, piles, firstPlayer, active } = table;
-  // Played from the hand or explicitly from a pile, a card lands face up (applyPlay, internal/game/apply.go).
-  const width = cardBox(sizeOf(played), { faceDown: false }).w;
-  const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
-  const start = deck?.x ?? 0;
-  const y = deck?.y ?? 0;
-  const markers = [
-    { id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX },
-    ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
-  ];
-  const items = [...footprints(cards, piles, sizeOf), ...markers].filter(
-    (item) => item.y < y + SLOT_ROW_HEIGHT && visualBox(item).bottom > y,
-  );
-  const isFree = (x: number) =>
-    items.every((item) => {
-      const box = visualBox(item);
-      return box.right <= x - SLOT_GAP || box.left >= x + width + SLOT_GAP;
-    });
-  const pastItems = items
-    .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
-    .filter((x) => x >= start);
-  const candidates = [start, ...pastItems].sort((a, b) => a - b);
-  // The last spot lies past every item, so there is always a free one.
-  return { x: candidates.find(isFree) ?? Math.max(...candidates), y };
 }

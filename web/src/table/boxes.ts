@@ -15,8 +15,7 @@ import type {
   View,
 } from '../lib/types';
 import { discardPileOf, homeDeckOf, pileName, type TableElement } from './actions';
-import { freeSlot } from './keys';
-import { isOutOfPlay } from './layout';
+import { freeSlot, isOutOfPlay } from './layout';
 import { creditedSeatAmong, ownSeats, PILE_ENCOUNTER, seatPlayer } from './seats';
 
 /** A box opened by the client alone: browsing a public pile, or choosing a stage card. */

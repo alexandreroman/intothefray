@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
-import { freeSlot, handleKey, type KeyTable } from './keys';
-import { footprints, visualBox } from './layout';
+import { handleKey, type KeyTable } from './keys';
+import { footprints, freeSlot, visualBox } from './layout';
 import { openModal } from '../components/modal.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, Point, Size, View } from '../lib/types';
