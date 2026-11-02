@@ -42,12 +42,25 @@ func Sources(in Inputs) ([]cdn.SourceFace, error) {
 }
 
 // octgnStem returns the OCTGN image file stem of a face: the curated one when
-// set, else the one derived from the face's OCTGN id.
+// set, else the one derived from the face's OCTGN id, "" when it has none. The
+// OCTGN packs name the image of a face after its OCTGN id. When several faces
+// of a card share one id (sharedID), the first face keeps the bare id and the
+// others add ".<letter>" (suffix b, c, ...). A face with an id of its own
+// always has the bare id, whatever its letter.
 func octgnStem(entry marvelcdb.Card, override string, sharedID bool) string {
 	if override != "" {
 		return override
 	}
-	return cdn.OctgnStem(entry.OctgnID, entry.Code, sharedID)
+	if entry.OctgnID == "" || !sharedID {
+		return entry.OctgnID
+	}
+	// Faces sharing an id are records of one base code kept by splitGroup,
+	// which drops the bare code of a group of several: the code is never empty.
+	suffix := entry.Code[len(entry.Code)-1]
+	if suffix >= 'b' && suffix <= 'z' {
+		return entry.OctgnID + "." + string(suffix)
+	}
+	return entry.OctgnID
 }
 
 // octgnGroup gathers the faces of one base code that have the same OCTGN id.
