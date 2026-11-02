@@ -1,4 +1,3 @@
-import { afterEach, describe, expect, it } from 'vitest';
 import type { Action, CardView, PileView, View } from '../lib/types';
 import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
