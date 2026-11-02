@@ -3,8 +3,9 @@ services:
     image: redis:8.10-alpine
     # In-memory only: game state is short-lived by design (no persistence)
     command: ["redis-server", "--save", ""]
+    # Loopback only, like the app: Redis has no password
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
       interval: 10s
@@ -14,7 +15,7 @@ services:
     build: .
     restart: on-failure
     ports:
-      - "${PORT:-9000}:9000"
+      - "127.0.0.1:${PORT:-9000}:9000"
     environment:
       REDIS_URL: redis://redis:6379/0
     depends_on:
@@ -32,6 +33,7 @@ services:
     # Unprivileged: the Caddyfile disables the admin API and config autosave,
     # so nothing needs a writable home
     user: "65534:65534"
+    # All interfaces, the single entry point: phones on the LAN can test the app
     ports:
       - "${WEB_PORT:-8080}:8080"
     volumes:
