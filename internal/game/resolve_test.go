@@ -524,6 +524,8 @@ func TestResolveDropsFieldsItsKindDoesNotRead(t *testing.T) {
 		return a
 	}
 	none := func(*Action) {}
+	damage := func(a *Action) { a.Name = tokenDamage }
+	ordered := func(a *Action) { a.Cards = hand }
 
 	tests := []struct {
 		name  string
@@ -534,10 +536,8 @@ func TestResolveDropsFieldsItsKindDoesNotRead(t *testing.T) {
 		{"put on top of a deck", read(Action{Kind: ActToDeck, Card: f.hand, Where: whereTop}, none), []string{"Renames"}},
 		{"exhaust", read(Action{Kind: ActExhaust, Card: f.ownTable}, none), []string{"Exhausted"}},
 		{"flip", read(Action{Kind: ActFlip, Card: f.ownTable}, none), []string{"FaceDown"}},
-		{"token", read(Action{Kind: ActToken, Card: f.ownTable, Delta: 1}, func(a *Action) { a.Name = tokenDamage }),
-			[]string{"Name"}},
-		{"hand order", read(Action{Kind: ActHandOrder, Area: "p0"}, func(a *Action) { a.Cards = hand }),
-			[]string{"Cards"}},
+		{"token", read(Action{Kind: ActToken, Card: f.ownTable, Delta: 1}, damage), []string{"Name"}},
+		{"hand order", read(Action{Kind: ActHandOrder, Area: "p0"}, ordered), []string{"Cards"}},
 		{"arrow clear", read(Action{Kind: ActArrowClear}, none), nil},
 		{"draw", read(Action{Kind: ActDraw, N: 1}, none), []string{"Cards"}},
 	}
