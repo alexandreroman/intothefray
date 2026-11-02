@@ -28,6 +28,10 @@ type: project
   that covering hides: the cards tucked under the revealed card that drop
   to the bottom of a deck, and the revealed card itself under a card put
   on top of it. A shuffle of the deck they drop into renames them anyway.
+- An open Look (Top X) or Search box keeps following a revealed card
+  covered by a card put on top, under its new id. Only a view that
+  already holds the card gets that id; the cards tucked under it leave
+  the views as they drop out of sight.
 - A Top X reorder of a deck with a revealed card takes that card back
   into the deck, face down, wherever the reorder puts it. Such a reorder
   is a tracked, undoable action with a line ("put X back into their
@@ -64,8 +68,9 @@ so every deck action treats it as such.
 on (`actedDeck`), in a copy of the table, and names the cards covering
 hides (`hiddenByCovering`). `resolveOnTable` picks their new ids and
 renames them before resolving the kind, `apply` gives them before
-performing it (`splitRenames`), and a rebuild renames them again on the
-table it meets (`renamedAgain`). Views and a deck-top play use
+performing it (`splitRenames`), the open views first for the revealed
+cards (`revealedRenames`, `renameInViews`), and a rebuild renames them
+again on the table it meets (`renamedAgain`). Views and a deck-top play use
 `deckCards`, and `applyPlay` plays a revealed card as it lies.
 `resolveReorderTop` records the renames of a reorder that takes a
 revealed card back. On the web, `deckCount` (actions.ts) counts the
