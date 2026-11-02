@@ -79,9 +79,10 @@ type Action struct {
 	// takes out of sight on their way get new ids too (see renamedOnTheWay).
 	Renames map[string]string `json:"renames,omitempty"`
 	Seat    int               `json:"seat,omitempty"` // acting seat, filled server-side (arrows)
-	// Seats is filled by an arrow clear of a player holding several decks:
-	// every seat of that player, whose arrows it clears. Without it, an arrow
-	// clear clears the arrows of Seat.
+	// Seats is filled by resolve for an arrow clear of a player holding
+	// several decks: every seat of that player, whose arrows it clears; a
+	// client's value is ignored. Without it, an arrow clear clears the arrows
+	// of Seat.
 	Seats []int `json:"seats,omitempty"`
 	// Exhausted and FaceDown are the state an exhaust or a flip leads to,
 	// filled by resolve: replaying them on a rebuilt table sets that state
@@ -220,6 +221,7 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 		// A player's arrows are credited to any of their seats. Seat alone
 		// tells the seat of a one-deck player: only a player with several
 		// records them.
+		a.Seats = nil
 		if len(who.seats) > 1 {
 			a.Seats = slices.Clone(who.seats)
 		}
