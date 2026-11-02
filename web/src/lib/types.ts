@@ -154,7 +154,7 @@ export interface PileView {
   label?: string;
   /** A side deck whose top card everyone sees. */
   topFaceUp?: boolean;
-  /** A scenario deck or discard pile, drawn smaller (80 x 112 instead of 112 x 157). */
+  /** A compact scenario deck or discard pile, drawn smaller (80 x 112 instead of 112 x 157). */
   compact?: boolean;
   /**
    * The back of a side deck whose cards have their own (Labor, Gift, Sense):

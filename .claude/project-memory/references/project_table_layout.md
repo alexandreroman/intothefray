@@ -18,9 +18,11 @@ type: project
   scenario deck it is linked to and followed by the cards in play with it,
   then the other cards in play. A scenario with several villains stays on
   this one long row (Wrecking Crew: four villain groups, Breakout last).
-- A scenario deck and its discard pile are drawn smaller (80×112 table
-  units, the discard 100 right of its deck), in a frame of their own named
-  after the deck.
+- A scenario deck and its discard pile take the size and spacing of the
+  classic encounter piles (112×157 table units, the discard 130 right of
+  its deck), in a frame of their own named after the deck. A curated deck
+  marked `compact` is drawn 80×112, its discard 100 right of it: only The
+  Wrecking Crew's four encounter decks, which share the villain row.
 - A played card (hand key P, card box Play) lands 40 units past the last
   card or pile of its row (past the identity on a fresh row), or in the
   first hole wide enough; setup spaces the main scheme and the cards it
@@ -88,11 +90,13 @@ type: project
 
 **Why:** decided with the user: players add cards as they play, so fixed
 things sit on the left and play grows right; one shared surface without
-per-player zones keeps the layout simple. One long villain row with
-smaller scenario decks keeps every villain on the same band, as the user
-chose for several villains. The user wants the decks evenly spaced on
-screen, so a two-deck game fits the window; a screen-dependent spacing
-belongs to the client's drawing, never to shared positions.
+per-player zones keeps the layout simple. One long villain row keeps every
+villain on the same band, as the user chose for several villains; scenario
+decks read as encounter piles at full size, and only a row of several
+villains with a deck each (The Wrecking Crew) needs compact decks to fit.
+The user wants the decks evenly spaced on screen, so a two-deck game fits
+the window; a screen-dependent spacing belongs to the client's drawing,
+never to shared positions.
 
 **How to apply:** new fixed table elements go at the start of their
 owner's row (server setup positions); the table has no per-player zones.

@@ -31,10 +31,10 @@ export function isLandscape(size: Size): boolean {
 /** A portrait card on the table, in table units. */
 export const PORTRAIT_CARD = SIZES.std;
 
-/** A compact pile (a scenario deck or its discard pile), in table units. */
+/** A compact pile (a compact scenario deck or its discard pile), in table units. */
 const COMPACT_PILE = { w: 80, h: 112 } as const;
 
-/** The box a pile takes on the table: compact for a scenario deck, else a portrait card. */
+/** The box a pile takes on the table: compact for a compact scenario deck, else a portrait card. */
 export function pileBox(pile: PileView): { w: number; h: number } {
   return pile.compact ? COMPACT_PILE : PORTRAIT_CARD;
 }

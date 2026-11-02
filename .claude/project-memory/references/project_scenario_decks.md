@@ -13,6 +13,8 @@ type: project
   belong to the scenario, not a seat: pile ids `enc:<key>` / `encd:<key>`
   for encounter decks, `sdeck:<key>` / `sdisc:<key>` for the others. An
   encounter scenario deck replaces the classic encounter deck.
+- A scenario deck lies at the standard pile size; `compact` on a deck
+  draws it and its discard smaller (see [[project_table_layout]]).
 - A non-encounter scenario deck belongs to nobody: any player drags it. The drag
   plays its top card face up where it lands, tucked under the card it is dropped
   on (one action, as a side deck's top): a play naming the `sdeck:` pile.

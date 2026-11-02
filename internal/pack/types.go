@@ -176,6 +176,9 @@ type ScenarioDeck struct {
 	// Encounter makes the deck an encounter deck: dealt from, boosts dealt
 	// from, revealed, like the classic encounter deck.
 	Encounter bool `json:"encounter,omitempty"`
+	// Compact draws the deck and its own discard pile compact (80 x 112), for
+	// a scenario that lays many decks out on the villain's row.
+	Compact bool `json:"compact,omitempty"`
 }
 
 // Start describes the initial table layout of a scenario.
