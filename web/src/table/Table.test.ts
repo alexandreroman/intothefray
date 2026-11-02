@@ -624,6 +624,40 @@ describe('Table', () => {
     expect(plain.closest<HTMLElement>('[data-id]')?.dataset.id).toBe('g');
   });
 
+  it('captions a face-down card whose side deck lies in a hidden row', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', back: 'villain', x: 300, y: 30 }),
+        // In the villain row, which shows; its side deck lies in Sam's row, which does not.
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 30 }),
+      ],
+      piles: [
+        pile('enc', { kind: 'encounter', x: 0, y: 30 }),
+        pile('d0', { owner: 0, x: 0, y: 410 }),
+        pile('d1', { owner: 1, x: 0, y: 630 }),
+        pile('side:p1:0', {
+          kind: 'sideDeck',
+          owner: 1,
+          x: 260,
+          y: 630,
+          count: 2,
+          label: 'Labor',
+          back: 'player',
+        }),
+      ],
+    });
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: 'Alex · Spider-Man' }));
+    expect(shownIds()).toContain('l');
+    expect(shownIds()).not.toContain('side:p1:0');
+    const back = surface().querySelector('[data-id="l"] .caption');
+    expect(back?.textContent).toBe('LABOR');
+  });
+
   it('moves the Focus panel to a corner clear of the hovered card', async () => {
     const rect = (left: number, top: number, width: number, height: number) =>
       ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;

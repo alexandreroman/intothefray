@@ -34,7 +34,6 @@
   } from '../lib/types';
   import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
-  import { backCaption } from './face';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -46,6 +45,7 @@
     owners,
     topOf,
     faceOf,
+    captionOf,
     onbrowse,
     width,
     height,
@@ -62,6 +62,8 @@
     topOf: (pile: Pile) => TableCard | undefined;
     /** The catalog face a card shows, null while unknown or hidden. */
     faceOf: (card: TableCard | undefined) => PackFace | null;
+    /** The caption of a card's back, from every pile: its side deck may lie in a row not shown. */
+    captionOf: (card: TableCard) => string | undefined;
     /** Opens the Browse box of an out-of-play pile, from its chip. */
     onbrowse: (pile: string) => void;
     /** The surface size, in table units. */
@@ -155,7 +157,7 @@
     <CardView
       {card}
       face={faceOf(card)}
-      caption={backCaption(card, piles)}
+      caption={captionOf(card)}
       draggable={canDrag({ kind: 'card', id: card.id })}
     />
   {/each}

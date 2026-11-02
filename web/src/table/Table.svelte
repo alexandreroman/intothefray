@@ -1774,6 +1774,7 @@
         {owners}
         {topOf}
         {faceOf}
+        {captionOf}
         onbrowse={openBrowseBox}
         width={surface.w}
         height={surface.h}
