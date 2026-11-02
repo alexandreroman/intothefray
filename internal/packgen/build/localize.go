@@ -6,7 +6,6 @@ import (
 	"maps"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
@@ -126,7 +125,7 @@ func mc4dbFrenchNames(in Inputs) nameSource {
 		source.packs[code] = mc4dbPack.Name
 	}
 	for _, set := range in.FrenchMC4DBSets {
-		source.sets[strings.ReplaceAll(set.Code, officialTag, "")] = set.Name
+		source.sets[marvelcdbCode(set.Code)] = set.Name
 	}
 	return source
 }
