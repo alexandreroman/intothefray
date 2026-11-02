@@ -100,7 +100,8 @@ func TestSourcesOnlyWritesNoDist(t *testing.T) {
 	}
 
 	var called bool
-	if err := run(context.Background(), discardLogger(), io.Discard, opts, fakeInputs(fixtureInputs(), &called)); err != nil {
+	inputs := fakeInputs(fixtureInputs(), &called)
+	if err := run(context.Background(), discardLogger(), io.Discard, opts, inputs); err != nil {
 		t.Fatal(err)
 	}
 

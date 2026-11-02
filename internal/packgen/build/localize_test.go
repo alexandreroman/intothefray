@@ -380,7 +380,9 @@ func TestCuratedCardNamesPrecedence(t *testing.T) {
 
 func TestCuratedCardNameKeepsTheSourceSubname(t *testing.T) {
 	fr := frenchSourcesOf(Inputs{
-		Curated:  curated.Curated{Names: map[string]curated.Names{"fr": {Cards: map[string]string{"01050": "Hulk (curated)"}}}},
+		Curated: curated.Curated{Names: map[string]curated.Names{
+			"fr": {Cards: map[string]string{"01050": "Hulk (curated)"}},
+		}},
 		FrenchMC: []marvelcdb.Card{{Code: "01050", Name: "Hulk", Subname: "Bruce Banner (FR)"}},
 	})
 
