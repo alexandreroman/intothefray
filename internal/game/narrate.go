@@ -27,7 +27,10 @@ func topCount(n int) string {
 // adds the deck's hero: "their Spider-Man deck", "Alex's Spider-Man deck". A
 // side pile goes by its label: "their Invocation deck", "Alex's Doctor Strange
 // Invocation discard pile". The client parses these names (narratedName in
-// web/src/table/animate.ts).
+// web/src/table/animate.ts), and matches the verbs of the lines that name
+// them: a line starting "shuffled ", a line "put … at the bottom of " a pile,
+// and the line of an undo, starting "undid ". Rewording any of them here
+// breaks the table's animations.
 func (g *Game) pileName(who actor, id string) string {
 	switch id {
 	case PileEncounter:
