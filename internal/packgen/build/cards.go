@@ -91,10 +91,9 @@ func checkCardOverrides(
 	cb []cerebro.Card,
 ) error {
 	faceCodes := make(map[string]bool)
-	entriesByCard, _, _ := groupEntries(mc)
-	for _, entries := range entriesByCard {
-		for _, entry := range entries {
-			faceCodes[entry.Code] = true
+	for _, codes := range faceCodesOf(mc) {
+		for _, code := range codes {
+			faceCodes[code] = true
 		}
 	}
 	cerebroIDs := cerebroIDsOf(cb)
