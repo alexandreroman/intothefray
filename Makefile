@@ -10,12 +10,11 @@ include .env
 export
 endif
 
-# Local overrides, loaded only for the development targets of DEV_TARGETS:
-# the stack (app-*), build, web-build and packs targets read .env only.
+# Local overrides, loaded only for the development targets of DEV_TARGETS;
+# every other target reads .env only.
 # Sequential include means later assignments win.
 DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs
-GOALS := $(or $(MAKECMDGOALS),$(.DEFAULT_GOAL))
-ifneq (,$(filter $(DEV_TARGETS),$(GOALS)))
+ifneq (,$(filter $(DEV_TARGETS),$(MAKECMDGOALS)))
 ifneq (,$(wildcard .env.local))
 include .env.local
 export
