@@ -72,9 +72,11 @@ type Action struct {
 	Stage  string   `json:"stage,omitempty"`
 	Cards  []string `json:"cards,omitempty"` // resolved: ids taken from a pile top (top first), new orders
 	// Renames maps old ids to the new ids resolve gave cards so that nobody
-	// can follow them. A shuffle renames every card of the shuffled pile,
-	// Cards then holding the new order in new ids. A reorder of the top that
-	// takes a revealed card back renames the reordered cards, its Cards
+	// can follow them. An action that covers a revealed card renames the
+	// cards covering hides first (see hiddenByCovering), then the others on
+	// the table that leaves. A shuffle renames every card of the shuffled
+	// pile, Cards then holding the new order in new ids. A reorder of the top
+	// that takes a revealed card back renames the reordered cards, its Cards
 	// staying in their old ids (see resolveReorderTop). The cards an action
 	// takes out of sight on their way get new ids too (see renamedOnTheWay).
 	Renames map[string]string `json:"renames,omitempty"`
