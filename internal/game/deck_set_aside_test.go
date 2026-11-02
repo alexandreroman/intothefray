@@ -13,16 +13,41 @@ const specializedTraining = "43021"
 // specialists are the cards Specialized Training sets aside, sorted.
 var specialists = []string{"43034", "43035", "43036", "43037"}
 
-// specialistsOn returns the sorted codes of the Specialist upgrades on a pile.
-func specialistsOn(table *Table, pileID string) []string {
-	var codes []string
+// cardsOn returns the sorted codes of the cards on a pile that are among
+// codes.
+func cardsOn(table *Table, pileID string, codes []string) []string {
+	var found []string
 	for _, code := range codesOf(table, table.Piles[pileID].Cards) {
-		if slices.Contains(specialists, code) {
-			codes = append(codes, code)
+		if slices.Contains(codes, code) {
+			found = append(found, code)
 		}
 	}
-	slices.Sort(codes)
-	return codes
+	return found
+}
+
+// specialistsOn returns the sorted codes of the Specialist upgrades on a pile.
+func specialistsOn(table *Table, pileID string) []string {
+	return cardsOn(table, pileID, specialists)
+}
+
+// checkSetAside fails unless seat's set-aside pile holds one copy of each of
+// the sorted codes, owned by the seat and at home in its deck, and its deck
+// holds none.
+func checkSetAside(t *testing.T, table *Table, seat int, codes []string) {
+	t.Helper()
+	area := string(PlayerArea(seat))
+	if got := cardsOn(table, "aside:"+area, codes); !slices.Equal(got, codes) {
+		t.Errorf("set-aside cards on aside:%s = %v, want %v", area, got, codes)
+	}
+	if got := cardsOn(table, "deck:"+area, codes); len(got) != 0 {
+		t.Errorf("set-aside cards in deck:%s = %v, want none", area, got)
+	}
+	for _, id := range table.Piles["aside:"+area].Cards {
+		c := table.Cards[id]
+		if slices.Contains(codes, c.Code) && (c.Owner != seat || c.Home != "deck:"+area) {
+			t.Errorf("set-aside card %+v, want owned by seat %d at home in deck:%s", c, seat, area)
+		}
+	}
 }
 
 // checkSpecialistsSetAside fails unless seat's set-aside pile holds one copy
@@ -30,19 +55,7 @@ func specialistsOn(table *Table, pileID string) []string {
 // holds none.
 func checkSpecialistsSetAside(t *testing.T, table *Table, seat int) {
 	t.Helper()
-	area := string(PlayerArea(seat))
-	if got := specialistsOn(table, "aside:"+area); !slices.Equal(got, specialists) {
-		t.Errorf("Specialists on aside:%s = %v, want %v", area, got, specialists)
-	}
-	if got := specialistsOn(table, "deck:"+area); len(got) != 0 {
-		t.Errorf("Specialists in deck:%s = %v, want none", area, got)
-	}
-	for _, id := range table.Piles["aside:"+area].Cards {
-		c := table.Cards[id]
-		if slices.Contains(specialists, c.Code) && (c.Owner != seat || c.Home != "deck:"+area) {
-			t.Errorf("Specialist %+v, want owned by seat %d at home in deck:%s", c, seat, area)
-		}
-	}
+	checkSetAside(t, table, seat, specialists)
 }
 
 // checkNoSpecialists fails if seat's set-aside pile or deck holds a Specialist.
@@ -149,6 +162,32 @@ func TestSetupSetsAsideDeckCardsPerSeat(t *testing.T) {
 						checkNoSpecialists(t, table, seat)
 					}
 				})
+			}
+			checkIntegrity(t, table)
+		})
+	}
+}
+
+func TestSetupSetsAsideLinkedPlayerCards(t *testing.T) {
+	tests := []struct {
+		name   string
+		parent string
+		linked []string // sorted
+	}{
+		{"New Recruits", "49020", []string{"49033", "49034", "49035", "49036"}},
+		{"Show of Empathy", "51017", []string{"51036"}},
+		{"Captain America upgrade", "53023", []string{"53034"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deck := spiderManDeck(t, newCatalog(t))
+			deck.Cards = append(deck.Cards, DeckEntry{Code: tt.parent, Qty: 1})
+			table := heroGame(t, deck).g.Table
+
+			checkSetAside(t, table, 0, tt.linked)
+			// The card that sets them aside stays in the deck.
+			if !slices.Contains(codesOf(table, table.Piles["deck:p0"].Cards), tt.parent) {
+				t.Errorf("deck:p0 has no %s", tt.parent)
 			}
 			checkIntegrity(t, table)
 		})
