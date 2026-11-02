@@ -1697,16 +1697,6 @@
     wheelTarget = Math.min(ZOOM_MAX, Math.max(zoomMin, from * Math.exp(-event.deltaY * 0.01)));
     void setZoom(wheelTarget, event.clientX, event.clientY);
   }
-
-  // Not an onwheel attribute: preventing the page zoom needs a non-passive listener.
-  $effect(() => {
-    if (!wrap) {
-      return;
-    }
-    const target = wrap;
-    target.addEventListener('wheel', onWheel, { passive: false });
-    return () => target.removeEventListener('wheel', onWheel);
-  });
 </script>
 
 <svelte:window
@@ -1765,6 +1755,7 @@
     onpointerdowncapture={onTablePointerDown}
     onclick={onTableClick}
     oncontextmenu={onTableContextMenu}
+    onwheel={onWheel}
     onscroll={measureFocus}
   >
     <div class="table">

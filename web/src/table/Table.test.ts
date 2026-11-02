@@ -521,13 +521,15 @@ describe('Table', () => {
       throw new Error('no table wrap');
     }
 
-    await fireEvent.wheel(wrap, { deltaY: -100 });
+    // fireEvent tells whether the default went ahead: a plain wheel scrolls, Ctrl + wheel keeps
+    // the page from zooming.
+    expect(await fireEvent.wheel(wrap, { deltaY: -100 })).toBe(true);
     expect(zoomLabel().textContent).toBe('100%');
 
-    await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true });
+    expect(await fireEvent.wheel(wrap, { deltaY: -20, ctrlKey: true })).toBe(false);
     expect(zoomLabel().textContent).toBe('120%');
 
-    await fireEvent.wheel(wrap, { deltaY: 1000, metaKey: true });
+    expect(await fireEvent.wheel(wrap, { deltaY: 1000, metaKey: true })).toBe(false);
     expect(zoomLabel().textContent).toBe('50%');
   });
 
