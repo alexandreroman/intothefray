@@ -189,7 +189,6 @@ function rings(): HTMLElement[] {
 
 beforeEach(() => {
   vi.useFakeTimers();
-  localStorage.clear();
   scrolled = { x: 0, y: 0 };
   zoom = 1;
   vi.mocked(loadGameCards).mockResolvedValue();

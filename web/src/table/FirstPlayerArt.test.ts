@@ -3,10 +3,6 @@ import FirstPlayerArt from './FirstPlayerArt.svelte';
 
 const FIRST_PLAYER = 'https://img.intothefray.xyz/assets/first-player-v2.avif';
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 describe('FirstPlayerArt', () => {
   it("shows the stored theme's image by default", () => {
     render(FirstPlayerArt);

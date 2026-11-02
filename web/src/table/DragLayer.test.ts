@@ -233,7 +233,6 @@ async function release(x: number, y: number) {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
   tallTable();

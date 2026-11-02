@@ -10,11 +10,6 @@ import {
   ZOOM_MIN_SMALL,
 } from './zoom';
 
-afterEach(() => {
-  localStorage.clear();
-  clearPrefMemory();
-});
-
 describe('clampZoom', () => {
   it('keeps a zoom within the least zoom given and 200 %, on a 10 % step', () => {
     expect(clampZoom(0.1)).toBe(ZOOM_MIN);

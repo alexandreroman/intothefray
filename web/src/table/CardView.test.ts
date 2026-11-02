@@ -22,10 +22,6 @@ function cardElement(container: HTMLElement): HTMLElement {
   return el;
 }
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 describe('CardView', () => {
   it("a face-down side card shows its back captioned with its deck's label", () => {
     render(CardView, {

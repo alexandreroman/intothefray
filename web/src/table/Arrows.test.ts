@@ -162,7 +162,6 @@ function pointAt(id: string | null): void {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   scrolled = { x: 0, y: 0 };
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);

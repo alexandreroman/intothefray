@@ -132,7 +132,6 @@ async function pressEscape() {
 const OWN_ARROW: Arrow = { from: 'mine', to: 'v', seat: 0 };
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
 });

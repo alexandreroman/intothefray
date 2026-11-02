@@ -172,7 +172,6 @@ function peek(container: HTMLElement): HTMLElement | null {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockReturnValue(null);
   vi.mocked(loadIndex).mockReturnValue(new Promise(() => {}));

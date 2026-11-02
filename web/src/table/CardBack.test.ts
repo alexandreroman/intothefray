@@ -3,10 +3,6 @@ import CardBack from './CardBack.svelte';
 
 const ASSETS = 'https://img.intothefray.xyz/assets/';
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 describe('CardBack', () => {
   it('shows the theme image of a back', () => {
     render(CardBack, { back: 'player' });

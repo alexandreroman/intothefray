@@ -24,10 +24,6 @@ function pileElement(container: HTMLElement): HTMLElement {
   return el;
 }
 
-beforeEach(() => {
-  localStorage.clear();
-});
-
 describe('PileView', () => {
   it('empty pile renders a slot without count', () => {
     const { container } = render(PileView, { pile: pile('enc', { kind: 'discard', count: 0 }) });

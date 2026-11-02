@@ -8,7 +8,6 @@ import surfaceSource from './Surface.svelte?raw';
 import markerSource from './MarkerToken.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
-import { clearPrefMemory } from '../lib/prefs';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
 import {
   card,
@@ -210,7 +209,6 @@ function noPreview(): boolean {
 }
 
 beforeEach(() => {
-  localStorage.clear();
   vi.mocked(loadGameCards).mockResolvedValue();
   vi.mocked(knownCard).mockImplementation(infoOf);
   vi.mocked(loadIndex).mockResolvedValue(INDEX);
@@ -1152,7 +1150,6 @@ describe('Table view modes', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-    clearPrefMemory();
   });
 
   function viewButton(name: string): HTMLElement {
