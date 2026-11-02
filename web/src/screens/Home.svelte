@@ -2,7 +2,7 @@
   import { createGame } from '../lib/api';
   import { playerName } from '../lib/names';
   import { setToken } from '../lib/prefs';
-  import { go } from '../lib/router.svelte';
+  import { gamePath, go } from '../lib/router.svelte';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
 
@@ -15,7 +15,7 @@
     try {
       const game = await createGame(playerName());
       setToken(game.id, game.token);
-      go(`/g/${encodeURIComponent(game.id)}`);
+      go(gamePath(game.id));
     } catch (e) {
       error = `Could not start a game: ${e instanceof Error ? e.message : 'unknown error'}`;
     } finally {

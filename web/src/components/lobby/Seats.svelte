@@ -2,7 +2,7 @@
   import { onDestroy } from 'svelte';
   import Icon from '../Icon.svelte';
   import { playerColorVar } from '../../lib/playerColor';
-  import { href } from '../../lib/router.svelte';
+  import { gamePath, href } from '../../lib/router.svelte';
   import { MAX_SEATS, seatCount, type PlayerView, type View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
@@ -22,7 +22,7 @@
   const COPIED_MS = 1500;
 
   // Built from the game id, so no token or other state leaks into the link.
-  const inviteUrl = $derived(`${location.origin}${href(`/g/${encodeURIComponent(view.id)}`)}`);
+  const inviteUrl = $derived(`${location.origin}${href(gamePath(view.id))}`);
   const isSpectator = $derived(view.you.role === 'spectator');
   // A newcomer takes the lowest colour no player uses.
   const freeColors = $derived(

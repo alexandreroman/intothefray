@@ -1,4 +1,4 @@
-import { go, href, route } from './router.svelte';
+import { gamePath, go, href, route } from './router.svelte';
 import { navigate } from './router.testing';
 
 /** Goes back one history entry and waits until the router has seen it. */
@@ -110,6 +110,12 @@ describe('router', () => {
     const length = window.history.length;
     go('/options');
     expect(window.history.length).toBe(length);
+  });
+
+  it('gamePath encodes the game id, and the router reads it back', () => {
+    expect(gamePath('a/b c')).toBe('/g/a%2Fb%20c');
+    go(gamePath('a/b c'));
+    expect(route.current).toEqual({ name: 'game', id: 'a/b c' });
   });
 
   it('href prefixes the base path', () => {
