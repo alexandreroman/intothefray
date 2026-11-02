@@ -25,13 +25,13 @@
     view,
     index,
     onconfigure,
-    room = windowRoom,
+    room,
   }: {
     view: View;
     index: Index;
     onconfigure: (config: LobbyConfig) => void;
     /** The part of the window the Add a set menu stays within, in viewport coordinates. */
-    room?: () => Rect;
+    room: () => Rect;
   } = $props();
 
   // Version I of each set, the default (spec 4.3).
@@ -252,10 +252,6 @@
 
   function removeModular(code: string): void {
     configure({ modulars: config.modulars.filter((m) => m !== code) });
-  }
-
-  function windowRoom(): Rect {
-    return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
   }
 
   let addWrap = $state<HTMLElement>();

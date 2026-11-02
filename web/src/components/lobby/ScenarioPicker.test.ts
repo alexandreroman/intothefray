@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
+import type { Rect } from '../../table/drag';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -86,9 +87,19 @@ function viewOf(config: LobbyConfig, you: YouView = asHost): View {
   };
 }
 
+/** The room the Add a set menu stays within: the whole window. */
+function windowRoom(): Rect {
+  return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+}
+
 function renderPicker(config: LobbyConfig, you: YouView = asHost) {
   const onconfigure = vi.fn();
-  const result = render(ScenarioPicker, { view: viewOf(config, you), index, onconfigure });
+  const result = render(ScenarioPicker, {
+    view: viewOf(config, you),
+    index,
+    onconfigure,
+    room: windowRoom,
+  });
   return { onconfigure, ...result };
 }
 
@@ -202,7 +213,12 @@ describe('ScenarioPicker in French', () => {
 
   function renderFrench(config: LobbyConfig) {
     cardLang.current = 'fr';
-    return render(ScenarioPicker, { view: viewOf(config), index: french, onconfigure: vi.fn() });
+    return render(ScenarioPicker, {
+      view: viewOf(config),
+      index: french,
+      onconfigure: vi.fn(),
+      room: windowRoom,
+    });
   }
 
   it('shows the pack, scenario and set names in French, else in English', () => {
@@ -281,6 +297,7 @@ describe('ScenarioPicker Add a set menu groups', () => {
       view: viewOf(config),
       index: packed,
       onconfigure,
+      room: windowRoom,
     });
     await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
     return { onconfigure, container };
@@ -476,7 +493,12 @@ describe('ScenarioPicker required sets', () => {
   };
 
   async function menuLabels(config: LobbyConfig): Promise<string[]> {
-    render(ScenarioPicker, { view: viewOf(config), index: trors, onconfigure: vi.fn() });
+    render(ScenarioPicker, {
+      view: viewOf(config),
+      index: trors,
+      onconfigure: vi.fn(),
+      room: windowRoom,
+    });
     await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
     return within(screen.getByRole('group', { name: 'Core Set' }))
       .getAllByRole('button')
@@ -558,7 +580,12 @@ describe('ScenarioPicker main scheme sets', () => {
 
   function renderFne(config: LobbyConfig, you: YouView = asHost) {
     const onconfigure = vi.fn();
-    const result = render(ScenarioPicker, { view: viewOf(config, you), index: fne, onconfigure });
+    const result = render(ScenarioPicker, {
+      view: viewOf(config, you),
+      index: fne,
+      onconfigure,
+      room: windowRoom,
+    });
     return { onconfigure, ...result };
   }
 
