@@ -37,13 +37,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/**
- * Types a value into an input as a browser does: it stops at the input's maxlength, which counts
- * UTF-16 code units (jsdom does not enforce it).
- */
+/** Replaces the input's whole value, as an input event with no beforeinput before it. */
 async function type(input: HTMLInputElement, value: string): Promise<void> {
-  const typed = input.maxLength >= 0 ? value.slice(0, input.maxLength) : value;
-  await fireEvent.input(input, { target: { value: typed } });
+  await fireEvent.input(input, { target: { value } });
 }
 
 /**
