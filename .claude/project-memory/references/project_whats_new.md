@@ -11,9 +11,10 @@ type: project
   Options or the top bar, nothing during a game.
 - Home tells a visitor about news in two ways: a Fray red dot on a square
   icon-only "What's new" button (sparkle icon, `data-tip` tooltip), and a
-  slim banner above the buttons ("New: title", "See what's new",
-  dismiss), in a small type (13px text, 12px button). The banner spans
-  exactly the button row, its right edge on the What's new button's; its
+  slim banner above the buttons: its text "New: title" is itself the
+  button that opens the news, beside a dismiss ×, in a small type
+  (13px). The banner spans exactly the button row, its right edge on the
+  What's new button's; its
   title wraps rather than widening it. Dismissing the banner keeps the
   dot; opening the dialog clears both. The dialog tags the entries unread
   at opening as "New".
