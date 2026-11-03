@@ -149,7 +149,11 @@ describe('Home', () => {
       withUnreadNews();
       render(Home);
       const banner = screen.getByRole('complementary', { name: 'Latest news' });
-      expect(banner.textContent).toContain(`New: ${newest.title}`);
+      // The news, which opens the dialog, and its dismissal: nothing else.
+      const buttons = within(banner).getAllByRole('button');
+      expect(
+        buttons.map((button) => button.textContent?.trim() || button.getAttribute('aria-label')),
+      ).toEqual([`New: ${newest.title}`, 'Dismiss']);
 
       await fireEvent.click(within(banner).getByRole('button', { name: 'Dismiss' }));
 
@@ -179,7 +183,7 @@ describe('Home', () => {
       render(Home);
       const banner = screen.getByRole('complementary', { name: 'Latest news' });
 
-      await fireEvent.click(within(banner).getByRole('button', { name: "See what's new" }));
+      await fireEvent.click(within(banner).getByRole('button', { name: `New: ${newest.title}` }));
 
       expect(screen.getByRole('dialog', { name: "What's new" })).toBeTruthy();
       expect(hasDot()).toBe(false);
@@ -190,11 +194,11 @@ describe('Home', () => {
     it("gives the focus to the What's new button once closed, opened from the banner", async () => {
       withUnreadNews();
       render(Home);
-      const see = screen.getByRole('button', { name: "See what's new" });
-      see.focus();
+      const opener = screen.getByRole('button', { name: `New: ${newest.title}` });
+      opener.focus();
 
-      await fireEvent.click(see);
-      expect(see.isConnected).toBe(false);
+      await fireEvent.click(opener);
+      expect(opener.isConnected).toBe(false);
       await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
       await waitFor(() => expect(document.activeElement).toBe(newsButton()));

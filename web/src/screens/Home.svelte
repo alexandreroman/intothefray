@@ -82,8 +82,10 @@
         <div class="row">
           {#if news.bannerEntry}
             <aside class="banner" aria-label="Latest news">
-              <p><span class="label">New:</span> {news.bannerEntry.title}</p>
-              <button class="see" onclick={openWhatsNew}>See what's new</button>
+              <!-- The news itself opens the dialog: a button that reads as the banner's text. -->
+              <button class="open" onclick={openWhatsNew}>
+                <span class="label">New:</span> <span class="title">{news.bannerEntry.title}</span>
+              </button>
               <button
                 class="btn-ghost dismiss"
                 aria-label="Dismiss"
@@ -353,25 +355,36 @@
     border-radius: 12px;
   }
 
-  .banner p {
+  /* Plain text, wrapping as text does; the title is underlined under the pointer or the focus. */
+  .banner .open {
     flex: 1 1 auto;
     min-width: 0;
-    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
     font-size: 13px;
+    font-weight: 400;
     line-height: 1.35;
+    text-align: left;
+    white-space: normal;
     color: var(--text-soft);
+  }
+
+  .banner .open:hover {
+    background: none;
+    color: var(--text);
+  }
+
+  .banner .open:hover .title,
+  .banner .open:focus-visible .title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .banner .label {
     font-weight: 700;
     color: var(--accent);
-  }
-
-  .banner .see {
-    flex: none;
-    height: 28px;
-    padding: 0 10px;
-    font-size: 12px;
   }
 
   .banner .dismiss {
