@@ -36,8 +36,8 @@ func TestGroupMoveKeepsOffsets(t *testing.T) {
 	if c1.X != 500 || c1.Y != 500 {
 		t.Errorf("c1 at (%d,%d), want (500,500)", c1.X, c1.Y)
 	}
-	if c2.X != 500 || c2.Y != 520 || c2.Parent != "c1" {
-		t.Errorf("c2 at (%d,%d) under %q, want (500,520) under c1", c2.X, c2.Y, c2.Parent)
+	if c2.X != 510 || c2.Y != 520 || c2.Parent != "c1" {
+		t.Errorf("c2 at (%d,%d) under %q, want (510,520) under c1", c2.X, c2.Y, c2.Parent)
 	}
 	if c7.X != 1000 || c7.Y != 320 {
 		t.Errorf("c7 at (%d,%d), want (1000,320)", c7.X, c7.Y)
@@ -193,14 +193,47 @@ func TestGroupRejectsDuplicateCard(t *testing.T) {
 	), ErrInvalid)
 }
 
-func TestGroupRejectsDescendant(t *testing.T) {
+// newStackFixture returns a resolve fixture whose own table card carries the
+// encounter table card, then the hand card, in one stack.
+func newStackFixture(t *testing.T) *resolveFixture {
+	t.Helper()
 	f := newResolveFixture(t)
 	mustApply(t, f.g.Table, Action{Kind: ActAttach, Card: f.encTable, Target: f.ownTable})
-	host := Action{Kind: ActDiscard, Card: f.ownTable}
-	tucked := Action{Kind: ActDiscard, Card: f.encTable}
+	mustApply(t, f.g.Table, Action{Kind: ActPlay, Card: f.hand, Target: f.ownTable})
+	checkStack(t, f.g.Table, f.ownTable, f.encTable, f.hand)
+	return f
+}
 
-	checkGroupRejected(t, f, group(host, tucked), ErrInvalid)
-	checkGroupRejected(t, f, group(tucked, host), ErrInvalid)
+func TestGroupRejectsACardItsMainCardCarries(t *testing.T) {
+	f := newStackFixture(t)
+	main := Action{Kind: ActDiscard, Card: f.ownTable}
+
+	for _, id := range []string{f.encTable, f.hand} {
+		tucked := Action{Kind: ActDiscard, Card: id}
+		checkGroupRejected(t, f, group(main, tucked), ErrInvalid)
+		checkGroupRejected(t, f, group(tucked, main), ErrInvalid)
+	}
+}
+
+func TestGroupTakesTuckedCardsOutOfOneStack(t *testing.T) {
+	f := newStackFixture(t)
+
+	resolved, err := resolve(f.g, f.g.actorOf(0), group(
+		Action{Kind: ActMove, Card: f.encTable, X: 100, Y: 100},
+		Action{Kind: ActMove, Card: f.hand, X: 300, Y: 100},
+	), newTestRNG())
+	if err != nil {
+		t.Fatalf("resolve() = %v", err)
+	}
+	mustApply(t, f.g.Table, resolved)
+
+	// A tucked card carries nothing: each one leaves the stack alone.
+	checkStack(t, f.g.Table, f.ownTable)
+	checkStack(t, f.g.Table, f.encTable)
+	checkStack(t, f.g.Table, f.hand)
+	checkAt(t, f.g.Table, f.encTable, 100, 100)
+	checkAt(t, f.g.Table, f.hand, 300, 100)
+	checkUniqueZ(t, f.g.Table)
 }
 
 func TestGroupRejectsOneOrTooMany(t *testing.T) {

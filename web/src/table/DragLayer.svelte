@@ -39,6 +39,7 @@
     handBand,
     insertIndex,
     isDownward,
+    mainCardOf,
     pileTargets,
     sourceOf,
     stackOf,
@@ -434,7 +435,11 @@
     return { x: at.x - grab.x * box.w * zoom, y: at.y - grab.y * box.h * zoom };
   }
 
-  /** Where a drop at the point leaves the dragged card's corner: on its grid spot when the action places it. */
+  /**
+   * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
+   * places it, where it was let go when it tucks it into a stack, whose chain the server lays out:
+   * the next view slides it from there (animate.ts).
+   */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
     const spot = spotOf(from, action);
@@ -445,8 +450,14 @@
     return onScreen(spot, surface) ?? cornerOf(from, at);
   }
 
-  /** Where the action places the dragged card on the table, in table units; null when it does not. */
+  /**
+   * Where the action places the dragged card on the table, in table units; null when it does not,
+   * or when it tucks the card into a stack, which the server lays out.
+   */
   function spotOf(from: DragSource, action: Action): Point | null {
+    if (tucks(action)) {
+      return null;
+    }
     if (action.kind !== 'group') {
       return action.x === undefined || action.y === undefined ? null : { x: action.x, y: action.y };
     }
@@ -575,13 +586,16 @@
     // An encounter card goes to the player whose row the pointer is in.
     const pointed = surface ? onTable(at, surface) : { x: 0, y: 0 };
     const dealTo = dealRecipient(view.table?.piles ?? [], pointed.y, areaOf(selected));
-    const single = dropAction(from, target, spot, dealTo, rowMap);
+    // A group tucks under nothing: over a card, it moves there as over the table.
+    const onto: DropRect =
+      units.length > 0 && target.kind === 'card' ? { kind: 'table', rect: target.rect } : target;
+    const single = dropAction(from, onto, spot, dealTo, rowMap);
     return { target, action: grouped(from, single) };
   }
 
   /**
    * The action a drop sends: during a group drag, the action of the pressed
-   * card alone made the whole group's (a drop over a card tucks nothing).
+   * card alone made the whole group's.
    */
   function grouped(from: DragSource, single: Action | null): Action | null {
     if (single === null || units.length === 0 || from.kind !== 'card') {
@@ -607,9 +621,14 @@
       const label = { glyph: PILE_GLYPHS[target.drop], text: target.label, tuck: false };
       showHint({ kind: 'pile', id: target.pile }, label, target.rect);
     } else if (target?.kind === 'card' && found?.action && tucks(found.action)) {
-      const name = faceOf(cardsById.get(target.card))?.name ?? 'a card';
+      // The stack's main card is outlined and named, though the card goes to the end of its chain.
+      // Lifted cards are not targets and a main card cannot target its own chain, so that main card
+      // stays put. The label stays over the card pointed at: the main card may lie beneath it.
+      const pointedAt = cardsById.get(target.card);
+      const main = pointedAt ? mainCardOf(pointedAt, cards) : undefined;
+      const name = faceOf(main)?.name ?? 'a card';
       const label = { glyph: TUCK_GLYPH, text: `Under ${name}`, tuck: true };
-      showHint({ kind: 'card', id: target.card }, label, target.rect);
+      showHint({ kind: 'card', id: main?.id ?? target.card }, label, target.rect);
     } else {
       interaction.dropOn = null;
       hint = null;
@@ -684,6 +703,7 @@
       element: pressed.element,
       card: pressed.card,
       lifted: reorder ? [] : pressed.lifted,
+      tucks: tucks(action),
       handOrder: reorder ? (action.cards ?? null) : null,
     });
   }
@@ -788,7 +808,7 @@
     if (from.kind !== 'card') {
       return [asPlayed(card, x, y)];
     }
-    // The cards tucked under it, and the rest of a group, keep their offsets as drawn. Off the
+    // The cards it carries, and the rest of a group, keep their offsets as drawn. Off the
     // deck it is revealed on, a card lies as the table draws it (boxOf).
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);

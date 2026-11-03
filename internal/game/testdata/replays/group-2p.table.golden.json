@@ -108,7 +108,7 @@
       "zone": "pile",
       "x": 600,
       "y": 400,
-      "z": 8,
+      "z": 9,
       "pile": "disc:p1"
     },
     "c4ywphvfg": {
@@ -318,7 +318,7 @@
       "zone": "pile",
       "x": 400,
       "y": 400,
-      "z": 7,
+      "z": 8,
       "pile": "disc:p1"
     },
     "cakppdr8j": {
@@ -444,7 +444,7 @@
       "zone": "table",
       "x": 900,
       "y": 700,
-      "z": 9
+      "z": 10
     },
     "cdgvjtgjt": {
       "id": "cdgvjtgjt",
@@ -485,7 +485,7 @@
       "zone": "hand",
       "x": 1100,
       "y": 700,
-      "z": 10
+      "z": 11
     },
     "cfnyscqrg": {
       "id": "cfnyscqrg",
@@ -582,7 +582,7 @@
       "zone": "hand",
       "x": 1300,
       "y": 700,
-      "z": 11
+      "z": 12
     },
     "cjyqcketf": {
       "id": "cjyqcketf",
@@ -720,7 +720,7 @@
       "zone": "table",
       "x": 460,
       "y": 30,
-      "z": 1
+      "z": 2
     },
     "cnrfzav8b": {
       "id": "cnrfzav8b",
@@ -1013,7 +1013,7 @@
       "zone": "table",
       "x": 300,
       "y": 30,
-      "z": 0
+      "z": 1
     },
     "cvgzafqyy": {
       "id": "cvgzafqyy",
@@ -1082,7 +1082,7 @@
       "zone": "table",
       "x": 300,
       "y": 410,
-      "z": 2,
+      "z": 3,
       "identity": true
     },
     "cx3a7hfr7": {
@@ -1166,7 +1166,7 @@
       "zone": "table",
       "x": 300,
       "y": 630,
-      "z": 3,
+      "z": 4,
       "identity": true
     }
   },
@@ -1365,5 +1365,5 @@
     "x": 460,
     "y": 450
   },
-  "nextZ": 12
+  "nextZ": 13
 }

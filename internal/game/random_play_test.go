@@ -88,7 +88,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 2:
 		return Action{Kind: ActPlay, Card: pick(hand), X: x, Y: y}
 	case 3:
-		return Action{Kind: ActPlay, Card: pick(hand), Target: pick(onTable), X: x, Y: y, Placed: r.IntN(2) == 0}
+		return Action{Kind: ActPlay, Card: pick(hand), Target: pick(onTable)}
 	case 4:
 		return Action{Kind: ActDiscard, Card: pick(slices.Concat(onTable, hand))}
 	case 5:
@@ -112,7 +112,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 12, 13:
 		return Action{Kind: ActMove, Card: pick(onTable), X: x, Y: y}
 	case 14:
-		return Action{Kind: ActAttach, Card: pick(onTable), Target: pick(onTable), X: x, Y: y, Placed: r.IntN(2) == 0}
+		return Action{Kind: ActAttach, Card: pick(onTable), Target: pick(onTable)}
 	case 15:
 		return Action{Kind: ActToHand, Card: pick(onTable)}
 	case 16:
@@ -422,13 +422,13 @@ func TestReplayRecordedGames(t *testing.T) {
 }
 
 // recordRandomGame plays a random Rhino game and stores its setup and events
-// at recording, and its live table at golden. Seed 193 gives a varied game:
-// bursts, replaced moves, dropped events, looks, plays under a card and most
-// action kinds.
+// at recording, and its live table at golden. Seed 2519 gives a varied game:
+// every action kind randomAction picks, bursts, a replaced move, a dropped
+// event, and tucked cards that later leave the table.
 func recordRandomGame(t *testing.T, recording, golden string) {
 	t.Helper()
 	f := newDoFixture(t)
-	play := newRandomPlay(f, 193)
+	play := newRandomPlay(f, 2519)
 	for range 120 {
 		play.step()
 	}

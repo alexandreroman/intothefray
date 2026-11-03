@@ -63,6 +63,11 @@ export interface Landing {
   card: string | null;
   /** The table and hand cards still hidden in their old places. */
   lifted: readonly string[];
+  /**
+   * The drop tucks its card into a stack (tucks in drag.ts): it lands where it was let go, and
+   * the next view slides it to the spot the server lays the chain out at.
+   */
+  tucks?: boolean;
   /** The order a reordered hand is drawn in meanwhile. */
   handOrder: readonly string[] | null;
 }

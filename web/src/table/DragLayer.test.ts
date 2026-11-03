@@ -296,23 +296,23 @@ describe('dragging a table card', () => {
   });
 
   it('carries every card of the stack, each at its offset, until the server answers', async () => {
-    // Two attachments where they were dropped, one tucked at the default offset.
+    // A chain under "mine": t1, then a1 under it, a2 under a1, each at its own offset.
     const stack = [
       ...CARDS.filter((c) => c.id !== 'mine'),
       card('mine', { y: 300, z: 10 }),
-      card('a1', { x: 40, y: 380, z: 9, parent: 'mine' }),
-      card('a2', { x: 100, y: 420, z: 9, parent: 'mine' }),
+      card('a1', { x: 40, y: 380, z: 8, parent: 't1' }),
+      card('a2', { x: 100, y: 420, z: 7, parent: 'a1' }),
       card('t1', { x: 0, y: 320, z: 9, parent: 'mine' }),
     ];
     const { session } = await renderTable(makeView({ cards: stack }));
-    const ids = ['mine', 'a1', 'a2', 't1'];
+    const ids = ['mine', 't1', 'a1', 'a2'];
     const corners = () =>
       ghosts().map((g) => [g.dataset.id, parseFloat(g.style.left), parseFloat(g.style.top)]);
     const expected = [
       ['mine', 224, 392],
+      ['t1', 224, 412],
       ['a1', 264, 472],
       ['a2', 324, 512],
-      ['t1', 224, 412],
     ];
 
     await press(placed('mine'), 50, 400);
@@ -335,9 +335,9 @@ describe('dragging a table card', () => {
     // Waiting for the server: the whole stack stays where it landed, on the grid.
     expect(corners()).toEqual([
       ['mine', 220, 390],
+      ['t1', 220, 410],
       ['a1', 260, 470],
       ['a2', 320, 510],
-      ['t1', 220, 410],
     ]);
     for (const id of ids) {
       expect(placed(id).classList, id).toContain('lifted');
@@ -417,16 +417,149 @@ describe('dragging a table card', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
-    // Where it is dropped, behind the card.
+    // The drop point is not sent: the server lays the stack out.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'attach',
         card: 'mine',
         target: 'other',
-        x: expect.any(Number),
-        y: expect.any(Number),
-        placed: true,
       },
+      0,
+    );
+  });
+
+  /**
+   * "other" with a chain under it, laid out by the server: o1 10 to the right of and 20 below it,
+   * then o2, a Rhino, as far from o1.
+   */
+  function chainView(): View {
+    return makeView({
+      cards: [
+        ...CARDS.filter((c) => c.id !== 'other'),
+        card('other', { x: 400, y: 300, z: 3 }),
+        card('o1', { x: 410, y: 320, z: 2, parent: 'other' }),
+        card('o2', { code: '01094', x: 420, y: 340, z: 1, parent: 'o1' }),
+      ],
+    });
+  }
+
+  const outlined = () =>
+    [...document.querySelectorAll<HTMLElement>('.surface .card.drop-target')].map(
+      (element) => element.dataset.id,
+    );
+
+  it('outlines and names the main card of the stack, whatever card of it is pointed at', async () => {
+    await renderTable(chainView());
+    await press(placed('mine'), 50, 400);
+    // Over "other", the main card, at 420, 340 on the screen.
+    await moveTo(470, 420);
+    expect(outlined()).toEqual(['other']);
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    // Over o2, the Rhino at the end of the chain, at 440, 380 on the screen.
+    await moveTo(470, 520);
+    expect(outlined()).toEqual(['other']);
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+    expect(screen.queryByText('Under Rhino')).toBeNull();
+    // The label stays over the card pointed at, not over the main card.
+    const hint = document.querySelector<HTMLElement>('.drop-hint');
+    expect([parseFloat(hint!.style.left), parseFloat(hint!.style.top)]).toEqual([496, 372]);
+  });
+
+  it('outlines and names the main card when a tucked card is dropped back on its own stack', async () => {
+    await renderTable(chainView());
+    // o2 lies at 440, 380 on the screen; dropped back on "other", it goes under o1 again.
+    await press(placed('o2'), 470, 530);
+    await moveTo(470, 420);
+    expect(outlined()).toEqual(['other']);
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+  });
+
+  const corners = () =>
+    ghosts().map((g) => [g.dataset.id, parseFloat(g.style.left), parseFloat(g.style.top)]);
+
+  it('lands where it was let go over the stack, until the server answers', async () => {
+    const { session } = await renderTable(chainView());
+    await press(placed('mine'), 50, 400);
+    // Over o2, the last card of the chain, which lies at 440, 380 on the screen.
+    await moveTo(470, 520);
+    expect(outlined()).toEqual(['other']);
+
+    await release(470, 520);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'attach', card: 'mine', target: 'o2' },
+      0,
+    );
+    // Held 30, 60 from its corner, off the grid: the next view slides it to the end of the chain.
+    expect(corners()).toEqual([['mine', 440, 460]]);
+    expect(interaction.landing).toMatchObject({ card: 'mine', lifted: ['mine'], tucks: true });
+  });
+
+  it('lands with the chain it carries where it was let go over another stack', async () => {
+    const stack = [
+      ...chainView().table!.cards,
+      card('m1', { x: 10, y: 320, z: 9, parent: 'mine' }),
+    ];
+    const { session } = await renderTable(makeView({ cards: stack }));
+    await press(placed('mine'), 50, 400);
+    await moveTo(470, 520);
+
+    await release(470, 520);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'attach', card: 'mine', target: 'o2' },
+      0,
+    );
+    // The card it carries keeps its offset from it as drawn.
+    expect(corners()).toEqual([
+      ['mine', 440, 460],
+      ['m1', 450, 480],
+    ]);
+    expect(interaction.landing).toMatchObject({ lifted: ['mine', 'm1'], tucks: true });
+  });
+
+  it('tucks nothing when dropped on the table', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    await release(254, 452);
+    expect(interaction.landing?.tucks).toBe(false);
+  });
+
+  it('moves a tucked card alone, and takes its drop on its own stack', async () => {
+    const { session } = await renderTable(chainView());
+    // o1 lies at 430, 360 on the screen.
+    await press(placed('o1'), 470, 510);
+    await moveTo(470, 420);
+    expect(placed('o1').classList).toContain('lifted');
+    expect(placed('other').classList).not.toContain('lifted');
+    expect(placed('o2').classList).not.toContain('lifted');
+    // Dropped on "other", it goes under o2, the last card staying in the chain; the main card is outlined.
+    expect(outlined()).toEqual(['other']);
+
+    await release(470, 420);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'attach', card: 'o1', target: 'other' },
+      0,
+    );
+    // Where it was let go: the next view slides it to the end of the chain, which closes behind it.
+    expect(corners()).toEqual([['o1', 430, 270]]);
+  });
+
+  it('offers no card of its own chain to a main card: dropped there, it moves', async () => {
+    const { session } = await renderTable(chainView());
+    await press(placed('other'), 470, 420);
+    expect(placed('o1').classList).not.toContain('drop-target');
+    // Down to o2's own spot, over the chain it carries.
+    await moveTo(490, 460);
+    for (const id of ['other', 'o1', 'o2']) {
+      expect(placed(id).classList, id).toContain('lifted');
+      expect(placed(id).classList, id).not.toContain('drop-target');
+    }
+    expect(screen.queryByText(/^Under /)).toBeNull();
+
+    await release(490, 460);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'other', x: 420, y: 340 },
       0,
     );
   });
@@ -889,15 +1022,12 @@ describe('dragging from a pile', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
-    // Where it is dropped, behind the card.
+    // The drop point is not sent: the server lays the stack out.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'play',
         card: 'd1',
         target: 'other',
-        x: expect.any(Number),
-        y: expect.any(Number),
-        placed: true,
       },
       0,
     );
@@ -1123,9 +1253,6 @@ describe("dragging the top card of the viewer's deck", () => {
         kind: 'play',
         pile: 'side:p0:0',
         target: 'other',
-        x: expect.any(Number),
-        y: expect.any(Number),
-        placed: true,
       },
       0,
     );
@@ -1196,9 +1323,6 @@ describe('dragging a scenario deck', () => {
         kind: 'play',
         pile: 'sdeck:x',
         target: 'other',
-        x: expect.any(Number),
-        y: expect.any(Number),
-        placed: true,
       },
       0,
     );
@@ -1261,15 +1385,12 @@ describe('dragging a hand card', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
-    // Where it is dropped, behind the card.
+    // The drop point is not sent: the server lays the stack out.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'play',
         card: 'h2',
         target: 'other',
-        x: expect.any(Number),
-        y: expect.any(Number),
-        placed: true,
       },
       0,
     );
@@ -1569,7 +1690,10 @@ describe('telling the other players about the drag', () => {
   });
 
   it('carries 50 cards at most', async () => {
-    const tucked = Array.from({ length: 59 }, (_, i) => card(`t${i}`, { parent: 'mine', z: 0 }));
+    // A chain of 59 cards under "mine": t0 under it, each next one under the one before.
+    const tucked = Array.from({ length: 59 }, (_, i) =>
+      card(`t${i}`, { parent: i === 0 ? 'mine' : `t${i - 1}`, z: 0 }),
+    );
     const { session } = await renderTable(makeView({ cards: [...CARDS, ...tucked] }));
     await press(placed('mine'), 50, 400);
     await moveTo(254, 452);

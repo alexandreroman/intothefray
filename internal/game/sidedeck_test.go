@@ -234,10 +234,11 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // They change only with the card data of the heroes and scenario they use,
 // with the fields of a card (the identity mark) or of a stage (the villain
 // mark), or with the default positions (the first player token beside the
-// first identity, the villain row, the height of a player's row).
+// first identity, the villain row, the height of a player's row, the first
+// Z).
 const (
-	spiderManSetupHash = "d7674e766f03177419157ebea21a54bb7a35cd96704a256a1e82a6b65dd8fad6"
-	threeDeckSetupHash = "12091dade8191b93a65feb69250c2922c6b6d0f33caf23a169737786bd49fc9e"
+	spiderManSetupHash = "c25fd5418bcb176190dea049d9d932a72d08aee3f319c237df8d67bd3706a25e"
+	threeDeckSetupHash = "da6c71a37664c372e84ac0a972a4717f1ccb6f27d6fe47ad2e4e349350b7c02f"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {
@@ -691,7 +692,7 @@ func TestSideCardDiscardGoesToItsOwnersDiscard(t *testing.T) {
 	}
 	tb.Cards["s1"] = &Card{ID: "s1", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, X: 600, Y: 600, Z: 50}
 	tb.Cards["s2"] = &Card{
-		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 600, Y: 620, Z: 49,
+		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 610, Y: 620, Z: 49,
 	}
 	f.g.History = newHistory(testSeed, tb, testNow)
 

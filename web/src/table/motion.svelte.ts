@@ -22,7 +22,7 @@ import {
   type TableView,
 } from '../lib/types';
 import { playerColorToken } from '../lib/playerColor';
-import type { Anim, Turn } from './animate';
+import type { Anim, Tuck, Turn } from './animate';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
 import { EXHAUST_DEGREES, PORTRAIT_CARD } from './layout';
@@ -31,6 +31,21 @@ import { tableCard, tablePile } from './screen';
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
 const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
+/**
+ * A card tucked into a stack lies beneath it: drawn above the stack, it first shifts out to a
+ * staging spot past its slot, easing out, then, drawn at its own z-index, slides in under the stack
+ * to its slot. Each step stops at the staging spot, so the switch of z-index shows no jump.
+ */
+const TUCK_OUT_MS = 200;
+const TUCK_IN_MS = 200;
+const TUCK_IN_EASING = 'ease-in-out';
+/**
+ * The staging spot lies this fraction of the card's own size down and to the right of its slot,
+ * its top-left corner on the middle of the slot: a portrait card (112 × 157) is then about 85 %
+ * clear of the card it tucks under (10 to the left of and 20 above its slot), so that it is seen
+ * going in under the stack. Further out, the shift would read as a throw away from the stack.
+ */
+const TUCK_STAGING = 0.5;
 /** A card exhausted or readied tilts to its new angle where it lies, briefly. */
 const TILT_MS = 180;
 /** A stage card just chosen turns in like a card being put down. */
@@ -309,15 +324,22 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
  * What a card about to travel shows on now: another player's ghost of it,
  * where they let it go; else its place on the table or in the hand, under the
  * id it had there for a card that got a new one, or the pile it leaves. The
- * viewer's own drop slipping under a pile, or flying to one, lies where it
- * landed.
+ * viewer's own drop slipping under a pile, flying to one, or tucked into a
+ * stack, lies where it landed.
  */
 function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HTMLElement | null {
   const find = (selector: string) => root.querySelector<HTMLElement>(selector);
   const placed = (id: string) => `${tableCard(id)}, ${handCard(id)}`;
+  // A deck's hidden top card the viewer dragged landed as an unknown card, not under its id.
+  const unknownTop = (fromPile: string | undefined) => {
+    const pile = piles.find((p) => p.id === fromPile);
+    return pile ? find(ownGhost(unknownTopId(pile))) : null;
+  };
   switch (anim.kind) {
-    case 'move':
-      return find(remoteGhost(anim.id)) ?? find(placed(anim.was ?? anim.id));
+    case 'move': {
+      const landed = anim.dropped ? find(ownGhost(anim.id)) : null;
+      return find(remoteGhost(anim.id)) ?? landed ?? find(placed(anim.was ?? anim.id));
+    }
     case 'away':
       return find(remoteGhost(anim.id)) ?? find(placed(anim.id));
     case 'under':
@@ -325,13 +347,13 @@ function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HT
     case 'fly': {
       const place = anim.fromPile === undefined ? placed(anim.id) : pilePlace(anim.fromPile);
       const ghost = find(remoteGhost(anim.id)) ?? find(ownGhost(anim.id));
-      // A deck's hidden top card the viewer dragged landed as an unknown card, not under its id.
-      const pile = anim.dropped ? piles.find((p) => p.id === anim.fromPile) : undefined;
-      const unknownTop = pile ? find(ownGhost(unknownTopId(pile))) : null;
-      return ghost ?? unknownTop ?? find(place);
+      const top = anim.dropped ? unknownTop(anim.fromPile) : null;
+      return ghost ?? top ?? find(place);
     }
-    case 'enter':
-      return find(remoteGhost(anim.id)) ?? find(pilePlace(anim.fromPile));
+    case 'enter': {
+      const landed = anim.dropped ? (find(ownGhost(anim.id)) ?? unknownTop(anim.fromPile)) : null;
+      return find(remoteGhost(anim.id)) ?? landed ?? find(pilePlace(anim.fromPile));
+    }
     default:
       return null;
   }
@@ -738,7 +760,7 @@ class TableMotion {
         // A card come onto the table slides out of its pile as a moved card does.
         case 'move':
         case 'enter':
-          this.#move(root, anim.id, before.get(anim.id), zoom);
+          this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
           break;
         case 'marker':
           this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom);
@@ -1074,12 +1096,66 @@ class TableMotion {
     }
   }
 
-  #move(root: HTMLElement, id: string, from: Measured | undefined, zoom: number): void {
+  /** Slides a card to its new place; tucked into a stack (tuck), it slides in under the stack. */
+  #move(
+    root: HTMLElement,
+    id: string,
+    from: Measured | undefined,
+    zoom: number,
+    tuck: Tuck | undefined,
+  ): void {
     const element = root.querySelector<HTMLElement>(`${tableCard(id)}, ${handCard(id)}`);
-    if (element && from) {
+    if (!element || !from) {
+      return;
+    }
+    if (tuck) {
+      this.#tuck(element, from, zoom, cardSubject(id), tuck);
+    } else {
       // Moving cards are followed frame by frame, for the arrows drawn between them.
       this.#slide(element, from, zoom, cardSubject(id), true);
     }
+  }
+
+  /**
+   * Slides a card tucked into a stack to its slot in two steps (TUCK_OUT_MS, TUCK_IN_MS): out to
+   * its staging spot (TUCK_STAGING) drawn above the stack, at tuck.z, then up into its slot at its
+   * own z-index, beneath the stack. The z-index above lives in the animation only: the card's own
+   * comes back as the first step ends. Even a card already on its slot, the end of its own chain,
+   * shifts out and back in.
+   */
+  #tuck(element: HTMLElement, from: Measured, zoom: number, subject: Subject, tuck: Tuck): void {
+    const to = measure(element, zoom);
+    // Translations are in the element's own units: table units on a zoomed surface.
+    const scale = scaleOf(element, zoom);
+    const dx = (from.cx - to.cx) / scale;
+    const dy = (from.cy - to.cy) / scale;
+    const size = to.w ? from.w / to.w : 1;
+    const stagingX = (to.w / scale) * TUCK_STAGING;
+    const stagingY = (to.h / scale) * TUCK_STAGING;
+    const duration = TUCK_OUT_MS + TUCK_IN_MS;
+    // Each keyframe's easing plays from it to the next one: one step each.
+    this.#run(
+      element,
+      [
+        { translate: `${dx}px ${dy}px`, scale: `${size}`, easing: MOVE_EASING },
+        {
+          translate: `${stagingX}px ${stagingY}px`,
+          scale: '1',
+          offset: TUCK_OUT_MS / duration,
+          easing: TUCK_IN_EASING,
+        },
+        { translate: '0px 0px', scale: '1' },
+      ],
+      { duration },
+      subject,
+      true,
+    );
+    this.#run(
+      element,
+      [{ zIndex: tuck.z }, { zIndex: tuck.z }],
+      { duration: TUCK_OUT_MS },
+      subject,
+    );
   }
 
   /** Slides a marker from where it lay; no arrow follows it. */

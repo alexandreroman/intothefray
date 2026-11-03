@@ -64,7 +64,7 @@ type Card struct {
 	X         int            `json:"x"`
 	Y         int            `json:"y"`
 	Z         int            `json:"z"`
-	Parent    string         `json:"parent,omitempty"` // id of the card it is tucked under
+	Parent    string         `json:"parent,omitempty"` // id of the card it is tucked under in its stack (see chain)
 	Pile      string         `json:"pile,omitempty"`   // pile id while Zone == ZonePile
 	OnPile    string         `json:"onPile,omitempty"` // revealed on top of this pile (Zone table)
 	Exhausted bool           `json:"exhausted,omitempty"`

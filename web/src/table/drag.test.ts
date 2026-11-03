@@ -7,6 +7,7 @@ import {
   handBand,
   insertIndex,
   isDownward,
+  mainCardOf,
   pileTargets,
   sourceOf,
   stackOf,
@@ -181,15 +182,10 @@ describe('dropAction', () => {
       z: 3,
       rect: rect(0, 0, 1, 1),
     };
-    // Where it is dropped, on the grid: it stays there, behind the card.
-    expect(dropAction(TABLE_CARD, target, { x: 123, y: 456 }, DEAL_TO)).toEqual({
-      kind: 'attach',
-      card: 'c',
-      target: 'hero',
-      x: 120,
-      y: 460,
-      placed: true,
-    });
+    // The server lays the stack out: the drop point is not sent.
+    const action = dropAction(TABLE_CARD, target, { x: 123, y: 456 }, DEAL_TO);
+    expect(action).toEqual({ kind: 'attach', card: 'c', target: 'hero' });
+    expect(action).not.toHaveProperty('placed');
   });
 
   it('drop on own deck pile puts on top', () => {
@@ -298,18 +294,12 @@ describe('dropAction', () => {
       kind: 'play',
       card: 'h2',
       target: 'hero',
-      x: 300,
-      y: 300,
-      placed: true,
     });
     const fromPile: DragSource = { kind: 'pile', pile: 'encd', card: 'top' };
     expect(dropAction(fromPile, onCard, at, DEAL_TO)).toEqual({
       kind: 'play',
       card: 'top',
       target: 'hero',
-      x: 300,
-      y: 300,
-      placed: true,
     });
   });
 
@@ -590,16 +580,53 @@ describe('handAreaOf', () => {
 });
 
 describe('stackOf', () => {
-  it('is the card and every card tucked under it, directly or not', () => {
-    const cards = [
-      card('a'),
-      card('b', { parent: 'a' }),
-      card('c', { parent: 'b' }),
-      card('d', { parent: 'x' }),
-      card('e', { parent: 'a', zone: 'pile' }),
-    ];
-    expect(stackOf('a', cards)).toEqual(['a', 'b', 'c']);
-    expect(stackOf('b', cards)).toEqual(['b', 'c']);
+  // A chain: r, then c1 tucked under it, c2 under c1, c3 under c2; a card in a pile is left out.
+  const chain = [
+    card('c2', { parent: 'c1' }),
+    card('r'),
+    card('c3', { parent: 'c2' }),
+    card('c1', { parent: 'r' }),
+    card('other', { parent: 'x' }),
+    card('gone', { parent: 'c3', zone: 'pile' }),
+  ];
+
+  it('is the whole chain of a main card, in order', () => {
+    expect(stackOf('r', chain)).toEqual(['r', 'c1', 'c2', 'c3']);
+  });
+
+  it('is a tucked card alone, in the middle of the chain or at its end', () => {
+    expect(stackOf('c1', chain)).toEqual(['c1']);
+    expect(stackOf('c2', chain)).toEqual(['c2']);
+    expect(stackOf('c3', chain)).toEqual(['c3']);
+  });
+
+  it('is a card tucked under none alone when nothing is tucked under it', () => {
+    expect(stackOf('solo', [card('solo')])).toEqual(['solo']);
+  });
+});
+
+describe('mainCardOf', () => {
+  // r, then c1 tucked under it, c2 under c1.
+  const chain = [card('c1', { parent: 'r' }), card('r'), card('c2', { parent: 'c1' })];
+  const mainOf = (id: string) => {
+    const start = chain.find((c) => c.id === id)!;
+    return mainCardOf(start, chain).id;
+  };
+
+  it('is the card on top of the stack, whatever card of the chain it starts from', () => {
+    for (const id of ['r', 'c1', 'c2']) {
+      expect(mainOf(id), id).toBe('r');
+    }
+  });
+
+  it('is the card itself when it is tucked under none', () => {
+    const solo = card('solo');
+    expect(mainCardOf(solo, [solo]).id).toBe('solo');
+  });
+
+  it('stops at the last card found up a chain whose host is missing', () => {
+    const orphan = card('orphan', { parent: 'gone' });
+    expect(mainCardOf(orphan, [orphan]).id).toBe('orphan');
   });
 });
 
@@ -914,9 +941,6 @@ describe('side decks', () => {
         kind: 'play',
         pile: deck,
         target: 'x',
-        x: 40,
-        y: 60,
-        placed: true,
       });
     }
   });
@@ -989,9 +1013,6 @@ describe('a scenario deck', () => {
       kind: 'play',
       pile: 'sdeck:weapons',
       target: 'x',
-      x: 40,
-      y: 60,
-      placed: true,
     });
   });
 

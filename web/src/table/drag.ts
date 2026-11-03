@@ -81,7 +81,7 @@ type CardRect = Extract<DropRect, { kind: 'card' }>;
 
 /** What is dragged, read from the current view. */
 export type DragSource =
-  /** A table card, with the cards tucked under it. */
+  /** A table card, with what it carries (stackOf). */
   | { kind: 'card'; card: string; x: number; y: number }
   /** A card of the hand of the player seated in `area`. */
   | { kind: 'hand'; card: string; hand: readonly string[]; area: Area }
@@ -243,6 +243,11 @@ function toHand(drag: DragSource): Action | null {
 /** What can be dropped onto a card or a pile: everything but a marker. */
 type CardSource = Exclude<DragSource, { kind: 'marker' }>;
 
+/**
+ * A drop on a card tucks the dragged card into that card's stack. The server
+ * appends it to the end of the chain and lays the chain out itself, whatever
+ * card of the stack it was dropped on: the drop point is not sent.
+ */
 function onCard(
   drag: CardSource,
   card: string,
@@ -250,20 +255,18 @@ function onCard(
   dealTo: Area,
   rows: RowMap,
 ): Action | null {
-  // Tucked where it is dropped, behind the card: the server keeps the spot (placed).
-  const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
-      return { kind: 'attach', card: drag.card, target: card, x, y, placed: true };
+      return { kind: 'attach', card: drag.card, target: card };
     case 'hand':
     case 'pile':
       // Played and tucked in one action: one undo step.
-      return { kind: 'play', card: drag.card, target: card, x, y, placed: true };
+      return { kind: 'play', card: drag.card, target: card };
     case 'deck':
       // A side or scenario deck's top card is played and tucked as a hand card is: the server
       // plays the deck's top card, which the client may not know.
       if (isSideDeckId(drag.pile) || isScenarioDeckId(drag.pile)) {
-        return { kind: 'play', pile: drag.pile, target: card, x, y, placed: true };
+        return { kind: 'play', pile: drag.pile, target: card };
       }
       // A deck's top card is played face down where it lands, over that card.
       return place(drag, at, dealTo, rows);
@@ -532,18 +535,54 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   return targets.filter(exists);
 }
 
-/** The card and every table card tucked under it, directly or not: what moves with it. */
+/**
+ * What moves with a table card: a main card (tucked under none) carries its
+ * whole chain, in order; a tucked card moves alone, and the server closes
+ * the chain behind it. It mirrors the server's carried cards
+ * (internal/game/apply.go).
+ */
 export function stackOf(id: string, cards: readonly CardView[]): string[] {
-  const stack = [id];
-  for (let i = 0; i < stack.length; i++) {
-    const parent = stack[i];
-    for (const card of cards) {
-      if (card.parent === parent && card.zone === 'table' && !stack.includes(card.id)) {
-        stack.push(card.id);
-      }
-    }
+  const card = cards.find((c) => c.id === id);
+  if (card?.parent !== undefined) {
+    return [id];
   }
-  return stack;
+  return chainOf(id, cards);
+}
+
+/**
+ * The card, then the table card tucked directly under it, then the one
+ * under that, and so on to the end of the chain: each card holds at most one.
+ */
+function chainOf(id: string, cards: readonly CardView[]): string[] {
+  const chain = [id];
+  let next = tuckedUnder(id, cards);
+  // The includes check guards against a loop in a broken view.
+  while (next !== undefined && !chain.includes(next.id)) {
+    chain.push(next.id);
+    next = tuckedUnder(next.id, cards);
+  }
+  return chain;
+}
+
+function tuckedUnder(id: string, cards: readonly CardView[]): CardView | undefined {
+  return cards.find((card) => card.parent === id && card.zone === 'table');
+}
+
+/** The main card of the stack the card belongs to: up its chain, the card tucked under none. */
+export function mainCardOf(card: CardView, cards: readonly CardView[]): CardView {
+  const cardsById = byId(cards);
+  const seen = new Set([card.id]);
+  let main = card;
+  // The seen set guards against a parent loop in a broken view.
+  while (main.parent !== undefined && !seen.has(main.parent)) {
+    const host = cardsById.get(main.parent);
+    if (host === undefined) {
+      break;
+    }
+    seen.add(host.id);
+    main = host;
+  }
+  return main;
 }
 
 /**

@@ -36,19 +36,34 @@ describe('cardsInBand', () => {
 });
 
 describe('groupUnits', () => {
-  it('leaves out a card tucked under a selected card, in z order', () => {
+  it('leaves out a card tucked under a selected main card, in z order', () => {
     const cards = [card('x', { z: 3 }), card('t', { z: 1, parent: 'h' }), card('h', { z: 2 })];
     expect(groupUnits(new Set(['h', 't', 'x']), cards)).toEqual(['h', 'x']);
   });
 
-  it('leaves out a card whose host is tucked under a selected card', () => {
+  it('leaves out any card of the chain of a selected main card', () => {
     const cards = [card('h'), card('t', { parent: 'h' }), card('u', { parent: 't' })];
     expect(groupUnits(new Set(['h', 'u']), cards)).toEqual(['h']);
+    expect(groupUnits(new Set(['h', 't', 'u']), cards)).toEqual(['h']);
   });
 
-  it('keeps a tucked card whose host is not selected: it detaches', () => {
+  it('keeps a tucked card whose main card is not selected: it moves alone', () => {
     const cards = [card('h'), card('t', { parent: 'h' })];
     expect(groupUnits(new Set(['t']), cards)).toEqual(['t']);
+  });
+
+  it('keeps two tucked cards of one chain apart: a tucked card carries nothing', () => {
+    const cards = [
+      card('h', { z: 3 }),
+      card('t', { z: 2, parent: 'h' }),
+      card('u', { z: 1, parent: 't' }),
+    ];
+    expect(groupUnits(new Set(['t', 'u']), cards)).toEqual(['u', 't']);
+  });
+
+  it('keeps a tucked card whose selected main card lies on a pile, out of the group', () => {
+    const cards = [card('h', { onPile: 'deck:p0' }), card('t', { parent: 'h' })];
+    expect(groupUnits(new Set(['h', 't']), cards)).toEqual(['t']);
   });
 
   it('leaves out cards off the table or lying on a pile', () => {
@@ -122,21 +137,9 @@ describe('groupAction', () => {
     expect(groupAction(['a', 'b'], 'b', single, edge)).toBeNull();
   });
 
-  it('attachBecomesMove', () => {
-    const single: Action = { kind: 'attach', card: 'a', target: 'c', x: 200, y: 200, placed: true };
-    expect(groupAction(['a', 'b'], 'a', single, cards)).toEqual({
-      kind: 'group',
-      actions: [
-        { kind: 'move', card: 'a', x: 200, y: 200 },
-        { kind: 'move', card: 'b', x: 400, y: 200 },
-      ],
-    });
-    expect(groupAction(['a'], 'a', single, cards)).toEqual({
-      kind: 'move',
-      card: 'a',
-      x: 200,
-      y: 200,
-    });
+  it('tucks nothing: an attach sends nothing for a group', () => {
+    const single: Action = { kind: 'attach', card: 'a', target: 'c' };
+    expect(groupAction(['a', 'b'], 'a', single, cards)).toBeNull();
   });
 
   it('sends every unit to the same pile, deck or hand', () => {
