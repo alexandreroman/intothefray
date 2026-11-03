@@ -30,7 +30,7 @@
       provides: 'Card data and French names',
     },
     { name: 'cgbuilder', url: 'https://mc.cgbuilder.fr', provides: 'French card names' },
-    { name: 'OCTGN Marvel Champions image packs', provides: 'Scans of the French cards' },
+    { name: 'OCTGN', provides: 'Scans of the French cards' },
   ];
 </script>
 
@@ -81,10 +81,10 @@
     <section class="row">
       <h2>Unofficial fan project</h2>
       <div class="body">
+        <p>Into The Fray is not affiliated with or endorsed by Fantasy Flight Games or Marvel.</p>
         <p>
-          Into The Fray is not affiliated with or endorsed by Fantasy Flight Games or Marvel. Marvel
-          Champions: The Card Game is a trademark of its owners; card images and texts belong to
-          their respective owners.
+          Marvel Champions: The Card Game is a trademark of its owners; card images and texts belong
+          to their respective owners.
         </p>
       </div>
     </section>

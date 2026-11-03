@@ -16,10 +16,10 @@ type: project
   (not affiliated with or endorsed by Fantasy Flight Games or Marvel).
 - The card data credits are a `SOURCES` array in the component: marvelcdb
   (card data, decks and French names: fr.marvelcdb.com is the same site,
-  one entry), Cerebro, mc4db, cgbuilder and the OCTGN Marvel Champions
-  image packs. Cerebro links to its GitHub repository
-  (`https://github.com/UnicornSnuggler/Cerebro`); the OCTGN packs show
-  without a link.
+  one entry), Cerebro, mc4db, cgbuilder and OCTGN (scans of the French
+  cards). Cerebro links to its GitHub repository
+  (`https://github.com/UnicornSnuggler/Cerebro`); OCTGN shows without a
+  link.
 - The page lists no tech stack: no languages, frameworks, libraries or
   fonts.
 - External links open in a new tab (`target="_blank"`,

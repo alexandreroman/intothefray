@@ -43,7 +43,7 @@ describe('About', () => {
       expect(link.getAttribute('target')).toBe('_blank');
       expect(link.getAttribute('rel')).toContain('noopener');
     }
-    const octgn = 'OCTGN Marvel Champions image packs';
+    const octgn = 'OCTGN';
     expect(screen.getByText(octgn)).toBeTruthy();
     expect(screen.queryByRole('link', { name: octgn })).toBeNull();
     expect(screen.queryByRole('link', { name: 'fr.marvelcdb' })).toBeNull();
