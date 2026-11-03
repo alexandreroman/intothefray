@@ -1,5 +1,8 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import { slide, type TransitionConfig } from 'svelte/transition';
   import { createGame } from '../lib/api';
   import { playerName } from '../lib/names';
   import { NewsState } from '../lib/newsState.svelte';
@@ -11,6 +14,9 @@
   import WhatsNewDialog from '../components/WhatsNewDialog.svelte';
   import { lastPressByPointer } from '../components/modal.svelte';
 
+  /** How long the banner takes to leave, folding up as it fades out. */
+  const BANNER_LEAVE_MS = 220;
+
   let starting = $state(false);
   let error = $state('');
 
@@ -20,13 +26,13 @@
   let shownUnread = $state<ReadonlySet<string> | null>(null);
 
   let newsButton = $state<HTMLButtonElement>();
-  // What had the focus when the dialog opened, and whether the pointer opened it (see Dialog).
-  let opener: Element | null = null;
+  // Where the dialog was opened from, and whether by the pointer (see Dialog).
+  let openedFromBanner = false;
   let openedByPointer = false;
 
   /** Opens the news, which are all seen from then on: the dot and the banner go. */
-  function openWhatsNew(): void {
-    opener = document.activeElement;
+  function openWhatsNew(fromBanner: boolean): void {
+    openedFromBanner = fromBanner;
     openedByPointer = lastPressByPointer();
     shownUnread = new Set(news.unread.map((entry) => entry.id));
     news.markSeen();
@@ -35,16 +41,34 @@
   async function closeWhatsNew(): Promise<void> {
     shownUnread = null;
     await tick();
-    // Opened from the banner, the dialog took the banner away with its button: the dialog gives the
-    // focus back to nothing, so the What's new button takes it, as the dialog would have given it.
-    if (opener !== null && !opener.isConnected) {
+    // Opened from the banner, the dialog took the banner away with the button that opened it (gone,
+    // or still leaving if the dialog closes at once): the What's new button takes the focus instead,
+    // as the dialog would have given it.
+    if (openedFromBanner) {
       if (openedByPointer) {
         newsButton?.focus({ focusVisible: false });
       } else {
         newsButton?.focus();
       }
     }
-    opener = null;
+    openedFromBanner = false;
+  }
+
+  /** The banner leaves by folding up as it fades out; at once under reduced motion. */
+  function bannerLeave(node: Element): TransitionConfig {
+    const folding = slide(node, {
+      duration: prefersReducedMotion.current ? 0 : BANNER_LEAVE_MS,
+      easing: cubicOut,
+    });
+    // The opacity follows the slide's styles, overriding the slide's own, which only fades at the
+    // very end. Exactly one semicolon between them: Svelte stops reading at an empty declaration.
+    return {
+      ...folding,
+      css: (t, u) => {
+        const slideStyles = (folding.css?.(t, u) ?? '').replace(/;\s*$/, '');
+        return `${slideStyles}; opacity: ${t}`;
+      },
+    };
   }
 
   async function startGame(): Promise<void> {
@@ -81,9 +105,9 @@
         <!-- As wide as the button row: the banner ends where its last button does. -->
         <div class="row">
           {#if news.bannerEntry}
-            <aside class="banner" aria-label="Latest news">
+            <aside class="banner" aria-label="Latest news" out:bannerLeave>
               <!-- The news itself opens the dialog: a button that reads as the banner's text. -->
-              <button class="open" onclick={openWhatsNew}>
+              <button class="open" onclick={() => openWhatsNew(true)}>
                 <span class="label">New:</span> <span class="title">{news.bannerEntry.title}</span>
               </button>
               <button
@@ -114,7 +138,7 @@
                 aria-label={hasUnread ? "What's new, unread news" : "What's new"}
                 data-tip="What's new"
                 bind:this={newsButton}
-                onclick={openWhatsNew}
+                onclick={() => openWhatsNew(false)}
               >
                 <Icon name="megaphone" />
                 {#if hasUnread}
@@ -272,7 +296,6 @@
   */
   .row {
     display: grid;
-    gap: 12px;
     width: fit-content;
     max-width: 100%;
   }
@@ -346,6 +369,8 @@
   .banner {
     /* Sized by the row, never sizing it: its text wraps rather than widening the row. */
     contain: inline-size;
+    /* A margin rather than the row's gap: it folds up with the banner as it leaves. */
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 6px;

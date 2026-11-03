@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Home from './Home.svelte';
 import { createGame } from '../lib/api';
 import { NEWS, type NewsEntry } from '../lib/news';
@@ -6,10 +7,24 @@ import { getPref, getToken } from '../lib/prefs';
 
 vi.mock('../lib/api', () => ({ createGame: vi.fn() }));
 
+// Whether the viewer prefers reduced motion: by default, so that the banner leaves at once (jsdom
+// has no Web Animations); the tests of its motion turn it off.
+const motion = vi.hoisted(() => ({ reduced: true }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return motion.reduced;
+    },
+  },
+}));
+
 const createGameMock = vi.mocked(createGame);
 
 beforeEach(() => {
   window.history.pushState(null, '', '/');
+  motion.reduced = true;
 });
 
 afterEach(() => {
@@ -228,6 +243,81 @@ describe('Home', () => {
       const dialog = screen.getByRole('dialog', { name: "What's new" });
       expect(within(dialog).getAllByRole('listitem')).toHaveLength(NEWS.length);
       expect(within(dialog).queryByText('New')).toBeNull();
+    });
+
+    describe('banner motion', () => {
+      // Animations that run until a test finishes them, as the banner's transition plays them.
+      type FakeAnimation = { onfinish: (() => void) | null; cancel: () => void; effect: null };
+      let running: FakeAnimation[] = [];
+      const animate = vi.fn(() => {
+        const animation: FakeAnimation = { onfinish: null, cancel: () => {}, effect: null };
+        running.push(animation);
+        return animation;
+      });
+      const originalAnimate = Element.prototype.animate;
+
+      /** Plays every animation to its end, and those they start in turn. */
+      async function finishAnimations(): Promise<void> {
+        while (running.length > 0) {
+          running.shift()?.onfinish?.();
+          await tick();
+        }
+      }
+
+      function banner(): HTMLElement | null {
+        return screen.queryByRole('complementary', { name: 'Latest news' });
+      }
+
+      beforeEach(() => {
+        Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+        motion.reduced = false;
+        withUnreadNews();
+      });
+
+      afterEach(async () => {
+        await finishAnimations();
+        Element.prototype.animate = originalAnimate;
+        animate.mockClear();
+        running = [];
+      });
+
+      it('folds the banner away once dismissed, then removes it', async () => {
+        render(Home);
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+        expect(banner()).not.toBeNull();
+        expect(hasDot()).toBe(true);
+
+        await finishAnimations();
+        expect(banner()).toBeNull();
+        expect(animate).toHaveBeenCalledWith(
+          expect.any(Array),
+          expect.objectContaining({ duration: 220 }),
+        );
+      });
+
+      it('removes the banner at once under reduced motion', async () => {
+        motion.reduced = true;
+        render(Home);
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+        expect(banner()).toBeNull();
+        expect(animate).not.toHaveBeenCalled();
+      });
+
+      it("gives the focus to the What's new button when the news closes while the banner leaves", async () => {
+        render(Home);
+        const opener = screen.getByRole('button', { name: `New: ${newest.title}` });
+        opener.focus();
+
+        await fireEvent.click(opener);
+        await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+        // Still on its way out: the button that opened the news is still in the page.
+        expect(opener.isConnected).toBe(true);
+        await waitFor(() => expect(document.activeElement).toBe(newsButton()));
+      });
     });
   });
 });
