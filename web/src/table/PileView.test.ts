@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import { interaction } from './interaction.svelte';
 import PileView from './PileView.svelte';
 import pileSource from './PileView.svelte?raw';
@@ -128,5 +128,24 @@ describe('PileView', () => {
     const el = pileElement(container);
     expect(el.querySelector('.label')).toBeNull();
     expect(el.querySelector('.tray')).toBeNull();
+  });
+
+  it('a press takes the focus away from a control clicked before, as on a card', async () => {
+    const button = document.createElement('button');
+    document.body.append(button);
+    button.focus();
+    try {
+      const { container } = render(PileView, {
+        pile: pile('enc', { kind: 'encounter', count: 3 }),
+      });
+
+      await fireEvent.pointerDown(pileElement(container), { button: 0 });
+
+      expect(interaction.held?.element).toEqual({ kind: 'pile', id: 'enc' });
+      expect(document.activeElement).not.toBe(button);
+    } finally {
+      interaction.reset();
+      button.remove();
+    }
   });
 });

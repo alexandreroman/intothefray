@@ -4,6 +4,7 @@
 // that list, and the hand cards, which have no menu, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
+import { isTyping } from '../lib/releaseFocus';
 import type { Action, CardView, Size, View } from '../lib/types';
 import { countersOf, discardPileOf, KEYS, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
@@ -74,13 +75,6 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (tableKey(event, table) || playerKey(event, table)) {
     event.preventDefault();
   }
-}
-
-function isTyping(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLElement &&
-    (target.matches('input, textarea, select') || target.isContentEditable)
-  );
 }
 
 /**
