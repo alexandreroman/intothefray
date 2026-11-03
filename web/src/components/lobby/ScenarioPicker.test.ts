@@ -242,9 +242,43 @@ describe('ScenarioPicker in French', () => {
     expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
     expect(screen.queryByText('Klaw')).toBeNull();
   });
+
+  describe('Add a set menu filter', () => {
+    async function filterSets(query: string) {
+      renderFrench({ ...rhino, modulars: [] });
+      await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+      await fireEvent.input(screen.getByLabelText('Filter sets'), { target: { value: query } });
+    }
+
+    it.each(['alerte a la', 'ALERTE À', 'bomb scare', 'boite de'])(
+      'finds the set by its French or English name, or its pack name, whatever the accents: %s',
+      async (query) => {
+        await filterSets(query);
+
+        const core = screen.getByRole('group', { name: 'Boîte de base' });
+        expect(within(core).getByRole('button', { name: /Alerte à la bombe/ })).toBeTruthy();
+      },
+    );
+
+    it('leaves out a set whose names do not hold the filter', async () => {
+      await filterSets('rhino');
+
+      expect(screen.queryByRole('group', { name: 'Boîte de base' })).toBeNull();
+      expect(screen.getByText('No matching set')).toBeTruthy();
+    });
+  });
 });
 
 describe('ScenarioPicker Add a set menu', () => {
+  it('says so when every set is chosen already', async () => {
+    renderPicker(rhino);
+
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+
+    expect(screen.getByText('No set to add')).toBeTruthy();
+    expect(screen.queryByText('No matching set')).toBeNull();
+  });
+
   it('Escape closes it and takes the key (preventDefault); closed, it leaves the key alone', async () => {
     renderPicker(rhino);
     const add = screen.getByRole('button', { name: '+ Add a set' });
@@ -255,6 +289,31 @@ describe('ScenarioPicker Add a set menu', () => {
     expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(false);
     expect(add.getAttribute('aria-expanded')).toBe('false');
     expect(await fireEvent.keyDown(window, { key: 'Escape' })).toBe(true);
+  });
+
+  it('Escape in its filter field closes it too, and takes the key', async () => {
+    renderPicker({ ...rhino, modulars: [] });
+    const add = screen.getByRole('button', { name: '+ Add a set' });
+    await fireEvent.click(add);
+
+    expect(await fireEvent.keyDown(screen.getByLabelText('Filter sets'), { key: 'Escape' })).toBe(
+      false,
+    );
+    expect(add.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByLabelText('Filter sets')).toBeNull();
+  });
+});
+
+describe('ScenarioPicker filter fields', () => {
+  it('offer no saved entries and no spelling marks', async () => {
+    renderPicker({ ...rhino, modulars: [] });
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+
+    for (const label of ['Filter by scenario or pack', 'Filter sets']) {
+      const field = screen.getByLabelText(label);
+      expect(field.getAttribute('autocomplete')).toBe('off');
+      expect(field.getAttribute('spellcheck')).toBe('false');
+    }
   });
 });
 
@@ -356,6 +415,138 @@ describe('ScenarioPicker Add a set menu groups', () => {
     expect(onconfigure).toHaveBeenCalledWith({
       ...config,
       modulars: ['hydra_assault', 'a_mess_of_things'],
+    });
+  });
+
+  describe('filter', () => {
+    function field(): HTMLInputElement {
+      return screen.getByLabelText('Filter sets');
+    }
+
+    async function filterSets(query: string) {
+      await fireEvent.input(field(), { target: { value: query } });
+    }
+
+    it('keeps the sets whose name holds the filter, and only their packs', async () => {
+      const { container } = await openMenu();
+
+      await filterSets('  ATTACK ');
+
+      expect(packNames(container)).toEqual(['Core Set']);
+      expect(setLabels(screen.getByRole('group', { name: 'Core Set' }))).toEqual(['Under Attack']);
+    });
+
+    it("keeps all of a pack's sets when its name holds the filter", async () => {
+      const { container } = await openMenu();
+
+      await filterSets('green gob');
+
+      expect(packNames(container)).toEqual(['Green Goblin']);
+      expect(setLabels(screen.getByRole('group', { name: 'Green Goblin' }))).toEqual([
+        'Goblin Gimmicks',
+        'A Mess of Things',
+      ]);
+    });
+
+    it('ignores the accents of the filter', async () => {
+      const { container } = await openMenu();
+
+      await filterSets('mèss òf');
+
+      expect(packNames(container)).toEqual(['Green Goblin']);
+      expect(setLabels(screen.getByRole('group', { name: 'Green Goblin' }))).toEqual([
+        'A Mess of Things',
+      ]);
+    });
+
+    it('says so when no set matches', async () => {
+      const { container } = await openMenu();
+
+      await filterSets('hydra');
+
+      expect(packNames(container)).toEqual([]);
+      expect(container.querySelector('.menu [role="group"]')).toBeNull();
+      expect(screen.getByText('No matching set')).toBeTruthy();
+    });
+
+    it('shows everything again once emptied', async () => {
+      const { container } = await openMenu();
+
+      await filterSets('attack');
+      await filterSets('');
+
+      expect(packNames(container)).toEqual(['Core Set', 'Green Goblin']);
+      expect(screen.queryByText('No matching set')).toBeNull();
+    });
+
+    // jsdom focuses a field it would not show: as a browser does, the field is only focused once
+    // the menu shows (.placed), else it keeps out of view, unseen.
+    const focus = HTMLElement.prototype.focus;
+
+    beforeEach(() => {
+      vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+        this: HTMLElement,
+        options?: FocusOptions,
+      ) {
+        const menu = this.closest('.menu');
+        if (menu === null || menu.classList.contains('placed')) {
+          focus.call(this, options);
+        }
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('is focused and empty each time the menu opens', async () => {
+      await openMenu();
+      const add = screen.getByRole('button', { name: '+ Add a set' });
+      await vi.waitFor(() => expect(document.activeElement).toBe(field()));
+
+      await filterSets('attack');
+      await fireEvent.click(add);
+      await fireEvent.click(add);
+
+      expect(field().value).toBe('');
+      await vi.waitFor(() => expect(document.activeElement).toBe(field()));
+      expect(screen.getByRole('group', { name: 'Green Goblin' })).toBeTruthy();
+    });
+
+    it('ArrowDown moves the focus to the first set shown', async () => {
+      await openMenu();
+      await filterSets('goblin');
+
+      expect(await fireEvent.keyDown(field(), { key: 'ArrowDown' })).toBe(false);
+
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Goblin Gimmicks' }));
+    });
+
+    it('Enter adds the only set the filter leaves, and closes the menu', async () => {
+      const { onconfigure } = await openMenu();
+      await filterSets('mess');
+
+      await fireEvent.keyDown(field(), { key: 'Enter' });
+
+      expect(onconfigure).toHaveBeenCalledWith({
+        ...config,
+        modulars: ['hydra_assault', 'a_mess_of_things'],
+      });
+      expect(
+        screen.getByRole('button', { name: '+ Add a set' }).getAttribute('aria-expanded'),
+      ).toBe('false');
+    });
+
+    it('Enter does nothing while several sets match', async () => {
+      const { onconfigure } = await openMenu();
+      await filterSets('goblin');
+
+      await fireEvent.keyDown(field(), { key: 'Enter' });
+
+      expect(onconfigure).not.toHaveBeenCalled();
+      expect(
+        screen.getByRole('button', { name: '+ Add a set' }).getAttribute('aria-expanded'),
+      ).toBe('true');
     });
   });
 });
