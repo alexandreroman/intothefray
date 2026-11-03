@@ -608,6 +608,8 @@
         type="text"
         placeholder="Filter by name…"
         aria-label="Filter by name"
+        autocomplete="off"
+        spellcheck="false"
         bind:value={query}
       />
     </div>
