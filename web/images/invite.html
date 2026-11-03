@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=block"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      body {
+        background: #07090f;
+        color: #eef1f8;
+        font-family: Archivo, sans-serif;
+        position: relative;
+      }
+      .halo {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(
+          circle,
+          color-mix(in srgb, #ff4438 45%, transparent) 1.8px,
+          transparent 2.6px
+        );
+        background-size: 14px 14px;
+        -webkit-mask-image: radial-gradient(ellipse at 79% 50%, #000 0%, transparent 50%);
+        mask-image: radial-gradient(ellipse at 79% 50%, #000 0%, transparent 50%);
+      }
+      .bigmark {
+        position: absolute;
+        right: 70px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .content {
+        position: absolute;
+        left: 80px;
+        top: 72px;
+        bottom: 64px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .words {
+        display: flex;
+        flex-direction: column;
+        font-size: 150px;
+        gap: 0.058em;
+      }
+      .into {
+        font-weight: 700;
+        font-size: 0.151em;
+        letter-spacing: 0.42em;
+        padding-left: calc(0.102em / 0.151);
+      }
+      .fray {
+        font-stretch: 62%;
+        font-weight: 900;
+        font-style: italic;
+        line-height: 0.84;
+        letter-spacing: -0.005em;
+      }
+      .tagline {
+        font-stretch: 85%;
+        font-weight: 700;
+        font-size: 44px;
+        line-height: 1.15;
+        max-width: 640px;
+      }
+      .sub {
+        margin-top: 14px;
+        font-size: 26px;
+        color: #9aa4bf;
+      }
+      .url {
+        font-stretch: 87%;
+        font-weight: 600;
+        font-size: 22px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #ffce3a;
+      }
+      .caption {
+        display: inline-block;
+        align-self: flex-start;
+        margin-bottom: 22px;
+        padding: 10px 34px 10px 20px;
+        background: #ffce3a;
+        color: #0d111b;
+        font-stretch: 75%;
+        font-weight: 800;
+        font-size: 28px;
+        letter-spacing: 0.14em;
+        line-height: 1.4;
+        text-transform: uppercase;
+        clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="halo"></div>
+    <svg class="bigmark" width="380" height="380" viewBox="0 0 64 64">
+      <defs>
+        <clipPath id="t"><polygon points="0,0 64,0 64,19 35,29 39,33 0,45" /></clipPath>
+        <clipPath id="b"><polygon points="0,45 39,33 35,29 64,19 64,64 0,64" /></clipPath>
+      </defs>
+      <g transform="rotate(-12 32 32)">
+        <rect
+          x="15"
+          y="8"
+          width="34"
+          height="48"
+          rx="4.5"
+          fill="#ff4438"
+          clip-path="url(#t)"
+          transform="translate(-1.6 -1.6)"
+        />
+        <rect
+          x="15"
+          y="8"
+          width="34"
+          height="48"
+          rx="4.5"
+          fill="#c9241b"
+          clip-path="url(#b)"
+          transform="translate(1.6 1.6)"
+        />
+        <path
+          fill="#ffce3a"
+          d="M57 14.5 L58.3 18.7 L62.5 20 L58.3 21.3 L57 25.5 L55.7 21.3 L51.5 20 L55.7 18.7 Z"
+        />
+      </g>
+    </svg>
+    <div class="content">
+      <div class="words"><span class="into">INTO THE</span><span class="fray">FRAY</span></div>
+      <div>
+        <p class="caption">You're invited</p>
+        <p class="tagline">Join a game of<br />Marvel Champions.</p>
+        <p class="sub">
+          Open the link, take a seat, deal the cards.<br />No account, nothing to install.
+        </p>
+      </div>
+      <p class="url">intothefray.xyz</p>
+    </div>
+  </body>
+</html>
