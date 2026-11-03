@@ -106,8 +106,10 @@ checks pass:
    commit SHA and `main`;
 2. `pages` deploys the web app to GitHub Pages at
    `https://intothefray.xyz`;
-3. `deploy-backend` asks the private `intothefray-infra` repository to
-   deploy that image on the VPS at `https://api.intothefray.xyz`.
+3. `deploy-backend` asks the
+   [intothefray-infra](https://github.com/alexandreroman/intothefray-infra)
+   repository to deploy that image on the VPS at
+   `https://api.intothefray.xyz`.
 
 Repository settings: Pages source set to GitHub Actions with the custom
 domain `intothefray.xyz`; the `API_URL` variable
