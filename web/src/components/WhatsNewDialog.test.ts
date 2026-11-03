@@ -26,6 +26,8 @@ describe('WhatsNewDialog', () => {
     const items = within(dialog).getAllByRole('listitem');
 
     expect(items).toHaveLength(2);
+    // The header's megaphone is decoration: the dialog is named by its title alone.
+    expect(dialog.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     const [first, second] = items as [HTMLElement, HTMLElement];
     expect(within(first).getByRole('heading', { name: 'New villains' })).toBeTruthy();
     expect(within(first).getByText('1 Nov 2026').getAttribute('datetime')).toBe('2026-11-01');

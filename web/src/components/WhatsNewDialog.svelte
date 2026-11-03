@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import Dialog from './Dialog.svelte';
+  import Icon from './Icon.svelte';
   import { formatNewsDate, type NewsEntry } from '../lib/news';
   import { scrollFade } from '../lib/scrollFade';
 
@@ -24,6 +25,7 @@
 <Dialog title="What's new" wide width="min(560px, 100%)" oncancel={onclose}>
   {#snippet heading(id: string)}
     <div class="head">
+      <Icon name="megaphone" />
       <b {id}>What's new</b>
     </div>
   {/snippet}
@@ -53,9 +55,19 @@
 </Dialog>
 
 <style>
+  /* The Home button's megaphone before the title, in the main action's red. */
   .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     padding: 14px 16px;
     border-bottom: 1px solid var(--line);
+  }
+
+  .head :global(svg) {
+    width: 20px;
+    height: 20px;
+    color: var(--accent);
   }
 
   .head b {

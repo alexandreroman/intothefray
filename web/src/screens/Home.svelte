@@ -116,7 +116,7 @@
                 bind:this={newsButton}
                 onclick={openWhatsNew}
               >
-                <Icon name="sparkle" />
+                <Icon name="megaphone" />
                 {#if hasUnread}
                   <span class="dot" aria-hidden="true"></span>
                 {/if}
