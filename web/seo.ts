@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import { APP_NAME, PREVIEWS, type PreviewPageName } from './src/lib/pages';
+import { APP_NAME, PREVIEWS, type PreviewPageName } from './src/lib/pages.ts';
 
 /** The site URL of the production build, used when SITE_URL is unset. */
 export const DEFAULT_SITE_URL = 'https://intothefray.xyz';

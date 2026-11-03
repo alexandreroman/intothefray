@@ -5,7 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
-import { DEFAULT_SITE_URL, seo } from './seo';
+import { DEFAULT_SITE_URL, seo } from './seo.ts';
 
 /** The Git revision of the checkout, with "-dirty" when it has changes (like Go's VCS stamp), or undefined. */
 function gitCommit(): string | undefined {
