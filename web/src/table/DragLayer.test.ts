@@ -448,25 +448,30 @@ describe('dragging a table card', () => {
       (element) => element.dataset.id,
     );
 
-  it('outlines and names the card it goes directly under: the last of the chain, not the one pointed at', async () => {
+  it('outlines and names the main card of the stack, whatever card of it is pointed at', async () => {
     await renderTable(chainView());
     await press(placed('mine'), 50, 400);
     // Over "other", the main card, at 420, 340 on the screen.
     await moveTo(470, 420);
-    expect(outlined()).toEqual(['o2']);
-    expect(screen.getByText('Under Rhino')).toBeTruthy();
-    expect(screen.queryByText('Under Spider-Man')).toBeNull();
-    // The label stays over the card pointed at, not over the end of the chain.
+    expect(outlined()).toEqual(['other']);
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    // Over o2, the Rhino at the end of the chain, at 440, 380 on the screen.
+    await moveTo(470, 520);
+    expect(outlined()).toEqual(['other']);
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+    expect(screen.queryByText('Under Rhino')).toBeNull();
+    // The label stays over the card pointed at, not over the main card.
     const hint = document.querySelector<HTMLElement>('.drop-hint');
-    expect([parseFloat(hint!.style.left), parseFloat(hint!.style.top)]).toEqual([476, 332]);
+    expect([parseFloat(hint!.style.left), parseFloat(hint!.style.top)]).toEqual([496, 372]);
   });
 
-  it('outlines and names the card before it once a tucked card dragged off the end leaves the chain', async () => {
+  it('outlines and names the main card when a tucked card is dropped back on its own stack', async () => {
     await renderTable(chainView());
     // o2 lies at 440, 380 on the screen; dropped back on "other", it goes under o1 again.
     await press(placed('o2'), 470, 530);
     await moveTo(470, 420);
-    expect(outlined()).toEqual(['o1']);
+    expect(outlined()).toEqual(['other']);
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
   });
 
@@ -478,7 +483,7 @@ describe('dragging a table card', () => {
     await press(placed('mine'), 50, 400);
     // Over o2, the last card of the chain, which lies at 440, 380 on the screen.
     await moveTo(470, 520);
-    expect(outlined()).toEqual(['o2']);
+    expect(outlined()).toEqual(['other']);
 
     await release(470, 520);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
@@ -528,8 +533,8 @@ describe('dragging a table card', () => {
     expect(placed('o1').classList).toContain('lifted');
     expect(placed('other').classList).not.toContain('lifted');
     expect(placed('o2').classList).not.toContain('lifted');
-    // Dropped on "other", it goes under o2, the last card staying in the chain.
-    expect(outlined()).toEqual(['o2']);
+    // Dropped on "other", it goes under o2, the last card staying in the chain; the main card is outlined.
+    expect(outlined()).toEqual(['other']);
 
     await release(470, 420);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(

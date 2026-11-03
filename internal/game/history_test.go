@@ -1035,37 +1035,42 @@ func TestPlayUnderACardIsOneUndoableStep(t *testing.T) {
 	checkIntegrity(t, f.g.Table)
 }
 
-// TestPlayUnderACardNamesTheCardItGoesUnder plays cards under Rhino, which
-// already carries one: each line names the last card of Rhino's stack, the
-// one the played card is tucked under, rather than Rhino.
-func TestPlayUnderACardNamesTheCardItGoesUnder(t *testing.T) {
+// TestPlayUnderACardNamesTheStackMainCard plays cards on Rhino's stack, which
+// already carries one, aiming at the card tucked under Rhino: each card goes
+// to the end of the chain, but each line names Rhino, the stack's main card,
+// as the drop hint does.
+func TestPlayUnderACardNamesTheStackMainCard(t *testing.T) {
 	f := newDoFixture(t)
 	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
 	hand := slices.Clone(f.g.Table.Hands["p0"])
 	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[0], Target: f.villain()}, at(2))
 
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], Target: f.villain()}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], Target: hand[0]}, at(3))
 
-	want := fmt.Sprintf("played %s under %s", f.nameOf(t, hand[1]), f.nameOf(t, hand[0]))
+	if got := f.g.Table.Cards[hand[1]].Parent; got != hand[0] {
+		t.Fatalf("played card tucked under %q, want %s", got, hand[0])
+	}
+	villain := f.nameOf(t, f.villain())
+	want := fmt.Sprintf("played %s under %s", f.nameOf(t, hand[1]), villain)
 	if got := f.lastLog().Text; got != want {
 		t.Errorf("line = %q, want %q", got, want)
 	}
-	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1], hand[0]}) {
-		t.Errorf("line cards = %v, want [%s %s]", got, hand[1], hand[0])
+	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1], f.villain()}) {
+		t.Errorf("line cards = %v, want [%s %s]", got, hand[1], f.villain())
 	}
 
 	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
-	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", Target: f.villain()}, at(4))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", Target: hand[0]}, at(4))
 
 	if got := f.g.Table.Cards[top].Parent; got != hand[1] {
 		t.Fatalf("deck top tucked under %q, want %s", got, hand[1])
 	}
-	want = "played a card face down from their deck under " + f.nameOf(t, hand[1])
+	want = "played a card face down from their deck under " + villain
 	if got := f.lastLog().Text; got != want {
 		t.Errorf("line = %q, want %q", got, want)
 	}
-	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1]}) {
-		t.Errorf("line cards = %v, want [%s]", got, hand[1])
+	if got := f.lastLog().Cards; !slices.Equal(got, []string{f.villain()}) {
+		t.Errorf("line cards = %v, want [%s]", got, f.villain())
 	}
 	checkPartRefs(t, f.cat, f.g.Log)
 }

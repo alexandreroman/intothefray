@@ -7,10 +7,10 @@ import {
   handBand,
   insertIndex,
   isDownward,
+  mainCardOf,
   pileTargets,
   sourceOf,
   stackOf,
-  tuckHost,
   type DragSource,
   type DropRect,
 } from './drag';
@@ -605,28 +605,28 @@ describe('stackOf', () => {
   });
 });
 
-describe('tuckHost', () => {
+describe('mainCardOf', () => {
   // r, then c1 tucked under it, c2 under c1.
   const chain = [card('c1', { parent: 'r' }), card('r'), card('c2', { parent: 'c1' })];
-  const hostOf = (target: string, moving: string[]) => tuckHost(target, moving, chain)?.id;
+  const mainOf = (id: string) => {
+    const start = chain.find((c) => c.id === id)!;
+    return mainCardOf(start, chain).id;
+  };
 
-  it('is the last card of the chain, whatever card of the stack is the target', () => {
-    for (const target of ['r', 'c1', 'c2']) {
-      expect(hostOf(target, ['free']), target).toBe('c2');
+  it('is the card on top of the stack, whatever card of the chain it starts from', () => {
+    for (const id of ['r', 'c1', 'c2']) {
+      expect(mainOf(id), id).toBe('r');
     }
   });
 
-  it('is the main card when nothing is tucked under it', () => {
-    expect(tuckHost('solo', [], [card('solo')])?.id).toBe('solo');
+  it('is the card itself when it is tucked under none', () => {
+    const solo = card('solo');
+    expect(mainCardOf(solo, [solo]).id).toBe('solo');
   });
 
-  it('leaves out the moving cards: a tucked card dropped on its own stack', () => {
-    expect(hostOf('r', ['c2'])).toBe('c1');
-    expect(hostOf('c2', ['c1'])).toBe('c2');
-  });
-
-  it('is undefined for a target off the table', () => {
-    expect(hostOf('missing', [])).toBeUndefined();
+  it('stops at the last card found up a chain whose host is missing', () => {
+    const orphan = card('orphan', { parent: 'gone' });
+    expect(mainCardOf(orphan, [orphan]).id).toBe('orphan');
   });
 });
 

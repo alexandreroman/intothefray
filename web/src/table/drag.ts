@@ -586,40 +586,6 @@ export function mainCardOf(card: CardView, cards: readonly CardView[]): CardView
 }
 
 /**
- * The chain of the stack `target` belongs to, main card first, without the
- * `moving` cards, which leave it before a card is tucked into it: the cards
- * staying there. Null when target is not on the table.
- */
-function stayingChain(
-  target: string,
-  moving: readonly string[],
-  cards: readonly CardView[],
-): CardView[] | null {
-  const host = byId(cards).get(target);
-  if (host?.zone !== 'table') {
-    return null;
-  }
-  const main = mainCardOf(host, cards);
-  return chainOf(main.id, cards)
-    .filter((id) => !moving.includes(id))
-    .flatMap((id) => byId(cards).get(id) ?? []);
-}
-
-/**
- * The card a drop on `target` tucks the dragged card directly under: the last
- * card of the chain `target` belongs to, the `moving` cards left out (a tucked
- * card dropped on its own stack goes to its end). Undefined when target is
- * not on the table.
- */
-export function tuckHost(
-  target: string,
-  moving: readonly string[],
-  cards: readonly CardView[],
-): CardView | undefined {
-  return stayingChain(target, moving, cards)?.at(-1);
-}
-
-/**
  * Where a hand card dropped slots back into the hand, as in the prototype:
  * around the hand cards with a card's width to spare on each side (the fan
  * narrows when a card leaves it), down to the bottom of the window; at the

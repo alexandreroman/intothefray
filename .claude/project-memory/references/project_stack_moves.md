@@ -11,10 +11,10 @@ card attached to the previous one. Every card has at most one card tucked
 directly under it.
 
 A card added to a stack (dropped on any card of it) attaches to the last
-card of the chain, whatever card it was dropped on; the drop hint and the
-history line name that last card. A main card carries its whole chain and
-appends it in order; a tucked card appends alone. There is no way to insert
-a card in the middle of a chain.
+card of the chain, whatever card it was dropped on; the drop hint, its
+outline and the history line name the stack's main card. A main card carries
+its whole chain and appends it in order; a tucked card appends alone. There
+is no way to insert a card in the middle of a chain.
 
 Positions are automatic and the drop point is ignored: each tucked card lies
 down and to the right of the previous one, `attachOffsetX` (10) right and

@@ -39,10 +39,10 @@
     handBand,
     insertIndex,
     isDownward,
+    mainCardOf,
     pileTargets,
     sourceOf,
     stackOf,
-    tuckHost,
     tucks,
     type DragSource,
     type DropRect,
@@ -621,12 +621,14 @@
       const label = { glyph: PILE_GLYPHS[target.drop], text: target.label, tuck: false };
       showHint({ kind: 'pile', id: target.pile }, label, target.rect);
     } else if (target?.kind === 'card' && found?.action && tucks(found.action)) {
-      // The card it goes directly under, the last of that stack's chain, is outlined and named.
-      // The label stays over the card pointed at: the host may lie beneath it.
-      const host = tuckHost(target.card, interaction.dragging?.lifted ?? [], cards);
-      const name = faceOf(host)?.name ?? 'a card';
+      // The stack's main card is outlined and named, though the card goes to the end of its chain.
+      // Lifted cards are not targets and a main card cannot target its own chain, so that main card
+      // stays put. The label stays over the card pointed at: the main card may lie beneath it.
+      const pointedAt = cardsById.get(target.card);
+      const main = pointedAt ? mainCardOf(pointedAt, cards) : undefined;
+      const name = faceOf(main)?.name ?? 'a card';
       const label = { glyph: TUCK_GLYPH, text: `Under ${name}`, tuck: true };
-      showHint({ kind: 'card', id: host?.id ?? target.card }, label, target.rect);
+      showHint({ kind: 'card', id: main?.id ?? target.card }, label, target.rect);
     } else {
       interaction.dropOn = null;
       hint = null;

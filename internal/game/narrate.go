@@ -269,9 +269,9 @@ func (n narrator) describe(a Action) (logLine, bool) {
 			return n.faceDownPlayEvent(a), true
 		}
 		if a.Target != "" {
-			host := n.host(a)
-			text := join(words("played "), n.name(a.Card), words(" under "), n.name(host))
-			return logLine{text: text, cards: n.visibleCards(a.Card, host)}, true
+			main := n.stackMain(a)
+			text := join(words("played "), n.name(a.Card), words(" under "), n.name(main))
+			return logLine{text: text, cards: n.visibleCards(a.Card, main)}, true
 		}
 		return logLine{text: join(words("played "), n.name(a.Card)), cards: n.visibleCards(a.Card)}, true
 	case ActExhaust:
@@ -446,16 +446,17 @@ func (n narrator) faceDownPlayEvent(a Action) logLine {
 	if a.Target == "" {
 		return logLine{text: text}
 	}
-	host := n.host(a)
-	text = join(text, words(" under "), n.name(host))
-	return logLine{text: text, cards: n.visibleCards(host)}
+	main := n.stackMain(a)
+	text = join(text, words(" under "), n.name(main))
+	return logLine{text: text, cards: n.visibleCards(main)}
 }
 
-// host returns the card a play under a card tucked a.Card under: the last
-// card of the target's stack (see tuckUnder), which the line names rather
-// than the target.
-func (n narrator) host(a Action) string {
-	return n.after.Cards[a.Card].Parent
+// stackMain returns the main card of the stack a play under a card put
+// a.Card in. The line names it, as the drop hint does, rather than the
+// target or the last card of the chain a.Card is tucked under (see
+// tuckUnder).
+func (n narrator) stackMain(a Action) string {
+	return n.after.mainCard(n.after.Cards[a.Card]).ID
 }
 
 func (n narrator) flipEvent(a Action) logLine {
