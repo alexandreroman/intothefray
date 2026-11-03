@@ -41,7 +41,7 @@
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face; immutable CDN cache
 - [Compression: HTTP by the proxy, WebSocket by the backend](references/project_no_backend_compression.md) — WebSocket deflate, no context takeover
-- [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
+- [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, wordmark; primary button: rounded, yellow hover ring
 - [Table layout](references/project_table_layout.md) — rows, owner frames, out-of-play chips; 112×157 table cards; one villain row; markers
 - [First player token needs two heroes](references/project_first_player_token.md) — none in a one-hero game; counts seats, not players
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider

@@ -321,12 +321,13 @@
     align-items: center;
   }
 
-  /* The home screen's call to action is a size up from the shared one. */
+  /* The home screen's call to action is a size up from the shared one: 56px high (above), slanted
+     by 14px, so it leans as the shared one does (14 / 56 = 0.25). */
   .actions .btn-primary {
+    --slant: 14px;
     gap: 12px;
     padding: 0 34px;
     font-size: 17px;
-    clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
   }
 
   .btn-primary :global(svg) {

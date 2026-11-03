@@ -101,7 +101,7 @@ body {
     every action but the main one, in a dialog too (Cancel, Close);
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
   - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
-    or a box); a lighter red on hover.
+    or a box); a lighter red on hover, and a yellow ring under a mouse; it sinks when pressed.
   A disabled button has no hover. A pressed or "on" state set by a component keeps its look
   and gives its own hover.
   A label never wraps.
@@ -277,42 +277,199 @@ select:focus {
   border-color: transparent;
 }
 
-/* The one main action of a screen: a slanted red panel with ink text. */
+/*
+  The one main action of a screen: a slanted red panel with ink text and slightly rounded
+  corners. --slant is how far the sides lean, and --lean is always --slant over the height,
+  unitless: a size that changes either keeps it so.
+  The panel itself is drawn by ::before below, so that its corners can be rounded; the button
+  is transparent. Its clip-path cuts each corner just outside the rounding (--cut from the
+  corner, 0.62 of the radius), which trims what would show past a rounded corner, such as the
+  straight bar of the hover light.
+*/
 .btn-primary {
+  --slant: 12px;
+  --lean: 0.25;
+  --radius: 5px;
+  --cut: calc(var(--radius) * 0.62);
+  position: relative;
   height: 48px;
   padding: 0 30px;
   border: 0;
   border-radius: 0;
-  background: var(--accent);
+  background: transparent;
   color: var(--bg);
   font-stretch: 85%;
   font-weight: 800;
   font-size: 15px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+  clip-path: polygon(
+    calc(var(--slant) + var(--cut)) 0,
+    calc(100% - var(--cut)) 0,
+    calc(100% - var(--lean) * var(--cut)) var(--cut),
+    calc(100% - var(--slant) + var(--lean) * var(--cut)) calc(100% - var(--cut)),
+    calc(100% - var(--slant) - var(--cut)) 100%,
+    var(--cut) 100%,
+    calc(var(--lean) * var(--cut)) calc(100% - var(--cut)),
+    calc(var(--slant) - var(--lean) * var(--cut)) var(--cut)
+  );
 }
 
+/* The button stays transparent on hover too: the standard button's hover surface would show
+   at the rounded corners. The hover red is on the panel. */
 .btn-primary:hover:not(:disabled, [aria-disabled='true']) {
-  background: var(--accent-hover);
+  background: transparent;
 }
 
 /* The main action of a dialog or a box, sized as the buttons next to it. */
 .btn-primary.compact {
+  --lean: 0.3;
   height: 40px;
   padding: 0 24px;
   font-size: 14px;
 }
 
-/* The clip-path cuts any outline and the slanted sides off: the focus draws signal blue
-   bars, lined with ink, along the top and bottom edges, whatever the hover colour. */
+/*
+  The panel: a box skewed by atan(--lean) about its centre, inset by half the slant on each
+  side, is the slanted panel with its corners rounded. At z-index -1 it sits under the label
+  but stays inside the button: the clip-path makes the button a stacking context of its own.
+  It also carries the focus bars and the hover ring below, so that both follow the rounded
+  panel.
+*/
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--slant) / 2);
+  right: calc(var(--slant) / 2);
+  box-sizing: border-box;
+  background: var(--accent);
+  border: 0 solid var(--spark);
+  border-radius: var(--radius);
+  transform: skewX(calc(-1 * atan(var(--lean))));
+  pointer-events: none;
+  transition: background-color 0.12s;
+}
+
+/*
+  The press, a comic impact: the whole button sinks and its panel darkens (and, under a mouse,
+  the ring flashes white, below). The hover red leaves out a pressed button, so that the darker
+  red wins whatever the order of the rules: both selectors weigh the same. Without motion the
+  button does not sink, but the panel still darkens: that is a colour, not a motion.
+*/
+.btn-primary:hover:not(:active, :disabled, [aria-disabled='true'])::before {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled, [aria-disabled='true'])::before {
+  background: var(--accent-deep);
+}
+
+/* The global button transitions, plus a quick sink; without motion, the global none applies. */
+@media (prefers-reduced-motion: no-preference) {
+  .btn-primary {
+    transition:
+      background-color 0.12s,
+      border-color 0.12s,
+      color 0.12s,
+      transform 0.08s ease-out;
+  }
+
+  .btn-primary:active:not(:disabled, [aria-disabled='true']) {
+    transform: scale(0.96);
+  }
+}
+
+/*
+  The light of the hover ring: a short bar, as tall as the ring is wide, that runs along the
+  ring's centre line (--c in) and turns with it at the corners. A path, unlike a sweeping angle,
+  keeps its speed constant along the sides, whatever the button's width. --cl is how far a
+  slanted side shifts over a depth of --c.
+*/
+.btn-primary::after {
+  --c: 2px;
+  --cl: calc(var(--c) * var(--lean));
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 4px;
+  offset-path: polygon(
+    calc(var(--slant) - var(--cl) + var(--c)) var(--c),
+    calc(100% - var(--cl) - var(--c)) var(--c),
+    calc(100% - var(--slant) + var(--cl) - var(--c)) calc(100% - var(--c)),
+    calc(var(--cl) + var(--c)) calc(100% - var(--c))
+  );
+  offset-rotate: auto;
+  offset-anchor: center;
+  /* A pale yellow fading into white: the light's own colours, used nowhere else. */
+  background: linear-gradient(to right, transparent, #fff1b8 60%, #fff);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The focus: signal blue bars, lined with ink, along the panel's top and bottom edges,
+   whatever the hover colour. */
 .btn-primary:focus-visible {
   outline: none;
+}
+
+.btn-primary:focus-visible::before {
   box-shadow:
     inset 0 3px var(--sel),
     inset 0 -3px var(--sel),
     inset 0 5px var(--bg),
     inset 0 -5px var(--bg);
+}
+
+/*
+  The hover ring: a 4px spark yellow border on the panel, a comic cue as the caption boxes are
+  (the signal blue is for selection and focus), lined with 2px of ink, and its light running
+  around it; pressed, it flashes white. Its selectors are more specific than the focus bars',
+  so a focused button shows the ring on hover.
+  Only a real hover: a tap on a touch screen leaves no ring behind. A disabled button has none,
+  and neither has a hover without motion.
+*/
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .btn-primary:hover:not(:disabled, [aria-disabled='true'])::before {
+    border-width: 4px;
+    box-shadow: inset 0 0 0 2px var(--bg);
+  }
+
+  .btn-primary:hover:not(:disabled, [aria-disabled='true'])::after {
+    opacity: 1;
+    animation: ring-run 2.2s linear infinite;
+  }
+
+  .btn-primary:hover:active:not(:disabled, [aria-disabled='true'])::before {
+    border-color: #fff;
+  }
+}
+
+@keyframes ring-run {
+  from {
+    offset-distance: 0%;
+  }
+
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* Where an offset-path cannot follow a polygon, the ring stays and the light goes. */
+@supports not (offset-path: polygon(0 0, 1px 0, 0 1px)) {
+  .btn-primary::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::before {
+    transition: none;
+  }
 }
 
 /* A link drawn as the primary button. */

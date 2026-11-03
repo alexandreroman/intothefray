@@ -1,6 +1,6 @@
 ---
 name: "Visual identity"
-description: "Ink & Signal look: Archivo, ink palette, split-card logo, full wordmark in every app bar"
+description: "Ink & Signal look: Archivo, ink palette, split-card logo, full wordmark in bars, primary button hover ring"
 type: project
 ---
 
@@ -17,6 +17,16 @@ type: project
 - Every app bar shows the full "INTO THE FRAY" wordmark.
 - Comic cues stay sparse: slanted primary button, yellow narration
   captions, speech-bubble tooltips, halftone dots.
+- The primary button is a slanted red panel with 5px rounded corners.
+  Under a mouse hover it gets a 4px spark yellow ring lined with ink,
+  with a pale yellow to white light running round it. The light follows
+  an `offset-path`, so its speed is constant along every side. The ring
+  shows only under a real mouse hover with motion allowed, on enabled
+  buttons. Keyboard focus draws signal blue bars, lined with ink, along
+  the top and bottom edges.
+- A press is a comic impact: the button sinks (scale 0.96), the panel
+  turns deep red and a hover ring flashes white. Under reduced motion
+  the press only darkens the panel.
 
 **Why:** chosen with the user from mockups on a claude.ai design canvas:
 themed but modern and clean, original mark with no Marvel branding.
