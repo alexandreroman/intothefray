@@ -151,7 +151,8 @@ container. The web app is available at <http://localhost:8080>.
 Caddy also answers `/healthz` on that port, for the container
 healthcheck.
 
-The web app routes on real paths: `/` (home), `/options` and
+The web app routes on real paths: `/` (home), `/options`, `/about`
+(open source license, card data credits, fan project disclaimer) and
 `/g/<id>` (a game). Caddy serves `index.html` for any path that is
 not a file, so a game link opens directly. The API, the health probe
 and everything under `/assets/` and `/packs/` are left out: a missing
