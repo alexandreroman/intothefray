@@ -145,8 +145,12 @@ type Set struct {
 	InPlay map[Difficulty][]FaceRef `json:"inPlay,omitempty"`
 	// Unlisted sets are left out of the lobby, e.g. the PvP standard set.
 	Unlisted bool      `json:"unlisted,omitempty"`
-	Side     *SideDeck `json:"side,omitempty"`     // hero_special set used as a side deck
-	SetAside []string  `json:"setAside,omitempty"` // hero set: cards set aside at setup
+	Side     *SideDeck `json:"side,omitempty"` // hero_special set used as a side deck
+	// SetAside lists the cards the set puts aside at setup: a hero set's go
+	// to its player's set-aside pile, an encounter set's (modular, standard,
+	// expert or main scheme) to the encounter set-aside pile, out of the
+	// encounter deck, as Dreadpool's do for Crisis of Infinite Deadpools.
+	SetAside []string `json:"setAside,omitempty"`
 }
 
 // SideDeck describes how a hero's extra deck (a "side deck" in the rules

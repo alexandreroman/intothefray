@@ -25,29 +25,31 @@ Everything below works today, except where noted.
   two decks on a wide screen, both hands show side by side. An action is
   credited to the deck of the card or pile you touch, else to the
   selected deck
-- **Automated setup** — pick a scenario, a difficulty and the modular sets
-  (with a Fear No Evil Underling, the main scheme set too):
-  villain, main scheme and decks are laid out for you, with each hero's side
-  decks (Doctor Strange's Invocation deck and its discard pile, Daredevil's
-  Sense deck...) shuffled beside the identity, and the cards a hero or a deck
-  card sets aside (Valkyrie's Death-Glow, Iceman's Frostbite, the Specialists of
-  Specialized Training...) on its set-aside pile. A scenario can bring its own
-  decks and several villains: The Wrecking Crew lays out its four villains, each
-  with its own encounter deck, discard pile and side scheme, and the active
-  counter, which players move by hand like the first player token; Crossbones'
+- **Automated setup** — pick a scenario, a difficulty and the modular sets (with
+  a Fear No Evil Underling, the main scheme set too): villain, main scheme and
+  decks are laid out for you, with each hero's side decks (Doctor Strange's
+  Invocation deck and its discard pile, Daredevil's Sense deck...) shuffled
+  beside the identity, and the cards a hero or a deck card sets aside
+  (Valkyrie's Death-Glow, Iceman's Frostbite, the Specialists of Specialized
+  Training...) on its set-aside pile; the cards an encounter set sets aside
+  (Dreadpool's, for Crisis of Infinite Deadpools) wait on the encounter
+  set-aside pile, out of the encounter deck. A scenario can bring its own decks
+  and several villains: The Wrecking Crew lays out its four villains, each with
+  its own encounter deck, discard pile and side scheme, and the active counter,
+  which players move by hand like the first player token; Crossbones'
   Experimental Weapons deck and Red Skull's side-scheme deck lie next to the
   encounter deck and are not dealt from: any player drags one to play its top
-  card face up, or under the card it is dropped on. Red Skull's side-scheme
-  deck has its own discard pile; a discarded Experimental Weapon goes to the
+  card face up, or under the card it is dropped on. Red Skull's side-scheme deck
+  has its own discard pile; a discarded Experimental Weapon goes to the
   encounter discard pile, so shuffling that pile back takes it into the
   encounter deck. A deck takes any card of its owner dropped on it (a modular
-  side scheme onto Red Skull's side-scheme deck, a player's card onto their
-  side deck), and that card then belongs to the deck: it is discarded where
-  the deck's cards go. The main scheme starts on its stage 1A: players resolve its
+  side scheme onto Red Skull's side-scheme deck, a player's card onto their side
+  deck), and that card then belongs to the deck: it is discarded where the
+  deck's cards go. The main scheme starts on its stage 1A: players resolve its
   Setup text themselves. They also place all threat and counters by hand: the
-  main scheme's starting threat when they advance it to 1B (1A prints none),
-  the starting threat of every side scheme the setup puts in play, and
-  counters such as Criminal Enterprise's infamy.
+  main scheme's starting threat when they advance it to 1B (1A prints none), the
+  starting threat of every side scheme the setup puts in play, and counters such
+  as Criminal Enterprise's infamy.
   Only the environments the scenario puts into play as it starts (Criminal
   Enterprise, Ultron Drones, Public Support) and the side schemes its printed
   setup puts in play are placed for you; other cards the Setup text names, such
@@ -239,16 +241,22 @@ puts aside at setup, such as Specialized Training's Specialists, listed on the
 card's code rather than a face code) and set data (`sets.json`: the cards a set
 starts in play at each difficulty, the sets the lobby leaves out, the main
 scheme sets (`mainScheme`, offered among the modular sets), the hero side decks
-such as Doctor Strange's Invocation deck, and the cards a hero set puts aside
-at setup). A set's `exclude` lists the cards the sources wrongly put in it,
-such as marvelcdb's player-side Shang-Chi in Taskmaster's set: they become
+such as Doctor Strange's Invocation deck, and the cards a set puts aside at
+setup: a hero set's go to its player's set-aside pile and may come from another
+set; a modular, standard, expert or main scheme set's, such as Dreadpool's
+cards set aside for Crisis of Infinite Deadpools, must belong to the set and go
+to the encounter set-aside pile instead of the encounter deck). A set's
+`exclude` lists the cards the sources wrongly put in it, such as marvelcdb's
+player-side Shang-Chi in Taskmaster's set: they become
 cards without a set, with the back of such a card, and stay in their pack;
 the generator fails when one is not in the set. A side deck is a
 `hero_special` set linked to the hero of its pack whose set code, followed by
 `_`, starts its own (`doctor_strange` for `doctor_strange_invocation_deck`);
-the generator fails when a side deck matches
-no hero or several, when a set-aside card is unknown, or when a card's
-set-aside cards are listed on a face code or include the card itself. The cards
+the generator fails when a side deck matches no hero or several, when a set
+that is neither a hero nor an encounter set lists set-aside cards, when a
+set-aside card is listed twice, unknown or, for an encounter set, not in the
+set, or when a card's set-aside cards are listed on a face code or include the
+card itself. The cards
 of a side deck with a shared `back` (Doctor Strange's Invocation deck, Hercules'
 Labor and Gift decks, Daredevil's Sense deck, Storm's Weather deck) all get that
 back, whatever back the sources give them, and the table captions it with the

@@ -415,7 +415,11 @@ func TestBuildMakesCuratedMainSchemeSets(t *testing.T) {
 		MC:      setsFixture(t),
 		MCPacks: corePacks,
 		CBSets:  readJSON[cerebro.Set](t, "testdata/sets_cerebro.json"),
-		Curated: curated.Curated{Sets: map[string]curated.SetDef{"rhino": {MainScheme: true}}},
+		// The sources list a main scheme set as a villain set: it may still
+		// set its own cards aside.
+		Curated: curated.Curated{Sets: map[string]curated.SetDef{
+			"rhino": {MainScheme: true, SetAside: []string{"01098"}},
+		}},
 	})
 
 	result, err := Build(in)
@@ -426,6 +430,9 @@ func TestBuildMakesCuratedMainSchemeSets(t *testing.T) {
 	index := slices.IndexFunc(result.Packs[0].Sets, func(set pack.Set) bool { return set.Code == "rhino" })
 	if got := result.Packs[0].Sets[index].Kind; got != "main_scheme" {
 		t.Errorf("got rhino kind %q, want main_scheme", got)
+	}
+	if got, want := result.Packs[0].Sets[index].SetAside, []string{"01098"}; !slices.Equal(got, want) {
+		t.Errorf("got rhino set-aside cards %v, want %v", got, want)
 	}
 	// A main scheme set is offered in the lobby with the modular sets Cerebro
 	// recommends for it, rather than listed as a scenario.
@@ -474,6 +481,8 @@ func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
 		"spider_man_tech_deck": {Side: tech},
 		// A set-aside card may come from another set, as Iceman's Frostbite.
 		"spider_man": {SetAside: []string{"09013", "09012"}},
+		// A modular set sets its own cards aside, as Dreadpool does.
+		"bomb_scare": {SetAside: []string{"01110", "01112"}},
 	})
 
 	result, err := Build(in)
@@ -494,6 +503,9 @@ func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
 	}
 	if got, want := sets["spider_man"].SetAside, []string{"09013", "09012"}; !slices.Equal(got, want) {
 		t.Errorf("got set-aside cards %v, want %v", got, want)
+	}
+	if got, want := sets["bomb_scare"].SetAside, []string{"01110", "01112"}; !slices.Equal(got, want) {
+		t.Errorf("got bomb_scare set-aside cards %v, want %v", got, want)
 	}
 	if got := sets["rhino"]; got.Side != nil || got.SetAside != nil {
 		t.Errorf("got rhino %+v, want it untouched", got)
@@ -565,7 +577,22 @@ func TestBuildRejectsInvalidHeroSetDefs(t *testing.T) {
 		{
 			"set-aside cards on another kind",
 			map[string]curated.SetDef{"spider_man_web_deck": {SetAside: []string{"09010"}}},
-			"curated set spider_man_web_deck: set-aside cards need a hero set, not a hero_special set",
+			"curated set spider_man_web_deck: set-aside cards need a hero or an encounter set, not a hero_special set",
+		},
+		{
+			"set-aside cards on a villain set",
+			map[string]curated.SetDef{"rhino": {SetAside: []string{"01098"}}},
+			"curated set rhino: set-aside cards need a hero or an encounter set, not a villain set",
+		},
+		{
+			"modular set-aside card of another set",
+			map[string]curated.SetDef{"bomb_scare": {SetAside: []string{"01110", "01098"}}},
+			"curated set bomb_scare: set-aside card 01098 is not in the set",
+		},
+		{
+			"set-aside card listed twice",
+			map[string]curated.SetDef{"bomb_scare": {SetAside: []string{"01110", "01110"}}},
+			"curated set bomb_scare: set-aside card 01110 is listed twice",
 		},
 	}
 	for _, tt := range tests {

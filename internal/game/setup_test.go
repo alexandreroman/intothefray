@@ -428,6 +428,43 @@ func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 	}
 }
 
+func TestSetupSetsAsideEncounterSetCards(t *testing.T) {
+	const crisisOfInfiniteDeadpools = "44037"
+	cat := newCatalog(t)
+	cfg := rhinoConfig()
+	cfg.Modulars = []string{"dreadpool"}
+	table := startedGame(t, cfg).Table
+
+	// Every copy of the cards Dreadpool sets aside, both copies of 'Pool-ized
+	// among them, waits on the scenario's set-aside pile.
+	wantAside := setCodes(t, cat, []string{crisisOfInfiniteDeadpools}, "dreadpool")
+	aside := table.Piles[PileScenarioAside].Cards
+	if got := codesOf(table, aside); !slices.Equal(got, wantAside) {
+		t.Errorf("set-aside pile = %v, want %v", got, wantAside)
+	}
+	for _, id := range aside {
+		if c := table.Cards[id]; c.Owner != NoOwner || c.Home != PileEncounter {
+			t.Errorf("set-aside card %+v, want owned by nobody at home in the encounter deck", c)
+		}
+	}
+
+	// Crisis of Infinite Deadpools joins the encounter deck as usual; the
+	// set-aside cards stay out of it.
+	skip := append([]string{"01094", "01095", "01096", "01097"}, wantAside...)
+	wantDeck := setCodes(t, cat, skip, "rhino", "dreadpool", "standard")
+	wantDeck = append(wantDeck, "01165", "01165")
+	slices.Sort(wantDeck)
+	deck := codesOf(table, table.Piles[PileEncounter].Cards)
+	if !slices.Equal(deck, wantDeck) {
+		t.Errorf("encounter deck = %v, want %v", deck, wantDeck)
+	}
+	if !slices.Contains(deck, crisisOfInfiniteDeadpools) {
+		t.Errorf("Crisis of Infinite Deadpools (%s) is missing from the encounter deck", crisisOfInfiniteDeadpools)
+	}
+	checkSetCopies(t, cat, table, []string{"dreadpool"})
+	checkIntegrity(t, table)
+}
+
 func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
 

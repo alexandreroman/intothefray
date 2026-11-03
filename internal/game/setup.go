@@ -683,9 +683,12 @@ func (b *tableBuilder) setupScenarioDecks(scenario pack.Scenario) error {
 }
 
 // putSetInPlay puts the cards a set starts in play at this difficulty (the
-// "Setup." keyword) in the villain's row, after the cards already in play.
-// It returns the canonical codes it placed, which stay out of the encounter
-// deck.
+// "Setup." keyword) in the villain's row, after the cards already in play,
+// then every copy of the cards it sets aside (Dreadpool's, for Crisis of
+// Infinite Deadpools) on the scenario's set-aside pile. Only a set that lists
+// set-aside cards draws ids for them, so the others keep the same card ids for
+// a seed. It returns the canonical codes it placed, which stay out of the
+// encounter deck.
 func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) (map[string]bool, error) {
 	set, ok := b.cat.Set(setCode)
 	if !ok {
@@ -699,6 +702,22 @@ func (b *tableBuilder) putSetInPlay(setCode string, difficulty pack.Difficulty) 
 			return nil, err
 		}
 		placed[c.Code] = true
+	}
+	for _, code := range set.SetAside {
+		def, err := b.def(code)
+		if err != nil {
+			return nil, err
+		}
+		// Every copy goes aside, as both copies of 'Pool-ized do: placed
+		// keeps all of them out of the encounter deck.
+		for range def.Quantity {
+			c, _, err := b.newEncounterCard(def.Code)
+			if err != nil {
+				return nil, err
+			}
+			b.pushToPile(PileScenarioAside, c)
+			placed[c.Code] = true
+		}
 	}
 	return placed, nil
 }

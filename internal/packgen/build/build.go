@@ -229,14 +229,16 @@ func applySetDefs(
 		if err := checkSide(*set, def.Side); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
-		if err := checkSetAside(*set, def.SetAside, cardCodes); err != nil {
-			return fmt.Errorf("curated set %s: %w", code, err)
-		}
 		if err := checkMainScheme(*set, def.MainScheme, mainSchemeCards); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
+		// The sources list a main scheme set as a villain set: its kind is
+		// set before checkSetAside, which accepts a main scheme set.
 		if def.MainScheme {
 			set.Kind = pack.SetKindMainScheme
+		}
+		if err := checkSetAside(*set, def.SetAside, cardCodes); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
 		}
 		set.InPlay = def.InPlay
 		set.Unlisted = def.Unlisted
@@ -291,22 +293,48 @@ func checkMainScheme(set pack.Set, mainScheme bool, mainSchemeCards map[string]b
 	return nil
 }
 
-// checkSetAside makes sure set-aside cards are listed on a hero set, the only
-// one setup reads them from, and exist in the catalog. They may belong to
-// another set, as Iceman's Frostbite cards do.
+// checkSetAside makes sure set-aside cards are listed once each, on a set
+// setup reads them from. A hero set puts them on its player's set-aside pile:
+// they may belong to another set, as Iceman's Frostbite cards do, but must
+// exist in the catalog. An encounter set that setup adds to the encounter deck
+// (modular, standard, expert or main scheme) puts them on the encounter
+// set-aside pile instead, as Dreadpool does for Crisis of Infinite Deadpools:
+// they must belong to the set, whose other cards join the encounter deck.
 func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) error {
 	if len(setAside) == 0 {
 		return nil
 	}
-	if set.Kind != pack.SetKindHero {
-		return fmt.Errorf("set-aside cards need a %s set, not a %s set", pack.SetKindHero, set.Kind)
+	encounter := isEncounterSetKind(set.Kind)
+	if set.Kind != pack.SetKindHero && !encounter {
+		return fmt.Errorf("set-aside cards need a %s or an encounter set, not a %s set", pack.SetKindHero, set.Kind)
 	}
+	listed := make(map[string]bool)
 	for _, code := range setAside {
+		if listed[code] {
+			return fmt.Errorf("set-aside card %s is listed twice", code)
+		}
+		listed[code] = true
+		if encounter {
+			if !slices.Contains(set.Cards, code) {
+				return fmt.Errorf("set-aside card %s is not in the set", code)
+			}
+			continue
+		}
 		if !cardCodes[code] {
 			return fmt.Errorf("set-aside card %s is not in the catalog", code)
 		}
 	}
 	return nil
+}
+
+// isEncounterSetKind reports whether a set of this kind is one setup adds to
+// the encounter deck on top of the villain set.
+func isEncounterSetKind(kind string) bool {
+	switch kind {
+	case pack.SetKindModular, pack.SetKindStandard, pack.SetKindExpert, pack.SetKindMainScheme:
+		return true
+	}
+	return false
 }
 
 // checkCardSetAside makes sure the cards a curated card sets aside exist in
