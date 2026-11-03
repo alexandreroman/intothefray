@@ -19,7 +19,11 @@
       url: 'https://marvelcdb.com',
       provides: 'Card data, decks and French names',
     },
-    { name: 'Cerebro', provides: 'Card images and data' },
+    {
+      name: 'Cerebro',
+      url: 'https://github.com/UnicornSnuggler/Cerebro',
+      provides: 'Card images and data',
+    },
     {
       name: 'mc4db',
       url: 'https://mc4db.merlindumesnil.net',

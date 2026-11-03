@@ -33,16 +33,19 @@ describe('About', () => {
 
     const linked = [
       ['marvelcdb', 'https://marvelcdb.com'],
+      ['Cerebro', 'https://github.com/UnicornSnuggler/Cerebro'],
       ['mc4db', 'https://mc4db.merlindumesnil.net'],
       ['cgbuilder', 'https://mc.cgbuilder.fr'],
     ];
     for (const [name, url] of linked) {
-      expect(screen.getByRole('link', { name }).getAttribute('href')).toBe(url);
+      const link = screen.getByRole('link', { name });
+      expect(link.getAttribute('href')).toBe(url);
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toContain('noopener');
     }
-    for (const name of ['Cerebro', 'OCTGN Marvel Champions image packs']) {
-      expect(screen.getByText(name)).toBeTruthy();
-      expect(screen.queryByRole('link', { name })).toBeNull();
-    }
+    const octgn = 'OCTGN Marvel Champions image packs';
+    expect(screen.getByText(octgn)).toBeTruthy();
+    expect(screen.queryByRole('link', { name: octgn })).toBeNull();
     expect(screen.queryByRole('link', { name: 'fr.marvelcdb' })).toBeNull();
   });
 
