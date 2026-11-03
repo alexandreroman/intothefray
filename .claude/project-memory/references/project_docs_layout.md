@@ -10,8 +10,9 @@ type: project
   its main features in a few bullets, a quick start, a link to
   `DEVELOPMENT.md` and the license.
 - `DEVELOPMENT.md` (repository root) is the contributor guide:
-  prerequisites, make targets, local stack, Casper workspaces,
-  configuration, card pack generation, CI, deployment, architecture.
+  prerequisites, make targets, local stack, configuration, card pack
+  generation, CI, deployment, architecture. Casper support is documented
+  only in `.casper.json`, `scripts/casper.sh` and its memory note.
 - `CLAUDE.md` holds what an agent needs every session: summary, stack,
   key commands, a module map (one line per directory), the Agents, Skills
   and Memory rules and the conventions. It points to `DEVELOPMENT.md`.

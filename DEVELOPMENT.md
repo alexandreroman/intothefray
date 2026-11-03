@@ -72,14 +72,6 @@ make app-down     # stop and remove the containerised stack
 origins; same-origin requests always pass. Set variables in `.env`, or in
 `.env.local` for the development targets only.
 
-## Casper workspaces
-
-[Casper](https://github.com/alexandreroman/casper) support is optional
-and lives in `.casper.json` and `scripts/casper.sh`. In a workspace, the
-setup hook writes `.env.casper` with the ports (web `CASPER_PORT`, server
-+1, Redis +2) and the branch as `APP_INSTANCE`; `casper run` starts
-`make dev` on those ports. Values in `.env` or `.env.local` win.
-
 ## Card packs
 
 `make packs` fetches the card data (marvelcdb, completed by mc4db, and
