@@ -14,8 +14,9 @@ type: project
   (Apache-2.0, links to the license and the GitHub repository), Card data
   (the community projects the cards come from) and Unofficial fan project
   (not affiliated with or endorsed by Fantasy Flight Games or Marvel).
-- The card data credits are a `SOURCES` array in the component: marvelcdb,
-  fr.marvelcdb, Cerebro, mc4db, cgbuilder and the OCTGN Marvel Champions
+- The card data credits are a `SOURCES` array in the component: marvelcdb
+  (card data, decks and French names: fr.marvelcdb.com is the same site,
+  one entry), Cerebro, mc4db, cgbuilder and the OCTGN Marvel Champions
   image packs. Cerebro and OCTGN show without a link.
 - The page lists no tech stack: no languages, frameworks, libraries or
   fonts.

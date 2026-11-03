@@ -33,7 +33,6 @@ describe('About', () => {
 
     const linked = [
       ['marvelcdb', 'https://marvelcdb.com'],
-      ['fr.marvelcdb', 'https://fr.marvelcdb.com'],
       ['mc4db', 'https://mc4db.merlindumesnil.net'],
       ['cgbuilder', 'https://mc.cgbuilder.fr'],
     ];
@@ -44,6 +43,7 @@ describe('About', () => {
       expect(screen.getByText(name)).toBeTruthy();
       expect(screen.queryByRole('link', { name })).toBeNull();
     }
+    expect(screen.queryByRole('link', { name: 'fr.marvelcdb' })).toBeNull();
   });
 
   it('opens every external link in a new tab', () => {

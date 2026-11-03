@@ -14,8 +14,11 @@
   }
 
   const SOURCES: Source[] = [
-    { name: 'marvelcdb', url: 'https://marvelcdb.com', provides: 'Card data and decks' },
-    { name: 'fr.marvelcdb', url: 'https://fr.marvelcdb.com', provides: 'French card names' },
+    {
+      name: 'marvelcdb',
+      url: 'https://marvelcdb.com',
+      provides: 'Card data, decks and French names',
+    },
     { name: 'Cerebro', provides: 'Card images and data' },
     {
       name: 'mc4db',
