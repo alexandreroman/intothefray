@@ -53,9 +53,11 @@ describe('router', () => {
     expect(route.current).toEqual({ name: 'game', id: 'a b' });
   });
 
-  it('parses the home and options routes', () => {
+  it('parses the home, options and about routes', () => {
     navigate('/options');
     expect(route.current).toEqual({ name: 'options' });
+    navigate('/about');
+    expect(route.current).toEqual({ name: 'about' });
     navigate('/');
     expect(route.current).toEqual({ name: 'home' });
   });
@@ -64,6 +66,10 @@ describe('router', () => {
     navigate('/options/');
     expect(route.current).toEqual({ name: 'options' });
     expect(window.location.pathname).toBe('/options');
+
+    navigate('/about/');
+    expect(route.current).toEqual({ name: 'about' });
+    expect(window.location.pathname).toBe('/about');
 
     navigate('/g/abc/');
     expect(route.current).toEqual({ name: 'game', id: 'abc' });

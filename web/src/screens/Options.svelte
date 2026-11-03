@@ -8,7 +8,7 @@
     storedName,
     stripEmoji,
   } from '../lib/names';
-  import { go } from '../lib/router.svelte';
+  import { go, href } from '../lib/router.svelte';
   import { selectionIndicator } from '../lib/selectionIndicator';
   import { applyTheme, saveTheme, storedTheme, THEMES, type Theme } from '../lib/theme';
   import { appCommit, fetchServerCommit, shortCommit } from '../lib/version';
@@ -219,16 +219,19 @@
       </div>
     {/if}
 
-    <p class="version" class:mismatch={mismatchedServer !== undefined}>
-      version
-      {#if mismatchedServer}
-        mismatch {@render commit(app)}/{@render commit(mismatchedServer)}
-      {:else if serverFailed}
-        {@render commit(app)}/unavailable
-      {:else}
-        {@render commit(app)}
-      {/if}
-    </p>
+    <footer>
+      <a class="about-link" href={href('/about')}>About Into The Fray</a>
+      <p class="version" class:mismatch={mismatchedServer !== undefined}>
+        version
+        {#if mismatchedServer}
+          mismatch {@render commit(app)}/{@render commit(mismatchedServer)}
+        {:else if serverFailed}
+          {@render commit(app)}/unavailable
+        {:else}
+          {@render commit(app)}
+        {/if}
+      </p>
+    </footer>
   </main>
 </div>
 
@@ -297,7 +300,7 @@
     border-top: 1px solid var(--panel-2);
   }
 
-  /* The last setting: the version line after it is no .row. */
+  /* The last setting: the footer after it is no .row. */
   .row:last-of-type {
     border-bottom: 1px solid var(--panel-2);
   }
@@ -469,8 +472,40 @@
     border: 1.5px solid #3a4766;
   }
 
+  /* The about link on the left, the version on the right. */
+  footer {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+  }
+
+  .about-link {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 3px;
+    transition:
+      color 0.12s,
+      text-decoration-color 0.12s;
+  }
+
+  .about-link:hover {
+    color: var(--text);
+    text-decoration-color: currentColor;
+  }
+
+  .about-link:focus-visible {
+    outline: 2px solid var(--sel);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
   .version {
-    margin: 20px 0 0;
+    margin: 0 0 0 auto;
     text-align: right;
     font-size: 11px;
     color: color-mix(in srgb, var(--faint) 60%, var(--table-bg));

@@ -280,4 +280,15 @@ describe('Options', () => {
     await fireEvent.click(screen.getByRole('button', { name: /back/i }));
     expect(window.location.pathname).toBe('/');
   });
+
+  it('links to the about screen', async () => {
+    window.history.pushState(null, '', '/options');
+    render(Options);
+    const link = screen.getByRole('link', { name: 'About Into The Fray' });
+    expect(link.getAttribute('href')).toBe('/about');
+
+    await fireEvent.click(link);
+
+    expect(window.location.pathname).toBe('/about');
+  });
 });
