@@ -26,6 +26,9 @@ type: project
   The file is `web/src/assets/news/<entry-id>.webp`, 224×168 px, WebP,
   imported in `news.ts`, with an alt text. It is a real capture of the
   app, cropped tight on one telling detail legible at that size.
+- The dialog lists every entry. Its list is at most as tall as the first
+  three entries (measured, since entries differ in height): beyond three
+  the box keeps that height and the list scrolls with its edge fade.
 - Options and About turn into icon-only squares with tooltips whenever
   their row lacks the room for the labelled buttons: a container query on
   `.start`, not a viewport breakpoint. Their labels stay as visually
