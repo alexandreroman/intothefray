@@ -1,6 +1,7 @@
-export type Route = { name: 'home' } | { name: 'options' } | { name: 'game'; id: string };
+export type Route =
+  { name: 'home' } | { name: 'options' } | { name: 'about' } | { name: 'game'; id: string };
 
-/** An app path, relative to the base: '/', '/options', '/g/<id>'. */
+/** An app path, relative to the base: '/', '/options', '/about', '/g/<id>'. */
 export type AppPath = `/${string}`;
 
 // Where the app is served, always ending with a slash: '/' by default, the
@@ -34,6 +35,9 @@ function parse(pathname: string): Route | null {
   }
   if (path === 'options') {
     return { name: 'options' };
+  }
+  if (path === 'about') {
+    return { name: 'about' };
   }
   const game = GAME_PATH.exec(path);
   if (game?.[1]) {

@@ -82,4 +82,10 @@ describe('Home', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Options' }));
     expect(window.location.pathname).toBe('/options');
   });
+
+  it('goes to the about screen', async () => {
+    render(Home);
+    await fireEvent.click(screen.getByRole('button', { name: 'About' }));
+    expect(window.location.pathname).toBe('/about');
+  });
 });

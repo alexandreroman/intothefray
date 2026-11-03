@@ -48,6 +48,7 @@
           <button class="secondary" onclick={() => go('/options')}
             ><Icon name="sliders" />Options</button
           >
+          <button class="secondary" onclick={() => go('/about')}><Icon name="info" />About</button>
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
