@@ -67,10 +67,14 @@ make app-down     # stop and remove the containerised stack
 | `REDIS_PORT`      | Local Redis host port      | `6379`                     |
 | `VITE_API_URL`    | API origin, web build only | same origin                |
 | `APP_INSTANCE`    | Tab title suffix, web only | empty                      |
+| `SITE_URL`        | Site URL, web build only   | `https://intothefray.xyz`  |
 
 `ALLOWED_ORIGINS` is a comma-separated list of `scheme://host[:port]`
-origins; same-origin requests always pass. Set variables in `.env`, or in
-`.env.local` for the development targets only.
+origins; same-origin requests always pass. `SITE_URL` is the absolute
+URL of the web app, base path included, with no trailing slash; the build
+writes it into the share previews, `robots.txt` and `sitemap.xml`. Set
+variables in `.env`, or in `.env.local` for the development targets
+only.
 
 ## Card packs
 
@@ -121,6 +125,48 @@ with `ALLOWED_ORIGINS=https://intothefray.xyz`.
 
 `GET /api/version` and the Options screen report the commit of the
 server and of the app, so a mismatch between the two shows at once.
+
+### Pages and share previews
+
+Link previews and search engines do not run the app, so the web build
+(`web/seo.ts`) writes their tags (title, description, Open Graph,
+Twitter card, robots) into the static files, from the page metadata of
+`web/src/lib/pages.ts`:
+
+| File           | Served for                    | Content                 |
+| -------------- | ----------------------------- | ----------------------- |
+| `index.html`   | `/`                           | home preview, indexed   |
+| `g/index.html` | a game, `/g/?id=<id>`         | invite preview, noindex |
+| `404.html`     | any other URL (`/about`, ...) | home preview            |
+| `robots.txt`   | `/robots.txt`                 | allows all, sitemap URL |
+| `sitemap.xml`  | `/sitemap.xml`                | the home page           |
+
+GitHub Pages has no rewrite: it answers any other URL with `404.html`, a
+404 response that still starts the app, which then shows the route. The
+home page alone has a canonical URL and JSON-LD; the files served at many
+URLs have none, so a preview keeps the link shared. CI sets `SITE_URL` to
+the Pages site URL from `actions/configure-pages`. The local Caddy
+follows the same rules, except that other URLs get `index.html` with a
+200. Search engines read `robots.txt` at the root of a domain only.
+
+The share images, `web/public/og/home.png` and `invite.png`
+(1200×630), and `web/public/apple-touch-icon.png` (180×180) are
+screenshots of the HTML pages in `web/images/`, which are not published.
+After a change to one of them, render it again with headless Chrome
+(`chrome` stands for the Chrome or Chromium binary), here the home
+image:
+
+```bash
+cd web
+chrome --headless=new --disable-gpu --hide-scrollbars \
+  --window-size=1200,630 --virtual-time-budget=5000 \
+  --screenshot=public/og/home.png "file://$PWD/images/home.html"
+```
+
+`invite.html` gives `public/og/invite.png` the same way;
+`touch-icon.html` gives `public/apple-touch-icon.png` with
+`--window-size=180,180`. The pages load the Archivo font from Google
+Fonts, so render them online.
 
 ## Architecture
 
