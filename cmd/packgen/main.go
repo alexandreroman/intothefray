@@ -17,7 +17,6 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strings"
 
 	"github.com/alexandreroman/intothefray/internal/packgen/build"
@@ -35,10 +34,6 @@ import (
 // userAgent identifies the generator to the source hosts, which may throttle
 // anonymous clients.
 const userAgent = "intothefray-packgen (+https://github.com/alexandreroman/intothefray)"
-
-// lang is the language of the generated packs; the other languages are
-// overrides inside them.
-const lang = "en"
 
 // manifestLangs are the languages the manifest coverage is reported for.
 var manifestLangs = []string{"en", "fr"}
@@ -137,10 +132,10 @@ func writePacks(ctx context.Context, logger *slog.Logger, stdout io.Writer, opts
 	if err != nil {
 		return fmt.Errorf("list image sources: %w", err)
 	}
-	if err := write.Dist(opts.out, lang, result); err != nil {
+	if err := write.Dist(opts.out, result); err != nil {
 		return fmt.Errorf("write packs: %w", err)
 	}
-	logger.Info("packs written", "dir", filepath.Join(opts.out, lang))
+	logger.Info("packs written", "dir", opts.out)
 
 	printReport(stdout, result)
 	printManifestCoverage(stdout, manifest, faces)

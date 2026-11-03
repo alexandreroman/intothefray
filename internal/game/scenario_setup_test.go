@@ -191,12 +191,12 @@ func setupCatalog(t *testing.T) *pack.Catalog {
 		t.Fatal(err)
 	}
 	index, err := json.Marshal(pack.Index{
-		Version: 1, Lang: "en", Packs: []pack.PackRef{{Code: "t", Name: "Test", File: "t.json"}},
+		Version: 1, Packs: []pack.PackRef{{Code: "t", Name: "Test", File: "t.json"}},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	cat, err := pack.Load(fstest.MapFS{"en/index.json": {Data: index}, "en/t.json": {Data: data}}, "en")
+	cat, err := pack.Load(fstest.MapFS{"index.json": {Data: index}, "t.json": {Data: data}})
 	if err != nil {
 		t.Fatal(err)
 	}

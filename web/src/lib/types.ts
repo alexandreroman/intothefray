@@ -75,7 +75,6 @@ export interface SetRef {
 
 export interface Index {
   version: number;
-  lang: string;
   packs: PackRef[];
   scenarios: ScenarioRef[];
   sets: SetRef[];

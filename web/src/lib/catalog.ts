@@ -7,7 +7,7 @@ export interface CardInfo {
 }
 
 // Absolute, so the index resolves the same from any route (/g/<id> included).
-const INDEX_URL = `${import.meta.env.BASE_URL}packs/en/index.json`;
+const INDEX_URL = `${import.meta.env.BASE_URL}packs/index.json`;
 
 // Same shape as the face codes of the Go catalog: five digits and a letter.
 const FACE_CODE = /^\d{5}[a-z]$/;

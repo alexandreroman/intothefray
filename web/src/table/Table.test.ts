@@ -67,7 +67,6 @@ globalThis.ResizeObserver = ManualResizeObserver;
 // The pack index of the fixture: what the top bar's crumb names.
 const INDEX: Index = {
   version: 1,
-  lang: 'en',
   packs: [],
   scenarios: [
     { id: 'rhino', name: 'Rhino', pack: 'core', image: '', supported: true, recommended: [] },

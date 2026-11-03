@@ -47,10 +47,9 @@ type Inputs struct {
 	Manifest cdn.Manifest
 }
 
-// Result is the generated content of one language.
+// Result is the generated content: the packs, their index and the build reports.
 type Result struct {
-	Packs []pack.PackFile
-	// Index.Lang is left empty: the writer sets it.
+	Packs  []pack.PackFile
 	Index  pack.Index
 	Report []report.Unsupported
 	// Fallback lists the records taken from mc4db, sorted by pack and code.

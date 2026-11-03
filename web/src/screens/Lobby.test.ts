@@ -22,7 +22,6 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 
 const index: Index = {
   version: 1,
-  lang: 'en',
   packs: [
     { code: 'core', name: 'Core Set', file: 'core.json', position: 1 },
     { code: 'next_evol', name: 'NeXt Evolution', file: 'next_evol.json', position: 40 },

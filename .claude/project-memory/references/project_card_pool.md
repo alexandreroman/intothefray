@@ -16,7 +16,7 @@ type: project
   cards are fixed once its table is set up).
 - The response is uncompressed; the proxy or CDN compresses it (see
   [[project_no_backend_compression]]).
-- The SPA publishes only `packs/en/index.json`, for the lobby's scenario
+- The SPA publishes only `packs/index.json`, for the lobby's scenario
   picker. Lobby hero thumbnails come from `DeckView.heroImage`, which
   `Game.SetDeck` fills from the catalog.
 - `packs.Catalog` decodes the embedded packs once (`sync.OnceValues`,

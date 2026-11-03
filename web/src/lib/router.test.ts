@@ -169,7 +169,7 @@ describe('router', () => {
   });
 
   it('leaves same-origin links that are no app route to the browser', () => {
-    expect(click(addLink('/packs/en/index.json'))).toBe(false);
+    expect(click(addLink('/packs/index.json'))).toBe(false);
     expect(click(addLink('/api/games'))).toBe(false);
     expect(window.location.pathname).toBe('/');
   });

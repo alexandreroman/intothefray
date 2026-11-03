@@ -10,12 +10,12 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
-// FS holds the generated packs, laid out as dist/<lang>/*.json.
+// FS holds the generated packs, laid out as dist/*.json.
 //
 //go:embed dist
 var FS embed.FS
 
-// Catalog returns the English packs decoded from the embedded files. It
+// Catalog returns the packs decoded from the embedded files. It
 // decodes them on the first call only: every caller shares the same catalog,
 // which is read-only and must never be modified.
 var Catalog = sync.OnceValues(func() (*pack.Catalog, error) {
@@ -23,5 +23,5 @@ var Catalog = sync.OnceValues(func() (*pack.Catalog, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open embedded packs: %w", err)
 	}
-	return pack.Load(dist, "en")
+	return pack.Load(dist)
 })
