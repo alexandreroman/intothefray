@@ -399,6 +399,31 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 			}},
 			"09003 is not in the set",
 		},
+		{
+			"villain sets on a standard set",
+			map[string]curated.SetDef{"standard_ii": {Villains: []string{"rhino"}}},
+			"curated set standard_ii: villain sets need a villain, leader or underling set, not a standard set",
+		},
+		{
+			"villain sets on a main scheme set",
+			map[string]curated.SetDef{"rhino": {MainScheme: true, Villains: []string{"klaw"}}},
+			"curated set rhino: villain sets need a villain, leader or underling set, not a main_scheme set",
+		},
+		{
+			"unknown villain set",
+			map[string]curated.SetDef{"rhino": {Villains: []string{"doom"}}},
+			"curated set rhino: villain set doom is not in the catalog",
+		},
+		{
+			"villain set of another kind",
+			map[string]curated.SetDef{"rhino": {Villains: []string{"bomb_scare"}}},
+			"curated set rhino: villain set bomb_scare is a modular set",
+		},
+		{
+			"villain set naming itself",
+			map[string]curated.SetDef{"rhino": {Villains: []string{"rhino"}}},
+			"curated set rhino: villain sets name the set itself",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

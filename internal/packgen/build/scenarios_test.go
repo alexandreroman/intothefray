@@ -64,7 +64,7 @@ func findRef(t *testing.T, refs []pack.ScenarioRef, id string) pack.ScenarioRef 
 func TestScenarioSupportedWithCuratedDef(t *testing.T) {
 	f := newScenarioFixture(t)
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{rhinoDef()}, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{rhinoDef()}, nil, f.cards, f.sets, f.cb)
 
 	if len(problems) != 0 {
 		t.Fatalf("got problems %+v, want none", problems)
@@ -96,7 +96,7 @@ func TestScenarioSupportedWithCuratedDef(t *testing.T) {
 func TestScenarioWithoutDefIsListedUnsupported(t *testing.T) {
 	f := newScenarioFixture(t)
 
-	scenarios, refs, problems := buildScenarios(nil, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios(nil, nil, f.cards, f.sets, f.cb)
 
 	ref := findRef(t, refs, "klaw")
 	if ref.Supported || ref.Name != "Klaw" || ref.Pack != "core" {
@@ -115,7 +115,7 @@ func TestScenarioWithUnknownCardIsUnsupported(t *testing.T) {
 	def := rhinoDef()
 	def.Piles[0].Cards = append(def.Piles[0].Cards, "99999")
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	if findRef(t, refs, "rhino").Supported {
 		t.Error("rhino is supported despite an unknown card")
@@ -137,7 +137,7 @@ func TestScenarioReportsUnknownStartAndSetAsideCards(t *testing.T) {
 	}
 	def.SetAside = []string{"66666"}
 
-	_, _, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	_, _, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	var reasons []string
 	for _, problem := range problems {
@@ -156,7 +156,7 @@ func TestScenarioWithUnknownVillainSetIsReported(t *testing.T) {
 	def := rhinoDef()
 	def.VillainSet = "nobody"
 
-	_, _, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	_, _, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	if len(problems) != 1 || !strings.Contains(problems[0].Reason, "nobody") {
 		t.Errorf("got problems %+v, want one mentioning nobody", problems)
@@ -166,7 +166,7 @@ func TestScenarioWithUnknownVillainSetIsReported(t *testing.T) {
 func TestScenarioRefsFollowVillainCardOrder(t *testing.T) {
 	f := newScenarioFixture(t)
 
-	_, refs, _ := buildScenarios(nil, f.cards, f.sets, f.cb)
+	_, refs, _ := buildScenarios(nil, nil, f.cards, f.sets, f.cb)
 
 	var ids []string
 	for _, ref := range refs {
@@ -193,7 +193,7 @@ func leaderFixture() (map[string][]pack.Card, map[string][]pack.Set) {
 func TestScenarioListsLeaderSets(t *testing.T) {
 	cards, sets := leaderFixture()
 
-	_, refs, _ := buildScenarios(nil, cards, sets, nil)
+	_, refs, _ := buildScenarios(nil, nil, cards, sets, nil)
 
 	if len(refs) != 2 || refs[0].ID != "boss" || refs[0].Image != "https://x/50001" {
 		t.Errorf("got refs %+v, want boss then lieutenant", refs)
@@ -209,7 +209,7 @@ func TestScenarioDefCoversOtherSets(t *testing.T) {
 		Piles:      []pack.Pile{{Key: "villain", Label: "Villain", Cards: []string{"50001", "50002"}}},
 	}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, cards, sets, nil)
 
 	if len(problems) != 0 {
 		t.Errorf("got problems %+v, want none", problems)
@@ -226,7 +226,7 @@ func TestScenarioDefCoveringUnknownSetIsReported(t *testing.T) {
 	cards, sets := leaderFixture()
 	def := curated.ScenarioDef{ID: "gang", VillainSet: "boss", Covers: []string{"nobody"}}
 
-	_, _, problems := buildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+	_, _, problems := buildScenarios([]curated.ScenarioDef{def}, nil, cards, sets, nil)
 
 	if len(problems) != 1 || !strings.Contains(problems[0].Reason, "nobody") {
 		t.Errorf("got problems %+v, want one mentioning nobody", problems)
@@ -255,7 +255,7 @@ func TestScenarioCopiesDecksSelfContainedAndActive(t *testing.T) {
 	def.SelfContained = true
 	def.Active = "villain"
 
-	scenarios, refs, _ := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	scenarios, refs, _ := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	got := scenarios["core"][0]
 	if !reflect.DeepEqual(got.Decks, def.Decks) || !got.SelfContained || got.Active != "villain" {
@@ -283,10 +283,42 @@ func TestScenarioImageFromCoveredVillain(t *testing.T) {
 		Piles: []pack.Pile{{Key: "villain", Label: "Villain", Cards: []string{"07002"}}},
 	}
 
-	_, refs, _ := buildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+	_, refs, _ := buildScenarios([]curated.ScenarioDef{def}, nil, cards, sets, nil)
 
 	if got := findRef(t, refs, "crew").Image; got != "https://x/07002" {
 		t.Errorf("got image %q, want the one of 07002", got)
+	}
+}
+
+func TestScenarioImageFromCuratedVillainSets(t *testing.T) {
+	card := func(code, set, kind string) pack.Card {
+		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: kind, Images: []string{"https://x/" + code}}}}
+	}
+	// As Morlock Siege, whose villains are the Marauders of another set.
+	cards := map[string][]pack.Card{"p": {
+		card("40077", "morlock_siege", "main_scheme"), card("40071", "marauders", "villain"),
+		card("40070", "marauders", "villain"),
+	}}
+	sets := map[string][]pack.Set{"p": {
+		{Code: "morlock_siege", Name: "Morlock Siege", Kind: "villain", Cards: []string{"40077"}},
+		{Code: "marauders", Name: "Marauders", Kind: "villain", Cards: []string{"40070", "40071"}},
+	}}
+	setDefs := map[string]curated.SetDef{"morlock_siege": {Villains: []string{"marauders"}}}
+
+	scenarios, refs, problems := buildScenarios(nil, setDefs, cards, sets, nil)
+
+	ref := findRef(t, refs, "morlock_siege")
+	if ref.Image != "https://x/40070" {
+		t.Errorf("got image %q, want the one of 40070", ref.Image)
+	}
+	if ref.Supported {
+		t.Error("got morlock_siege supported, want unsupported")
+	}
+	if len(refs) != 1 {
+		t.Errorf("got refs %+v, want morlock_siege only", refs)
+	}
+	if len(scenarios) != 0 || len(problems) != 0 {
+		t.Errorf("got scenarios %+v and problems %+v, want none", scenarios, problems)
 	}
 }
 
@@ -295,7 +327,7 @@ func TestScenarioWithUnknownDeckCardIsUnsupported(t *testing.T) {
 	def := rhinoDef()
 	def.Decks = []pack.ScenarioDeck{{Key: "d", Label: "D", Cards: []string{"01098", "55555"}}}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	if findRef(t, refs, "rhino").Supported {
 		t.Error("rhino is supported despite an unknown deck card")
@@ -313,7 +345,7 @@ func TestScenarioWithUnknownDeckSetIsUnsupported(t *testing.T) {
 	def := rhinoDef()
 	def.Decks = []pack.ScenarioDeck{{Key: "d", Label: "D", Sets: []string{"rhino", "nowhere"}}}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	if findRef(t, refs, "rhino").Supported {
 		t.Error("rhino is supported despite an unknown deck set")
@@ -332,7 +364,7 @@ func TestScenarioCopiesSetsAndDropsThemFromRecommended(t *testing.T) {
 	def := rhinoDef()
 	def.Sets = []string{"bomb_scare"}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	if len(problems) != 0 {
 		t.Fatalf("got problems %+v, want none", problems)
@@ -355,7 +387,7 @@ func TestScenarioWithUnknownSetIsUnsupported(t *testing.T) {
 	def := rhinoDef()
 	def.Sets = []string{"nowhere"}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, f.cards, f.sets, f.cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
 
 	if findRef(t, refs, "rhino").Supported {
 		t.Error("rhino is supported despite an unknown encounter set")
@@ -403,7 +435,7 @@ func underlingDef() curated.ScenarioDef {
 func TestScenarioListsUnderlingSetsButNotMainSchemeSets(t *testing.T) {
 	cards, sets := underlingFixture()
 
-	_, refs, _ := buildScenarios(nil, cards, sets, nil)
+	_, refs, _ := buildScenarios(nil, nil, cards, sets, nil)
 
 	if len(refs) != 1 || refs[0].ID != "bullseye" || refs[0].Supported || refs[0].Image != "https://x/60065" {
 		t.Errorf("got refs %+v, want only the unsupported bullseye with the image of 60065", refs)
@@ -420,7 +452,7 @@ func TestScenarioWithMainSchemes(t *testing.T) {
 		{ID: "u", Name: "Bullseye", Type: "Villain Set", Recommends: []string{"b"}},
 	}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{underlingDef()}, cards, sets, cb)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{underlingDef()}, nil, cards, sets, cb)
 
 	if len(problems) != 0 {
 		t.Fatalf("got problems %+v, want none", problems)
@@ -442,7 +474,7 @@ func TestScenarioWithBadMainSchemeIsUnsupported(t *testing.T) {
 	// bullseye is a set of the catalog, but not a main scheme set.
 	def.MainSchemes = []string{"heist", "nowhere", "bullseye"}
 
-	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, cards, sets, nil)
+	scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, cards, sets, nil)
 
 	if findRef(t, refs, "bullseye").Supported {
 		t.Error("bullseye is supported despite bad main scheme sets")

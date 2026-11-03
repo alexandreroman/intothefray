@@ -33,6 +33,8 @@
   "rogue": {"setAside": ["38002"]},
   "ironheart": {"setAside": ["29002", "29003"]},
   "taskmaster": {"exclude": ["10098"]},
+  "morlock_siege": {"villains": ["marauders"]},
+  "on_the_run": {"villains": ["marauders"]},
   "dreadpool": {"setAside": ["44038", "44039", "44040", "44041", "44042"]},
   "hydra_camp": {"unlisted": true},
   "expcamp": {"unlisted": true},

@@ -103,7 +103,7 @@ func Build(in Inputs) (Result, error) {
 	heroes, heroProblems := checkHeroes(allHeroes, cardCodes)
 	problems = append(problems, heroProblems...)
 
-	scenarios, refs, scenarioProblems := buildScenarios(in.Curated.Scenarios, cards, sets, in.CBSets)
+	scenarios, refs, scenarioProblems := buildScenarios(in.Curated.Scenarios, in.Curated.Sets, cards, sets, in.CBSets)
 	problems = append(problems, scenarioProblems...)
 	scenarios, refs, faceProblems := dropInvalidFaceRefs(scenarios, refs, faceCounts)
 	problems = append(problems, faceProblems...)
@@ -245,6 +245,14 @@ func applySetDefs(
 		set.Side = def.Side
 		set.SetAside = def.SetAside
 	}
+
+	// The villain sets are checked once every main scheme set has its kind:
+	// a set a definition makes a main scheme set has no villain.
+	for _, code := range slices.Sorted(maps.Keys(defs)) {
+		if err := checkVillains(*setsByCode[code], defs[code].Villains, setsByCode); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+	}
 	return nil
 }
 
@@ -277,6 +285,30 @@ func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
 func checkSide(set pack.Set, side *pack.SideDeck) error {
 	if side != nil && set.Kind != pack.SetKindHeroSpecial {
 		return fmt.Errorf("side deck needs a %s set, not a %s set", pack.SetKindHeroSpecial, set.Kind)
+	}
+	return nil
+}
+
+// checkVillains makes sure the villain sets a set names are scenario
+// candidates of the catalog other than the set, and that the set naming them
+// is one too: only a scenario candidate lists a scenario in the lobby.
+func checkVillains(set pack.Set, villains []string, setsByCode map[string]*pack.Set) error {
+	if len(villains) == 0 {
+		return nil
+	}
+	if !isScenarioSetKind(set.Kind) {
+		return fmt.Errorf("villain sets need a villain, leader or underling set, not a %s set", set.Kind)
+	}
+	for _, code := range villains {
+		named, found := setsByCode[code]
+		switch {
+		case code == set.Code:
+			return errors.New("villain sets name the set itself")
+		case !found:
+			return fmt.Errorf("villain set %s is not in the catalog", code)
+		case !isScenarioSetKind(named.Kind):
+			return fmt.Errorf("villain set %s is a %s set, not a villain, leader or underling set", code, named.Kind)
+		}
 	}
 	return nil
 }
