@@ -1,4 +1,4 @@
-# intothefray
+# Into the Fray
 
 Into The Fray: an online card table for Marvel Champions, played
 in the browser, solo or multiplayer, as a pure sandbox (no rules
