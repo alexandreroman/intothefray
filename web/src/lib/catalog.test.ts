@@ -2,7 +2,6 @@ import type { CardPool, Index } from './types';
 
 const index: Index = {
   version: 1,
-  lang: 'en',
   packs: [{ code: 'core', name: 'Core Set', file: 'core.json', position: 1 }],
   scenarios: [],
   sets: [],
@@ -43,7 +42,7 @@ async function loadCatalog() {
 
 function responseFor(url: string): Response {
   const bodies: Record<string, object> = {
-    '/packs/en/index.json': index,
+    '/packs/index.json': index,
     [`${API}/api/games/g1/cards`]: pool,
     [`${API}/api/games/g2/cards`]: otherPool,
   };
@@ -67,7 +66,7 @@ describe('catalog', () => {
     const { loadIndex } = await loadCatalog();
     await loadIndex();
     await loadIndex();
-    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/packs/en/index.json');
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/packs/index.json');
   });
 
   it('fetches the cards of a game from the API', async () => {

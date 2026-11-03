@@ -26,7 +26,6 @@ vi.mock('svelte/motion', async (importOriginal) => ({
 
 const index: Index = {
   version: 1,
-  lang: 'en',
   packs: [{ code: 'core', name: 'Core Set', file: 'core.json', position: 1 }],
   scenarios: [
     {

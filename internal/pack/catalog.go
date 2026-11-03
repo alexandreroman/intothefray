@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"path"
 	"strings"
 )
 
@@ -14,7 +13,7 @@ type aliasTarget struct {
 	face int
 }
 
-// Catalog is the in-memory view of every pack of one language.
+// Catalog is the in-memory view of every pack.
 // Card, set and hero lookups match codes case-insensitively; scenario IDs
 // are matched exactly.
 type Catalog struct {
@@ -26,10 +25,11 @@ type Catalog struct {
 	heroes    map[string]Hero // by lower-cased canonical identity code
 }
 
-// Load reads <lang>/index.json, then every pack file it lists.
-func Load(fsys fs.FS, lang string) (*Catalog, error) {
+// Load reads the index.json at the root of fsys, then every pack file it
+// lists, next to it.
+func Load(fsys fs.FS) (*Catalog, error) {
 	var index Index
-	if err := readJSON(fsys, path.Join(lang, "index.json"), &index); err != nil {
+	if err := readJSON(fsys, "index.json", &index); err != nil {
 		return nil, err
 	}
 
@@ -44,7 +44,7 @@ func Load(fsys fs.FS, lang string) (*Catalog, error) {
 
 	for _, ref := range index.Packs {
 		var file PackFile
-		if err := readJSON(fsys, path.Join(lang, ref.File), &file); err != nil {
+		if err := readJSON(fsys, ref.File, &file); err != nil {
 			return nil, err
 		}
 		if err := catalog.add(file); err != nil {

@@ -738,7 +738,7 @@ func loadPackFiles(t *testing.T) []pack.PackFile {
 	}
 	var files []pack.PackFile
 	for _, ref := range catalog.Index().Packs {
-		data, err := fs.ReadFile(packs.FS, "dist/en/"+ref.File)
+		data, err := fs.ReadFile(packs.FS, "dist/"+ref.File)
 		if err != nil {
 			t.Fatal(err)
 		}

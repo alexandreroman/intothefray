@@ -33,13 +33,13 @@ if (!process.env.VITE_COMMIT && !process.env.VITEST) {
 }
 
 /**
- * Publishes the index of the generated card packs as packs/en/index.json, a static file the app
- * fetches: the generated data is English, localized names live inside it. The cards of a game come
- * from the API, so the pack files themselves stay out. The index is watched, so a watch build
- * picks up regenerated packs (make packs).
+ * Publishes the index of the generated card packs as packs/index.json, a static file the app
+ * fetches: localized names live inside it. The cards of a game come from the API, so the pack
+ * files themselves stay out. The index is watched, so a watch build picks up regenerated packs
+ * (make packs).
  */
 function packIndex(): Plugin {
-  const source = path.resolve(import.meta.dirname, '../packs/dist/en/index.json');
+  const source = path.resolve(import.meta.dirname, '../packs/dist/index.json');
   return {
     name: 'pack-index',
     apply: 'build',
@@ -52,7 +52,7 @@ function packIndex(): Plugin {
     generateBundle() {
       this.emitFile({
         type: 'asset',
-        fileName: 'packs/en/index.json',
+        fileName: 'packs/index.json',
         source: fs.readFileSync(source),
       });
     },

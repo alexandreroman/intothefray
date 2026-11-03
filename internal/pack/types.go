@@ -304,10 +304,9 @@ type SetRef struct {
 	Localized map[string]Localized `json:"localized,omitempty"`
 }
 
-// Index lists every pack, scenario and set available for a language.
+// Index lists every pack, scenario and set available.
 type Index struct {
 	Version   int           `json:"version"` // 1
-	Lang      string        `json:"lang"`
 	Packs     []PackRef     `json:"packs"`
 	Scenarios []ScenarioRef `json:"scenarios"` // the whole range, release order, Supported=false when not curated
 	Sets      []SetRef      `json:"sets"`      // modular, standard, expert and main scheme sets the lobby can offer

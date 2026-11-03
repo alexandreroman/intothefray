@@ -158,7 +158,7 @@ func TestRunWritesPacksFromManifest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	data, err := os.ReadFile(filepath.Join(opts.out, "en", "core.json")) //nolint:gosec // test path
+	data, err := os.ReadFile(filepath.Join(opts.out, "core.json")) //nolint:gosec // test path
 	if err != nil {
 		t.Fatalf("pack not written: %v", err)
 	}

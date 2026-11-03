@@ -10,7 +10,7 @@ type: project
   `localized` map, keyed by language code, holds overrides
   (`localized.fr`: name, subname, images). A field is written only when
   it differs from English. Packs stay one file per pack in
-  `packs/dist/en/`.
+  `packs/dist/`.
 - Index entries (packs, scenarios, sets) carry `localized.<lang>.name`.
 - French images are the OCTGN FR scans on the image CDN: packgen sets
   `localized.fr.images` from the French entry of

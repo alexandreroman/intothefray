@@ -107,7 +107,6 @@ func TestIndexRoundTrip(t *testing.T) {
 	french := map[string]Localized{"fr": {Name: "Boîte de base"}}
 	want := Index{
 		Version: 1,
-		Lang:    "en",
 		Packs: []PackRef{
 			{Code: "core", Name: "Core Set", File: "core.json", Position: 1, Localized: french},
 			{Code: "gob", Name: "Green Goblin", File: "gob.json", Position: 2},

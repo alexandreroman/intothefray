@@ -8,7 +8,7 @@ import (
 
 func loadTestCatalog(t *testing.T) *Catalog {
 	t.Helper()
-	catalog, err := Load(os.DirFS("testdata"), "en")
+	catalog, err := Load(os.DirFS("testdata"))
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
@@ -78,13 +78,10 @@ func TestCatalogSetAndIndex(t *testing.T) {
 	if _, ok := catalog.Scenario("missing"); ok {
 		t.Error("Scenario(missing) found")
 	}
-	if got := catalog.Index().Lang; got != "en" {
-		t.Errorf("Index().Lang = %q, want en", got)
-	}
 }
 
 func TestLoadErrors(t *testing.T) {
-	const index = `{"version":1,"lang":"en","packs":[` +
+	const index = `{"version":1,"packs":[` +
 		`{"code":"a","file":"a.json"},{"code":"b","file":"b.json"}]}`
 	const cardA = `{"code":"a","cards":[{"code":"00001","faces":[{}]}]}`
 
@@ -124,11 +121,11 @@ func TestLoadErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fsys := fstest.MapFS{
-				"en/index.json": {Data: []byte(index)},
-				"en/a.json":     {Data: []byte(tt.packA)},
-				"en/b.json":     {Data: []byte(tt.packB)},
+				"index.json": {Data: []byte(index)},
+				"a.json":     {Data: []byte(tt.packA)},
+				"b.json":     {Data: []byte(tt.packB)},
 			}
-			if _, err := Load(fsys, "en"); err == nil {
+			if _, err := Load(fsys); err == nil {
 				t.Error("Load() error = nil, want an error")
 			}
 		})
@@ -137,11 +134,11 @@ func TestLoadErrors(t *testing.T) {
 
 func TestCatalogLetteredCanonicalCode(t *testing.T) {
 	fsys := fstest.MapFS{
-		"en/index.json": {Data: []byte(`{"version":1,"lang":"en","packs":[{"code":"a","file":"a.json"}]}`)},
-		"en/a.json":     {Data: []byte(`{"code":"a","cards":[{"code":"01043d","faces":[{}]}]}`)},
+		"index.json": {Data: []byte(`{"version":1,"packs":[{"code":"a","file":"a.json"}]}`)},
+		"a.json":     {Data: []byte(`{"code":"a","cards":[{"code":"01043d","faces":[{}]}]}`)},
 	}
 
-	catalog, err := Load(fsys, "en")
+	catalog, err := Load(fsys)
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
@@ -156,12 +153,12 @@ func TestCatalogLetteredCanonicalCode(t *testing.T) {
 
 func TestCatalogLetterAliasOfSingleFaceCardNamesFaceZero(t *testing.T) {
 	fsys := fstest.MapFS{
-		"en/index.json": {Data: []byte(`{"version":1,"lang":"en","packs":[{"code":"a","file":"a.json"}]}`)},
-		"en/a.json": {Data: []byte(
+		"index.json": {Data: []byte(`{"version":1,"packs":[{"code":"a","file":"a.json"}]}`)},
+		"a.json": {Data: []byte(
 			`{"code":"a","cards":[{"code":"01043b","faces":[{}],"aliases":["99002b","99002c"]}]}`)},
 	}
 
-	catalog, err := Load(fsys, "en")
+	catalog, err := Load(fsys)
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
