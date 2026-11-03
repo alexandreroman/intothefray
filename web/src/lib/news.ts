@@ -5,6 +5,7 @@
 import frenchCards from '../assets/news/2026-10-20-french-cards.webp';
 import severalDecks from '../assets/news/2026-10-29-several-decks.webp';
 import redSkull from '../assets/news/2026-11-01-red-skull.webp';
+import shareLink from '../assets/news/2026-11-03-share-link.webp';
 
 /** One piece of news: a feature the players can use. */
 export interface NewsEntry {
@@ -24,6 +25,15 @@ export interface NewsEntry {
 
 /** Every entry, newest first (news.test.ts checks it). */
 export const NEWS: NewsEntry[] = [
+  {
+    id: '2026-11-03-share-link',
+    date: '2026-11-03',
+    title: 'Share a game by link',
+    text:
+      'Invite friends by sending them the game link: click Copy in the lobby and paste it in a chat or a post, ' +
+      'where it now shows a preview inviting them to join.',
+    image: { src: shareLink, alt: "The lobby's invite link with its Copy button" },
+  },
   {
     id: '2026-11-01-red-skull',
     date: '2026-11-01',
