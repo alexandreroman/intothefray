@@ -47,6 +47,4 @@ multi-handed game alone or alongside friends, and per-deck rules stay
 intact.
 
 **How to apply:** per-deck logic keys on the seat; per-person logic
-(names, colours, presence, undo, private view) keys on the player. The
-full design is in `docs/superpowers/plans/2026-10-19-multi-deck-control.md`
-(local, not committed).
+(names, colours, presence, undo, private view) keys on the player.

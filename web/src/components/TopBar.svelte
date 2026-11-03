@@ -126,7 +126,7 @@
       </button>
     {/if}
     <!-- Plain left clicks navigate in place: the router handles every link to an app route. -->
-    <a class="home" href={href('/')} aria-label="Into The Fray: home"><Logo /></a>
+    <a class="home" href={href('/')} aria-label="Into the Fray: home"><Logo /></a>
     {#if crumbHead !== undefined}
       <span class="divider" aria-hidden="true"></span>
       <span class="crumbs" use:overflowTip>

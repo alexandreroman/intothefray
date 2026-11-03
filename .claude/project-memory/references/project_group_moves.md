@@ -35,6 +35,4 @@ selection send the whole selection, as a player expects.
 
 **How to apply:** keep the client's group actions and the server's
 `resolveGroup` in step; new group-capable kinds need both, a history
-line and a replay test. The design is in
-`docs/superpowers/plans/2026-10-20-multi-card-select.md` (local, not
-committed).
+line and a replay test.

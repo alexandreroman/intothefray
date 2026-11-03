@@ -1,8 +1,8 @@
 <!--
-  The Into The Fray logo: the mark (a card tilted and split by a fracture, with
+  The Into the Fray logo: the mark (a card tilted and split by a fracture, with
   a spark) alone, or beside the "INTO THE / FRAY" wordmark, on one line for the
   top bars or on two for the home screen. The whole logo is one image named
-  "Into The Fray".
+  "Into the Fray".
 -->
 <script lang="ts">
   /**
@@ -45,7 +45,7 @@
 <span
   class="logo {variant}"
   role="img"
-  aria-label="Into The Fray"
+  aria-label="Into the Fray"
   style:font-size={fontSize === undefined ? undefined : `${fontSize}px`}
 >
   <svg width={markSize} height={markSize} viewBox="0 0 64 64" aria-hidden="true">

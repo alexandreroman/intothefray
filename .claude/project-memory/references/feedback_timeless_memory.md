@@ -15,4 +15,4 @@ taken.
 
 **How to apply:** a **Why:** line gives the reason for the decision
 ("user decision: …"), never "user decision of <date>". Dates belong to
-git history and to the local design specs.
+git history.

@@ -74,7 +74,7 @@ info() {
 	redis_port=${REDIS_PORT:-6379}
 
 	casper info set - >/dev/null 2>&1 <<DOC || true
-# Into The Fray — dev stack
+# Into the Fray — dev stack
 
 ## Endpoints
 

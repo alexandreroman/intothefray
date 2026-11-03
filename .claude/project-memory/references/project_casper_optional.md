@@ -32,7 +32,7 @@ or `.env.local` wins over `.env.casper`, as `make dev` loads both.
 
 `APP_INSTANCE` is a generic, optional build-time variable holding only an
 instance name (`dev`, a branch name). Set, the tab title reads
-`Into The Fray (<name>)`; unset or blank, it reads `Into The Fray`
+`Into the Fray (<name>)`; unset or blank, it reads `Into the Fray`
 (production and GitHub Pages builds). Vite exposes it through
 `envPrefix: ['VITE_', 'APP_INSTANCE']`; `web/src/lib/title.ts` builds the
 title, set in `main.ts`.

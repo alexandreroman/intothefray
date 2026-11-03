@@ -7,7 +7,7 @@ describe('Logo', () => {
     (variant) => {
       render(Logo, { variant, size: 28 });
 
-      const logo = screen.getByRole('img', { name: 'Into The Fray' });
+      const logo = screen.getByRole('img', { name: 'Into the Fray' });
       expect(logo.querySelector('svg')).not.toBeNull();
       expect(logo.textContent?.replace(/\s+/g, ' ').trim()).toBe('INTO THE FRAY');
     },
@@ -16,7 +16,7 @@ describe('Logo', () => {
   it('shows the mark alone, at its size', () => {
     render(Logo, { variant: 'mark', size: 40 });
 
-    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    const logo = screen.getByRole('img', { name: 'Into the Fray' });
     expect(logo.textContent?.trim()).toBe('');
     expect(logo.querySelector('svg')?.getAttribute('width')).toBe('40');
   });
@@ -24,7 +24,7 @@ describe('Logo', () => {
   it('takes an inherited size in em, with its spark', () => {
     const { container } = render(Logo, { variant: 'mark', size: 'inherit' });
 
-    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    const logo = screen.getByRole('img', { name: 'Into the Fray' });
     expect(logo.style.fontSize).toBe('');
     expect(logo.querySelector('svg')?.getAttribute('width')).toBe('1em');
     expect(container.querySelector('.spark')).not.toBeNull();
@@ -33,7 +33,7 @@ describe('Logo', () => {
   it('is one image: its parts are hidden from assistive technologies', () => {
     render(Logo, { variant: 'stacked', size: 120 });
 
-    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    const logo = screen.getByRole('img', { name: 'Into the Fray' });
     expect(logo.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
     expect(logo.querySelector('.words')?.getAttribute('aria-hidden')).toBe('true');
   });
@@ -50,7 +50,7 @@ describe('Logo', () => {
     render(Logo);
     render(Logo);
 
-    const logos = screen.getAllByRole('img', { name: 'Into The Fray' });
+    const logos = screen.getAllByRole('img', { name: 'Into the Fray' });
     const ids = logos.flatMap((logo) =>
       [...logo.querySelectorAll('clipPath')].map((clip) => clip.id),
     );

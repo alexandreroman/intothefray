@@ -1,12 +1,12 @@
 ---
 name: "Project objective"
-description: "What Into The Fray is for, who it serves, and its sandbox principle"
+description: "What Into the Fray is for, who it serves, and its sandbox principle"
 type: project
 ---
 
 # Project objective
 
-Into The Fray is a browser-only online card table for Marvel Champions:
+Into the Fray is a browser-only online card table for Marvel Champions:
 The Card Game, solo or 1 to 4 players, plus spectators. It is a pure
 sandbox: it shows cards and lets players move them like on a real table,
 and never applies or checks game rules. Two steps are automated: standard

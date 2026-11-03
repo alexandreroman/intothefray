@@ -8,7 +8,7 @@ type: project
 
 - The About screen lives at `/about` (`web/src/screens/About.svelte`),
   reached from an "About" secondary button on Home, next to Options, and
-  from a small "About Into The Fray" link in the Options footer, beside
+  from a small "About Into the Fray" link in the Options footer, beside
   the version line.
 - It has three sections, laid out like the Options rows: Open source
   (Apache-2.0, links to the license and the GitHub repository), Card data

@@ -84,3 +84,6 @@
 - [Immutable views](references/project_view_immutable.md) — raw view, reused card objects, byId; one CardView redraw per moved card
 - [Table cards are cheap to paint](references/project_card_paint_cost.md) — inset box-shadow shade, border-radius corners, CSS zoom
 - [About screen](references/project_about_screen.md) — /about: Apache-2.0, card data credits, fan disclaimer; no tech stack
+- [Documentation layout](references/project_docs_layout.md) — short README, DEVELOPMENT.md for contributors, CLAUDE.md essentials; details in notes
+- [Notes cite no local specs or plans](references/feedback_no_docs_references.md) — never point to docs/ specs or plans; state the decision
+- [README home page screenshot](references/project_readme_screenshot.md) — refresh .github/images/home.webp when the home page changes; recipe

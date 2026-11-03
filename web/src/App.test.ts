@@ -6,7 +6,7 @@ describe('App', () => {
   it('shows the title on the home route', () => {
     navigate('/');
     render(App);
-    expect(screen.getByRole('heading', { name: 'Into The Fray' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Into the Fray' })).toBeTruthy();
   });
 });
 
