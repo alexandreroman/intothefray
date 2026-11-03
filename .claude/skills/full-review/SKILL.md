@@ -1,6 +1,6 @@
 ---
 name: full-review
-description: Use when the user asks for a full or complete code review of the Into The Fray project, a cleanup pass over the whole repository (Go backend, Svelte web app, card packs, build and CI), or to run the full review again.
+description: Use when the user asks for a full or complete code review of the Into the Fray project, a cleanup pass over the whole repository (Go backend, Svelte web app, card packs, build and CI), or to run the full review again.
 ---
 
 # Full review

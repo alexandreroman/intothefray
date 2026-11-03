@@ -1,6 +1,6 @@
 # Development
 
-How to build, run, test and deploy Into The Fray. For what the app does,
+How to build, run, test and deploy Into the Fray. For what the app does,
 see the [README](README.md).
 
 ## Prerequisites

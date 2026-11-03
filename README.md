@@ -1,12 +1,12 @@
 # Into the Fray
 
-Into The Fray is an online card table for Marvel Champions: The Card Game.
+Into the Fray is an online card table for Marvel Champions: The Card Game.
 Open a link, load your decks, and play in the browser, solo or with
 friends, up to four decks at the table. It is a pure sandbox: cards move
 the way they would on a real table, and the app never applies the game's
 rules.
 
-![The Into The Fray home page](.github/images/home.webp)
+![The Into the Fray home page](.github/images/home.webp)
 
 ## Features
 

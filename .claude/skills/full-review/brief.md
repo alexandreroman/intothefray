@@ -1,6 +1,6 @@
-# Task: full code review of Into The Fray, with every fix applied
+# Task: full code review of Into the Fray, with every fix applied
 
-Into The Fray is an online card table for Marvel Champions, played in the
+Into the Fray is an online card table for Marvel Champions, played in the
 browser, solo or multiplayer, as a pure sandbox (no rules automation): a
 stateless Go backend with Redis, a Svelte 5 + Vite SPA, and card data
 generated from marvelcdb and Cerebro.
