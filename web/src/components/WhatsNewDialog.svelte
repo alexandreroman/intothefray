@@ -20,6 +20,36 @@
     unread: ReadonlySet<string>;
     onclose: () => void;
   } = $props();
+
+  /** The entries the list shows at most; past them, it scrolls. */
+  const SHOWN_ENTRIES = 3;
+
+  /**
+   * Attachment for the list: caps its height at its first entries, whose heights vary with their
+   * text and the width, so it measures them: from the list's top to the top of the entry after
+   * them, its top padding included. Measured again whenever the list or an entry resizes.
+   */
+  function capToFirstEntries(list: HTMLElement): () => void {
+    function refresh(): void {
+      const next = list.children[SHOWN_ENTRIES];
+      if (next === undefined) {
+        list.style.maxHeight = '';
+        return;
+      }
+      // A scrolled list has moved its entries up: the scroll offset adds back what went by.
+      const extent =
+        next.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+      list.style.maxHeight = `${extent}px`;
+    }
+
+    refresh();
+    const resizes = new ResizeObserver(refresh);
+    resizes.observe(list);
+    for (const entry of list.children) {
+      resizes.observe(entry);
+    }
+    return () => resizes.disconnect();
+  }
 </script>
 
 <Dialog title="What's new" wide width="min(560px, 100%)" oncancel={onclose}>
@@ -30,7 +60,7 @@
     </div>
   {/snippet}
 
-  <ol class="entries" {@attach scrollFade}>
+  <ol class="entries" {@attach scrollFade} {@attach capToFirstEntries}>
     {#each entries as entry (entry.id)}
       <li class:illustrated={entry.image}>
         {#if entry.image}

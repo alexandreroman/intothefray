@@ -76,4 +76,61 @@ describe('WhatsNewDialog', () => {
     await fireEvent.keyDown(window, { key: 'Escape' });
     expect(onclose).toHaveBeenCalledOnce();
   });
+
+  describe('list height', () => {
+    /** Entries of their own, newest first. */
+    function entriesOf(count: number): NewsEntry[] {
+      return Array.from({ length: count }, (_, i) => {
+        const day = String(20 - i).padStart(2, '0');
+        return {
+          id: `2026-10-${day}-n${i}`,
+          date: `2026-10-${day}`,
+          title: `News ${i}`,
+          text: 'Text.',
+        };
+      });
+    }
+
+    // jsdom lays nothing out: the list's top at 96px, its entries 120px high from 100px (after its
+    // 4px of padding), each the next one down.
+    beforeEach(() => {
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        const index =
+          this.tagName === 'LI' ? [...(this.parentElement?.children ?? [])].indexOf(this) : -1;
+        const top = index >= 0 ? 100 + 120 * index : 96;
+        return { top, bottom: top + 120, left: 0, right: 500, width: 500, height: 120 } as DOMRect;
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    function list(): HTMLElement {
+      return screen.getByRole('list');
+    }
+
+    it('shows the first three entries, and scrolls to the others', () => {
+      render(WhatsNewDialog, {
+        entries: entriesOf(5),
+        unread: new Set<string>(),
+        onclose: () => {},
+      });
+
+      // From the list's top to the fourth entry's: its padding and three entries.
+      expect(list().style.maxHeight).toBe(`${100 + 3 * 120 - 96}px`);
+    });
+
+    it('takes the height of three entries or fewer', () => {
+      render(WhatsNewDialog, {
+        entries: entriesOf(3),
+        unread: new Set<string>(),
+        onclose: () => {},
+      });
+
+      expect(list().style.maxHeight).toBe('');
+    });
+  });
 });
