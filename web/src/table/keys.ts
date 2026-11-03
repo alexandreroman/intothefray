@@ -4,7 +4,7 @@
 // that list, and the hand cards, which have no menu, get their own keys here.
 
 import { modal } from '../components/modal.svelte';
-import { isTyping } from '../lib/releaseFocus';
+import { isTyping, releaseFocus } from '../lib/releaseFocus';
 import type { Action, CardView, Size, View } from '../lib/types';
 import { countersOf, discardPileOf, KEYS, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
@@ -72,8 +72,11 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (event.metaKey || event.ctrlKey) {
     return;
   }
+  // A shortcut is no keyboard navigation: the button clicked last lets go of the focus before
+  // the key paints its ring. Any other key (Tab, Enter) leaves the focus where it is.
   if (tableKey(event, table) || playerKey(event, table)) {
     event.preventDefault();
+    releaseFocus(null);
   }
 }
 

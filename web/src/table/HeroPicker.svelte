@@ -28,6 +28,7 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import CardArt from '../components/CardArt.svelte';
+  import { pointerBlur } from '../lib/releaseFocus';
 
   let {
     entries,
@@ -114,7 +115,8 @@
       class="btn-ghost step"
       aria-label="Previous hero"
       data-tip="Previous hero"
-      onclick={() => step(-1)}>←</button
+      onclick={() => step(-1)}
+      {@attach pointerBlur}>←</button
     >
   {/if}
   <div
@@ -166,7 +168,8 @@
       class="btn-ghost step"
       aria-label="Next hero"
       data-tip="Next hero"
-      onclick={() => step(1)}>→</button
+      onclick={() => step(1)}
+      {@attach pointerBlur}>→</button
     >
   {/if}
 </div>

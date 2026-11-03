@@ -1,6 +1,6 @@
 ---
 name: "A table press releases a control's focus"
-description: "Pressing a card, pile, hand card, marker or box tile blurs a control focused elsewhere; fields and dialogs keep it"
+description: "Table presses and shortcuts blur a control focused elsewhere; chrome buttons blur after a pointer click"
 type: project
 ---
 
@@ -14,6 +14,14 @@ type: project
 - A text field (`isTyping`, shared with `keys.ts`), a focus inside an open
   dialog or menu (`[aria-modal="true"]`, `[role="dialog"]`,
   `[role="menu"]`) and a focus inside the pressed element keep it.
+- A table shortcut (`handleKey` in `web/src/table/keys.ts`, a key that
+  `tableKey` or `playerKey` handles) calls `releaseFocus(null)` with its
+  `preventDefault()`. Other keys (Tab, Enter, Space) keep the focus.
+- Chrome buttons outside dialogs and menus (top bar, `Segmented`, zoom
+  control, history toggles and Undo buttons, narrow Undo, hero steps) carry
+  `{@attach pointerBlur}`: a pointer click (`detail > 0`) blurs them, a
+  keyboard activation (`detail === 0`) keeps the focus. The history toggle
+  refocuses its replacement button on keyboard activation only.
 - Keyboard navigation (Tab order, `:focus-visible` styling) is untouched.
 
 **Why:** `preventDefault()` on `pointerdown` (no text selection, no native
@@ -24,3 +32,5 @@ or Enter activate it again (fullscreen toggles).
 **How to apply:** a new `pointerdown` handler that calls
 `preventDefault()` on a table element calls
 `releaseFocus(event.currentTarget)` after it.
+A new chrome icon button outside dialogs and menus takes
+`{@attach pointerBlur}`.

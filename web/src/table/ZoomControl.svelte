@@ -5,6 +5,7 @@
   fits the table's width (onfit, on a phone), or else 100 %, as the 0 key does.
 -->
 <script lang="ts">
+  import { pointerBlur } from '../lib/releaseFocus';
   import { ZOOM_STEP } from './zoom';
 
   let {
@@ -36,7 +37,8 @@
     data-tip="Zoom out"
     data-kbd="−"
     aria-label="Zoom out"
-    onclick={() => onzoom(zoom - ZOOM_STEP)}>−</button
+    onclick={() => onzoom(zoom - ZOOM_STEP)}
+    {@attach pointerBlur}>−</button
   >
   <button
     class="btn-ghost pct"
@@ -44,6 +46,7 @@
     data-kbd={onfit ? undefined : '0'}
     aria-label={pctLabel}
     onclick={onfit ?? (() => onzoom(1))}
+    {@attach pointerBlur}
   >
     {Math.round(zoom * 100)}%
   </button>
@@ -52,7 +55,8 @@
     data-tip="Zoom in"
     data-kbd="+"
     aria-label="Zoom in"
-    onclick={() => onzoom(zoom + ZOOM_STEP)}>+</button
+    onclick={() => onzoom(zoom + ZOOM_STEP)}
+    {@attach pointerBlur}>+</button
   >
   {#if onkeys}
     <span class="floatbar-sep"></span>
@@ -65,6 +69,7 @@
       aria-expanded={keysShown}
       bind:this={keysButton}
       onclick={onkeys}
+      {@attach pointerBlur}
     >
       <!-- A keyboard: two rows of keys and a space bar. -->
       <svg

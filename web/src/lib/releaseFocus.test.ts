@@ -1,4 +1,4 @@
-import { isTyping, releaseFocus } from './releaseFocus';
+import { isTyping, pointerBlur, releaseFocus } from './releaseFocus';
 
 /** Appends the HTML to the page, in a holder it returns. */
 function append(html: string): HTMLElement {
@@ -86,6 +86,39 @@ describe('releaseFocus', () => {
 
     expect(() => releaseFocus(pressed)).not.toThrow();
     expect(document.activeElement).toBe(document.body);
+  });
+});
+
+describe('pointerBlur', () => {
+  it('blurs the button a pointer clicks', () => {
+    append('<button id="fullscreen">Fullscreen</button>');
+    const button = focused('fullscreen');
+    pointerBlur(button);
+
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+
+    expect(document.activeElement).not.toBe(button);
+  });
+
+  it('keeps the focus of a button activated from the keyboard (a click of detail 0)', () => {
+    append('<button id="fullscreen">Fullscreen</button>');
+    const button = focused('fullscreen');
+    pointerBlur(button);
+
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
+
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('stops blurring once cleaned up', () => {
+    append('<button id="fullscreen">Fullscreen</button>');
+    const button = focused('fullscreen');
+    const cleanup = pointerBlur(button);
+
+    cleanup();
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+
+    expect(document.activeElement).toBe(button);
   });
 });
 

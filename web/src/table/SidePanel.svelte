@@ -14,6 +14,7 @@
   import { tick } from 'svelte';
   import Icon from '../components/Icon.svelte';
   import { playerColorVar } from '../lib/playerColor';
+  import { pointerBlur } from '../lib/releaseFocus';
   import type { FaceRef, LogPart, LogView } from '../lib/types';
   import { mergedLines } from './animate';
   import { interaction } from './interaction.svelte';
@@ -44,12 +45,17 @@
   let collapseButton = $state<HTMLButtonElement>();
   let expandButton = $state<HTMLButtonElement>();
 
-  // The button pressed goes with the side it was on: the focus moves to the one that takes its place.
-  async function toggle(): Promise<void> {
+  // The button pressed goes with the side it was on: activated from the keyboard (a click of
+  // detail 0), the focus moves to the one that takes its place. Clicked with the pointer, it lets
+  // go of the focus (pointerBlur), and none comes back.
+  async function toggle(event: MouseEvent): Promise<void> {
+    const fromKeyboard = event.detail === 0;
     leaveLine();
     ontoggle();
     await tick();
-    (collapsed ? expandButton : collapseButton)?.focus();
+    if (fromKeyboard) {
+      (collapsed ? expandButton : collapseButton)?.focus();
+    }
   }
 
   function undo(): void {
@@ -195,6 +201,7 @@
       aria-controls={controls}
       bind:this={expandButton}
       onclick={toggle}
+      {@attach pointerBlur}
     >
       {@render panelIcon()}
     </button>
@@ -206,6 +213,7 @@
         data-tip={canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
         aria-disabled={!canUndo}
         onclick={undo}
+        {@attach pointerBlur}
       >
         <Icon name="undo" />
       </button>
@@ -222,6 +230,7 @@
       aria-controls={controls}
       bind:this={collapseButton}
       onclick={toggle}
+      {@attach pointerBlur}
     >
       {@render panelIcon()}
     </button>
@@ -255,6 +264,7 @@
       aria-disabled={!canUndo}
       data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
       onclick={undo}
+      {@attach pointerBlur}
     >
       <Icon name="undo" />
       {UNDO_TIP}

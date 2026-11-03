@@ -898,7 +898,7 @@ describe('Table', () => {
     expect(app.classList).toContain('history-collapsed');
     expect(screen.queryByRole('list', { name: 'History' })).toBeNull();
     expect(localStorage.getItem('itf-history-collapsed')).toBe('1');
-    // The focus goes to the button that took its place.
+    // Activated from the keyboard (a click of detail 0), the focus goes to the button that took its place.
     const expand = screen.getByRole('button', { name: 'Expand history' });
     await waitFor(() => expect(document.activeElement).toBe(expand));
     await fireEvent.click(within(side).getByRole('button', { name: 'Undo last action' }));

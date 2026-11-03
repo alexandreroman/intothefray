@@ -8,6 +8,7 @@
 -->
 <script lang="ts" generics="T extends string">
   import Icon, { type IconName } from './Icon.svelte';
+  import { pointerBlur } from '../lib/releaseFocus';
   import { selectionIndicator } from '../lib/selectionIndicator';
 
   interface Option {
@@ -53,6 +54,7 @@
       title={option.icon ? option.label : undefined}
       {disabled}
       onclick={() => choose(option.value)}
+      {@attach pointerBlur}
     >
       {#if option.icon}
         <Icon name={option.icon} />
