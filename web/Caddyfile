@@ -24,11 +24,13 @@ http://:8080 {
 	# and the bundles and packs, which keep their headers and 404 when missing
 	@spa not path /api/* /ws/* /healthz /assets/* /packs/*
 
-	# The entry point and any other root path: always revalidated, and app
-	# routes such as /g/<id>, which have no file, get index.html
+	# The entry point and any other root path: always revalidated. As on
+	# GitHub Pages, a directory gets its index.html (/g/?id=<id> is the game
+	# page, g/index.html) and app routes with no file, such as /about, get
+	# index.html (Pages answers 404.html, a copy of it).
 	route @spa {
 		header Cache-Control "no-cache"
-		try_files {path} /index.html
+		try_files {path} {path}/index.html /index.html
 	}
 
 	file_server

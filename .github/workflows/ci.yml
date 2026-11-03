@@ -101,13 +101,15 @@ jobs:
             exit 1
           fi
           pnpm build --base "$BASE_PATH/"
-          # Pages has no rewrite: its 404 page serves the SPA for deep links.
-          cp dist/index.html dist/404.html
         env:
           VITE_API_URL: ${{ vars.API_URL }}
           # Shown in Options next to the commit the server reports.
           VITE_COMMIT: ${{ github.sha }}
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # The absolute URL of the site, base path included, for the share
+          # previews, robots.txt and sitemap.xml. The build also writes the
+          # 404.html through which Pages serves the SPA for deep links.
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload the Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
