@@ -34,7 +34,7 @@
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name in itf-name; 16 chars, no emoji
-- [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword cards in play via sets.json; unlisted sets
+- [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword cards in play via sets.json; Dreadpool set aside; unlisted sets
 - [Cards excluded from a set](references/project_set_exclude.md) — sets.json `exclude` drops a source's misfiled card (Shang-Chi 10098)
 - [Hero side decks](references/project_hero_side_decks.md) — curated side decks, Invocation "own" discard, others "none"; set-aside hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
