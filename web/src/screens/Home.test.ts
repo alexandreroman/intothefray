@@ -84,6 +84,18 @@ describe('Home', () => {
     expect(window.location.pathname).toBe('/options');
   });
 
+  // On a phone they show their icon only: their label, out of sight, still names them.
+  it('names the Options and About buttons by their label, with a tooltip each', () => {
+    render(Home);
+
+    for (const name of ['Options', 'About']) {
+      const button = screen.getByRole('button', { name });
+      expect(button.textContent?.trim()).toBe(name);
+      expect(button.hasAttribute('aria-label')).toBe(false);
+      expect(button.dataset.tip).toBe(name);
+    }
+  });
+
   it('goes to the about screen', async () => {
     render(Home);
     await fireEvent.click(screen.getByRole('button', { name: 'About' }));

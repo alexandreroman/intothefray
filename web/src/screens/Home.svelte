@@ -94,10 +94,13 @@
             <Icon name="arrow-right" />
             Start a game
           </button>
-          <button class="secondary" onclick={() => go('/options')}
-            ><Icon name="sliders" />Options</button
-          >
-          <button class="secondary" onclick={() => go('/about')}><Icon name="info" />About</button>
+          <!-- On a phone, an icon only: the label still names the button, hidden from sight. -->
+          <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
+            <Icon name="sliders" /><span class="text">Options</span>
+          </button>
+          <button class="secondary" data-tip="About" onclick={() => go('/about')}>
+            <Icon name="info" /><span class="text">About</span>
+          </button>
           <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
                how many: so does the button's name. -->
           <button
@@ -513,8 +516,29 @@
     color: var(--faint);
   }
 
-  /* A phone: 16px gutters, and a smaller fan under the buttons. */
+  /* A phone: 16px gutters, square icon buttons and a smaller fan under the buttons. */
   @media (max-width: 640px) {
+    .secondary {
+      width: 56px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .secondary :global(svg) {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* As .sr-only (styles/tokens.css): out of sight, still the button's name. */
+    .secondary .text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     main {
       padding: 40px 16px 24px;
     }
