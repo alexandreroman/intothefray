@@ -220,6 +220,32 @@ export function drawnGap(rows: RowMap, from: number, to: number): number {
   return top === null || bottom === null ? to - from : bottom - top;
 }
 
+/**
+ * A function that lays items at the heights where `rows` draws them: each
+ * item copied with its drawn height, those of hidden rows dropped. It keeps
+ * each item's copy while the item and its drawn height stay the same, so a
+ * redraw hands an unchanged item's view the same object, and that view does
+ * not re-derive. Items are told apart by identity, which holds as views are
+ * never changed in place, and an unchanged card keeps its object from one view
+ * to the next (lib/reuse.ts).
+ */
+export function shownItems<T extends { y: number }>(): (items: readonly T[], rows: RowMap) => T[] {
+  const copies = new WeakMap<T, T>();
+  return (items, rows) =>
+    items.flatMap((item) => {
+      const y = rows.toDisplay(item.y);
+      if (y === null) {
+        return [];
+      }
+      let copy = copies.get(item);
+      if (copy === undefined || copy.y !== y) {
+        copy = { ...item, y };
+        copies.set(item, copy);
+      }
+      return [copy];
+    });
+}
+
 /** The row of a seat: where its deck lies, or else the setup's row for that seat. */
 export function rowOfSeat(piles: readonly PileView[], seat: number): number {
   const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);

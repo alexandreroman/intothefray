@@ -134,6 +134,11 @@ make app-down   # stop and remove the containerised stack
 `make check` needs the frontend dependencies: run `make web-install`
 once on a fresh clone (`make dev` and `make web-build` install them).
 
+To time how fast the table redraws after a server update, run
+`pnpm bench` in `web/`. It prints the median, mean and 90th
+percentile over 100 updates of a table of 120 cards; `BENCH_CARDS`
+sets another card count (`BENCH_CARDS=400 pnpm bench`).
+
 `make dev` runs Redis and Caddy in containers, so it needs a running
 container engine: Docker, or Podman with its Docker-compatible
 `docker` command (or pass `COMPOSE="podman compose"` to `make`).
