@@ -399,6 +399,56 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 			}},
 			"09003 is not in the set",
 		},
+		{
+			"villain sets on a standard set",
+			map[string]curated.SetDef{"standard_ii": {Villains: []string{"rhino"}}},
+			"curated set standard_ii: villain sets need a villain, leader or underling set, not a standard set",
+		},
+		{
+			"villain sets on a main scheme set",
+			map[string]curated.SetDef{"rhino": {MainScheme: true, Villains: []string{"klaw"}}},
+			"curated set rhino: villain sets need a villain, leader or underling set, not a main_scheme set",
+		},
+		{
+			"unknown villain set",
+			map[string]curated.SetDef{"rhino": {Villains: []string{"doom"}}},
+			"curated set rhino: villain set doom is not in the catalog",
+		},
+		{
+			"villain set of another kind",
+			map[string]curated.SetDef{"rhino": {Villains: []string{"bomb_scare"}}},
+			"curated set rhino: villain set bomb_scare is a modular set",
+		},
+		{
+			"villain set naming itself",
+			map[string]curated.SetDef{"rhino": {Villains: []string{"rhino"}}},
+			"curated set rhino: villain sets name the set itself",
+		},
+		{
+			"image card on a standard set",
+			map[string]curated.SetDef{"standard_ii": {ImageCard: "01094"}},
+			"curated set standard_ii: image card needs a villain, leader or underling set, not a standard set",
+		},
+		{
+			"unknown image card",
+			map[string]curated.SetDef{"rhino": {ImageCard: "09999"}},
+			"curated set rhino: image card 09999 is not in the catalog",
+		},
+		{
+			"image card that is a main scheme",
+			map[string]curated.SetDef{"rhino": {ImageCard: "01097"}},
+			"curated set rhino: image card 01097 is not a villain or leader card",
+		},
+		{
+			"image card that is a treachery",
+			map[string]curated.SetDef{"rhino": {ImageCard: "01104"}},
+			"curated set rhino: image card 01104 is not a villain or leader card",
+		},
+		{
+			"image card of an unrelated villain set",
+			map[string]curated.SetDef{"rhino": {ImageCard: "01113"}},
+			"curated set rhino: image card 01113 is not in the set or its villain sets",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

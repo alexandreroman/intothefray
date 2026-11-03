@@ -51,6 +51,8 @@ func TestLoad(t *testing.T) {
 		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather"}},
 		"valk":               {SetAside: []string{"25002"}},
 		"taskmaster":         {Exclude: []string{"10098"}},
+		"morlock_siege":      {Villains: []string{"marauders"}},
+		"on_the_run":         {Villains: []string{"marauders"}, ImageCard: "40074"},
 	}
 	if !reflect.DeepEqual(loaded.Sets, wantSets) {
 		t.Errorf("got sets %+v, want %+v", loaded.Sets, wantSets)

@@ -90,7 +90,9 @@ func Build(in Inputs) (Result, error) {
 	}
 	faceCounts := faceCountsOf(cards)
 	sets := pruneSets(buildSets(in.MC, in.MCPacks), cardCodes)
-	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts, mainSchemeCardsOf(cards)); err != nil {
+	mainSchemeCards := cardsWithFirstFace(cards, pack.FaceTypeMainScheme)
+	villainCards := cardsWithFirstFace(cards, pack.FaceTypeVillain, pack.FaceTypeLeader)
+	if err := applySetDefs(sets, in.Curated.Sets, cardCodes, faceCounts, mainSchemeCards, villainCards); err != nil {
 		return Result{}, err
 	}
 	applySideBacks(cards, sets)
@@ -103,7 +105,7 @@ func Build(in Inputs) (Result, error) {
 	heroes, heroProblems := checkHeroes(allHeroes, cardCodes)
 	problems = append(problems, heroProblems...)
 
-	scenarios, refs, scenarioProblems := buildScenarios(in.Curated.Scenarios, cards, sets, in.CBSets)
+	scenarios, refs, scenarioProblems := buildScenarios(in.Curated.Scenarios, in.Curated.Sets, cards, sets, in.CBSets)
 	problems = append(problems, scenarioProblems...)
 	scenarios, refs, faceProblems := dropInvalidFaceRefs(scenarios, refs, faceCounts)
 	problems = append(problems, faceProblems...)
@@ -161,13 +163,13 @@ func cardCodesOf(cards map[string][]pack.Card) map[string]bool {
 	return codes
 }
 
-// mainSchemeCardsOf returns the codes of the cards whose first face is a main
-// scheme.
-func mainSchemeCardsOf(cards map[string][]pack.Card) map[string]bool {
+// cardsWithFirstFace returns the codes of the cards whose first face is of one
+// of the face types.
+func cardsWithFirstFace(cards map[string][]pack.Card, faceTypes ...string) map[string]bool {
 	codes := make(map[string]bool)
 	for _, packCards := range cards {
 		for _, card := range packCards {
-			if len(card.Faces) > 0 && card.Faces[0].Type == pack.FaceTypeMainScheme {
+			if len(card.Faces) > 0 && slices.Contains(faceTypes, card.Faces[0].Type) {
 				codes[card.Code] = true
 			}
 		}
@@ -202,13 +204,15 @@ func pruneSets(sets map[string][]pack.Set, cardCodes map[string]bool) map[string
 // broken scenario, which is only reported as unsupported, a definition that
 // does not match the catalog fails the build: the set it completes would
 // otherwise be set up wrongly. mainSchemeCards holds the codes of the cards
-// whose first face is a main scheme.
+// whose first face is a main scheme, villainCards those whose first face is a
+// villain or leader.
 func applySetDefs(
 	sets map[string][]pack.Set,
 	defs map[string]curated.SetDef,
 	cardCodes map[string]bool,
 	faceCounts map[string]int,
 	mainSchemeCards map[string]bool,
+	villainCards map[string]bool,
 ) error {
 	setsByCode := make(map[string]*pack.Set)
 	for _, packSets := range sets {
@@ -245,6 +249,19 @@ func applySetDefs(
 		set.Side = def.Side
 		set.SetAside = def.SetAside
 	}
+
+	// The villain sets and image cards are checked once every main scheme set
+	// has its kind: a set a definition makes a main scheme set has no villain.
+	for _, code := range slices.Sorted(maps.Keys(defs)) {
+		set := *setsByCode[code]
+		def := defs[code]
+		if err := checkVillains(set, def.Villains, setsByCode); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+		if err := checkImageCard(set, def, setsByCode, cardCodes, villainCards); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
+	}
 	return nil
 }
 
@@ -279,6 +296,65 @@ func checkSide(set pack.Set, side *pack.SideDeck) error {
 		return fmt.Errorf("side deck needs a %s set, not a %s set", pack.SetKindHeroSpecial, set.Kind)
 	}
 	return nil
+}
+
+// checkVillains makes sure the villain sets a set names are scenario
+// candidates of the catalog other than the set, and that the set naming them
+// is one too: only a scenario candidate lists a scenario in the lobby.
+func checkVillains(set pack.Set, villains []string, setsByCode map[string]*pack.Set) error {
+	if len(villains) == 0 {
+		return nil
+	}
+	if !isScenarioSetKind(set.Kind) {
+		return fmt.Errorf("villain sets need a villain, leader or underling set, not a %s set", set.Kind)
+	}
+	for _, code := range villains {
+		named, found := setsByCode[code]
+		switch {
+		case code == set.Code:
+			return errors.New("villain sets name the set itself")
+		case !found:
+			return fmt.Errorf("villain set %s is not in the catalog", code)
+		case !isScenarioSetKind(named.Kind):
+			return fmt.Errorf("villain set %s is a %s set, not a villain, leader or underling set", code, named.Kind)
+		}
+	}
+	return nil
+}
+
+// checkImageCard makes sure the image card of a set is a villain or leader
+// card of the set or of one of its villain sets, on a scenario candidate:
+// only a scenario candidate has a lobby image. The villain sets are checked
+// first, by checkVillains.
+func checkImageCard(
+	set pack.Set,
+	def curated.SetDef,
+	setsByCode map[string]*pack.Set,
+	cardCodes map[string]bool,
+	villainCards map[string]bool,
+) error {
+	code := def.ImageCard
+	if code == "" {
+		return nil
+	}
+	if !isScenarioSetKind(set.Kind) {
+		return fmt.Errorf("image card needs a villain, leader or underling set, not a %s set", set.Kind)
+	}
+	if !cardCodes[code] {
+		return fmt.Errorf("image card %s is not in the catalog", code)
+	}
+	if !villainCards[code] {
+		return fmt.Errorf("image card %s is not a villain or leader card", code)
+	}
+	if slices.Contains(set.Cards, code) {
+		return nil
+	}
+	for _, villainSet := range def.Villains {
+		if slices.Contains(setsByCode[villainSet].Cards, code) {
+			return nil
+		}
+	}
+	return fmt.Errorf("image card %s is not in the set or its villain sets", code)
 }
 
 // checkMainScheme makes sure a main scheme set has a card whose first face is

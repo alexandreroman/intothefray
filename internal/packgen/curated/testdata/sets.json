@@ -9,5 +9,7 @@
   "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": "own"}},
   "storm_weather_deck": {"side": {"label": "Weather"}},
   "valk": {"setAside": ["25002"]},
-  "taskmaster": {"exclude": ["10098"]}
+  "taskmaster": {"exclude": ["10098"]},
+  "morlock_siege": {"villains": ["marauders"]},
+  "on_the_run": {"villains": ["marauders"], "imageCard": "40074"}
 }

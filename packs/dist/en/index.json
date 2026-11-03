@@ -1003,19 +1003,6 @@
       "recommended": []
     },
     {
-      "id": "marauders",
-      "name": "Marauders",
-      "pack": "next_evol",
-      "image": "https://img.intothefray.xyz/cards/en/40070a.150ea81581cf.avif",
-      "supported": false,
-      "recommended": [],
-      "localized": {
-        "fr": {
-          "name": "Maraudeurs"
-        }
-      }
-    },
-    {
       "id": "juggernaut",
       "name": "Juggernaut",
       "pack": "next_evol",
@@ -1060,7 +1047,7 @@
       "id": "morlock_siege",
       "name": "Morlock Siege",
       "pack": "next_evol",
-      "image": "",
+      "image": "https://img.intothefray.xyz/cards/en/40070a.150ea81581cf.avif",
       "supported": false,
       "recommended": [
         "military_grade",
@@ -1076,7 +1063,7 @@
       "id": "on_the_run",
       "name": "On the Run",
       "pack": "next_evol",
-      "image": "",
+      "image": "https://img.intothefray.xyz/cards/en/40074a.9b38e4dc8b0a.avif",
       "supported": false,
       "recommended": [
         "military_grade",

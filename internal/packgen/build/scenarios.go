@@ -27,11 +27,16 @@ type villainSet struct {
 // buildScenarios lists a scenario for every villain, leader or underling set
 // and merges the curated definitions into the ones whose cards all exist, and
 // whose main scheme sets, if any, are main scheme sets. A definition
-// absorbs the sets it covers: they are not listed separately. cards and sets
-// are keyed by pack code. The scenario of a set belongs to the pack of that set.
-// The references are ordered by the code of the first villain card of the set.
+// absorbs the sets it covers, and a curated set the villain sets it names:
+// they are not listed separately. A set without villain card takes its image
+// from the lowest-code villain card of the sets it absorbs; naming villain
+// sets alone does not make its scenario playable. The image card of a curated
+// set wins over both images. setDefs is keyed by set code, cards and sets by
+// pack code. The scenario of a set belongs to the pack of that set. The
+// references are ordered by the code of the first villain card of the set.
 func buildScenarios(
 	defs []curated.ScenarioDef,
+	setDefs map[string]curated.SetDef,
 	cards map[string][]pack.Card,
 	sets map[string][]pack.Set,
 	cb []cerebro.Set,
@@ -59,6 +64,11 @@ func buildScenarios(
 			covered[code] = true
 		}
 	}
+	for _, setDef := range setDefs {
+		for _, code := range setDef.Villains {
+			covered[code] = true
+		}
+	}
 
 	scenarios = make(map[string][]pack.Scenario)
 	for _, villain := range villains {
@@ -74,6 +84,14 @@ func buildScenarios(
 			Image:       imageOf(villain.firstCard),
 			Recommended: recommendedOf(villain.set.Name, cb, cerebroNames, modularCodes),
 		}
+		if villain.firstCard == nil {
+			absorbed := slices.Concat(defsBySet[villain.set.Code].Covers, setDefs[villain.set.Code].Villains)
+			ref.Image = imageOf(coveredVillainCard(absorbed, villains))
+		}
+		// applySetDefs has made sure the image card is a villain or leader card.
+		if imageCard, found := cardsByCode[setDefs[villain.set.Code].ImageCard]; found {
+			ref.Image = imageOf(&imageCard)
+		}
 
 		if def, found := defsBySet[villain.set.Code]; found {
 			ref.ID = def.ID
@@ -87,9 +105,6 @@ func buildScenarios(
 			// The modular sets come with the main scheme set the host picks.
 			if len(def.MainSchemes) > 0 {
 				ref.Recommended = []string{}
-			}
-			if villain.firstCard == nil {
-				ref.Image = imageOf(coveredVillainCard(def, villains))
 			}
 			missing := missingCards(def, cardsByCode)
 			for _, code := range missing {
@@ -154,13 +169,13 @@ func buildScenarios(
 	return scenarios, refs, problems
 }
 
-// coveredVillainCard returns the lowest-code villain or leader card among the sets a
-// definition covers, for a scenario whose own villain set has none.
-func coveredVillainCard(def curated.ScenarioDef, villains []villainSet) *pack.Card {
+// coveredVillainCard returns the lowest-code villain or leader card among the
+// sets of codes, for a scenario whose own villain set has none.
+func coveredVillainCard(codes []string, villains []villainSet) *pack.Card {
 	var lowest *pack.Card
 	for _, villain := range villains {
 		card := villain.firstCard
-		if card != nil && slices.Contains(def.Covers, villain.set.Code) && (lowest == nil || card.Code < lowest.Code) {
+		if card != nil && slices.Contains(codes, villain.set.Code) && (lowest == nil || card.Code < lowest.Code) {
 			lowest = card
 		}
 	}
@@ -173,7 +188,7 @@ func villainSetsOf(sets map[string][]pack.Set, cardsByCode map[string]pack.Card)
 	var villains []villainSet
 	for packCode, packSets := range sets {
 		for _, set := range packSets {
-			if set.Kind != pack.SetKindVillain && set.Kind != pack.SetKindLeader && set.Kind != pack.SetKindUnderling {
+			if !isScenarioSetKind(set.Kind) {
 				continue
 			}
 			villains = append(villains, villainSet{
@@ -186,6 +201,11 @@ func villainSetsOf(sets map[string][]pack.Set, cardsByCode map[string]pack.Card)
 
 	slices.SortFunc(villains, func(a, b villainSet) int { return cmp.Compare(a.sortKey(), b.sortKey()) })
 	return villains
+}
+
+// isScenarioSetKind reports whether a set of this kind is a scenario candidate.
+func isScenarioSetKind(kind string) bool {
+	return kind == pack.SetKindVillain || kind == pack.SetKindLeader || kind == pack.SetKindUnderling
 }
 
 func (v villainSet) sortKey() string {
