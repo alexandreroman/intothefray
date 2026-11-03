@@ -127,8 +127,8 @@ func TestSetupSideDecks(t *testing.T) {
 	// The identity lies pileZoneGap past the side discard pile, 390 + 112 + 50,
 	// up to the grid. The first player token follows it: 560 + 112 + inPlayGap,
 	// up to the grid.
-	if table.FirstPlayer != (Point{X: 720, Y: rowY0 + 40}) {
-		t.Errorf("first player = %+v, want (720, %d)", table.FirstPlayer, rowY0+40)
+	if want := (Point{X: 720, Y: rowY0 + 40}); table.FirstPlayer == nil || *table.FirstPlayer != want {
+		t.Errorf("first player = %v, want %+v", table.FirstPlayer, want)
 	}
 
 	sense := table.Piles[senseDeck]
@@ -177,9 +177,6 @@ func TestSetupTwoSideDecks(t *testing.T) {
 	}
 	if hercules := f.g.Table.Cards[identityOf(t, f.g, 0)]; hercules.X != 560 {
 		t.Errorf("Hercules at x %d, want 560", hercules.X)
-	}
-	if table.FirstPlayer.X != 720 {
-		t.Errorf("first player at x %d, want 720, right of Hercules", table.FirstPlayer.X)
 	}
 }
 

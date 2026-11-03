@@ -651,7 +651,7 @@ const SLOT_GAP = 40;
  * than that, so the card lands after the identity. The row is the height of
  * the player's deck (the top of the table, from x 0, without one). Every
  * table card and pile reaching into the row is in the way, and so is every
- * marker.
+ * marker the table has.
  */
 export function freeSlot(
   played: CardView,
@@ -666,7 +666,7 @@ export function freeSlot(
   const start = deck?.x ?? 0;
   const y = deck?.y ?? 0;
   const markers = [
-    { id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX },
+    ...(firstPlayer ? [{ id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX }] : []),
     ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
   ];
   const items = [...footprints(cards, piles, sizeOf), ...markers].filter(

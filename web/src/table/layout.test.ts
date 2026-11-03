@@ -706,6 +706,12 @@ describe('freeSlot', () => {
     expect(slot([identity], row, { x: 460, y: 0 })).toEqual({ x: 460, y: 360 });
   });
 
+  it('has no first player token in the way in a one-hero game', () => {
+    // Without the token, the card lands at 720, past Doctor Strange at 560–672.
+    const table = { cards: [strange], piles: [...row, ...sides] };
+    expect(freeSlot(played, table, 0, sizeOf)).toEqual({ x: 720, y: 360 });
+  });
+
   it('freeSlot avoids the active counter', () => {
     // The 70 wide counter at 720–790 lies where 720, past Doctor Strange at 560–672, would be.
     const active = { x: 720, y: 360 };

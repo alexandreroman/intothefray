@@ -38,8 +38,9 @@ import (
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
 // last pile, taken up to the grid: without side piles, it sits at identityX.
-// The first player token lies right of the first player's identity, inPlayGap
-// past it, centred on its height (firstPlayerSpot).
+// In a game of two seats or more, the first player token lies right of the
+// first player's identity, inPlayGap past it, centred on its height
+// (firstPlayerSpot); a single seat has no token.
 // Things sit rowContentY below the top of their row, leaving room for the
 // client's owner label above the piles. Out-of-play piles (victory display, set-aside cards) keep
 // a position for the model, on the first villain pile, but the client never draws them.
@@ -149,7 +150,8 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 	}
 
 	// The table is built apart so that a failed setup leaves the lobby intact.
-	b := &tableBuilder{cat: cat, rng: setupRNG(seed), table: newEmptyTable(g.seatCount())}
+	seats := g.seatCount()
+	b := &tableBuilder{cat: cat, rng: setupRNG(seed), table: newEmptyTable(seats), seats: seats}
 	scenario, err := b.setupScenario(g.Config)
 	if err != nil {
 		return err
@@ -212,8 +214,8 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 }
 
 // newEmptyTable returns a table with every pile of the villain and of every
-// seat, all empty. The first player token is left at the origin until
-// setupPlayer places it beside the identity of seat 0.
+// seat, all empty. It has no first player token: setupPlayer places one beside
+// the identity of seat 0 when the game has several seats.
 func newEmptyTable(seatCount int) *Table {
 	t := &Table{
 		Cards: map[string]*Card{},
@@ -248,6 +250,8 @@ type tableBuilder struct {
 	cat   *pack.Catalog
 	rng   *rand.Rand
 	table *Table
+	// seats is the number of seats at the table.
+	seats int
 	// inPlayRight is the right edge of the last thing put in the villain's
 	// row (a pile, a stage card or a card in play), 0 before the first one.
 	inPlayRight int
@@ -818,8 +822,8 @@ func cardHeight(size pack.Size) int {
 	}
 }
 
-// firstPlayerSpot returns where the first player token starts, beside the
-// first player's identity lying at (x, y) on a face of the given size:
+// firstPlayerSpot returns where the first player token of a game of several
+// seats starts, beside the first player's identity lying at (x, y) on a face of the given size:
 // inPlayGap past its right edge, as a card in play would lie, so that the
 // token stays clear of the identity even when it is exhausted, and centred on
 // its height. x is taken up to the grid as a card in play's is, y to the
@@ -868,8 +872,10 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	x := ceilToGrid(pileX(1+sidePiles) + portraitWidth + pileZoneGap)
 	y := rowY(playerRow(seat))
 	b.placeOnTable(identity, face, x, y)
-	if seat == 0 {
-		b.table.FirstPlayer = firstPlayerSpot(identityDef.Faces[face].Size, x, y)
+	// The first player token passes from hero to hero: a single seat has none.
+	if seat == 0 && b.seats > 1 {
+		spot := firstPlayerSpot(identityDef.Faces[face].Size, x, y)
+		b.table.FirstPlayer = &spot
 	}
 
 	if hero.Obligation != "" && !b.selfContained {

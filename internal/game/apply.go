@@ -1478,12 +1478,12 @@ func applyHandOrder(t *Table, a Action) error {
 }
 
 // marker returns the position of the table marker called name, or nil when
-// there is no such marker (an unknown name, or the active counter of a
-// scenario without one).
+// there is no such marker (an unknown name, the first player token of a
+// single-seat game, or the active counter of a scenario without one).
 func (t *Table) marker(name string) *Point {
 	switch name {
 	case MarkerFirstPlayer:
-		return &t.FirstPlayer
+		return t.FirstPlayer
 	case MarkerActive:
 		return t.Active
 	}

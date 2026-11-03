@@ -21,11 +21,39 @@ func TestMarkerActiveAbsent(t *testing.T) {
 	}
 }
 
+func TestMarkerFirstPlayerAbsent(t *testing.T) {
+	table := newTestTable()
+	err := apply(table, Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: 100, Y: 100})
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+}
+
 func TestMarkerSnaps(t *testing.T) {
 	table := newTestTable()
+	table.FirstPlayer = &Point{}
 	mustApply(t, table, Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: 37, Y: 52})
-	if want := (Point{X: 40, Y: 50}); table.FirstPlayer != want {
-		t.Errorf("FirstPlayer = %+v, want %+v", table.FirstPlayer, want)
+	if want := (Point{X: 40, Y: 50}); table.FirstPlayer == nil || *table.FirstPlayer != want {
+		t.Errorf("FirstPlayer = %v, want %+v", table.FirstPlayer, want)
+	}
+}
+
+// TestMarkerNoFirstPlayerForOneSeat checks that a lone hero cannot move the
+// first player token: the game has none.
+func TestMarkerNoFirstPlayerForOneSeat(t *testing.T) {
+	f := heroGame(t, spiderManDeck(t, newCatalog(t)))
+	before := len(f.g.History.Events)
+
+	err := f.do("h", Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: 300, Y: 410}, at(1))
+
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("err = %v, want ErrInvalid", err)
+	}
+	if f.g.Table.FirstPlayer != nil {
+		t.Errorf("FirstPlayer = %+v, want none", f.g.Table.FirstPlayer)
+	}
+	if len(f.g.History.Events) != before {
+		t.Error("a rejected marker move was recorded")
 	}
 }
 
