@@ -75,7 +75,7 @@
 - [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview, fills the table on narrow screens; resting: base card at 82 %
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
-- [Add a set menu groups by pack](references/project_modular_menu.md) — modular sets under sticky pack names; ★ sets stay in their pack
+- [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
 - [Revealed card is its deck's top card](references/project_deck_reveal.md) — encounter and own hidden decks reveal; top card; tokens; dragged landscape

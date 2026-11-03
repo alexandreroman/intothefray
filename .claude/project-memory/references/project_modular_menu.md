@@ -13,8 +13,20 @@ type: project
   list groups scenarios.
 - A pack with no modular set left to add shows no group.
 - Each group is a `role="group"` labelled by its pack name (`.menu .mpk`),
-  a sticky heading that is not a button; the set buttons are the only
-  focusable items.
+  a sticky heading that is not a button; the filter field and the set
+  buttons are the only focusable items.
+- A "Filter sets" field tops the menu, outside its scrolling list
+  (`.mlist`, which fades its edges with `scrollFade`); it is empty and
+  focused each time the menu opens. Matching ignores case and accents
+  (NFD, marks stripped) and looks in a set's shown name and its English
+  name; a query found in a pack's name, shown or English, keeps all that
+  pack's addable sets. Packs left with no set disappear; "No matching set"
+  shows when the query leaves none, "No set to add" when nothing is
+  addable at all.
+- In the field, ArrowDown goes to the first set shown, Enter adds the set
+  when exactly one matches, Escape closes the menu as anywhere.
+- The menu takes the size of its unfiltered list, measured while the field
+  is empty, and holds it while the host filters, so it stays put.
 - The scenario's recommended sets sit in their own pack, marked
   "★ recommended"; the menu has no group or ordering of its own for them.
 - With a scenario that names `mainSchemes` (Fear No Evil's Underlings),
@@ -28,7 +40,9 @@ type: project
   `web/src/lib/dropdown.ts`).
 
 **Why:** user decision: the full list is long, and the pack is how players
-find a set; the star is enough to spot a recommendation.
+find a set; the star is enough to spot a recommendation. The filter finds a
+set by name in either language without scrolling; a menu that keeps its
+size does not jump under the pointer.
 
 **How to apply:** a new kind of addable set, or another long pick list in
 the lobby, follows the same pack grouping and heading markup.
