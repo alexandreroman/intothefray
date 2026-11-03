@@ -94,27 +94,30 @@
             <Icon name="arrow-right" />
             Start a game
           </button>
-          <!-- On a phone, an icon only: the label still names the button, hidden from sight. -->
-          <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
-            <Icon name="sliders" /><span class="text">Options</span>
-          </button>
-          <button class="secondary" data-tip="About" onclick={() => go('/about')}>
-            <Icon name="info" /><span class="text">About</span>
-          </button>
-          <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
-               how many: so does the button's name. -->
-          <button
-            class="secondary news"
-            aria-label={hasUnread ? "What's new, unread news" : "What's new"}
-            data-tip="What's new"
-            bind:this={newsButton}
-            onclick={openWhatsNew}
-          >
-            <Icon name="sparkle" />
-            {#if hasUnread}
-              <span class="dot" aria-hidden="true"></span>
-            {/if}
-          </button>
+          <!-- The secondary buttons wrap together, as one group, under Start. -->
+          <div class="more">
+            <!-- On a phone, an icon only: the label still names the button, hidden from sight. -->
+            <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
+              <Icon name="sliders" /><span class="text">Options</span>
+            </button>
+            <button class="secondary" data-tip="About" onclick={() => go('/about')}>
+              <Icon name="info" /><span class="text">About</span>
+            </button>
+            <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
+                 how many: so does the button's name. -->
+            <button
+              class="secondary news"
+              aria-label={hasUnread ? "What's new, unread news" : "What's new"}
+              data-tip="What's new"
+              bind:this={newsButton}
+              onclick={openWhatsNew}
+            >
+              <Icon name="sparkle" />
+              {#if hasUnread}
+                <span class="dot" aria-hidden="true"></span>
+              {/if}
+            </button>
+          </div>
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
@@ -256,6 +259,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 14px 24px;
+  }
+
+  /* Options, About and What's new: one unit in the row, spaced as the row's buttons. */
+  .more {
+    display: flex;
+    gap: 24px;
   }
 
   .actions button {
