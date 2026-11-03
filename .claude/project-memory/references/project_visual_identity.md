@@ -25,7 +25,8 @@ type: project
   buttons. Keyboard focus draws signal blue bars, lined with ink, along
   the top and bottom edges.
 - A press is a comic impact: the button sinks (scale 0.96), the panel
-  turns deep red and a hover ring turns dark gold. Under reduced motion
+  turns deep red and a hover ring turns dark gold, its light stopped
+  and hidden while the button is held. Under reduced motion
   the press only darkens the panel.
 
 **Why:** chosen with the user from mockups on a claude.ai design canvas:

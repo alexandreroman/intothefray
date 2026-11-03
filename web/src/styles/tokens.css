@@ -355,8 +355,8 @@ select:focus {
 
 /*
   The press, a comic impact: the whole button sinks and its panel darkens (and, under a mouse,
-  its ring with it, below). The hover red leaves out a pressed button, so that the darker red
-  wins whatever the order of the rules: both selectors weigh the same. Without motion the
+  its ring with it while the light stops, below). The hover red leaves out a pressed button, so
+  that the darker red wins whatever the order of the rules: both selectors weigh the same. Without motion the
   button does not sink, but the panel still darkens: that is a colour, not a motion.
 */
 .btn-primary:hover:not(:active, :disabled, [aria-disabled='true'])::before {
@@ -428,8 +428,9 @@ select:focus {
 /*
   The hover ring: a 4px spark yellow border on the panel, a comic cue as the caption boxes are
   (the signal blue is for selection and focus), lined with 2px of ink, and its light running
-  around it; pressed, it darkens with the panel. Its selectors are more specific than the focus bars',
-  so a focused button shows the ring on hover.
+  around it. Pressed, the ring darkens with the panel and the light goes out; those rules add
+  :active, so they win over the hover ones. The ring's selectors are more specific than the
+  focus bars', so a focused button shows the ring on hover.
   Only a real hover: a tap on a touch screen leaves no ring behind. A disabled button has none,
   and neither has a hover without motion.
 */
@@ -446,6 +447,11 @@ select:focus {
 
   .btn-primary:hover:active:not(:disabled, [aria-disabled='true'])::before {
     border-color: color-mix(in srgb, var(--spark) 70%, var(--bg));
+  }
+
+  .btn-primary:hover:active:not(:disabled, [aria-disabled='true'])::after {
+    opacity: 0;
+    animation: none;
   }
 }
 
