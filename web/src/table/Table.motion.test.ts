@@ -1029,6 +1029,186 @@ describe('Table animations', () => {
       expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
     });
 
+    describe("the viewer's own drop tucked into a stack", () => {
+      // Sam's "host" with h1 tucked under it; the server lays the chain out.
+      const host = card('host', { owner: 1, x: 400, y: 100, z: 3 });
+      const h1 = card('h1', { owner: 1, x: 410, y: 120, z: 2, parent: 'host' });
+      const placed = (id: string) => `.surface .card[data-id="${id}"]`;
+      /** The size a table card is drawn at, which its ghost has too. */
+      const sizeOf = (id: string) => {
+        const element = document.querySelector<HTMLElement>(placed(id))!;
+        return { w: parseFloat(element.style.width), h: parseFloat(element.style.height) };
+      };
+
+      /** The keyframes and options of the animations started on a table card, in order. */
+      const startedOn = (id: string) =>
+        animationsOf(placed(id)) as [Keyframe[], KeyframeAnimationOptions][];
+
+      /**
+       * Expects a card to slide in under its stack in two steps: from `from`, drawn at z above the
+       * stack, out to half its own size down and to the right of its slot, then up into it at its
+       * own z-index.
+       */
+      function expectTuck(id: string, from: string, z: number): void {
+        const { w, h } = sizeOf(id);
+        const [[frames, options], [zFrames, zOptions]] = startedOn(id) as [
+          [Keyframe[], KeyframeAnimationOptions],
+          [Keyframe[], KeyframeAnimationOptions],
+        ];
+        expect(frames).toEqual([
+          { translate: from, scale: '1', easing: 'cubic-bezier(.2, .8, .2, 1)' },
+          { translate: `${w / 2}px ${h / 2}px`, scale: '1', offset: 0.5, easing: 'ease-in-out' },
+          { translate: '0px 0px', scale: '1' },
+        ]);
+        expect(options.duration).toBe(400);
+        // Above the stack only while it shifts out: its own z-index then puts it beneath.
+        expect(zFrames).toEqual([{ zIndex: z }, { zIndex: z }]);
+        expect(zOptions.duration).toBe(200);
+      }
+
+      it('shifts out above the stack, then slides in under it, with the chain it carries', async () => {
+        const mine = card('mine', { owner: 1, x: 0, y: 0 });
+        const m1 = card('m1', { owner: 1, x: 10, y: 20, parent: 'mine' });
+        const { next, container } = await renderTable(makeView([host, h1, mine, m1]));
+        interaction.land({
+          action: 1,
+          element: { kind: 'card', id: 'mine' },
+          card: 'mine',
+          lifted: ['mine', 'm1'],
+          tucks: true,
+          handOrder: null,
+        });
+        // Let go over host, off the grid, the card it carries at its offset.
+        landGhost(container, 'mine', { x: 380, y: 90 }, sizeOf('mine'));
+        landGhost(container, 'm1', { x: 390, y: 110 }, sizeOf('m1'));
+
+        // The server lays the chain out, the cards tucked beneath host, each beneath the one before.
+        await next(
+          makeView([
+            { ...host, z: 9 },
+            { ...h1, z: 8 },
+            { ...mine, x: 420, y: 140, z: 7, parent: 'h1' },
+            { ...m1, x: 430, y: 160, z: 6 },
+          ]),
+        );
+        await waitFor(() => expect(startedOn('m1')).toHaveLength(2));
+        // One block from where it was let go, mine above m1 above host while they shift out.
+        expectTuck('mine', '-40px -50px', 11);
+        expectTuck('m1', '-40px -50px', 10);
+        // The card it tucks under does not move.
+        expect(startedOn('h1')).toEqual([]);
+        // The view keeps the z-index the server gave: beneath the stack.
+        expect(document.querySelector<HTMLElement>(placed('mine'))!.style.zIndex).toBe('7');
+      });
+
+      it("another player's card tucked into it does the same from their ghost", async () => {
+        const mine = card('mine', { owner: 1, x: 0, y: 0 });
+        const { next, session } = await renderTable(makeView([host, h1, mine]));
+        // Sam drags it over host, then lets go: its ghost stays there.
+        session.presence.set(1, {
+          color: 1,
+          name: 'Sam',
+          at: Date.now(),
+          drag: { cards: ['mine'], x: 380, y: 90 },
+        });
+        const ghost = () => document.querySelector('.presence .card.ghost[data-id="mine"]');
+        await waitFor(() => expect(ghost()).not.toBeNull());
+        session.presence.set(1, { color: 1, name: 'Sam', at: Date.now(), drag: null });
+        await settle();
+
+        await next(makeView([host, h1, { ...mine, x: 420, y: 140, parent: 'h1' }]));
+        await waitFor(() => expect(startedOn('mine')).toHaveLength(2));
+        // host lies at z 3: drawn at 4 while it shifts out.
+        expectTuck('mine', '-40px -50px', 4);
+      });
+
+      it('a card played under it from a pile shifts out of the pile above it, then slides in', async () => {
+        const { next } = await renderTable(
+          makeView([host, h1, card('c9', { zone: 'pile' })], {
+            piles: [PILES[0]!, discard(['c9'])],
+          }),
+        );
+
+        await next(
+          makeView([host, h1, card('c9', { x: 420, y: 140, parent: 'h1' })], {
+            piles: [PILES[0]!, discard([])],
+            log: [START, line('played Spider-Man')],
+          }),
+        );
+        await waitFor(() => expect(startedOn('c9')).toHaveLength(2));
+        const [[frames], [zFrames]] = startedOn('c9') as [
+          [Keyframe[], KeyframeAnimationOptions],
+          [Keyframe[], KeyframeAnimationOptions],
+        ];
+        expect(frames).toHaveLength(3);
+        expect(frames[1]).toMatchObject({ offset: 0.5 });
+        expect(zFrames).toEqual([{ zIndex: 4 }, { zIndex: 4 }]);
+      });
+
+      it('undone, it slides out of the stack as any move', async () => {
+        const mine = card('mine', { owner: 1, x: 420, y: 140, parent: 'h1' });
+        const { next } = await renderTable(makeView([host, h1, mine]));
+
+        await next(
+          makeView([host, h1, { ...mine, x: 0, y: 0, parent: undefined }], {
+            log: [START, line('undid “moved Spider-Man”')],
+          }),
+        );
+        await waitFor(() => expect(startedOn('mine')).toHaveLength(1));
+        const [[frames, options]] = startedOn('mine') as [[Keyframe[], KeyframeAnimationOptions]];
+        expect(frames).toHaveLength(2);
+        expect(options.duration).toBe(250);
+      });
+
+      it('slides the cards after a tucked card dragged out of it up to their new spots', async () => {
+        const h2 = card('h2', { owner: 1, x: 420, y: 140, z: 1, parent: 'h1' });
+        const { next, container } = await renderTable(makeView([host, h1, h2]));
+        interaction.land({
+          action: 1,
+          element: { kind: 'card', id: 'h1' },
+          card: 'h1',
+          lifted: ['h1'],
+          handOrder: null,
+        });
+        landGhost(container, 'h1', { x: 100, y: 100 }, sizeOf('h1'));
+
+        await next(
+          makeView([
+            { ...host, z: 6 },
+            { ...h1, x: 100, y: 100, z: 4, parent: undefined },
+            { ...h2, x: 410, y: 120, z: 5, parent: 'host' },
+          ]),
+        );
+        await waitFor(() => expect(animationsOf(placed('h2'))).toHaveLength(1));
+        const [[keyframes]] = animationsOf(placed('h2')) as [
+          [Keyframe[], KeyframeAnimationOptions],
+        ];
+        expect(keyframes[0]).toMatchObject({ translate: '10px 20px' });
+        // The card dragged out already lies where it went.
+        expect(animationsOf(placed('h1'))).toEqual([]);
+      });
+
+      it('with reduced motion, it shows at its spot in the chain at once', async () => {
+        await withReducedMotion(async () => {
+          const mine = card('mine', { owner: 1, x: 0, y: 0 });
+          const { next, container } = await renderTable(makeView([host, h1, mine]));
+          interaction.land({
+            action: 1,
+            element: { kind: 'card', id: 'mine' },
+            card: 'mine',
+            lifted: ['mine'],
+            tucks: true,
+            handOrder: null,
+          });
+          landGhost(container, 'mine', { x: 380, y: 90 }, sizeOf('mine'));
+
+          await next(makeView([host, h1, { ...mine, x: 420, y: 140, parent: 'h1' }]));
+          await settle();
+          expect(animationsOf(placed('mine'))).toEqual([]);
+        });
+      });
+    });
+
     it('a face-up card put on top of a deck flies there, turning face down', async () => {
       const { next, container } = await renderTable(
         makeView([card('c4', { owner: 1, x: 40 })], { piles: [samDeck(30), PILES[1]!] }),

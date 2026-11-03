@@ -41,10 +41,22 @@ type: project
   English wording of those lines (`internal/game/narrate.go` names the
   verbs).
 - The viewer's own drop never animates twice (`OwnDrop`): on the table
-  or in the hand it already lies where it went; onto a pile, each of
-  its cards flies there from where it was let go (its landed ghost).
-  Another player's drop starts from their ghost. Reduced motion keeps
-  only the change glow.
+  or in the hand it already lies where it went; onto a pile, each of its
+  cards flies there from where it was let go (its landed ghost). A drop
+  that tucks into a stack (`OwnDrop.tucks`) lands where it was let go,
+  and each of its cards, a carried chain included, slides from its ghost
+  to the spot the server lays the chain out at (`move` or `enter` marked
+  `dropped`). Another player's drop starts from their ghost. When a
+  tucked card leaves a stack, the cards after it slide to their new
+  spots for every viewer. Every card tucked into a stack (own or another
+  player's drop, played under from a hand or a pile, a carried chain as
+  one block; `tuck` on `move` or `enter`, `tucksOf` in `animate.ts`)
+  slides in under it in two steps: drawn above the stack, it shifts out
+  to half its own size down and to the right of its slot (200 ms, ease-
+  out), then, at its own z-index, slides up into the slot beneath the
+  stack (200 ms, ease-in-out). The raised z-index lives only in the
+  animation. Cards closing a chain's gap, or put back by an undo, slide
+  as any move does. Reduced motion keeps only the change glow.
 - A card turning over (`flip`) or turning in (`turnIn`, a stage card)
   under a pointer at rest keeps its hover: the ring, the preview and the
   keys follow its new face at once, for every viewer. Edge-on, it is out

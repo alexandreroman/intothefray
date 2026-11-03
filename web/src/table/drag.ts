@@ -41,14 +41,6 @@ export function unknownTopId(pile: Pick<PileView, 'kind'>): string {
   return pile.kind === 'encounter' ? ENCOUNTER_TOP_ID : DECK_TOP_ID;
 }
 
-/**
- * How far to the right of and below the card before it in its chain a tucked
- * card lies, in table units. They mirror attachOffsetX and attachOffsetY in
- * internal/game/apply.go.
- */
-export const ATTACH_OFFSET_X = 10;
-export const ATTACH_OFFSET_Y = 20;
-
 /** A drop this close to a pile, in screen pixels, goes onto it. */
 const PILE_MARGIN = 20;
 
@@ -254,7 +246,7 @@ type CardSource = Exclude<DragSource, { kind: 'marker' }>;
 /**
  * A drop on a card tucks the dragged card into that card's stack. The server
  * appends it to the end of the chain and lays the chain out itself, whatever
- * card of the stack it was dropped on: the drop point is not sent (tuckSpot).
+ * card of the stack it was dropped on: the drop point is not sent.
  */
 function onCard(
   drag: CardSource,
@@ -625,29 +617,6 @@ export function tuckHost(
   cards: readonly CardView[],
 ): CardView | undefined {
   return stayingChain(target, moving, cards)?.at(-1);
-}
-
-/**
- * Where a card tucked into the stack of `target` lies, as the server lays the
- * chain out: at the end of the chain (tuckHost), the i-th tucked card
- * i × ATTACH_OFFSET_X to the right of and i × ATTACH_OFFSET_Y below the main
- * card. Null when target is not on the table.
- */
-export function tuckSpot(
-  target: string,
-  moving: readonly string[],
-  cards: readonly CardView[],
-): Point | null {
-  const staying = stayingChain(target, moving, cards);
-  const main = staying?.[0];
-  if (!staying || !main) {
-    return null;
-  }
-  // The main card is one of the cards staying: with n of them, the new card is the n-th tucked.
-  return {
-    x: main.x + staying.length * ATTACH_OFFSET_X,
-    y: main.y + staying.length * ATTACH_OFFSET_Y,
-  };
 }
 
 /**

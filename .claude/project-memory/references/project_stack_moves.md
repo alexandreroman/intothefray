@@ -1,6 +1,6 @@
 ---
 name: "Moving card stacks"
-description: "A stack is a chain; new cards go to its end, aligned; the main card moves the whole stack, a tucked card moves alone"
+description: "A stack is a chain; new cards go to its end, offset down-right; the main card moves the whole stack, a tucked card moves alone"
 type: project
 ---
 
@@ -12,15 +12,17 @@ directly under it.
 
 A card added to a stack (dropped on any card of it) attaches to the last
 card of the chain, whatever card it was dropped on; the drop hint and the
-history line name that last card. A main card carries its whole chain and appends it in
-order; a tucked card appends alone. There is no way to insert a card in the
-middle of a chain.
+history line name that last card. A main card carries its whole chain and
+appends it in order; a tucked card appends alone. There is no way to insert
+a card in the middle of a chain.
 
 Positions are automatic and the drop point is ignored: each tucked card lies
 down and to the right of the previous one, `attachOffsetX` (10) right and
-`attachOffsetY` (20) below, so every card stays readable. The chain takes fresh Zs from
-`NextZ` (unique, positive), the main card on top and each card beneath the
-previous one, which brings the stack to the top of the table as a move does.
+`attachOffsetY` (20) below, so every card stays readable. The client does
+not predict that spot: a drop lands where it was let go and slides to the
+server's layout. The chain takes fresh Zs from `NextZ` (unique, positive),
+the main card on top and each card beneath the previous one, which brings
+the stack to the top of the table as a move does.
 
 Moving the main card moves the whole stack. Moving a tucked card takes it
 alone: the chain closes (the next card attaches to the previous one) and the

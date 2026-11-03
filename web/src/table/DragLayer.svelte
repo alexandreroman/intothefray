@@ -44,7 +44,6 @@
     stackOf,
     tuckHost,
     tucks,
-    tuckSpot,
     type DragSource,
     type DropRect,
     type PileDrop,
@@ -438,16 +437,12 @@
 
   /**
    * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
-   * places it, at the end of the stack it tucks it into. `lifted` are the table cards it takes along.
+   * places it, where it was let go when it tucks it into a stack, whose chain the server lays out:
+   * the next view slides it from there (animate.ts).
    */
-  function landingCorner(
-    from: DragSource,
-    action: Action,
-    at: Point,
-    lifted: readonly string[],
-  ): Point {
+  function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
-    const spot = spotOf(from, action, lifted);
+    const spot = spotOf(from, action);
     if (!surface || !spot) {
       return cornerOf(from, at);
     }
@@ -455,11 +450,13 @@
     return onScreen(spot, surface) ?? cornerOf(from, at);
   }
 
-  /** Where the action places the dragged card on the table, in table units; null when it does not. */
-  function spotOf(from: DragSource, action: Action, lifted: readonly string[]): Point | null {
-    // The drop point aside, the server lays the stack out: the card goes to the end of the chain.
+  /**
+   * Where the action places the dragged card on the table, in table units; null when it does not,
+   * or when it tucks the card into a stack, which the server lays out.
+   */
+  function spotOf(from: DragSource, action: Action): Point | null {
     if (tucks(action)) {
-      return action.target === undefined ? null : tuckSpot(action.target, lifted, cards);
+      return null;
     }
     if (action.kind !== 'group') {
       return action.x === undefined || action.y === undefined ? null : { x: action.x, y: action.y };
@@ -691,7 +688,7 @@
    */
   function land(sent: number, pressed: Held, from: DragSource, action: Action, at: Point): void {
     const reorder = action.kind === 'handOrder';
-    const corner = landingCorner(from, action, at, pressed.lifted);
+    const corner = landingCorner(from, action, at);
     landed = {
       action: sent,
       ghosts: reorder ? [] : ghostsAt(from, corner, pressed.lifted),
@@ -704,6 +701,7 @@
       element: pressed.element,
       card: pressed.card,
       lifted: reorder ? [] : pressed.lifted,
+      tucks: tucks(action),
       handOrder: reorder ? (action.cards ?? null) : null,
     });
   }

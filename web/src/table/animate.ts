@@ -43,8 +43,12 @@ interface Spot {
 }
 
 export type Anim =
-  /** Moved on the table or between it and a hand; was is the id it had before, when it got a new one (freshIdOf). */
-  | { kind: 'move'; id: string; from: Spot; to: Spot; was?: string }
+  /**
+   * Moved on the table or between it and a hand; was is the id it had before, when it got a new one
+   * (freshIdOf). The viewer's own drop tucked into a stack (dropped) slides from where it was let go.
+   * A card tucked into a stack (tuck) slides in under it.
+   */
+  | { kind: 'move'; id: string; from: Spot; to: Spot; was?: string; dropped?: true; tuck?: Tuck }
   | { kind: 'glow'; id: string; color: number }
   /** Exhausted or readied on the table: it tilts to its new angle. */
   | { kind: 'tilt'; id: string; exhausted: boolean }
@@ -71,8 +75,11 @@ export type Anim =
       turns?: Turn;
       dropped?: true;
     }
-  /** Come onto the table out of a pile. */
-  | { kind: 'enter'; id: string; fromPile: string }
+  /**
+   * Come onto the table out of a pile. The viewer's own drop tucked into a stack (dropped) slides
+   * from where it was let go. A card tucked into a stack (tuck) slides in under it.
+   */
+  | { kind: 'enter'; id: string; fromPile: string; dropped?: true; tuck?: Tuck }
   /** Taken from the table into a hand the viewer does not see. */
   | { kind: 'away'; id: string }
   /** Put on a pile out of a hand the viewer does not see: the card when the pile shows it. */
@@ -98,13 +105,22 @@ export type Anim =
  */
 export type Turn = 'up' | 'down';
 
+/**
+ * A card tucked into a stack (tucksOf), which lies beneath the whole stack: it shifts out past its
+ * spot drawn at z, above every card of the stack, then slides in under the stack.
+ */
+export interface Tuck {
+  z: number;
+}
+
 type Fly = Extract<Anim, { kind: 'fly' }>;
 
 /**
  * The viewer's own drop waiting for the view that shows it (interaction.landing):
- * the card it moved, and every table or hand card that moved with it (a group's).
+ * the card it moved, every table or hand card that moved with it (a group's),
+ * and whether it tucked them into a stack.
  */
-export type OwnDrop = Pick<Landing, 'element' | 'card' | 'lifted'>;
+export type OwnDrop = Pick<Landing, 'element' | 'card' | 'lifted' | 'tucks'>;
 
 /**
  * Views further apart than this are not animated: after a reconnection, the
@@ -126,7 +142,9 @@ const UNDID = 'undid ';
  * The animations that take the table from prev to next. ownDrop is what the
  * viewer has just dropped, a card with its stack, and the other cards of a
  * group with it: on the table or in the hand, it already lies where it went;
- * onto a pile, each of its cards flies there from where it was let go.
+ * onto a pile, each of its cards flies there from where it was let go. Tucked
+ * into a stack, it was let go anywhere over it: each of its cards slides from
+ * there to its spot in the chain, which the server lays out.
  */
 export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   const after = next.table;
@@ -148,6 +166,7 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   if (fresh && dropped.has(fresh.was)) {
     dropped.add(fresh.id);
   }
+  const tucked = ownDrop?.tucks === true;
   const previous = new Map(before.cards.map((card) => [card.id, card]));
   const lines = changedLines(prev.log, next.log);
   // The glow takes the colour of whoever wrote the latest line; without a new line, nothing glows.
@@ -174,10 +193,20 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
     if (isTilted(was, card)) {
       anims.push({ kind: 'tilt', id: card.id, exhausted: !!card.exhausted });
     }
-    // The viewer's own drop already lies where it went on the table or in the hand.
+    // The viewer's own drop already lies where it went on the table or in the hand, unless it went
+    // into a stack: it slides to its spot in the chain from where it was let go, moved or not. Out
+    // of a pile, it enters from there (departures).
     if (dropped.has(card.id)) {
       if (travel?.kind === 'fly') {
         anims.push({ ...travel, dropped: true });
+      } else if (tucked && isPlaced(was) && card.zone === 'table') {
+        anims.push({
+          kind: 'move',
+          id: card.id,
+          from: spotOf(was),
+          to: spotOf(card),
+          dropped: true,
+        });
       }
       continue;
     }
@@ -200,8 +229,9 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
     }
   }
   const unslid = new Set(unders.map((under) => under.id));
-  anims.push(...departures(before, after, dropped, unslid, draggedPile, tally));
-  anims.push(...arrivals(before, after, dropped, draggedPile, shrunk, tally));
+  const own: OwnCards = { dropped, draggedPile, tucked };
+  anims.push(...departures(before, after, own, unslid, tally));
+  anims.push(...arrivals(before, after, own, shrunk, tally));
   anims.push(...unseenArrivals(after, tally));
   for (const draw of drawsOf(before, after, shrunk, ownSeats(next))) {
     if (!dropped.has(draw.id) && draw.fromPile !== draggedPile) {
@@ -232,7 +262,88 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
       anims.push({ kind: 'marker', name, from: was, to: now });
     }
   }
+  const tucks = tucksOf(before, after, lines, tucked ? (droppedCard ?? null) : null);
+  for (const anim of anims) {
+    if (anim.kind !== 'move' && anim.kind !== 'enter') {
+      continue;
+    }
+    const tuck = tucks.get(anim.id);
+    if (tuck) {
+      anim.tuck = tuck;
+    }
+  }
   return inPileOrder(anims, after);
+}
+
+/**
+ * The cards tucked into a stack from before to after, each with how it slides in under the stack
+ * (Tuck): a card come onto the table into a stack, or attached to a card it did not lie under
+ * before (one of another stack, or one after it in its own chain), and the cards it carries along,
+ * still under the same card. A card attached higher up its own chain only closes the gap a card
+ * leaving it left: it slides as any move does, and so does every card an undo puts back. ownTuck
+ * is the card the viewer has just tucked into a stack: tucked, even when it keeps its spot (already
+ * the end of its own chain).
+ */
+function tucksOf(
+  before: TableView,
+  after: TableView,
+  lines: LogView[],
+  ownTuck: string | null,
+): Map<string, Tuck> {
+  const tucks = new Map<string, Tuck>();
+  if (onlyUndoes(lines)) {
+    return tucks;
+  }
+  const previous = new Map(
+    before.cards.filter((card) => card.zone === 'table').map((card) => [card.id, card]),
+  );
+  const current = new Map(after.cards.map((card) => [card.id, card]));
+  for (const main of after.cards) {
+    if (main.zone !== 'table' || main.parent !== undefined) {
+      continue;
+    }
+    const chain = stackOf(main.id, after.cards);
+    chain.forEach((id, i) => {
+      const host = current.get(id)?.parent;
+      if (host === undefined) {
+        return;
+      }
+      const was = previous.get(id);
+      const tucked =
+        id === ownTuck ||
+        (was?.parent === host ? tucks.has(host) : !liesBelow(was, host, previous));
+      if (tucked) {
+        // Above the main card, on top of the stack, a block of cards in the order of their chain.
+        tucks.set(id, { z: main.z + chain.length - i });
+      }
+    });
+  }
+  return tucks;
+}
+
+/** Whether the card lay below host in its chain, as the table was: false when it was not on it. */
+function liesBelow(
+  card: CardView | undefined,
+  host: string,
+  table: ReadonlyMap<string, CardView>,
+): boolean {
+  const seen = new Set<string>();
+  let above = card?.parent;
+  // The seen set guards against a parent loop in a broken view.
+  while (above !== undefined && !seen.has(above)) {
+    if (above === host) {
+      return true;
+    }
+    seen.add(above);
+    above = table.get(above)?.parent;
+  }
+  return false;
+}
+
+/** Whether the new lines only undo earlier ones: the cards go back where they were. */
+function onlyUndoes(lines: LogView[]): boolean {
+  const done = lines.filter((line) => !line.undone);
+  return done.length > 0 && done.every((line) => line.text.startsWith(UNDID));
 }
 
 /**
@@ -639,6 +750,16 @@ function listedCards(table: TableView): Listed[] {
 /** A card that left a pile or the view: it entered the table, flew to a pile, or went into a hand. */
 type Departure = Extract<Anim, { kind: 'enter' | 'fly' | 'away' }>;
 
+/** The viewer's own drop, as the cards leaving and coming into piles see it. */
+interface OwnCards {
+  /** The table and hand cards it moved. */
+  dropped: Set<string>;
+  /** The pile whose top card it dragged, null when it dragged none. */
+  draggedPile: string | null;
+  /** Whether it tucked them into a stack (OwnDrop). */
+  tucked: boolean;
+}
+
 /**
  * The cards that left a pile, and those gone from the view: out of the table
  * or the hand, out of a pile that showed them, or out of the viewer's look
@@ -646,14 +767,14 @@ type Departure = Extract<Anim, { kind: 'enter' | 'fly' | 'away' }>;
  * that another pile lists flies there from it. Placed cards first, then each
  * pile's cards top first, so that the top ones fly when a pile gives many
  * (MAX_PILE_FLIGHTS); they land in the order they lie on the pile they go to
- * (inPileOrder).
+ * (inPileOrder). The viewer's own drop out of a pile tucked into a stack
+ * enters from where it was let go.
  */
 function departures(
   before: TableView,
   after: TableView,
-  dropped: Set<string>,
+  { dropped, draggedPile, tucked }: OwnCards,
   unslid: Set<string>,
-  draggedPile: string | null,
   tally: Tally,
 ): Anim[] {
   const previous = new Map(before.cards.map((card) => [card.id, card]));
@@ -662,7 +783,7 @@ function departures(
   // A pile's drag carries its top card only.
   const draggedTop = listedCards(before).find((listed) => listed.pile === draggedPile)?.id;
   // The viewer's own drop, or the top of a pile they dragged, already lies where it went, unless it went
-  // to a pile: it flies there from where it was let go.
+  // to a pile or into a stack: it flies or slides there from where it was let go.
   const keep = (anim: Departure | null) => {
     if (!anim) {
       return;
@@ -671,7 +792,7 @@ function departures(
     const own = dropped.has(anim.id) || (from === draggedPile && anim.id === draggedTop);
     if (!own) {
       anims.push(anim);
-    } else if (anim.kind === 'fly') {
+    } else if (anim.kind === 'fly' || (anim.kind === 'enter' && tucked)) {
       anims.push({ ...anim, dropped: true });
     }
   };
@@ -762,13 +883,12 @@ function originOf(card: CardView, shrunk: PileView[], tally: Tally): Origin | nu
  * first (inPileOrder), and one out of a hand rises into it. A card drawn into
  * the viewer's hand is a draw (drawsOf). The viewer's own drop of a deck's
  * hidden top card on a pile that shows it flies there from where it was let
- * go, on its back.
+ * go, on its back; tucked into a stack, it enters from where it was let go.
  */
 function arrivals(
   before: TableView,
   after: TableView,
-  dropped: Set<string>,
-  draggedPile: string | null,
+  { dropped, draggedPile, tucked }: OwnCards,
   shrunk: PileView[],
   tally: Tally,
 ): Anim[] {
@@ -788,6 +908,8 @@ function arrivals(
     }
     if ('pile' in origin && !isOwnDrop(card.id, origin)) {
       anims.push({ kind: 'enter', id: card.id, fromPile: origin.pile });
+    } else if ('pile' in origin && tucked) {
+      anims.push({ kind: 'enter', id: card.id, fromPile: origin.pile, dropped: true });
     }
     if (!isHidden(card)) {
       anims.push({ kind: 'flip', id: card.id });

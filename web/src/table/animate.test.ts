@@ -870,6 +870,256 @@ describe('diffViews', () => {
     ]);
   });
 
+  describe('a stack, a chain laid out by the server', () => {
+    // "host" with o1 tucked under it, 10 to the right of and 20 below it; "mine" apart.
+    const host = card('host', { x: 400, y: 300, z: 3 });
+    const o1 = card('o1', { x: 410, y: 320, z: 2, parent: 'host' });
+    const mine = card('mine', { x: 0, y: 300 });
+    /** The viewer's drop of a table card into a stack, with the cards it carries. */
+    const tucking = (id: string, lifted = [id]): OwnDrop => ({
+      element: { kind: 'card', id },
+      card: id,
+      lifted,
+      tucks: true,
+    });
+    const spot = (x: number, y: number) => ({ zone: 'table' as const, x, y });
+
+    it("the viewer's own card tucked into it slides from where it was let go to the end of the chain", () => {
+      const prev = view({ cards: [host, o1, mine] });
+      const next = view({
+        cards: [
+          { ...host, z: 6 },
+          { ...o1, z: 5 },
+          { ...mine, x: 420, y: 340, z: 4, parent: 'o1' },
+        ],
+      });
+
+      // It slides in under the stack, drawn above host (z 6) first: tuck.
+      const tuck = { z: 7 };
+      expect(diffViews(prev, next, tucking('mine'))).toEqual([
+        { kind: 'move', id: 'mine', from: spot(0, 300), to: spot(420, 340), dropped: true, tuck },
+      ]);
+      // Another player's slides from their ghost (motion.svelte.ts), as any move.
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'move', id: 'mine', from: spot(0, 300), to: spot(420, 340), tuck },
+      ]);
+      // Undone, it slides back.
+      expect(diffViews(next, prev)).toEqual([
+        { kind: 'move', id: 'mine', from: spot(420, 340), to: spot(0, 300) },
+      ]);
+    });
+
+    it("the viewer's own main card slides into it with the whole chain it carries", () => {
+      const m1 = card('m1', { x: 10, y: 320, parent: 'mine' });
+      const prev = view({ cards: [host, o1, mine, m1] });
+      const next = view({
+        cards: [host, o1, { ...mine, x: 420, y: 340, parent: 'o1' }, { ...m1, x: 430, y: 360 }],
+      });
+
+      // As one block above host (z 3), mine above m1, then in under the stack.
+      expect(diffViews(prev, next, tucking('mine', ['mine', 'm1']))).toEqual([
+        {
+          kind: 'move',
+          id: 'mine',
+          from: spot(0, 300),
+          to: spot(420, 340),
+          dropped: true,
+          tuck: { z: 5 },
+        },
+        {
+          kind: 'move',
+          id: 'm1',
+          from: spot(10, 320),
+          to: spot(430, 360),
+          dropped: true,
+          tuck: { z: 4 },
+        },
+      ]);
+      // Another player's moves the same way.
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'move', id: 'mine', from: spot(0, 300), to: spot(420, 340), tuck: { z: 5 } },
+        { kind: 'move', id: 'm1', from: spot(10, 320), to: spot(430, 360), tuck: { z: 4 } },
+      ]);
+    });
+
+    it("the viewer's own tucked card dropped back on its stack slides back from where it was let go", () => {
+      // Already the end of the chain, it keeps its spot: its ghost lies elsewhere.
+      const prev = view({ cards: [host, o1] });
+      const next = view({
+        cards: [
+          { ...host, z: 6 },
+          { ...o1, z: 5 },
+        ],
+      });
+
+      expect(diffViews(prev, next, tucking('o1'))).toEqual([
+        {
+          kind: 'move',
+          id: 'o1',
+          from: spot(410, 320),
+          to: spot(410, 320),
+          dropped: true,
+          tuck: { z: 7 },
+        },
+      ]);
+    });
+
+    it("the viewer's own hand card played under it slides from where it was let go", () => {
+      const prev = view({ cards: [host, card('h', { zone: 'hand' })], hands: { p0: ['h'] } });
+      const next = view({
+        cards: [host, card('h', { x: 410, y: 320, parent: 'host' })],
+        hands: { p0: [] },
+      });
+      const handDrop: OwnDrop = {
+        element: { kind: 'hand', id: 'h' },
+        card: 'h',
+        lifted: ['h'],
+        tucks: true,
+      };
+
+      expect(diffViews(prev, next, handDrop)).toEqual([
+        {
+          kind: 'move',
+          id: 'h',
+          from: { zone: 'hand', x: 0, y: 0 },
+          to: spot(410, 320),
+          dropped: true,
+          tuck: { z: 4 },
+        },
+      ]);
+    });
+
+    it("the viewer's own discard pile top played under it enters from where it was let go", () => {
+      const discardOf = (cards: string[]) =>
+        seatPile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards });
+      const prev = view({
+        cards: [host, card('c9', { zone: 'pile' })],
+        piles: [seatPile('deck:p0'), discardOf(['c9'])],
+      });
+      const next = view({
+        cards: [host, card('c9', { x: 410, y: 320, parent: 'host' })],
+        piles: [seatPile('deck:p0'), discardOf([])],
+      });
+      const drag: OwnDrop = {
+        element: { kind: 'pile', id: 'disc:p0' },
+        card: 'c9',
+        lifted: [],
+        tucks: true,
+      };
+
+      expect(diffViews(prev, next, drag)).toEqual([
+        { kind: 'enter', id: 'c9', fromPile: 'disc:p0', dropped: true, tuck: { z: 4 } },
+      ]);
+      // Not tucked, it already lies where it went.
+      expect(diffViews(prev, next, { ...drag, tucks: false })).toEqual([]);
+    });
+
+    describe('closing behind a tucked card that leaves it', () => {
+      // host, then t1, t2 and t3, each 10 to the right of and 20 below the card before.
+      const chain = [
+        card('host', { x: 400, y: 300, z: 4 }),
+        card('t1', { x: 410, y: 320, z: 3, parent: 'host' }),
+        card('t2', { x: 420, y: 340, z: 2, parent: 't1' }),
+        card('t3', { x: 430, y: 360, z: 1, parent: 't2' }),
+      ];
+      // t1 gone, the chain closes, with fresh Zs that bring it to the top of the table.
+      const closed = [
+        card('host', { x: 400, y: 300, z: 9 }),
+        card('t2', { x: 410, y: 320, z: 8, parent: 'host' }),
+        card('t3', { x: 420, y: 340, z: 7, parent: 't2' }),
+      ];
+      const closing = [
+        { kind: 'move', id: 't2', from: spot(420, 340), to: spot(410, 320) },
+        { kind: 'move', id: 't3', from: spot(430, 360), to: spot(420, 340) },
+      ];
+
+      it('slides the cards after it up, for the viewer who dragged it out onto the table', () => {
+        const prev = view({ cards: chain });
+        const next = view({ cards: [...closed, card('t1', { x: 100, y: 100 })] });
+
+        expect(diffViews(prev, next, droppedCard('t1'))).toEqual(closing);
+        // Another player's drag slides it from their ghost too.
+        expect(diffViews(prev, next)).toEqual([
+          ...closing,
+          { kind: 'move', id: 't1', from: spot(410, 320), to: spot(100, 100) },
+        ]);
+      });
+
+      it('slides the cards after it up, as the viewer tucks it into another stack', () => {
+        const other = card('other', { x: 0, y: 300 });
+        const prev = view({ cards: [...chain, other] });
+        const next = view({
+          cards: [...closed, other, card('t1', { x: 10, y: 320, parent: 'other' })],
+        });
+
+        // The cards closing the gap slide as any move does; t1 slides in under other.
+        expect(diffViews(prev, next, tucking('t1'))).toEqual([
+          ...closing,
+          {
+            kind: 'move',
+            id: 't1',
+            from: spot(410, 320),
+            to: spot(10, 320),
+            dropped: true,
+            tuck: { z: 2 },
+          },
+        ]);
+      });
+
+      it("slides the cards after it up as it leaves the table, the viewer's own drop or not", () => {
+        const piles = (cards: string[]) => [
+          seatPile('deck:p0'),
+          seatPile('disc:p0', { kind: 'discard', x: 720, count: cards.length, cards }),
+        ];
+        const prev = view({ cards: chain, piles: piles([]) });
+        const next = view({
+          cards: [...closed, card('t1', { zone: 'pile' })],
+          piles: piles(['t1']),
+        });
+
+        expect(diffViews(prev, next, droppedCard('t1'))).toEqual([
+          ...closing,
+          { kind: 'fly', id: 't1', toPile: 'disc:p0', dropped: true },
+        ]);
+        expect(diffViews(prev, next)).toEqual([
+          ...closing,
+          { kind: 'fly', id: 't1', toPile: 'disc:p0' },
+        ]);
+      });
+
+      it('slides the cards after it up as it goes to the end of its own chain, in under it', () => {
+        const prev = view({ cards: chain });
+        const next = view({
+          cards: [...closed, card('t1', { x: 430, y: 360, z: 6, parent: 't3' })],
+        });
+        // Drawn above host (z 9) as it shifts out.
+        const tucked = { kind: 'move', id: 't1', from: spot(410, 320), to: spot(430, 360) };
+
+        expect(diffViews(prev, next, tucking('t1'))).toEqual([
+          ...closing,
+          { ...tucked, dropped: true, tuck: { z: 10 } },
+        ]);
+        expect(diffViews(prev, next)).toEqual([...closing, { ...tucked, tuck: { z: 10 } }]);
+      });
+
+      it('slides them back down as it is undone, t1 back into its slot as any move', () => {
+        const alex = { who: 'Alex', color: 0 };
+        const moved = line('moved Web-Shooter', alex);
+        const prev = view({ cards: [...closed, card('t1', { x: 100, y: 100 })], log: [moved] });
+        const next = view({
+          cards: chain,
+          log: [{ ...moved, undone: true }, line('undid “moved Web-Shooter”', alex)],
+        });
+
+        expect(diffViews(prev, next)).toEqual([
+          { kind: 'move', id: 't1', from: spot(100, 100), to: spot(410, 320) },
+          { kind: 'move', id: 't2', from: spot(410, 320), to: spot(420, 340) },
+          { kind: 'move', id: 't3', from: spot(420, 340), to: spot(430, 360) },
+        ]);
+      });
+    });
+  });
+
   describe('a group discarded at once', () => {
     // The view lists its cards by id: a lies above b on the table and lands on top of the pile.
     const prev = view({ cards: [card('a', { x: 40, z: 2 }), card('b', { x: 200, z: 1 })] });
@@ -1454,13 +1704,26 @@ describe('diffViews', () => {
         piles: [deck(10), weapons(3)],
       });
 
+      // Tucked under v1 (z 1), it slides in under it.
       expect(diffViews(prev, next)).toEqual([
-        { kind: 'enter', id: 'w', fromPile: 'sdeck:x' },
+        { kind: 'enter', id: 'w', fromPile: 'sdeck:x', tuck: { z: 2 } },
         { kind: 'flip', id: 'w' },
       ]);
-      // The viewer's own drop already lies there: it only turns over.
-      const ownDrop: OwnDrop = { element: { kind: 'pile', id: 'sdeck:x' }, card: null, lifted: [] };
-      expect(diffViews(prev, next, ownDrop)).toEqual([{ kind: 'flip', id: 'w' }]);
+      // The viewer's own drop, tucked under v1, enters from where it was let go, turning over.
+      const ownDrop: OwnDrop = {
+        element: { kind: 'pile', id: 'sdeck:x' },
+        card: null,
+        lifted: [],
+        tucks: true,
+      };
+      expect(diffViews(prev, next, ownDrop)).toEqual([
+        { kind: 'enter', id: 'w', fromPile: 'sdeck:x', dropped: true, tuck: { z: 2 } },
+        { kind: 'flip', id: 'w' },
+      ]);
+      // Not tucked, it already lies there: it only turns over.
+      expect(diffViews(prev, next, { ...ownDrop, tucks: false })).toEqual([
+        { kind: 'flip', id: 'w' },
+      ]);
     });
 
     it('no more cards fly into a deck than it grew by', () => {

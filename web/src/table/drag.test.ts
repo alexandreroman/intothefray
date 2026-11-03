@@ -11,9 +11,6 @@ import {
   sourceOf,
   stackOf,
   tuckHost,
-  tuckSpot,
-  ATTACH_OFFSET_X,
-  ATTACH_OFFSET_Y,
   type DragSource,
   type DropRect,
 } from './drag';
@@ -605,39 +602,6 @@ describe('stackOf', () => {
 
   it('is a card tucked under none alone when nothing is tucked under it', () => {
     expect(stackOf('solo', [card('solo')])).toEqual(['solo']);
-  });
-});
-
-describe('tuckSpot', () => {
-  // A chain laid out by the server: each card 10 to the right of and 20 below the one before.
-  const chain = [
-    card('r', { x: 400, y: 300 }),
-    card('c1', { x: 410, y: 320, parent: 'r' }),
-    card('c2', { x: 420, y: 340, parent: 'c1' }),
-    card('free', { x: 100, y: 100 }),
-  ];
-
-  it('is the end of the chain, down and to the right of its last card, whatever card of it is the target', () => {
-    for (const target of ['r', 'c1', 'c2']) {
-      expect(tuckSpot(target, ['free'], chain), target).toEqual({ x: 430, y: 360 });
-    }
-  });
-
-  it('is under the main card alone when nothing is tucked under it', () => {
-    expect(tuckSpot('free', ['h1'], chain)).toEqual({
-      x: 100 + ATTACH_OFFSET_X,
-      y: 100 + ATTACH_OFFSET_Y,
-    });
-  });
-
-  it('leaves out a tucked card dropped on its own stack: it goes to the end of the chain', () => {
-    expect(tuckSpot('r', ['c1'], chain)).toEqual({ x: 420, y: 340 });
-    expect(tuckSpot('c2', ['c1'], chain)).toEqual({ x: 420, y: 340 });
-  });
-
-  it('is null for a target off the table', () => {
-    expect(tuckSpot('gone', [], [...chain, card('gone', { zone: 'pile' })])).toBeNull();
-    expect(tuckSpot('missing', [], chain)).toBeNull();
   });
 });
 

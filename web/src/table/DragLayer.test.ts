@@ -473,7 +473,7 @@ describe('dragging a table card', () => {
   const corners = () =>
     ghosts().map((g) => [g.dataset.id, parseFloat(g.style.left), parseFloat(g.style.top)]);
 
-  it('lands at the end of the chain of the stack it is dropped on, until the server answers', async () => {
+  it('lands where it was let go over the stack, until the server answers', async () => {
     const { session } = await renderTable(chainView());
     await press(placed('mine'), 50, 400);
     // Over o2, the last card of the chain, which lies at 440, 380 on the screen.
@@ -485,8 +485,39 @@ describe('dragging a table card', () => {
       { kind: 'attach', card: 'mine', target: 'o2' },
       0,
     );
-    // 10 to the right of and 20 below o2: 430, 360 on the table.
-    expect(corners()).toEqual([['mine', 450, 400]]);
+    // Held 30, 60 from its corner, off the grid: the next view slides it to the end of the chain.
+    expect(corners()).toEqual([['mine', 440, 460]]);
+    expect(interaction.landing).toMatchObject({ card: 'mine', lifted: ['mine'], tucks: true });
+  });
+
+  it('lands with the chain it carries where it was let go over another stack', async () => {
+    const stack = [
+      ...chainView().table!.cards,
+      card('m1', { x: 10, y: 320, z: 9, parent: 'mine' }),
+    ];
+    const { session } = await renderTable(makeView({ cards: stack }));
+    await press(placed('mine'), 50, 400);
+    await moveTo(470, 520);
+
+    await release(470, 520);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'attach', card: 'mine', target: 'o2' },
+      0,
+    );
+    // The card it carries keeps its offset from it as drawn.
+    expect(corners()).toEqual([
+      ['mine', 440, 460],
+      ['m1', 450, 480],
+    ]);
+    expect(interaction.landing).toMatchObject({ lifted: ['mine', 'm1'], tucks: true });
+  });
+
+  it('tucks nothing when dropped on the table', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400);
+    await moveTo(254, 452);
+    await release(254, 452);
+    expect(interaction.landing?.tucks).toBe(false);
   });
 
   it('moves a tucked card alone, and takes its drop on its own stack', async () => {
@@ -505,8 +536,8 @@ describe('dragging a table card', () => {
       { kind: 'attach', card: 'o1', target: 'other' },
       0,
     );
-    // To the end of the chain, which closes behind it: under o2, once o2 has moved up to 410, 320.
-    expect(corners()).toEqual([['o1', 440, 380]]);
+    // Where it was let go: the next view slides it to the end of the chain, which closes behind it.
+    expect(corners()).toEqual([['o1', 430, 270]]);
   });
 
   it('offers no card of its own chain to a main card: dropped there, it moves', async () => {
