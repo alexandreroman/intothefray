@@ -20,6 +20,14 @@ const SOURCE = `<!doctype html>
 </html>
 `;
 
+describe('the page metadata', () => {
+  it('says the project is unofficial in every preview', () => {
+    for (const page of Object.values(PREVIEWS)) {
+      expect(page.description).toContain('An unofficial fan project.');
+    }
+  });
+});
+
 describe('renderPage', () => {
   it('gives the home page its title, description, canonical URL and share preview', () => {
     const html = renderPage(SOURCE, 'home', SITE);

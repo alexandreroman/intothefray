@@ -66,7 +66,7 @@ make app-down     # stop and remove the containerised stack
 | `WEB_PORT`        | Local web port (Caddy)     | `8080`                     |
 | `REDIS_PORT`      | Local Redis host port      | `6379`                     |
 | `VITE_API_URL`    | API origin, web build only | same origin                |
-| `APP_INSTANCE`    | Tab title suffix, web only | empty                      |
+| `APP_INSTANCE`    | Instance name in tab title | empty                      |
 | `SITE_URL`        | Site URL, web build only   | `https://intothefray.xyz`  |
 
 `ALLOWED_ORIGINS` is a comma-separated list of `scheme://host[:port]`

@@ -27,7 +27,8 @@ http://:8080 {
 	# The entry point and any other root path: always revalidated. As on
 	# GitHub Pages, a directory gets its index.html (/g/?id=<id> is the game
 	# page, g/index.html) and app routes with no file, such as /about, get
-	# index.html (Pages answers 404.html, a copy of it).
+	# index.html (Pages answers 404.html: the home page, its preview
+	# without a canonical URL).
 	route @spa {
 		header Cache-Control "no-cache"
 		try_files {path} {path}/index.html /index.html

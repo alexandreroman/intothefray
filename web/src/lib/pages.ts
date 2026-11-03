@@ -61,7 +61,7 @@ export const PREVIEWS: Record<PreviewPageName, Preview> = {
     ogTitle: `Join an ${APP_NAME} game`,
     description:
       `You're invited to a game of Marvel Champions on ${APP_NAME}. ` +
-      'Open the link, take a seat, deal the cards.',
+      'Open the link, take a seat, deal the cards. An unofficial fan project.',
     path: null,
     image: 'og/invite.png',
     imageAlt: `${APP_NAME}: you're invited to a game of Marvel Champions.`,
