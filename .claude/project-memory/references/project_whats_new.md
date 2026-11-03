@@ -14,9 +14,11 @@ type: project
   slim banner above the buttons ("New: title", "See what's new",
   dismiss). Dismissing the banner keeps the dot; opening the dialog
   clears both. The dialog tags the entries unread at opening as "New".
-- On a phone (≤640px), Options, About and What's new are all icon-only
-  squares with tooltips, grouped so they wrap together on a row under
-  Start; their labels stay as visually hidden accessible names.
+- Options and About turn into icon-only squares with tooltips whenever
+  their row lacks the room for the labelled buttons: a container query on
+  `.start`, not a viewport breakpoint. Their labels stay as visually
+  hidden accessible names. The three secondary buttons form one group:
+  on a phone it wraps whole under Start. Labelled buttons never wrap.
 - No unread count shows anywhere, in the dot or in the button's
   accessible name.
 - Entries are hand-written in `web/src/lib/news.ts`, newest first, with
