@@ -9,9 +9,7 @@ export type AppPath = `/${string}`;
 const BASE = import.meta.env.BASE_URL;
 
 // A game lives at '/g/?id=<id>': the query keeps a single page, g/index.html, which static hosting
-// serves with a 200 and its own share preview. The older '/g/<id>' form still parses.
-const LEGACY_GAME_PATH = /^g\/([^/]+)$/;
-
+// serves with a 200 and its own share preview.
 /** The app path of a game: '/g/?id=<id>'. */
 export function gamePath(id: string): AppPath {
   return `/g/?id=${encodeURIComponent(id)}`;
@@ -44,14 +42,6 @@ function parse(pathname: string, search: string): Route | null {
   if (path === 'g') {
     const id = new URLSearchParams(search).get('id');
     return id ? { name: 'game', id } : null;
-  }
-  const legacyGame = LEGACY_GAME_PATH.exec(path);
-  if (legacyGame?.[1]) {
-    try {
-      return { name: 'game', id: decodeURIComponent(legacyGame[1]) };
-    } catch {
-      // Malformed percent-escape in the path: treat it as unknown.
-    }
   }
   return null;
 }

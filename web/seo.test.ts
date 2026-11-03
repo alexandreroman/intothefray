@@ -93,7 +93,7 @@ describe('renderPage', () => {
     expect(html).toContain(
       '<meta property="og:image" content="https://example.test/og/home.png" />',
     );
-    // A shared /about or legacy /g/<id> link must not turn into a link to the home page.
+    // A shared /about or /options link must not turn into a link to the home page.
     expect(html).not.toContain('rel="canonical"');
     expect(html).not.toContain('og:url');
     expect(html).not.toContain('name="robots"');

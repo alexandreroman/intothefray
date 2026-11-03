@@ -54,8 +54,8 @@ describe('router', () => {
     expect(route.current).toEqual({ name: 'game', id: 'a b' });
   });
 
-  it('rewrites a legacy /g/<id> URL to /g/?id=<id>, keeping the hash', () => {
-    navigate('/g/abc#chat');
+  it('keeps the hash of a game URL', () => {
+    navigate('/g/?id=abc#chat');
     expect(route.current).toEqual({ name: 'game', id: 'abc' });
     expect(window.location.pathname + window.location.search + window.location.hash).toBe(
       '/g/?id=abc#chat',
@@ -85,10 +85,6 @@ describe('router', () => {
     navigate('/about/');
     expect(route.current).toEqual({ name: 'about' });
     expect(window.location.pathname).toBe('/about');
-
-    navigate('/g/abc/');
-    expect(route.current).toEqual({ name: 'game', id: 'abc' });
-    expect(window.location.pathname + window.location.search).toBe('/g/?id=abc');
   });
 
   it('falls back to home on an unknown path and replaces the URL', () => {
@@ -107,8 +103,9 @@ describe('router', () => {
     }
   });
 
-  it('falls back to home on a malformed escape', () => {
-    navigate('/g/%E0%A4%A');
+  it('falls back to home on a game id in the path', () => {
+    navigate('/options');
+    navigate('/g/abc');
     expect(route.current).toEqual({ name: 'home' });
     expect(window.location.pathname).toBe('/');
   });

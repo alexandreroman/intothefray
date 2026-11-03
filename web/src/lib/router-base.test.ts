@@ -27,12 +27,10 @@ describe('router under a base path', () => {
     expect(route.current).toEqual({ name: 'game', id: 'abc' });
   });
 
-  it('rewrites a legacy game URL under the base, keeping the hash', () => {
-    navigate('/intothefray/g/abc#chat');
-    expect(route.current).toEqual({ name: 'game', id: 'abc' });
-    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
-      '/intothefray/g/?id=abc#chat',
-    );
+  it('sends a game id in the path home', () => {
+    navigate('/intothefray/g/abc');
+    expect(route.current).toEqual({ name: 'home' });
+    expect(window.location.pathname).toBe('/intothefray/');
   });
 
   it('sends a game URL without an id home', () => {
