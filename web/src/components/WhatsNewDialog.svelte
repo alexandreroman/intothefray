@@ -55,7 +55,7 @@
 </Dialog>
 
 <style>
-  /* The Home button's megaphone before the title, in the main action's red. */
+  /* The Home button's megaphone before the title, in the same colour: the text's. */
   .head {
     display: flex;
     align-items: center;
@@ -67,7 +67,7 @@
   .head :global(svg) {
     width: 20px;
     height: 20px;
-    color: var(--accent);
+    color: var(--text);
   }
 
   .head b {
