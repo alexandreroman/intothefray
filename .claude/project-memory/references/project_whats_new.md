@@ -16,9 +16,16 @@ type: project
   small type (13px). The banner spans exactly the button row, its right
   edge on the What's new button's; its title wraps rather than widening
   it. Dismissing the banner keeps the dot; opening the dialog clears
-  both. The dialog's title carries the
-  same megaphone in the same colour as the button's (`--text`), and it
-  tags the entries unread at opening as "New".
+  both. The dialog's title carries the same megaphone in the same colour
+  as the button's (`--text`), and it tags the entries unread at opening
+  as "New".
+- The banner leaves with a 220 ms slide and fade, on dismiss and when the
+  news opens; it goes at once under reduced motion.
+- Each entry carries a small thumbnail beside its text, centred
+  vertically: 112×84 CSS px (72×54 when the list is 420px wide or less).
+  The file is `web/src/assets/news/<entry-id>.webp`, 224×168 px, WebP,
+  imported in `news.ts`, with an alt text. It is a real capture of the
+  app, cropped tight on one telling detail legible at that size.
 - Options and About turn into icon-only squares with tooltips whenever
   their row lacks the room for the labelled buttons: a container query on
   `.start`, not a viewport breakpoint. Their labels stay as visually
