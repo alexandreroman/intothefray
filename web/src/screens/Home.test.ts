@@ -177,6 +177,35 @@ describe('Home', () => {
       expect(screen.queryByRole('dialog')).toBeNull();
     });
 
+    it("gives the focus to the What's new button once the banner is dismissed from the keyboard", async () => {
+      withUnreadNews();
+      render(Home);
+      const dismiss = screen.getByRole('button', { name: 'Dismiss' });
+      const focus = vi.spyOn(newsButton(), 'focus');
+      dismiss.focus();
+
+      await fireEvent.keyDown(dismiss, { key: 'Enter' });
+      await fireEvent.click(dismiss);
+
+      expect(dismiss.isConnected).toBe(false);
+      expect(document.activeElement).toBe(newsButton());
+      // From the keyboard, the browser shows the focus ring.
+      expect(focus).toHaveBeenCalledExactlyOnceWith();
+    });
+
+    it("gives the focus to the What's new button without a ring once the banner is dismissed by a click", async () => {
+      withUnreadNews();
+      render(Home);
+      const dismiss = screen.getByRole('button', { name: 'Dismiss' });
+      const focus = vi.spyOn(newsButton(), 'focus');
+
+      await fireEvent.pointerDown(dismiss);
+      await fireEvent.click(dismiss);
+
+      expect(document.activeElement).toBe(newsButton());
+      expect(focus).toHaveBeenCalledExactlyOnceWith({ focusVisible: false });
+    });
+
     it('opens the news from the button, which clears the dot and the banner', async () => {
       withUnreadNews();
       render(Home);

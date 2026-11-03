@@ -45,13 +45,24 @@
     // or still leaving if the dialog closes at once): the What's new button takes the focus instead,
     // as the dialog would have given it.
     if (openedFromBanner) {
-      if (openedByPointer) {
-        newsButton?.focus({ focusVisible: false });
-      } else {
-        newsButton?.focus();
-      }
+      focusNewsButton(openedByPointer);
     }
     openedFromBanner = false;
+  }
+
+  /** Dismisses the banner. Its × leaves with it: the What's new button takes the focus instead. */
+  function dismissBanner(): void {
+    news.dismissBanner();
+    focusNewsButton(lastPressByPointer());
+  }
+
+  /** Focuses the What's new button, without a focus ring after a press of the pointer (see Dialog). */
+  function focusNewsButton(byPointer: boolean): void {
+    if (byPointer) {
+      newsButton?.focus({ focusVisible: false });
+    } else {
+      newsButton?.focus();
+    }
   }
 
   /** The banner leaves by folding up as it fades out; at once under reduced motion. */
@@ -110,10 +121,8 @@
               <button class="open" onclick={() => openWhatsNew(true)}>
                 <span class="label">New:</span> <span class="title">{news.bannerEntry.title}</span>
               </button>
-              <button
-                class="btn-ghost dismiss"
-                aria-label="Dismiss"
-                onclick={() => news.dismissBanner()}><Icon name="cross" /></button
+              <button class="btn-ghost dismiss" aria-label="Dismiss" onclick={dismissBanner}
+                ><Icon name="cross" /></button
               >
             </aside>
           {/if}
