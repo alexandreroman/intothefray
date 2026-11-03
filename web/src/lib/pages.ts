@@ -17,17 +17,22 @@ export const TITLES: Record<PageName, string> = {
 
 /**
  * A page built as a file of its own, whose static HTML tells link previews and search engines
- * about it. About and options have no file: they reach the app through 404.html, like any other
- * unknown URL, so they show the home page's preview.
+ * about it: home (index.html), game (g/index.html) and notFound (404.html). GitHub Pages answers
+ * any other URL, about and options included, with 404.html, which starts the app all the same.
  */
-export type PreviewPageName = 'home' | 'game';
+export type PreviewPageName = 'home' | 'game' | 'notFound';
 
 /** What a link preview and a search engine see of a page. */
 export interface Preview {
+  /** The title of the static HTML, before the app sets the tab title. */
+  title: string;
   /** The title of the link preview. */
   ogTitle: string;
   description: string;
-  /** The canonical app path, or null for the game page, whose URL names one game among many. */
+  /**
+   * The canonical app path, or null for a file served at many URLs: g/index.html at every game's,
+   * 404.html at every other. Link previews follow the canonical URL, which would lose the one shared.
+   */
   path: string | null;
   /** The share image (1200×630), relative to the site URL. */
   image: string;
@@ -37,18 +42,22 @@ export interface Preview {
 }
 
 // The descriptions never imply an endorsement: the project is an unofficial fan project.
+const HOME: Preview = {
+  title: TITLES.home,
+  ogTitle: TITLES.home,
+  description:
+    'Play Marvel Champions in your browser, solo or with up to three friends. ' +
+    'A free sandbox card table: no account, nothing to install. An unofficial fan project.',
+  path: '/',
+  image: 'og/home.png',
+  imageAlt: `${APP_NAME}: play Marvel Champions in your browser.`,
+  indexed: true,
+};
+
 export const PREVIEWS: Record<PreviewPageName, Preview> = {
-  home: {
-    ogTitle: TITLES.home,
-    description:
-      'Play Marvel Champions in your browser, solo or with up to three friends. ' +
-      'A free sandbox card table: no account, nothing to install. An unofficial fan project.',
-    path: '/',
-    image: 'og/home.png',
-    imageAlt: `${APP_NAME}: play Marvel Champions in your browser.`,
-    indexed: true,
-  },
+  home: HOME,
   game: {
+    title: TITLES.game,
     ogTitle: `Join an ${APP_NAME} game`,
     description:
       `You're invited to a game of Marvel Champions on ${APP_NAME}. ` +
@@ -58,4 +67,6 @@ export const PREVIEWS: Record<PreviewPageName, Preview> = {
     imageAlt: `${APP_NAME}: you're invited to a game of Marvel Champions.`,
     indexed: false,
   },
+  // The home page's preview. A 404 response is never indexed, so it needs no noindex.
+  notFound: { ...HOME, path: null },
 };
