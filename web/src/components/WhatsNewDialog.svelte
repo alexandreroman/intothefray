@@ -95,11 +95,11 @@
     border-top: 1px solid var(--panel-2);
   }
 
-  /* An entry with a thumbnail: the thumbnail on the left, the text beside it, both from the top. */
+  /* An entry with a thumbnail: the thumbnail on the left, centred on the height of the text beside it. */
   li.illustrated {
     display: grid;
     grid-template-columns: 112px 1fr;
-    align-items: start;
+    align-items: center;
     gap: 14px;
   }
 
