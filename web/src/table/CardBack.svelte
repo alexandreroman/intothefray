@@ -60,9 +60,8 @@
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 6px;
+    border-radius: var(--card-radius);
     pointer-events: none;
-    clip-path: var(--card-cut);
   }
 
   /* The whole printed back shows, as a face does (CardFace.svelte). */
@@ -87,9 +86,10 @@
       inset 0 0 0 8px var(--frame);
   }
 
-  /* The caption lies over the back, inside its cut. */
+  /* The caption lies over the back, inside its rounded corners. */
   .captioned {
     position: relative;
+    overflow: hidden;
   }
 
   /* White capitals on a dark label: readable on every back image and on the drawn backs. */

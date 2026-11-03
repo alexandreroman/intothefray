@@ -230,8 +230,9 @@
   }
 
   /*
-    The card's shadow, cast from 2px inside its edge, under its face (see --card-shadow). Its corners are the card's cut
-    (CardFace), so it falls from the cut card. The tabs and tokens that stick out of the card's edge cast their own.
+    The card's shadow, cast from 2px inside its edge, under its face (see --card-shadow). Its corners are the card's
+    radius (CardFace), so it falls from the rounded card. The tabs and tokens that stick out of the card's edge cast
+    their own.
   */
   .shade {
     position: absolute;

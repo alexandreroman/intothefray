@@ -43,10 +43,12 @@
 
   /* An exhausted card is tilted, not turned all the way. */
   --exhaust-angle: 15deg;
-  /* Uniform card corners: a hair off each edge, then rounded like a printed card. */
+  /* Uniform card corners, rounded like a printed card, as a clip path: the resting hand's veil (Hand). */
   --card-cut: inset(0 round 5% / 3.6%);
-  --card-cut-land: inset(0 round 3.6% / 5%);
-  /* The same corners as a border radius: keep these in step with the cuts above. */
+  /*
+    The card's corners as a border radius, portrait and landscape: used by the card images (CardFace, CardBack) and
+    the card shadows. Keep them in step with the cut above.
+  */
   --card-radius: 5% / 3.6%;
   --card-radius-land: 3.6% / 5%;
   /*
@@ -54,8 +56,8 @@
     than a drop-shadow filter (which draws the card offscreen), for a box 2px inside the card's edge with the card's
     corners (--card-radius), hidden under the card: its 2px spread brings the shadow back to the card's outline. A
     box-shadow is cut away inside its box, so one cast by the card's own box would let the card underneath show through
-    the anti-aliased edge of the cut. The values match the former stacked drop-shadows, whose blur Chrome takes as a
-    standard deviation (half a box-shadow's blur).
+    the anti-aliased edge of its rounded corners. The values match the former stacked drop-shadows, whose blur Chrome
+    takes as a standard deviation (half a box-shadow's blur).
   */
   --card-shadow:
     2px 2px 4px 2px #000000c3, 8px 8px 22px 2px #000000c5, 17px 17px 43px 2px #00000047;

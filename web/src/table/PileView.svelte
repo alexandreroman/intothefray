@@ -124,7 +124,7 @@
 
   /*
     The same 45° shadow as a card on the table, cast from 2px inside its edge, under its face (see --card-shadow). A
-    pile's slot is always portrait: a landscape top card is turned to fit it, and cut with the portrait cut.
+    pile's slot is always portrait: a landscape top card is turned to fit it, and rounded with the portrait corners.
   */
   .shade {
     position: absolute;
