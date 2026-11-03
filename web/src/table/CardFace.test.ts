@@ -57,7 +57,7 @@ describe('CardFace', () => {
     expect(screen.getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('c.png');
   });
 
-  it('crops a landscape image with the landscape cut', () => {
+  it('rounds a landscape image with the landscape radius', () => {
     render(CardFace, { images: ['a.png'], name: 'Bomb Scare', landscape: true });
     expect(screen.getByRole('img').classList.contains('land')).toBe(true);
   });

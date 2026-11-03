@@ -1,6 +1,6 @@
 <!--
   A card image that tries each URL in turn, and shows a dark placeholder with
-  the card name once none is left. Crops the corners with the uniform card cut.
+  the card name once none is left. Rounds the corners with the card's radius.
   The CDN images are stored in the card's own orientation, so a landscape card
   only turns when a portrait slot draws it (rotated).
 -->
@@ -13,7 +13,7 @@
   }: {
     images: string[];
     name?: string;
-    /** The image is landscape: crop it with the landscape cut. */
+    /** The image is landscape: round it with the landscape radius. */
     landscape?: boolean;
     /** A landscape image turned a quarter to fit a portrait slot. */
     rotated?: boolean;
@@ -41,13 +41,17 @@
 {/if}
 
 <style>
+  /*
+    A border radius rather than a clip-path: the same corners, drawn as a rounded clip rather than a clip path, which
+    costs far less to paint and composite on a busy table.
+  */
   img,
   .placeholder {
     display: block;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    clip-path: var(--card-cut);
+    border-radius: var(--card-radius);
   }
 
   /*
@@ -60,7 +64,7 @@
   }
 
   img.land {
-    clip-path: var(--card-cut-land);
+    border-radius: var(--card-radius-land);
   }
 
   .placeholder {
@@ -75,13 +79,13 @@
     overflow: hidden;
   }
 
-  /* The slot is portrait: the image is sized landscape, then turned a quarter. */
+  /* The slot is portrait: the image is sized landscape, then turned a quarter, and its box rounds the corners. */
   .land-in-portrait {
     position: absolute;
     inset: 0;
     overflow: hidden;
     pointer-events: none;
-    clip-path: var(--card-cut);
+    border-radius: var(--card-radius);
   }
 
   .land-in-portrait img {
@@ -91,6 +95,6 @@
     width: 140%;
     height: 71.43%;
     transform: translate(-50%, -50%) rotate(-90deg);
-    clip-path: none;
+    border-radius: 0;
   }
 </style>

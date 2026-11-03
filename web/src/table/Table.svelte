@@ -2114,8 +2114,8 @@
   }
 
   /*
-    Rings drawn around the cut card, for cards and piles alike (the cut would clip them on the
-    image): the white ring of the hovered element and of the cards of the hovered history line,
+    Rings drawn around the rounded card, for cards and piles alike, on the card's box rather than on its
+    image: the white ring of the hovered element and of the cards of the hovered history line,
     and the drop outlines.
   */
   .table :global(.card.hovered)::before,

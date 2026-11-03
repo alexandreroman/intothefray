@@ -409,10 +409,21 @@
 
   /* A table card, tilted, with its shadow on the table. */
   .card {
+    position: relative;
+    isolation: isolate;
     width: var(--card-w);
     aspect-ratio: var(--card-ratio);
-    filter: var(--card-shadow);
     transform: rotate(-6deg);
+  }
+
+  /* The card's shadow, cast from 2px inside its edge, under its back, as on the table (see --card-shadow). */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
   }
 
   /* The first player token, in its box from the table, sized against the card as there. */
