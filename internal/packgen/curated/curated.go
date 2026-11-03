@@ -71,7 +71,11 @@ type SetDef struct {
 	Unlisted bool `json:"unlisted,omitempty"`
 	// Side makes a hero_special set one of its hero's side decks.
 	Side *pack.SideDeck `json:"side,omitempty"`
-	// SetAside lists the cards a hero set puts aside, out of play, at setup.
+	// SetAside lists the cards the set puts aside, out of play, at setup. A
+	// hero set puts them on its player's set-aside pile; they may belong to
+	// another set. An encounter set (modular, standard, expert or main scheme)
+	// puts its own cards on the encounter set-aside pile, out of the encounter
+	// deck, as Dreadpool does for Crisis of Infinite Deadpools.
 	SetAside []string `json:"setAside,omitempty"`
 	// MainScheme makes the set a main scheme set, which the sources list as a
 	// villain set although it has no villain card.
