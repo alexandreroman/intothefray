@@ -1,14 +1,30 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Home from './Home.svelte';
 import { createGame } from '../lib/api';
+import { NEWS, type NewsEntry } from '../lib/news';
 import { getPref, getToken } from '../lib/prefs';
 
 vi.mock('../lib/api', () => ({ createGame: vi.fn() }));
+
+// Whether the viewer prefers reduced motion: by default, so that the banner leaves at once (jsdom
+// has no Web Animations); the tests of its motion turn it off.
+const motion = vi.hoisted(() => ({ reduced: true }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return motion.reduced;
+    },
+  },
+}));
 
 const createGameMock = vi.mocked(createGame);
 
 beforeEach(() => {
   window.history.pushState(null, '', '/');
+  motion.reduced = true;
 });
 
 afterEach(() => {
@@ -83,9 +99,254 @@ describe('Home', () => {
     expect(window.location.pathname).toBe('/options');
   });
 
+  // Short of room, they show their icon only: their label, out of sight, still names them.
+  it('names the Options and About buttons by their label, with a tooltip each', () => {
+    render(Home);
+
+    for (const name of ['Options', 'About']) {
+      const button = screen.getByRole('button', { name });
+      expect(button.textContent?.trim()).toBe(name);
+      expect(button.hasAttribute('aria-label')).toBe(false);
+      expect(button.dataset.tip).toBe(name);
+    }
+  });
+
   it('goes to the about screen', async () => {
     render(Home);
     await fireEvent.click(screen.getByRole('button', { name: 'About' }));
     expect(window.location.pathname).toBe('/about');
+  });
+
+  describe("what's new", () => {
+    const newest = NEWS[0] as NewsEntry;
+
+    /** A visitor who last saw the news before every entry: all of them are unread. */
+    function withUnreadNews(): void {
+      localStorage.setItem('itf-news-seen', '2000-01-01-old');
+    }
+
+    function newsButton(): HTMLElement {
+      return screen.getByRole('button', { name: /^What's new/ });
+    }
+
+    function hasDot(): boolean {
+      return newsButton().querySelector('.dot') !== null;
+    }
+
+    it('shows an icon button named by its label and its tooltip', () => {
+      render(Home);
+      const button = screen.getByRole('button', { name: "What's new" });
+
+      expect(button.textContent?.trim()).toBe('');
+      expect(button.dataset.tip).toBe("What's new");
+      expect(button.hasAttribute('title')).toBe(false);
+    });
+
+    it('shows no dot and no banner on a first visit', () => {
+      render(Home);
+
+      expect(screen.getByRole('button', { name: "What's new" })).toBe(newsButton());
+      expect(hasDot()).toBe(false);
+      expect(screen.queryByRole('complementary', { name: 'Latest news' })).toBeNull();
+    });
+
+    it('marks the button with a dot while news is unread, without a count', () => {
+      withUnreadNews();
+      render(Home);
+
+      expect(screen.getByRole('button', { name: "What's new, unread news" })).toBe(newsButton());
+      expect(hasDot()).toBe(true);
+      expect(newsButton().getAttribute('aria-label')).not.toMatch(/\d/);
+      expect(newsButton().textContent).not.toMatch(/\d/);
+    });
+
+    it('shows the newest unread entry in a banner, which can be dismissed', async () => {
+      withUnreadNews();
+      render(Home);
+      const banner = screen.getByRole('complementary', { name: 'Latest news' });
+      // The news, which opens the dialog, and its dismissal: nothing else.
+      const buttons = within(banner).getAllByRole('button');
+      expect(
+        buttons.map((button) => button.textContent?.trim() || button.getAttribute('aria-label')),
+      ).toEqual([`New: ${newest.title}`, 'Dismiss']);
+
+      await fireEvent.click(within(banner).getByRole('button', { name: 'Dismiss' }));
+
+      expect(screen.queryByRole('complementary', { name: 'Latest news' })).toBeNull();
+      expect(hasDot()).toBe(true);
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
+    it("gives the focus to the What's new button once the banner is dismissed from the keyboard", async () => {
+      withUnreadNews();
+      render(Home);
+      const dismiss = screen.getByRole('button', { name: 'Dismiss' });
+      const focus = vi.spyOn(newsButton(), 'focus');
+      dismiss.focus();
+
+      await fireEvent.keyDown(dismiss, { key: 'Enter' });
+      await fireEvent.click(dismiss);
+
+      expect(dismiss.isConnected).toBe(false);
+      expect(document.activeElement).toBe(newsButton());
+      // From the keyboard, the browser shows the focus ring.
+      expect(focus).toHaveBeenCalledExactlyOnceWith();
+    });
+
+    it("gives the focus to the What's new button without a ring once the banner is dismissed by a click", async () => {
+      withUnreadNews();
+      render(Home);
+      const dismiss = screen.getByRole('button', { name: 'Dismiss' });
+      const focus = vi.spyOn(newsButton(), 'focus');
+
+      await fireEvent.pointerDown(dismiss);
+      await fireEvent.click(dismiss);
+
+      expect(document.activeElement).toBe(newsButton());
+      expect(focus).toHaveBeenCalledExactlyOnceWith({ focusVisible: false });
+    });
+
+    it('opens the news from the button, which clears the dot and the banner', async () => {
+      withUnreadNews();
+      render(Home);
+
+      await fireEvent.click(newsButton());
+
+      const dialog = screen.getByRole('dialog', { name: "What's new" });
+      expect(within(dialog).getAllByText('New')).toHaveLength(NEWS.length);
+      expect(hasDot()).toBe(false);
+      expect(screen.queryByRole('complementary', { name: 'Latest news' })).toBeNull();
+
+      await fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(hasDot()).toBe(false);
+    });
+
+    it('opens the news from the banner, which clears the dot and the banner', async () => {
+      withUnreadNews();
+      render(Home);
+      const banner = screen.getByRole('complementary', { name: 'Latest news' });
+
+      await fireEvent.click(within(banner).getByRole('button', { name: `New: ${newest.title}` }));
+
+      expect(screen.getByRole('dialog', { name: "What's new" })).toBeTruthy();
+      expect(hasDot()).toBe(false);
+      expect(screen.queryByRole('complementary', { name: 'Latest news' })).toBeNull();
+    });
+
+    // jsdom gives no focus to a clicked button, as browsers do: the tests focus it first.
+    it("gives the focus to the What's new button once closed, opened from the banner", async () => {
+      withUnreadNews();
+      render(Home);
+      const opener = screen.getByRole('button', { name: `New: ${newest.title}` });
+      opener.focus();
+
+      await fireEvent.click(opener);
+      expect(opener.isConnected).toBe(false);
+      await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+      await waitFor(() => expect(document.activeElement).toBe(newsButton()));
+    });
+
+    it("gives the focus back to the What's new button once closed, opened from it", async () => {
+      withUnreadNews();
+      render(Home);
+      newsButton().focus();
+
+      await fireEvent.click(newsButton());
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Close' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+      await waitFor(() => expect(document.activeElement).toBe(newsButton()));
+    });
+
+    it('tags nothing as new once the news has been seen', async () => {
+      withUnreadNews();
+      const { unmount } = render(Home);
+      await fireEvent.click(newsButton());
+      unmount();
+
+      render(Home);
+      await fireEvent.click(newsButton());
+
+      const dialog = screen.getByRole('dialog', { name: "What's new" });
+      expect(within(dialog).getAllByRole('listitem')).toHaveLength(NEWS.length);
+      expect(within(dialog).queryByText('New')).toBeNull();
+    });
+
+    describe('banner motion', () => {
+      // Animations that run until a test finishes them, as the banner's transition plays them.
+      type FakeAnimation = { onfinish: (() => void) | null; cancel: () => void; effect: null };
+      let running: FakeAnimation[] = [];
+      const animate = vi.fn(() => {
+        const animation: FakeAnimation = { onfinish: null, cancel: () => {}, effect: null };
+        running.push(animation);
+        return animation;
+      });
+      const originalAnimate = Element.prototype.animate;
+
+      /** Plays every animation to its end, and those they start in turn. */
+      async function finishAnimations(): Promise<void> {
+        while (running.length > 0) {
+          running.shift()?.onfinish?.();
+          await tick();
+        }
+      }
+
+      function banner(): HTMLElement | null {
+        return screen.queryByRole('complementary', { name: 'Latest news' });
+      }
+
+      beforeEach(() => {
+        Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+        motion.reduced = false;
+        withUnreadNews();
+      });
+
+      afterEach(async () => {
+        await finishAnimations();
+        Element.prototype.animate = originalAnimate;
+        animate.mockClear();
+        running = [];
+      });
+
+      it('folds the banner away once dismissed, then removes it', async () => {
+        render(Home);
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+        expect(banner()).not.toBeNull();
+        expect(hasDot()).toBe(true);
+
+        await finishAnimations();
+        expect(banner()).toBeNull();
+        expect(animate).toHaveBeenCalledWith(
+          expect.any(Array),
+          expect.objectContaining({ duration: 220 }),
+        );
+      });
+
+      it('removes the banner at once under reduced motion', async () => {
+        motion.reduced = true;
+        render(Home);
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+
+        expect(banner()).toBeNull();
+        expect(animate).not.toHaveBeenCalled();
+      });
+
+      it("gives the focus to the What's new button when the news closes while the banner leaves", async () => {
+        render(Home);
+        const opener = screen.getByRole('button', { name: `New: ${newest.title}` });
+        opener.focus();
+
+        await fireEvent.click(opener);
+        await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+        // Still on its way out: the button that opened the news is still in the page.
+        expect(opener.isConnected).toBe(true);
+        await waitFor(() => expect(document.activeElement).toBe(newsButton()));
+      });
+    });
   });
 });

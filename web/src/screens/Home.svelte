@@ -1,13 +1,86 @@
 <script lang="ts">
+  import { tick } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import { slide, type TransitionConfig } from 'svelte/transition';
   import { createGame } from '../lib/api';
   import { playerName } from '../lib/names';
+  import { NewsState } from '../lib/newsState.svelte';
   import { setToken } from '../lib/prefs';
   import { gamePath, go } from '../lib/router.svelte';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
+  import Tooltip from '../components/Tooltip.svelte';
+  import WhatsNewDialog from '../components/WhatsNewDialog.svelte';
+  import { lastPressByPointer } from '../components/modal.svelte';
+
+  /** How long the banner takes to leave, folding up as it fades out. */
+  const BANNER_LEAVE_MS = 220;
 
   let starting = $state(false);
   let error = $state('');
+
+  const news = new NewsState();
+  const hasUnread = $derived(news.unread.length > 0);
+  // The ids of the entries unread when the dialog opened, tagged as new in it; none while it is closed.
+  let shownUnread = $state<ReadonlySet<string> | null>(null);
+
+  let newsButton = $state<HTMLButtonElement>();
+  // Where the dialog was opened from, and whether by the pointer (see Dialog).
+  let openedFromBanner = false;
+  let openedByPointer = false;
+
+  /** Opens the news, which are all seen from then on: the dot and the banner go. */
+  function openWhatsNew(fromBanner: boolean): void {
+    openedFromBanner = fromBanner;
+    openedByPointer = lastPressByPointer();
+    shownUnread = new Set(news.unread.map((entry) => entry.id));
+    news.markSeen();
+  }
+
+  async function closeWhatsNew(): Promise<void> {
+    shownUnread = null;
+    await tick();
+    // Opened from the banner, the dialog took the banner away with the button that opened it (gone,
+    // or still leaving if the dialog closes at once): the What's new button takes the focus instead,
+    // as the dialog would have given it.
+    if (openedFromBanner) {
+      focusNewsButton(openedByPointer);
+    }
+    openedFromBanner = false;
+  }
+
+  /** Dismisses the banner. Its × leaves with it: the What's new button takes the focus instead. */
+  function dismissBanner(): void {
+    news.dismissBanner();
+    focusNewsButton(lastPressByPointer());
+  }
+
+  /** Focuses the What's new button, without a focus ring after a press of the pointer (see Dialog). */
+  function focusNewsButton(byPointer: boolean): void {
+    if (byPointer) {
+      newsButton?.focus({ focusVisible: false });
+    } else {
+      newsButton?.focus();
+    }
+  }
+
+  /** The banner leaves by folding up as it fades out; at once under reduced motion. */
+  function bannerLeave(node: Element): TransitionConfig {
+    const folding = slide(node, {
+      duration: prefersReducedMotion.current ? 0 : BANNER_LEAVE_MS,
+      easing: cubicOut,
+    });
+    // The opacity follows the slide's styles, overriding the slide's own, which only fades at the
+    // very end. Exactly one semicolon between them: Svelte stops reading at an empty declaration.
+    return {
+      ...folding,
+      css: (t, u) => {
+        const slideStyles = (folding.css?.(t, u) ?? '').replace(/;\s*$/, '');
+        return `${slideStyles}; opacity: ${t}`;
+      },
+    };
+  }
 
   async function startGame(): Promise<void> {
     starting = true;
@@ -40,15 +113,49 @@
       </div>
 
       <div class="start">
-        <div class="actions">
-          <button class="btn-primary" disabled={starting} onclick={startGame}>
-            <Icon name="arrow-right" />
-            Start a game
-          </button>
-          <button class="secondary" onclick={() => go('/options')}
-            ><Icon name="sliders" />Options</button
-          >
-          <button class="secondary" onclick={() => go('/about')}><Icon name="info" />About</button>
+        <!-- As wide as the button row: the banner ends where its last button does. -->
+        <div class="row">
+          {#if news.bannerEntry}
+            <aside class="banner" aria-label="Latest news" out:bannerLeave>
+              <!-- The news itself opens the dialog: a button that reads as the banner's text. -->
+              <button class="open" onclick={() => openWhatsNew(true)}>
+                <span class="label">New:</span> <span class="title">{news.bannerEntry.title}</span>
+              </button>
+              <button class="btn-ghost dismiss" aria-label="Dismiss" onclick={dismissBanner}
+                ><Icon name="cross" /></button
+              >
+            </aside>
+          {/if}
+          <div class="actions">
+            <button class="btn-primary" disabled={starting} onclick={startGame}>
+              <Icon name="arrow-right" />
+              Start a game
+            </button>
+            <!-- The secondary buttons wrap together, as one group, under Start. -->
+            <div class="more">
+              <!-- An icon only when the row is short of room: the label still names the button, out of sight. -->
+              <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
+                <Icon name="sliders" /><span class="text">Options</span>
+              </button>
+              <button class="secondary" data-tip="About" onclick={() => go('/about')}>
+                <Icon name="info" /><span class="text">About</span>
+              </button>
+              <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
+                   how many: so does the button's name. -->
+              <button
+                class="secondary news"
+                aria-label={hasUnread ? "What's new, unread news" : "What's new"}
+                data-tip="What's new"
+                bind:this={newsButton}
+                onclick={() => openWhatsNew(false)}
+              >
+                <Icon name="megaphone" />
+                {#if hasUnread}
+                  <span class="dot" aria-hidden="true"></span>
+                {/if}
+              </button>
+            </div>
+          </div>
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
@@ -99,6 +206,12 @@
 
   <footer>Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.</footer>
 </div>
+
+<Tooltip />
+
+{#if shownUnread}
+  <WhatsNewDialog entries={news.entries} unread={shownUnread} onclose={closeWhatsNew} />
+{/if}
 
 <style>
   .home {
@@ -186,6 +299,22 @@
     gap: 14px 24px;
   }
 
+  /*
+    The banner over the buttons, as wide as their row on one line. A wrapped row (narrower than a
+    320px phone) cannot be followed by a box that shrinks to fit: the banner takes the column.
+  */
+  .row {
+    display: grid;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  /* Options, About and What's new: one unit in the row, spaced as the row's buttons. */
+  .more {
+    display: flex;
+    gap: 24px;
+  }
+
   .actions button {
     height: 56px;
     display: inline-flex;
@@ -206,7 +335,9 @@
     stroke-width: 2.2;
   }
 
+  /* Relative: the What's new button places its dot. */
   .secondary {
+    position: relative;
     gap: 10px;
     padding: 0 22px;
     font-size: 15px;
@@ -219,10 +350,198 @@
     height: 18px;
   }
 
+  /* A square, its icon a size up from the labelled buttons'. */
+  .secondary.news {
+    width: 56px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .secondary.news :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Unread news: a Fray red dot on the button's corner, ringed with the page's ground. */
+  .dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--table-bg);
+  }
+
+  /* The newest unread entry, in a slim strip over the buttons; the text wraps on a phone. */
+  .banner {
+    /* Sized by the row, never sizing it: its text wraps rather than widening the row. */
+    contain: inline-size;
+    /* A margin rather than the row's gap: it folds up with the banner as it leaves. */
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 5px 5px 12px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  /* Plain text, wrapping as text does; the title is underlined under the pointer or the focus. */
+  .banner .open {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    color: var(--text-soft);
+  }
+
+  .banner .open:hover {
+    background: none;
+    color: var(--text);
+  }
+
+  .banner .open:hover .title,
+  .banner .open:focus-visible .title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .banner .label {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .banner .dismiss {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+  }
+
+  .banner .dismiss :global(svg) {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* A size container: the buttons' look follows the room the row has, not the window's width. */
   .start {
+    container: start / inline-size;
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  /*
+    Options and About show their icon only, as What's new does, when the labelled row does not fit:
+    Start (227px) + 24 + Options (129) + 24 + About (116) + 24 + What's new (56) = 600px, and 16px
+    of slack for the font's rendering. With less room still, the steps below shrink the row;
+    labelled buttons never wrap.
+  */
+  @container start (max-width: 615px) {
+    .secondary {
+      width: 56px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .secondary :global(svg) {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* As .sr-only (styles/tokens.css): out of sight, still the button's name. */
+    .secondary .text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  /*
+    Narrower still, Start and the three squares keep one row: Start shrinks and the gaps tighten,
+    step by step. Each step starts where the row of the step before, measured, no longer fits with
+    16px of slack (8px for the last one, whose row is the one a 320px phone must hold). Under the
+    last step, the squares wrap under Start (.actions wraps), as a safety net only.
+
+    Compact: the icon row at full size needs Start (227px) + 24 + 3 squares (56) + 2 × 24 = 467px.
+  */
+  @container start (max-width: 482px) {
+    .actions {
+      column-gap: 12px;
+    }
+
+    .more {
+      gap: 12px;
+    }
+
+    .actions .btn-primary {
+      gap: 10px;
+      padding: 0 24px;
+      font-size: 15px;
+    }
+  }
+
+  /* Tight: the compact row needs Start (190px) + 12 + 3 squares (56) + 2 × 12 = 394px. */
+  @container start (max-width: 409px) {
+    .actions {
+      column-gap: 8px;
+    }
+
+    .more {
+      gap: 8px;
+    }
+
+    .actions button {
+      height: 48px;
+    }
+
+    .more .secondary {
+      width: 48px;
+    }
+
+    /* Start without its arrow: the label says it all. */
+    .actions .btn-primary {
+      padding: 0 18px;
+      font-size: 14px;
+      clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+    }
+
+    .actions .btn-primary :global(svg) {
+      display: none;
+    }
+  }
+
+  /* Tiny: the tight row needs Start (140px) + 8 + 3 squares (48) + 2 × 8 = 308px. */
+  @container start (max-width: 315px) {
+    .actions button {
+      height: 44px;
+    }
+
+    .more .secondary {
+      width: 44px;
+    }
+
+    .actions .btn-primary {
+      padding: 0 14px;
+      font-size: 13px;
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    }
   }
 
   .error {
