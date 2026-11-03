@@ -96,7 +96,7 @@
           </button>
           <!-- The secondary buttons wrap together, as one group, under Start. -->
           <div class="more">
-            <!-- On a phone, an icon only: the label still names the button, hidden from sight. -->
+            <!-- An icon only when the row is short of room: the label still names the button, out of sight. -->
             <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
               <Icon name="sliders" /><span class="text">Options</span>
             </button>
@@ -374,10 +374,41 @@
     height: 16px;
   }
 
+  /* A size container: the buttons' look follows the room the row has, not the window's width. */
   .start {
+    container: start / inline-size;
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  /*
+    Options and About show their icon only, as What's new does, when the labelled row does not fit:
+    Start (227px) + 24 + Options (129) + 24 + About (116) + 24 + What's new (56) = 600px, and 16px
+    of slack for the font's rendering. With less room still, the three squares wrap under Start
+    together (.more); labelled buttons never wrap.
+  */
+  @container start (max-width: 615px) {
+    .secondary {
+      width: 56px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .secondary :global(svg) {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* As .sr-only (styles/tokens.css): out of sight, still the button's name. */
+    .secondary .text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   .error {
@@ -525,29 +556,8 @@
     color: var(--faint);
   }
 
-  /* A phone: 16px gutters, square icon buttons and a smaller fan under the buttons. */
+  /* A phone: 16px gutters, and a smaller fan under the buttons. */
   @media (max-width: 640px) {
-    .secondary {
-      width: 56px;
-      padding: 0;
-      justify-content: center;
-    }
-
-    .secondary :global(svg) {
-      width: 20px;
-      height: 20px;
-    }
-
-    /* As .sr-only (styles/tokens.css): out of sight, still the button's name. */
-    .secondary .text {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-
     main {
       padding: 40px 16px 24px;
     }

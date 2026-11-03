@@ -84,7 +84,7 @@ describe('Home', () => {
     expect(window.location.pathname).toBe('/options');
   });
 
-  // On a phone they show their icon only: their label, out of sight, still names them.
+  // Short of room, they show their icon only: their label, out of sight, still names them.
   it('names the Options and About buttons by their label, with a tooltip each', () => {
     render(Home);
 
