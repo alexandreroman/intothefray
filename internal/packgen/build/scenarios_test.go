@@ -322,6 +322,28 @@ func TestScenarioImageFromCuratedVillainSets(t *testing.T) {
 	}
 }
 
+func TestScenarioImageFromCuratedImageCard(t *testing.T) {
+	card := func(code, set, kind string) pack.Card {
+		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: kind, Images: []string{"https://x/" + code}}}}
+	}
+	// As On the Run, which shows Harpoon rather than the lowest-code Marauder.
+	cards := map[string][]pack.Card{"p": {
+		card("40084", "on_the_run", "main_scheme"), card("40070", "marauders", "villain"),
+		card("40074", "marauders", "villain"),
+	}}
+	sets := map[string][]pack.Set{"p": {
+		{Code: "on_the_run", Name: "On the Run", Kind: "villain", Cards: []string{"40084"}},
+		{Code: "marauders", Name: "Marauders", Kind: "villain", Cards: []string{"40070", "40074"}},
+	}}
+	setDefs := map[string]curated.SetDef{"on_the_run": {Villains: []string{"marauders"}, ImageCard: "40074"}}
+
+	_, refs, _ := buildScenarios(nil, setDefs, cards, sets, nil)
+
+	if got := findRef(t, refs, "on_the_run").Image; got != "https://x/40074" {
+		t.Errorf("got image %q, want the one of 40074", got)
+	}
+}
+
 func TestScenarioWithUnknownDeckCardIsUnsupported(t *testing.T) {
 	f := newScenarioFixture(t)
 	def := rhinoDef()

@@ -91,6 +91,10 @@ type SetDef struct {
 	// its image from their lowest-code villain card. It does not make the
 	// scenario playable.
 	Villains []string `json:"villains,omitempty"`
+	// ImageCard is the code of the villain or leader card whose first face is
+	// the lobby image of the set's scenario, instead of the lowest-code villain
+	// card of the set or of the sets it absorbs.
+	ImageCard string `json:"imageCard,omitempty"`
 }
 
 // Names are the hand-written names of one language, for the packs, sets and

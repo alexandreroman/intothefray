@@ -424,6 +424,31 @@ func TestBuildRejectsInvalidCuratedSets(t *testing.T) {
 			map[string]curated.SetDef{"rhino": {Villains: []string{"rhino"}}},
 			"curated set rhino: villain sets name the set itself",
 		},
+		{
+			"image card on a standard set",
+			map[string]curated.SetDef{"standard_ii": {ImageCard: "01094"}},
+			"curated set standard_ii: image card needs a villain, leader or underling set, not a standard set",
+		},
+		{
+			"unknown image card",
+			map[string]curated.SetDef{"rhino": {ImageCard: "09999"}},
+			"curated set rhino: image card 09999 is not in the catalog",
+		},
+		{
+			"image card that is a main scheme",
+			map[string]curated.SetDef{"rhino": {ImageCard: "01097"}},
+			"curated set rhino: image card 01097 is not a villain or leader card",
+		},
+		{
+			"image card that is a treachery",
+			map[string]curated.SetDef{"rhino": {ImageCard: "01104"}},
+			"curated set rhino: image card 01104 is not a villain or leader card",
+		},
+		{
+			"image card of an unrelated villain set",
+			map[string]curated.SetDef{"rhino": {ImageCard: "01113"}},
+			"curated set rhino: image card 01113 is not in the set or its villain sets",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

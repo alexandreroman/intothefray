@@ -30,10 +30,10 @@ type villainSet struct {
 // absorbs the sets it covers, and a curated set the villain sets it names:
 // they are not listed separately. A set without villain card takes its image
 // from the lowest-code villain card of the sets it absorbs; naming villain
-// sets alone does not make its scenario playable. setDefs is keyed by set
-// code, cards and sets by pack code. The scenario of a set belongs to the pack
-// of that set. The references are ordered by the code of the first villain
-// card of the set.
+// sets alone does not make its scenario playable. The image card of a curated
+// set wins over both images. setDefs is keyed by set code, cards and sets by
+// pack code. The scenario of a set belongs to the pack of that set. The
+// references are ordered by the code of the first villain card of the set.
 func buildScenarios(
 	defs []curated.ScenarioDef,
 	setDefs map[string]curated.SetDef,
@@ -87,6 +87,10 @@ func buildScenarios(
 		if villain.firstCard == nil {
 			absorbed := slices.Concat(defsBySet[villain.set.Code].Covers, setDefs[villain.set.Code].Villains)
 			ref.Image = imageOf(coveredVillainCard(absorbed, villains))
+		}
+		// applySetDefs has made sure the image card is a villain or leader card.
+		if imageCard, found := cardsByCode[setDefs[villain.set.Code].ImageCard]; found {
+			ref.Image = imageOf(&imageCard)
 		}
 
 		if def, found := defsBySet[villain.set.Code]; found {
