@@ -6,7 +6,7 @@ export interface CardInfo {
   face: number;
 }
 
-// Absolute, so the index resolves the same from any route (/g/<id> included).
+// Absolute, so the index resolves the same from any route (a game at /g/?id=<id> included).
 const INDEX_URL = `${import.meta.env.BASE_URL}packs/index.json`;
 
 // Same shape as the face codes of the Go catalog: five digits and a letter.

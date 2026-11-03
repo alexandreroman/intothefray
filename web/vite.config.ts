@@ -60,7 +60,7 @@ function packIndex(): Plugin {
 }
 
 export default defineConfig({
-  // The base stays absolute (Vite's default '/', never './'): routes are real paths (/g/<id>), so
+  // The base stays absolute (Vite's default '/', never './'): routes are real paths (/about, /g/), so
   // assets must not resolve against them. The GitHub Pages build passes its sub-path with --base.
   // Besides the VITE_* variables, expose the instance name shown in the tab title (see lib/title.ts).
   envPrefix: ['VITE_', 'APP_INSTANCE'],

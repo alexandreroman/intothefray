@@ -39,7 +39,9 @@ describe('Home', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Start a game' }));
 
-    await waitFor(() => expect(window.location.pathname).toBe('/g/g1'));
+    await waitFor(() =>
+      expect(window.location.pathname + window.location.search).toBe('/g/?id=g1'),
+    );
     expect(createGameMock).toHaveBeenCalledWith('Alex');
     expect(getToken('g1')).toBe('tok');
   });
@@ -50,7 +52,9 @@ describe('Home', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Start a game' }));
 
-    await waitFor(() => expect(window.location.pathname).toBe('/g/g2'));
+    await waitFor(() =>
+      expect(window.location.pathname + window.location.search).toBe('/g/?id=g2'),
+    );
     const name = getPref('itf-name');
     expect(name).toMatch(/^[A-Z][a-z]+ [A-Z][a-z]+$/);
     expect(createGameMock).toHaveBeenCalledWith(name);

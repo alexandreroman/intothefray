@@ -1,18 +1,20 @@
 export type Route =
   { name: 'home' } | { name: 'options' } | { name: 'about' } | { name: 'game'; id: string };
 
-/** An app path, relative to the base: '/', '/options', '/about', '/g/<id>'. */
+/** An app path, relative to the base: '/', '/options', '/about', '/g/?id=<id>'. */
 export type AppPath = `/${string}`;
 
 // Where the app is served, always ending with a slash: '/' by default, the
 // repository sub-path on GitHub Pages.
 const BASE = import.meta.env.BASE_URL;
 
-const GAME_PATH = /^g\/([^/]+)$/;
+// A game lives at '/g/?id=<id>': the query keeps a single page, g/index.html, which static hosting
+// serves with a 200 and its own share preview. The older '/g/<id>' form still parses.
+const LEGACY_GAME_PATH = /^g\/([^/]+)$/;
 
-/** The app path of a game: '/g/<id>'. */
+/** The app path of a game: '/g/?id=<id>'. */
 export function gamePath(id: string): AppPath {
-  return `/g/${encodeURIComponent(id)}`;
+  return `/g/?id=${encodeURIComponent(id)}`;
 }
 
 /** The base-prefixed URL of an app path, for links and the History API. */
@@ -20,8 +22,8 @@ export function href(path: AppPath): string {
   return BASE + path.slice(1);
 }
 
-/** The route of a pathname, or null when no route matches. */
-function parse(pathname: string): Route | null {
+/** The route of a pathname and its query, or null when no route matches. */
+function parse(pathname: string, search: string): Route | null {
   if (!pathname.startsWith(BASE)) {
     return null;
   }
@@ -39,10 +41,14 @@ function parse(pathname: string): Route | null {
   if (path === 'about') {
     return { name: 'about' };
   }
-  const game = GAME_PATH.exec(path);
-  if (game?.[1]) {
+  if (path === 'g') {
+    const id = new URLSearchParams(search).get('id');
+    return id ? { name: 'game', id } : null;
+  }
+  const legacyGame = LEGACY_GAME_PATH.exec(path);
+  if (legacyGame?.[1]) {
     try {
-      return { name: 'game', id: decodeURIComponent(game[1]) };
+      return { name: 'game', id: decodeURIComponent(legacyGame[1]) };
     } catch {
       // Malformed percent-escape in the path: treat it as unknown.
     }
@@ -51,18 +57,33 @@ function parse(pathname: string): Route | null {
 }
 
 /**
+ * The canonical URL of a route, hash aside: a game at '/g/?id=<id>', any other route without a
+ * trailing slash and with its query.
+ */
+function canonicalUrl(route: Route, pathname: string, search: string): string {
+  if (route.name === 'game') {
+    return href(gamePath(route.id));
+  }
+  if (pathname !== BASE && pathname.endsWith('/')) {
+    return pathname.slice(0, -1) + search;
+  }
+  return pathname + search;
+}
+
+/**
  * The route of the current URL. The address bar is set to the canonical form:
- * home for an unknown URL, no trailing slash on a route.
+ * home for an unknown URL, otherwise the route's canonical URL with the hash kept.
  */
 function currentRoute(): Route {
   const { pathname, search, hash } = window.location;
-  const parsed = parse(pathname);
+  const parsed = parse(pathname, search);
   if (!parsed) {
     window.history.replaceState(null, '', BASE);
     return { name: 'home' };
   }
-  if (pathname !== BASE && pathname.endsWith('/')) {
-    window.history.replaceState(window.history.state, '', pathname.slice(0, -1) + search + hash);
+  const canonical = canonicalUrl(parsed, pathname, search) + hash;
+  if (canonical !== pathname + search + hash) {
+    window.history.replaceState(window.history.state, '', canonical);
   }
   return parsed;
 }
@@ -118,7 +139,11 @@ document.addEventListener('click', (event) => {
     return;
   }
   const url = new URL(link.href);
-  if (url.origin !== window.location.origin || parse(url.pathname) === null || isHashOnly(url)) {
+  if (
+    url.origin !== window.location.origin ||
+    parse(url.pathname, url.search) === null ||
+    isHashOnly(url)
+  ) {
     return;
   }
   event.preventDefault();

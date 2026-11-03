@@ -4,7 +4,7 @@ import { navigate } from './router.testing';
 // router reads the base once, when the module loads.
 vi.stubEnv('BASE_URL', '/intothefray/');
 window.history.replaceState(null, '', '/intothefray/nowhere');
-const { go, href, route } = await import('./router.svelte');
+const { gamePath, go, href, route } = await import('./router.svelte');
 
 afterAll(() => {
   vi.unstubAllEnvs();
@@ -18,13 +18,27 @@ describe('router under a base path', () => {
 
   it('prefixes app paths with the base', () => {
     expect(href('/')).toBe('/intothefray/');
-    expect(href('/g/abc')).toBe('/intothefray/g/abc');
+    expect(href(gamePath('abc'))).toBe('/intothefray/g/?id=abc');
   });
 
   it('parses paths under the base', () => {
-    go('/g/abc');
-    expect(window.location.pathname).toBe('/intothefray/g/abc');
+    go(gamePath('abc'));
+    expect(window.location.pathname + window.location.search).toBe('/intothefray/g/?id=abc');
     expect(route.current).toEqual({ name: 'game', id: 'abc' });
+  });
+
+  it('rewrites a legacy game URL under the base, keeping the hash', () => {
+    navigate('/intothefray/g/abc#chat');
+    expect(route.current).toEqual({ name: 'game', id: 'abc' });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
+      '/intothefray/g/?id=abc#chat',
+    );
+  });
+
+  it('sends a game URL without an id home', () => {
+    navigate('/intothefray/g/?id=');
+    expect(route.current).toEqual({ name: 'home' });
+    expect(window.location.pathname + window.location.search).toBe('/intothefray/');
   });
 
   it('sends the base without its trailing slash home', () => {
