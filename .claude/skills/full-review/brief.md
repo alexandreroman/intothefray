@@ -210,14 +210,16 @@ fullscreen and Escape handling, and touch input.
   (`packs/curated/cards.json`, `sets.json`, `scenarios/*.json`); the Redis
   key layout (`internal/store/store.go`); the environment variables the
   server reads (`internal/config`) and the build-time ones (`VITE_API_URL`,
-  `VITE_COMMIT`, `APP_INSTANCE`, the ports of `.env.casper`); the
-  `healthcheck` subcommand of the container healthcheck; the SPA routes
-  (`/`, `/options`, `/g/<id>`: shared game links, served by the
-  `try_files` fallback of `web/Caddyfile` and the `404.html` copy of
-  `ci.yml`); the browser storage keys (`itf-*`); the release contract
-  with `intothefray-infra` (the GHCR image name and tags, the
-  `deploy-app` dispatch and its `client_payload.sha`, see the
-  `project_deployment` note). The frontend on Pages and the backend on the
+  `VITE_COMMIT`, `APP_INSTANCE`, `SITE_URL`, the ports of `.env.casper`);
+  the `healthcheck` subcommand of the container healthcheck; the SPA
+  routes (`/`, `/options`, `/about`, and `/g/?id=<id>` for shared game
+  links, served by `g/index.html`; the other routes reach the SPA through
+  `404.html`; both files are build outputs of `web/seo.ts`, and the
+  `try_files` rule of `web/Caddyfile` serves them the same way locally);
+  the browser storage keys (`itf-*`); the release contract with
+  `intothefray-infra` (the GHCR image name and tags, the `deploy-app`
+  dispatch and its `client_payload.sha`, see the `project_deployment`
+  note). The frontend on Pages and the backend on the
   VPS deploy separately and can run different commits, so a wire-format
   change breaks live games. A contract bug goes in the final report, not
   into a silent fix.

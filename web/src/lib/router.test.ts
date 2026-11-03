@@ -43,14 +43,29 @@ afterEach(() => {
 });
 
 describe('router', () => {
-  it('parses /g/abc', () => {
-    navigate('/g/abc');
+  it('parses /g/?id=abc', () => {
+    navigate('/g/?id=abc');
     expect(route.current).toEqual({ name: 'game', id: 'abc' });
+    expect(window.location.pathname + window.location.search).toBe('/g/?id=abc');
   });
 
   it('decodes the game id', () => {
-    navigate('/g/a%20b');
+    navigate('/g/?id=a%20b');
     expect(route.current).toEqual({ name: 'game', id: 'a b' });
+  });
+
+  it('keeps the hash of a game URL', () => {
+    navigate('/g/?id=abc#chat');
+    expect(route.current).toEqual({ name: 'game', id: 'abc' });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
+      '/g/?id=abc#chat',
+    );
+  });
+
+  it('rewrites /g?id=<id> to /g/?id=<id>', () => {
+    navigate('/g?id=abc');
+    expect(route.current).toEqual({ name: 'game', id: 'abc' });
+    expect(window.location.pathname + window.location.search).toBe('/g/?id=abc');
   });
 
   it('parses the home, options and about routes', () => {
@@ -70,10 +85,6 @@ describe('router', () => {
     navigate('/about/');
     expect(route.current).toEqual({ name: 'about' });
     expect(window.location.pathname).toBe('/about');
-
-    navigate('/g/abc/');
-    expect(route.current).toEqual({ name: 'game', id: 'abc' });
-    expect(window.location.pathname).toBe('/g/abc');
   });
 
   it('falls back to home on an unknown path and replaces the URL', () => {
@@ -83,21 +94,25 @@ describe('router', () => {
     expect(window.location.pathname).toBe('/');
   });
 
-  it('falls back to home on an empty game id', () => {
-    navigate('/g/');
-    expect(route.current).toEqual({ name: 'home' });
-    expect(window.location.pathname).toBe('/');
+  it('falls back to home without a game id', () => {
+    for (const url of ['/g/', '/g/?id=', '/g/?other=abc']) {
+      navigate('/options');
+      navigate(url);
+      expect(route.current).toEqual({ name: 'home' });
+      expect(window.location.pathname + window.location.search).toBe('/');
+    }
   });
 
-  it('falls back to home on a malformed escape', () => {
-    navigate('/g/%E0%A4%A');
+  it('falls back to home on a game id in the path', () => {
+    navigate('/options');
+    navigate('/g/abc');
     expect(route.current).toEqual({ name: 'home' });
     expect(window.location.pathname).toBe('/');
   });
 
   it('follows the history back', async () => {
     go('/options');
-    go('/g/abc');
+    go(gamePath('abc'));
     await back();
     expect(window.location.pathname).toBe('/options');
     expect(route.current).toEqual({ name: 'options' });
@@ -119,19 +134,19 @@ describe('router', () => {
   });
 
   it('gamePath encodes the game id, and the router reads it back', () => {
-    expect(gamePath('a/b c')).toBe('/g/a%2Fb%20c');
+    expect(gamePath('a/b c')).toBe('/g/?id=a%2Fb%20c');
     go(gamePath('a/b c'));
     expect(route.current).toEqual({ name: 'game', id: 'a/b c' });
   });
 
   it('href prefixes the base path', () => {
     expect(href('/')).toBe('/');
-    expect(href('/g/abc')).toBe('/g/abc');
+    expect(href(gamePath('abc'))).toBe('/g/?id=abc');
   });
 
   it('navigates in place on a click on an app link', () => {
-    expect(click(addLink(href('/g/abc')))).toBe(true);
-    expect(window.location.pathname).toBe('/g/abc');
+    expect(click(addLink(href(gamePath('abc'))))).toBe(true);
+    expect(window.location.pathname + window.location.search).toBe('/g/?id=abc');
     expect(route.current).toEqual({ name: 'game', id: 'abc' });
   });
 

@@ -23,7 +23,7 @@
 
 - [Project objective](references/project_objective.md) — browser sandbox table for Marvel Champions, no rules
 - [Name and license](references/project_name_license.md) — intothefray, Go module path, Apache-2.0
-- [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes, why
+- [Tech stack choices](references/project_tech_stack.md) — Go + Redis backend, Svelte SPA on GitHub Pages, path routes (/g/?id=), why
 - [Product constraints](references/project_constraints.md) — anti-cheat, images on img.intothefray.xyz, 24 h expiry, pack scope, accepted limits
 - [Card image CDN](references/project_image_cdn.md) — img.intothefray.xyz is the only image origin; filled by intothefray-img `make publish`; AVIF
 - [Card data sources](references/reference_card_sources.md) — marvelcdb primary, mc4db fallback; fr.marvelcdb names; image sources.json
@@ -91,3 +91,4 @@
 - [README home page screenshot](references/project_readme_screenshot.md) — refresh .github/images/home.webp when the home page changes; recipe
 - [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; tested
 - [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
+- [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only

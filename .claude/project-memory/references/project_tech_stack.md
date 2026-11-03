@@ -11,13 +11,16 @@ type: project
   other database.
 - Frontend in TypeScript with Svelte 5 + Vite, built as a static SPA and
   served separately from the backend (GitHub Pages or equivalent), with
-  History API path routes (`/`, `/options`, `/about`, `/g/<id>`) under the
-  build's base path. Caddy falls back to `index.html` for app routes, but
-  not for `/api/*`, `/ws/*`, `/healthz`, `/assets/*` and `/packs/*`, where
-  a missing file answers 404; GitHub Pages serves a `404.html` copy of
-  `index.html`, and the workflow takes the base path from
-  `actions/configure-pages`. Routes are path URLs only, with no hash
-  routing.
+  History API path routes (`/`, `/options`, `/about`, `/g/?id=<id>`) under
+  the build's base path; an unknown path shows home. The build writes
+  `g/index.html` and `404.html` (see [[project_share_previews]]); GitHub
+  Pages serves `404.html` for `/options`, `/about` and any other deep
+  link. Caddy tries
+  `{path}`, then `{path}/index.html`, then falls back to `index.html` for
+  app routes, but not for `/api/*`, `/ws/*`, `/healthz`, `/assets/*` and
+  `/packs/*`, where a missing file answers 404. The workflow takes the
+  base path from `actions/configure-pages`. Routes are path URLs only,
+  with no hash routing.
 - Real time over WebSocket; clients send intents, the server applies them.
 
 **Why:** Go, Redis, TypeScript and separate static hosting are the user's

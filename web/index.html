@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#0D111B" />
     <title>Into the Fray</title>
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
     <link rel="preconnect" href="https://img.intothefray.xyz" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +16,18 @@
     />
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Shown only without JavaScript. The text is the home page's description (src/lib/pages.ts). -->
+      <noscript>
+        <h1>Into the Fray</h1>
+        <p>
+          Play Marvel Champions in your browser, solo or with up to three friends. A free sandbox
+          card table: no account, nothing to install. An unofficial fan project.
+        </p>
+        <p>Turn on JavaScript to play.</p>
+        <p>Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.</p>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

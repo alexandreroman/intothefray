@@ -9,7 +9,9 @@ type: project
 - Frontend: GitHub Pages at `https://intothefray.xyz` (custom domain at the
   root, so the build's base path is `/`). The repository variable `API_URL`
   is `https://api.intothefray.xyz`; the `web` job of `ci.yml` passes it as
-  `VITE_API_URL`.
+  `VITE_API_URL`. The Pages build also gets `SITE_URL`, the `base_url` of
+  `actions/configure-pages`, for the absolute URLs of the share previews
+  (see [[project_share_previews]]).
 - Backend: an OVH VPS (Ubuntu 26, 2 GB of RAM) at
   `https://api.intothefray.xyz`, running the Go server and its own Redis
   (in memory, not exposed). `ALLOWED_ORIGINS` is `https://intothefray.xyz`.

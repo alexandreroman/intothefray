@@ -5,6 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
+import { DEFAULT_SITE_URL, seo } from './seo.ts';
 
 /** The Git revision of the checkout, with "-dirty" when it has changes (like Go's VCS stamp), or undefined. */
 function gitCommit(): string | undefined {
@@ -60,11 +61,12 @@ function packIndex(): Plugin {
 }
 
 export default defineConfig({
-  // The base stays absolute (Vite's default '/', never './'): routes are real paths (/g/<id>), so
+  // The base stays absolute (Vite's default '/', never './'): routes are real paths (/about, /g/), so
   // assets must not resolve against them. The GitHub Pages build passes its sub-path with --base.
   // Besides the VITE_* variables, expose the instance name shown in the tab title (see lib/title.ts).
   envPrefix: ['VITE_', 'APP_INSTANCE'],
-  plugins: [svelte(), svelteTesting(), packIndex()],
+  // SITE_URL makes the share previews' URLs absolute; CI passes the GitHub Pages site URL.
+  plugins: [svelte(), svelteTesting(), packIndex(), seo(process.env.SITE_URL || DEFAULT_SITE_URL)],
   test: {
     environment: 'jsdom',
     globals: true,

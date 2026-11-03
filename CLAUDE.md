@@ -39,7 +39,9 @@ make packs        # card packs; needs packs/images/manifest.json
 - `internal/packgen/` — generator internals (sources, curated data, build)
 - `packs/` — `curated/` hand-written data, `dist/` generated JSON
   (committed, never edited by hand), embedded by `packs.go`
-- `web/` — Svelte SPA (standalone pnpm project) and its `Caddyfile`
+- `web/` — Svelte SPA (standalone pnpm project) and its `Caddyfile`;
+  `seo.ts` writes the share previews at build, `images/` holds the
+  sources of the share images
 - `Dockerfile`, `compose.yaml` — server image and local stack
 - `mise.toml` — pinned node and pnpm versions (local and CI)
 - `scripts/`, `.casper.json` — optional Casper workspace support

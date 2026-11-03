@@ -5,6 +5,8 @@ import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const NODE_FILES = ['vite.config.ts', 'eslint.config.js', 'seo.ts', 'seo.test.ts'];
+
 export default defineConfig(
   { ignores: ['dist/'] },
   js.configs.recommended,
@@ -12,13 +14,13 @@ export default defineConfig(
   svelte.configs.recommended,
   prettierConfig,
   svelte.configs.prettier,
-  // The config files run in Node, the app in the browser.
+  // The config files and the build plugin run in Node, the app in the browser.
   {
-    ignores: ['vite.config.ts', 'eslint.config.js'],
+    ignores: NODE_FILES,
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ['vite.config.ts', 'eslint.config.js'],
+    files: NODE_FILES,
     languageOptions: { globals: globals.node },
   },
   {
