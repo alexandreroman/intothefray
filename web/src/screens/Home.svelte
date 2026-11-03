@@ -1,13 +1,51 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { createGame } from '../lib/api';
   import { playerName } from '../lib/names';
+  import { NewsState } from '../lib/newsState.svelte';
   import { setToken } from '../lib/prefs';
   import { gamePath, go } from '../lib/router.svelte';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
+  import Tooltip from '../components/Tooltip.svelte';
+  import WhatsNewDialog from '../components/WhatsNewDialog.svelte';
+  import { lastPressByPointer } from '../components/modal.svelte';
 
   let starting = $state(false);
   let error = $state('');
+
+  const news = new NewsState();
+  const hasUnread = $derived(news.unread.length > 0);
+  // The ids of the entries unread when the dialog opened, tagged as new in it; none while it is closed.
+  let shownUnread = $state<ReadonlySet<string> | null>(null);
+
+  let newsButton = $state<HTMLButtonElement>();
+  // What had the focus when the dialog opened, and whether the pointer opened it (see Dialog).
+  let opener: Element | null = null;
+  let openedByPointer = false;
+
+  /** Opens the news, which are all seen from then on: the dot and the banner go. */
+  function openWhatsNew(): void {
+    opener = document.activeElement;
+    openedByPointer = lastPressByPointer();
+    shownUnread = new Set(news.unread.map((entry) => entry.id));
+    news.markSeen();
+  }
+
+  async function closeWhatsNew(): Promise<void> {
+    shownUnread = null;
+    await tick();
+    // Opened from the banner, the dialog took the banner away with its button: the dialog gives the
+    // focus back to nothing, so the What's new button takes it, as the dialog would have given it.
+    if (opener !== null && !opener.isConnected) {
+      if (openedByPointer) {
+        newsButton?.focus({ focusVisible: false });
+      } else {
+        newsButton?.focus();
+      }
+    }
+    opener = null;
+  }
 
   async function startGame(): Promise<void> {
     starting = true;
@@ -40,6 +78,17 @@
       </div>
 
       <div class="start">
+        {#if news.bannerEntry}
+          <aside class="banner" aria-label="Latest news">
+            <p><span class="label">New:</span> {news.bannerEntry.title}</p>
+            <button class="see" onclick={openWhatsNew}>See what's new</button>
+            <button
+              class="btn-ghost dismiss"
+              aria-label="Dismiss"
+              onclick={() => news.dismissBanner()}><Icon name="cross" /></button
+            >
+          </aside>
+        {/if}
         <div class="actions">
           <button class="btn-primary" disabled={starting} onclick={startGame}>
             <Icon name="arrow-right" />
@@ -49,6 +98,20 @@
             ><Icon name="sliders" />Options</button
           >
           <button class="secondary" onclick={() => go('/about')}><Icon name="info" />About</button>
+          <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
+               how many: so does the button's name. -->
+          <button
+            class="secondary news"
+            aria-label={hasUnread ? "What's new, unread news" : "What's new"}
+            data-tip="What's new"
+            bind:this={newsButton}
+            onclick={openWhatsNew}
+          >
+            <Icon name="sparkle" />
+            {#if hasUnread}
+              <span class="dot" aria-hidden="true"></span>
+            {/if}
+          </button>
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
@@ -99,6 +162,12 @@
 
   <footer>Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.</footer>
 </div>
+
+<Tooltip />
+
+{#if shownUnread}
+  <WhatsNewDialog entries={news.entries} unread={shownUnread} onclose={closeWhatsNew} />
+{/if}
 
 <style>
   .home {
@@ -206,7 +275,9 @@
     stroke-width: 2.2;
   }
 
+  /* Relative: the What's new button places its dot. */
   .secondary {
+    position: relative;
     gap: 10px;
     padding: 0 22px;
     font-size: 15px;
@@ -217,6 +288,78 @@
   .secondary :global(svg) {
     width: 18px;
     height: 18px;
+  }
+
+  /* A square, its icon a size up from the labelled buttons'. */
+  .secondary.news {
+    width: 56px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .secondary.news :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Unread news: a Fray red dot on the button's corner, ringed with the page's ground. */
+  .dot {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--table-bg);
+  }
+
+  /* The newest unread entry, in a slim strip over the buttons; the text wraps on a phone. */
+  .banner {
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .banner p {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--text-soft);
+  }
+
+  .banner .label {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .banner .see {
+    flex: none;
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .banner .dismiss {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+  }
+
+  .banner .dismiss :global(svg) {
+    width: 16px;
+    height: 16px;
   }
 
   .start {

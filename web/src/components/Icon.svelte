@@ -21,7 +21,8 @@
     | 'info'
     | 'dice'
     | 'plus'
-    | 'copy';
+    | 'copy'
+    | 'sparkle';
 </script>
 
 <script lang="ts">
@@ -143,6 +144,10 @@
     <!-- A sheet in front of another one. -->
     <rect x="8" y="8" width="12" height="12" rx="2" />
     <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+  {:else if name === 'sparkle'}
+    <!-- Two four-pointed sparkles, a large one and a small one at its top right. -->
+    <path d="M10 6q.8 6.2 7 7-6.2.8-7 7-.8-6.2-7-7 6.2-.8 7-7z" />
+    <path d="M18 3q.3 2.7 3 3-2.7.3-3 3-.3-2.7-3-3 2.7-.3 3-3z" />
   {:else if name === 'back'}
     <!-- An arrow pointing left. -->
     <path d="M19 12H5M11 6l-6 6 6 6" />
