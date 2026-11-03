@@ -313,6 +313,7 @@ describe('ScenarioPicker filter fields', () => {
       const field = screen.getByLabelText(label);
       expect(field.getAttribute('autocomplete')).toBe('off');
       expect(field.getAttribute('spellcheck')).toBe('false');
+      expect(field.hasAttribute('autosave')).toBe(false);
     }
   });
 });

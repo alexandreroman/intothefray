@@ -249,6 +249,15 @@ describe('CardBox', () => {
     expect(within(dialog).getByRole('button', { name: 'Shuffle & close' })).toBeTruthy();
   });
 
+  it('its filter field offers no autocomplete, spell check or saved searches', async () => {
+    await renderTable(makeView({ private: SEARCH }));
+
+    const filter = within(box()).getByRole('textbox', { name: 'Filter by name' });
+    expect(filter.getAttribute('autocomplete')).toBe('off');
+    expect(filter.getAttribute('spellcheck')).toBe('false');
+    expect(filter.hasAttribute('autosave')).toBe(false);
+  });
+
   it('shows its cards about as large as the preview, which a box keeps hidden', async () => {
     await renderTable(makeView({ private: SEARCH }));
 
