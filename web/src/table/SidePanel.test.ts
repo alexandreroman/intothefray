@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import SidePanel from './SidePanel.svelte';
 import { interaction } from './interaction.svelte';
 import type { LogView } from '../lib/types';
@@ -133,6 +134,43 @@ describe('SidePanel', () => {
     expect(undo.dataset.tip).toBe('Undo last action');
     await fireEvent.click(undo);
     expect(onundo).toHaveBeenCalledOnce();
+  });
+
+  describe('the focus after a toggle', () => {
+    /** The panel, which its toggles really collapse and expand. */
+    function renderToggling(): void {
+      const props = { ...PANEL, log: LOG, collapsed: false };
+      const { rerender } = render(SidePanel, {
+        ...props,
+        ontoggle: () => {
+          props.collapsed = !props.collapsed;
+          void rerender(props);
+        },
+      });
+    }
+
+    it('moves to the button that takes its place, activated from the keyboard', async () => {
+      renderToggling();
+      const collapse = screen.getByRole('button', { name: 'Collapse history' });
+      collapse.focus();
+
+      // A click's detail counts the pointer's presses: none for Enter or Space.
+      await fireEvent.click(collapse, { detail: 0 });
+      const expand = await screen.findByRole('button', { name: 'Expand history' });
+      await waitFor(() => expect(document.activeElement).toBe(expand));
+    });
+
+    it('stays off both buttons after a click with the pointer', async () => {
+      renderToggling();
+      const collapse = screen.getByRole('button', { name: 'Collapse history' });
+      collapse.focus();
+
+      await fireEvent.click(collapse, { detail: 1 });
+      const expand = await screen.findByRole('button', { name: 'Expand history' });
+      await tick();
+      expect(document.activeElement).not.toBe(expand);
+      expect(document.activeElement).toBe(document.body);
+    });
   });
 
   it('titles its history, and holds no preview', () => {

@@ -6,6 +6,7 @@
   import { href } from '../lib/router.svelte';
   import Segmented from './Segmented.svelte';
   import { overflowTip } from '../lib/overflowTip';
+  import { pointerBlur } from '../lib/releaseFocus';
   import { ScrollAutoHide, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
   import { SMALL_SCREEN_QUERY } from '../lib/screen';
   import {
@@ -121,7 +122,13 @@
 >
   <div class="bar">
     {#if onback}
-      <button class="icon-button" aria-label="Back" title="Back" onclick={onback}>
+      <button
+        class="icon-button"
+        aria-label="Back"
+        title="Back"
+        onclick={onback}
+        {@attach pointerBlur}
+      >
         <Icon name="back" />
       </button>
     {/if}
@@ -154,6 +161,7 @@
           data-kbd="⇧ Space"
           aria-keyshortcuts="Shift+Space"
           aria-disabled={readyAll.disabled}
+          {@attach pointerBlur}
           onclick={() => {
             if (!readyAll.disabled) {
               readyAll.run();
@@ -171,6 +179,7 @@
           aria-label={fullscreenLabel}
           title={fullscreenLabel}
           onclick={toggleFullscreen}
+          {@attach pointerBlur}
         >
           <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
         </button>
@@ -181,6 +190,7 @@
           aria-label={endLabel}
           title={endLabel}
           onclick={() => (confirmingEnd = true)}
+          {@attach pointerBlur}
         >
           <Icon name="cross" />
         </button>

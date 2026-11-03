@@ -627,6 +627,51 @@ describe('keys on the table', () => {
   });
 });
 
+describe('the focus a table key leaves', () => {
+  /** A top bar button, focused as the click that last pressed it leaves it. */
+  function focusedButton(): HTMLButtonElement {
+    const button = document.body.appendChild(document.createElement('button'));
+    button.textContent = 'Fullscreen';
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    return button;
+  }
+
+  it('a shortcut takes the focus away from a button, which would show its ring', async () => {
+    const { session } = await renderTable();
+    await fireEvent.pointerEnter(placed('mine'));
+    const button = focusedButton();
+
+    await fireEvent.keyDown(button, { key: 'e' });
+    expect(session.act).toHaveBeenCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
+    expect(document.activeElement).not.toBe(button);
+
+    button.focus();
+    await fireEvent.keyDown(button, { key: '+' });
+    expect(zoomLabel()).toBe('110%');
+    expect(document.activeElement).not.toBe(button);
+  });
+
+  it('a key that is no shortcut leaves the focus where it is: the keyboard navigates', async () => {
+    await renderTable();
+    const button = focusedButton();
+
+    for (const key of ['Enter', 'Tab', ' ']) {
+      await fireEvent.keyDown(button, { key });
+      expect(document.activeElement).toBe(button);
+    }
+  });
+
+  it('a key typed in a field leaves its focus', async () => {
+    await renderTable();
+    const field = document.body.appendChild(document.createElement('input'));
+    field.focus();
+
+    await fireEvent.keyDown(field, { key: '+' });
+    expect(document.activeElement).toBe(field);
+  });
+});
+
 describe('held keys', () => {
   it('a held key repeats only the counters and the zoom', async () => {
     const view = makeView({ canUndo: true });

@@ -256,6 +256,38 @@ describe('TopBar', () => {
     expect(screen.getByRole('button', { name: 'Fullscreen' })).toBeTruthy();
   });
 
+  it('keeps no focus on a button clicked with the pointer, only on one activated from the keyboard', async () => {
+    document.documentElement.requestFullscreen = vi.fn().mockResolvedValue(undefined);
+    render(TopBar, {
+      onback: () => {},
+      readyAll: { disabled: false, run: () => {} },
+      viewMode: 'all',
+      onviewmode: () => {},
+    });
+
+    for (const name of ['Back', 'Ready all cards', 'Fullscreen', 'Villain + player']) {
+      const button = screen.getByRole('button', { name });
+      // A click's detail counts the pointer's presses: none for Enter or Space.
+      button.focus();
+      await fireEvent.click(button, { detail: 1 });
+      expect(document.activeElement, name).not.toBe(button);
+
+      button.focus();
+      await fireEvent.click(button, { detail: 0 });
+      expect(document.activeElement, name).toBe(button);
+    }
+  });
+
+  it('gives no focus back to End game clicked with the pointer once its dialog closes', async () => {
+    render(TopBar, { onend: () => {} });
+    const end = screen.getByRole('button', { name: 'End game' });
+
+    end.focus();
+    await fireEvent.click(end, { detail: 1 });
+    await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(document.activeElement).not.toBe(end);
+  });
+
   it('ignores a refused request', async () => {
     const refusal = refused();
     document.documentElement.requestFullscreen = vi.fn(() => refusal.promise);

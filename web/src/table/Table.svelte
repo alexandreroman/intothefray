@@ -22,6 +22,7 @@
   import { localizedFace, localizedName } from '../lib/localize';
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
+  import { pointerBlur } from '../lib/releaseFocus';
   import { NARROW_SCREEN_QUERY, PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
   import type { GameSession } from '../lib/session.svelte';
   import type {
@@ -1840,6 +1841,7 @@
               undo();
             }
           }}
+          {@attach pointerBlur}
         >
           <Icon name="undo" />
         </button>
