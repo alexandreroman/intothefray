@@ -37,7 +37,7 @@ func sampleTable() *Table {
 		},
 		Hands:       map[Area][]string{PlayerArea(0): {"c2"}},
 		Stages:      []*Stage{{Key: "main", Label: "Main scheme", Current: "c4", Cards: []string{"c4"}}},
-		FirstPlayer: Point{X: 420, Y: 0},
+		FirstPlayer: &Point{X: 420, Y: 0},
 		Arrows:      []Arrow{{From: "c1", To: "c4", Seat: 0}},
 		Views: map[Area]*PrivateView{
 			PlayerArea(0): {Pile: "deck:p0", Mode: "top", Cards: []string{"c3"}},
@@ -103,6 +103,7 @@ func TestCloneIsDeep(t *testing.T) {
 	clone.Stages[0].Cards[0] = "zzz"
 	clone.Stages[0].Current = "zzz"
 	clone.Arrows[0].To = "zzz"
+	clone.FirstPlayer.X = 999
 	clone.Views[PlayerArea(0)].Cards[0] = "zzz"
 	clone.Views[PlayerArea(0)].Mode = "search"
 	clone.NextZ = 100

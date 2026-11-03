@@ -32,7 +32,8 @@ type: project
   without overlapping. A player's deck lies at x 0, its discard at 130,
   side piles 130 apart, the identity (and a classic villain) at 300, a
   classic main scheme at 460.
-- The first player token starts right of the first player's identity,
+- The first player token (two heroes or more, see
+  [[project_first_player_token]]) starts right of the first player's identity,
   40 units past its right edge (clear of it when exhausted), centred on
   its height to the grid: (460, 450) on a row without side piles. The
   active counter starts under its villain card (20 right of the card's

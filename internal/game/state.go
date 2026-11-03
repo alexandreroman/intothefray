@@ -259,11 +259,13 @@ type PrivateView struct {
 
 // Table is the whole shared state of a game.
 type Table struct {
-	Cards       map[string]*Card  `json:"cards"`
-	Piles       map[string]*Pile  `json:"piles"`
-	Hands       map[Area][]string `json:"hands"`
-	Stages      []*Stage          `json:"stages"`
-	FirstPlayer Point             `json:"firstPlayer"`
+	Cards  map[string]*Card  `json:"cards"`
+	Piles  map[string]*Pile  `json:"piles"`
+	Hands  map[Area][]string `json:"hands"`
+	Stages []*Stage          `json:"stages"`
+	// FirstPlayer is the first player token, nil in a game of a single seat:
+	// one hero has no one to pass it to.
+	FirstPlayer *Point `json:"firstPlayer,omitempty"`
 	// Active is the active counter, nil when the scenario has none.
 	Active *Point                `json:"active,omitempty"`
 	Arrows []Arrow               `json:"arrows,omitempty"`
@@ -280,10 +282,17 @@ func (t *Table) Clone() *Table {
 	clone.Stages = cloneStages(t.Stages)
 	clone.Arrows = slices.Clone(t.Arrows)
 	clone.Views = cloneMapOfPtrs(t.Views, (*PrivateView).clone)
-	if t.Active != nil {
-		p := *t.Active
-		clone.Active = &p
+	clone.FirstPlayer = clonePoint(t.FirstPlayer)
+	clone.Active = clonePoint(t.Active)
+	return &clone
+}
+
+// clonePoint returns a copy of p; nil stays nil.
+func clonePoint(p *Point) *Point {
+	if p == nil {
+		return nil
 	}
+	clone := *p
 	return &clone
 }
 

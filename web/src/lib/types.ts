@@ -258,7 +258,10 @@ export type MarkerName = 'firstPlayer' | 'active';
 /** Every marker, in draw order. */
 export const MARKERS: readonly MarkerName[] = ['firstPlayer', 'active'];
 
-/** Where a marker lies; undefined for the active counter when the scenario has none. */
+/**
+ * Where a marker lies; undefined for a marker the table does not have: the first player token in a
+ * one-hero game, the active counter when the scenario has none.
+ */
 export function markerPoint(table: TableView, name: MarkerName): Point | undefined {
   return name === 'active' ? table.active : table.firstPlayer;
 }
@@ -268,7 +271,8 @@ export interface TableView {
   piles: PileView[];
   hands?: Partial<Record<Area, string[]>>; // the hands of the viewer's own seats only
   stages: Stage[];
-  firstPlayer: Point;
+  /** The first player token, absent in a one-hero game: a single seat has no one to pass it to. */
+  firstPlayer?: Point;
   /** The active counter, absent when the scenario has none. */
   active?: Point;
   arrows?: Arrow[];

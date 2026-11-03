@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"maps"
@@ -582,8 +583,8 @@ func TestSetupPlayers(t *testing.T) {
 
 	// The first player token lies right of the identity of the first player,
 	// seat 0, centred on its height to the nearest grid line.
-	if table.FirstPlayer != (Point{X: 460, Y: 450}) {
-		t.Errorf("first player = %+v, want (460, 450)", table.FirstPlayer)
+	if want := (Point{X: 460, Y: 450}); table.FirstPlayer == nil || *table.FirstPlayer != want {
+		t.Errorf("first player = %v, want %+v", table.FirstPlayer, want)
 	}
 }
 
@@ -767,11 +768,75 @@ func TestStartRowsPerSeat(t *testing.T) {
 	if first == nil {
 		t.Fatal("seat 0 has no identity")
 	}
-	if want := (Point{X: ceilToGrid(first.X + portraitWidth + inPlayGap), Y: first.Y + 40}); table.FirstPlayer != want {
-		t.Errorf("first player = %+v, want %+v, right of the identity of seat 0", table.FirstPlayer, want)
+	token := table.FirstPlayer
+	if token == nil {
+		t.Fatal("the table has no first player token")
 	}
-	if deck := table.Piles["deck:p0"]; table.FirstPlayer.X < deck.X+portraitWidth {
-		t.Errorf("first player at x %d, want past the deck of seat 0 at %d", table.FirstPlayer.X, deck.X)
+	if want := (Point{X: ceilToGrid(first.X + portraitWidth + inPlayGap), Y: first.Y + 40}); *token != want {
+		t.Errorf("first player = %+v, want %+v, right of the identity of seat 0", *token, want)
+	}
+	if deck := table.Piles["deck:p0"]; token.X < deck.X+portraitWidth {
+		t.Errorf("first player at x %d, want past the deck of seat 0 at %d", token.X, deck.X)
+	}
+}
+
+// soloTwoDeckGame returns a started Rhino game where Alex ("a"), alone,
+// plays two Spider-Man decks at seats 0 and 1.
+func soloTwoDeckGame(t *testing.T) *Game {
+	t.Helper()
+	cat := newCatalog(t)
+	g := mustNewGame(t, "g1", "a", "Alex", testNow)
+	if err := g.AddDeck("a"); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
+		t.Fatal(err)
+	}
+	for slot := range 2 {
+		seatDeck(t, g, "a", slot, spiderManDeck(t, cat), cat)
+	}
+	if err := g.Start("a", cat, testSeed, testNow); err != nil {
+		t.Fatal(err)
+	}
+	return g
+}
+
+// TestFirstPlayerTokenNeedsTwoSeats checks that the first player token is set
+// up, and sent to viewers, only when two seats or more take turns: seats, not
+// players, count.
+func TestFirstPlayerTokenNeedsTwoSeats(t *testing.T) {
+	tests := []struct {
+		name      string
+		game      func(t *testing.T) *Game
+		viewer    string
+		wantToken bool
+	}{
+		{"one seat", func(t *testing.T) *Game { return gameOfPlayers(t, 1) }, "p0", false},
+		{"two players", func(t *testing.T) *Game { return gameOfPlayers(t, 2) }, "p0", true},
+		{"one player with two decks", soloTwoDeckGame, "a", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := tt.game(t)
+
+			if got := g.Table.FirstPlayer != nil; got != tt.wantToken {
+				t.Errorf("first player token = %v, want one: %v", g.Table.FirstPlayer, tt.wantToken)
+			}
+
+			data, err := json.Marshal(g.ViewFor(tt.viewer))
+			if err != nil {
+				t.Fatalf("Marshal() error = %v", err)
+			}
+			var view struct {
+				Table map[string]json.RawMessage `json:"table"`
+			}
+			if err := json.Unmarshal(data, &view); err != nil {
+				t.Fatalf("Unmarshal() error = %v", err)
+			}
+			if _, got := view.Table["firstPlayer"]; got != tt.wantToken {
+				t.Errorf("view has firstPlayer: %v, want %v", got, tt.wantToken)
+			}
+		})
 	}
 }
 
@@ -886,18 +951,24 @@ func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
 			if gap := firstRowTop - villainBottom; gap != wantGap {
 				t.Errorf("room under the villain row = %d, want %d", gap, wantGap)
 			}
-			if deck.Y%10 != 0 || table.FirstPlayer.Y%10 != 0 {
-				t.Errorf("first player row at y %d (token %d), want on the 10-unit grid", deck.Y, table.FirstPlayer.Y)
+			if deck.Y%10 != 0 {
+				t.Errorf("first player row at y %d, want on the 10-unit grid", deck.Y)
 			}
-			// The first player token lies beside the first player's identity, centred on its height
-			// (43 below its top) to the nearest grid line, inside the row.
-			if want := deck.Y + 40; table.FirstPlayer.Y != want {
-				t.Errorf("first player token at y %d, want beside the first player's identity at %d",
-					table.FirstPlayer.Y, want)
-			}
-			const tokenHeight = 70 // FIRST_PLAYER_BOX (web/src/table/layout.ts)
-			if bottom := table.FirstPlayer.Y + tokenHeight; bottom > firstRowTop+rowHeight {
-				t.Errorf("first player token ends at y %d, past its row's bottom at %d", bottom, firstRowTop+rowHeight)
+			// With two players, the first player token lies beside the first player's identity,
+			// centred on its height (43 below its top) to the nearest grid line, inside the row.
+			if players > 1 {
+				token := table.FirstPlayer
+				if token == nil {
+					t.Fatal("the table has no first player token")
+				}
+				if want := deck.Y + 40; token.Y != want {
+					t.Errorf("first player token at y %d, want beside the first player's identity at %d", token.Y, want)
+				}
+				const tokenHeight = 70 // FIRST_PLAYER_BOX (web/src/table/layout.ts)
+				if bottom := token.Y + tokenHeight; bottom > firstRowTop+rowHeight {
+					t.Errorf("first player token ends at y %d, past its row's bottom at %d",
+						bottom, firstRowTop+rowHeight)
+				}
 			}
 
 			for seat := 1; seat < players; seat++ {

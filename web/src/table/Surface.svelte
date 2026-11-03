@@ -69,7 +69,7 @@
     /** The surface size, in table units. */
     width: number;
     height: number;
-    /** Where each marker lies; the active counter is absent when the scenario has none. */
+    /** Where each marker lies; a marker the table does not have is absent (see markerPoint). */
     markers: Partial<Record<MarkerName, Point>>;
     /** Whether the viewer can drag the markers: any player can, spectators cannot. */
     markersMovable?: boolean;

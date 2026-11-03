@@ -1119,11 +1119,12 @@ func TestHandOrder(t *testing.T) {
 
 func TestFirstPlayer(t *testing.T) {
 	table := newTestTable()
+	table.FirstPlayer = &Point{X: 460, Y: 450}
 
 	mustApply(t, table, Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: 423, Y: 7})
 
-	if want := (Point{X: 420, Y: 10}); table.FirstPlayer != want {
-		t.Errorf("FirstPlayer = %+v, want %+v", table.FirstPlayer, want)
+	if want := (Point{X: 420, Y: 10}); table.FirstPlayer == nil || *table.FirstPlayer != want {
+		t.Errorf("FirstPlayer = %v, want %+v", table.FirstPlayer, want)
 	}
 }
 

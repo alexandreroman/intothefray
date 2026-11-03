@@ -105,7 +105,7 @@ type TableView struct {
 	Piles       []PileView        `json:"piles"`
 	Hands       map[Area][]string `json:"hands,omitempty"` // the viewer's own seats only
 	Stages      []*Stage          `json:"stages"`
-	FirstPlayer Point             `json:"firstPlayer"`
+	FirstPlayer *Point            `json:"firstPlayer,omitempty"`
 	Active      *Point            `json:"active,omitempty"`
 	Arrows      []Arrow           `json:"arrows,omitempty"`
 	Private     *PrivateView      `json:"private,omitempty"`
@@ -280,13 +280,10 @@ func (t *Table) viewFor(seats []int, home int) *TableView {
 	tv := &TableView{
 		Cards:       []CardView{},
 		Piles:       []PileView{},
-		FirstPlayer: t.FirstPlayer,
+		FirstPlayer: clonePoint(t.FirstPlayer),
+		Active:      clonePoint(t.Active),
 		Arrows:      slices.Clone(t.Arrows),
 		Stages:      make([]*Stage, 0, len(t.Stages)),
-	}
-	if t.Active != nil {
-		active := *t.Active
-		tv.Active = &active
 	}
 	stageKeys := map[string]string{}
 	for _, stage := range t.Stages {

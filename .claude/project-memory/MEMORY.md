@@ -43,6 +43,7 @@
 - [Compression: HTTP by the proxy, WebSocket by the backend](references/project_no_backend_compression.md) — WebSocket deflate, no context takeover
 - [Visual identity](references/project_visual_identity.md) — Ink & Signal: Archivo, ink palette, split-card logo, full wordmark in bars
 - [Table layout](references/project_table_layout.md) — rows, owner frames, out-of-play chips; 112×157 table cards; one villain row; markers
+- [First player token needs two heroes](references/project_first_player_token.md) — none in a one-hero game; counts seats, not players
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
 - [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow each screen's content column; table: icons 8px from window edge
 - [Several decks per player](references/project_multi_deck.md) — 1–4 deck slots; seat = deck; credited seat; hero selector; two hands side by side

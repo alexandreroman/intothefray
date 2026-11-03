@@ -544,6 +544,16 @@ describe('Table', () => {
     expect(token.tagName.toLowerCase()).toBe('svg');
   });
 
+  it('draws no first player token in a one-hero game', async () => {
+    const view = makeView();
+    delete view.table?.firstPlayer;
+    render(Table, { session: fakeSession(), view });
+    await tick();
+
+    expect(screen.queryByRole('img', { name: 'First player' })).toBeNull();
+    expect(surface().querySelector('.marker')).toBeNull();
+  });
+
   it('shows the top card of a pile that lists its cards', async () => {
     const view = makeView({
       cards: [card('t', { code: '01001', zone: 'pile', x: 0, y: 0 })],
