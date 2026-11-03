@@ -31,8 +31,7 @@ type: project
 
 **Why:** per-viewer views keep play fair between players; without
 accounts or long-term storage there is nothing to run beyond a
-short-lived sandbox game. The full rationale is in the design spec under
-`docs/`.
+short-lived sandbox game.
 
 **How to apply:** check new features against these limits before
 building.

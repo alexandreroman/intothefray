@@ -72,5 +72,4 @@ type: project
 complete, labelled menu per card, pile and box tile.
 
 **How to apply:** new actions go into `actionsFor` (keys and menu read
-it); the review and its steps are in
-`docs/superpowers/specs/2026-10-20-action-bars-ux-review.md` (local).
+it).
