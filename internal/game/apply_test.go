@@ -21,7 +21,7 @@ func newTestTable() *Table {
 				ID: "c1", Owner: 0, Home: "deck:p0", Zone: ZoneTable, X: 100, Y: 200, Z: 5,
 				Tokens: map[string]int{"dmg": 2}, Status: map[string]int{"stunned": 1}, Exhausted: true, Face: 1, Faces: 2,
 			},
-			"c2": {ID: "c2", Owner: 0, Home: "deck:p0", Zone: ZoneTable, X: 100, Y: 220, Z: 4, Parent: "c1"},
+			"c2": {ID: "c2", Owner: 0, Home: "deck:p0", Zone: ZoneTable, X: 110, Y: 220, Z: 4, Parent: "c1"},
 			"c3": {ID: "c3", Owner: 0, Home: "deck:p0", Zone: ZoneHand},
 			"c4": {ID: "c4", Owner: 0, Home: "deck:p0", Zone: ZonePile, Pile: "deck:p0"},
 			"c5": {ID: "c5", Owner: 0, Home: "deck:p0", Zone: ZonePile, Pile: "deck:p0"},
@@ -84,7 +84,7 @@ func TestMoveATuckedCardClosesItsStack(t *testing.T) {
 
 	// c11 takes the place of c10, under c9.
 	checkStack(t, table, "c7", "c9", "c11")
-	checkAt(t, table, "c11", 600, 60)
+	checkAt(t, table, "c11", 620, 60)
 	checkAt(t, table, "c10", 1000, 500)
 	checkStack(t, table, "c10")
 	checkZOrder(t, table, "c11", "c9", "c7", "c10")
@@ -107,9 +107,9 @@ func TestAttach(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c1"})
 
-	// c1 already carries c2 at (100,220): c7 goes under c2.
+	// c1 already carries c2 at (110,220): c7 goes under c2.
 	checkStack(t, table, "c1", "c2", "c7")
-	checkAt(t, table, "c7", 100, 240)
+	checkAt(t, table, "c7", 120, 240)
 	checkUniqueZ(t, table)
 }
 
@@ -118,9 +118,9 @@ func TestAttachIgnoresTheDropPoint(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 654, Y: 87})
 
-	// c1 carries c2: both line up under c7, in its column.
+	// c1 carries c2: both line up down and to the right of c7.
 	checkStack(t, table, "c7", "c1", "c2")
-	checkAt(t, table, "c1", 600, 40)
+	checkAt(t, table, "c1", 610, 40)
 	checkUniqueZ(t, table)
 }
 
@@ -228,9 +228,9 @@ func checkAt(t *testing.T, table *Table, id string, x, y int) {
 }
 
 // checkStack fails when ids, its main card first, are not a whole stack laid
-// out in that order: each card tucked under the previous one, in the main
-// card's column, attachOffsetY below it and beneath it, and no card tucked
-// under the last one.
+// out in that order: each card tucked under the previous one, attachOffsetX
+// to the right of it, attachOffsetY below it and beneath it, and no card
+// tucked under the last one.
 func checkStack(t *testing.T, table *Table, ids ...string) {
 	t.Helper()
 	main := table.Cards[ids[0]]
@@ -242,7 +242,7 @@ func checkStack(t *testing.T, table *Table, ids ...string) {
 		if c.Zone != ZoneTable || c.Parent != above.ID {
 			t.Errorf("%s in zone %q under %q, want on the table under %s", c.ID, c.Zone, c.Parent, above.ID)
 		}
-		checkAt(t, table, c.ID, main.X, main.Y+i*attachOffsetY)
+		checkAt(t, table, c.ID, main.X+i*attachOffsetX, main.Y+i*attachOffsetY)
 	}
 	bottomUp := slices.Clone(ids)
 	slices.Reverse(bottomUp)
@@ -293,8 +293,8 @@ func TestAttachTwoUnderTheSameHost(t *testing.T) {
 
 	// c10 goes under c9, its bottom edge showing below c9's.
 	checkStack(t, table, "c7", "c9", "c10")
-	checkAt(t, table, "c9", 600, 40)
-	checkAt(t, table, "c10", 600, 60)
+	checkAt(t, table, "c9", 610, 40)
+	checkAt(t, table, "c10", 620, 60)
 	checkUniqueZ(t, table)
 }
 
@@ -315,12 +315,12 @@ func TestGroupOfTwoAttachesUnderTheSameHost(t *testing.T) {
 func TestPlayUnderAHostWithAnAttachment(t *testing.T) {
 	table := newTestTable()
 
-	// c1 already carries c2 at (100,220).
+	// c1 already carries c2 at (110,220).
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c1"})
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c2"})
 
 	checkStack(t, table, "c1", "c2", "c3", "c6")
-	checkAt(t, table, "c6", 100, 260)
+	checkAt(t, table, "c6", 130, 260)
 	checkUniqueZ(t, table)
 }
 
@@ -388,7 +388,7 @@ func TestATuckedCardLeavingTheTableClosesItsStack(t *testing.T) {
 
 			// c9 and c10 move up, under c1.
 			checkStack(t, table, "c1", "c9", "c10")
-			checkAt(t, table, "c9", 100, 220)
+			checkAt(t, table, "c9", 110, 220)
 			checkUniqueZ(t, table)
 			c2 := table.Cards[cmp.Or(tt.a.Renames["c2"], "c2")]
 			if c2.Parent != "" || c2.Zone == ZoneTable || c2.Pile != tt.pile {
@@ -593,8 +593,8 @@ func TestPlayUnderACard(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 10, Y: 10})
 
 	c3, c7 := table.Cards["c3"], table.Cards["c7"]
-	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.X != 600 || c3.Y != 40 {
-		t.Errorf("c3 = %+v, want tucked under c7 at (600,40)", c3)
+	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.X != 610 || c3.Y != 40 {
+		t.Errorf("c3 = %+v, want tucked under c7 at (610,40)", c3)
 	}
 	if c3.Z >= c7.Z {
 		t.Errorf("c3.Z = %d, want below c7.Z = %d", c3.Z, c7.Z)
@@ -609,11 +609,11 @@ func TestPlayUnderACardFromAPile(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
 
-	// c1 already carries c2 at (100,220): c6 goes under c2.
+	// c1 already carries c2 at (110,220): c6 goes under c2.
 	c6 := table.Cards["c6"]
 	if c6.Zone != ZoneTable || c6.Pile != "" || !c6.FaceDown || c6.Parent != "c2" ||
-		c6.X != 100 || c6.Y != 240 {
-		t.Errorf("c6 = %+v, want face down under c2 at (100,240)", c6)
+		c6.X != 120 || c6.Y != 240 {
+		t.Errorf("c6 = %+v, want face down under c2 at (120,240)", c6)
 	}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c5"}) {
 		t.Errorf("deck = %v, want [c4 c5]", got)
@@ -626,12 +626,12 @@ func TestPlayUnderACardIgnoresTheDropPoint(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 712, Y: 4})
 
 	checkStack(t, table, "c7", "c3")
-	checkAt(t, table, "c3", 600, 40)
+	checkAt(t, table, "c3", 610, 40)
 
-	// Moving the host carries it along, still in its column.
+	// Moving the host carries it along, still down and to its right.
 	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 800, Y: 100})
 	checkStack(t, table, "c7", "c3")
-	checkAt(t, table, "c3", 800, 120)
+	checkAt(t, table, "c3", 810, 120)
 }
 
 func TestPlayUnderRefusesATargetOffTheTable(t *testing.T) {
@@ -657,7 +657,7 @@ func TestPlayOfARevealedCardRefusesItselfOrItsAttachmentsAsTarget(t *testing.T) 
 		table := newTestTable()
 		table.Cards["c7"].OnPile = PileEncounter
 		table.Cards["c9"] = &Card{
-			ID: "c9", Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: 600, Y: 40, Z: 5, Parent: "c7",
+			ID: "c9", Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: 610, Y: 40, Z: 5, Parent: "c7",
 		}
 		before := table.Clone()
 
@@ -692,7 +692,7 @@ func newStageTable() *Table {
 		Tokens: map[string]int{"dmg": 3}, Status: map[string]int{"tough": 1}, Exhausted: true,
 	}
 	table.Cards["c21"] = &Card{
-		ID: "c21", Owner: NoOwner, Zone: ZoneTable, X: 280, Y: 20, Z: 6, Parent: "c20",
+		ID: "c21", Owner: NoOwner, Zone: ZoneTable, X: 290, Y: 20, Z: 6, Parent: "c20",
 	}
 	table.Cards["c22"] = &Card{ID: "c22", Owner: NoOwner, Zone: ZoneStage, Faces: 2}
 	table.Stages = []*Stage{

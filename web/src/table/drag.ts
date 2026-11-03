@@ -42,9 +42,11 @@ export function unknownTopId(pile: Pick<PileView, 'kind'>): string {
 }
 
 /**
- * How far below the card before it in its chain a tucked card lies, in table
- * units. It mirrors attachOffsetY in internal/game/apply.go.
+ * How far to the right of and below the card before it in its chain a tucked
+ * card lies, in table units. They mirror attachOffsetX and attachOffsetY in
+ * internal/game/apply.go.
  */
+export const ATTACH_OFFSET_X = 10;
 export const ATTACH_OFFSET_Y = 20;
 
 /** A drop this close to a pile, in screen pixels, goes onto it. */
@@ -627,9 +629,9 @@ export function tuckHost(
 
 /**
  * Where a card tucked into the stack of `target` lies, as the server lays the
- * chain out: at the end of the chain (tuckHost), in its main card's column,
- * the i-th tucked card i × ATTACH_OFFSET_Y below the main card. Null when
- * target is not on the table.
+ * chain out: at the end of the chain (tuckHost), the i-th tucked card
+ * i × ATTACH_OFFSET_X to the right of and i × ATTACH_OFFSET_Y below the main
+ * card. Null when target is not on the table.
  */
 export function tuckSpot(
   target: string,
@@ -642,7 +644,10 @@ export function tuckSpot(
     return null;
   }
   // The main card is one of the cards staying: with n of them, the new card is the n-th tucked.
-  return { x: main.x, y: main.y + staying.length * ATTACH_OFFSET_Y };
+  return {
+    x: main.x + staying.length * ATTACH_OFFSET_X,
+    y: main.y + staying.length * ATTACH_OFFSET_Y,
+  };
 }
 
 /**

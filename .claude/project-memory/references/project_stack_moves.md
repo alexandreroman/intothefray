@@ -16,9 +16,9 @@ history line name that last card. A main card carries its whole chain and append
 order; a tucked card appends alone. There is no way to insert a card in the
 middle of a chain.
 
-Positions are automatic and the drop point is ignored: every card of a chain
-lies in the main card's column, the i-th tucked card `attachOffsetY` below
-the main card, so every card stays readable. The chain takes fresh Zs from
+Positions are automatic and the drop point is ignored: each tucked card lies
+down and to the right of the previous one, `attachOffsetX` (10) right and
+`attachOffsetY` (20) below, so every card stays readable. The chain takes fresh Zs from
 `NextZ` (unique, positive), the main card on top and each card beneath the
 previous one, which brings the stack to the top of the table as a move does.
 

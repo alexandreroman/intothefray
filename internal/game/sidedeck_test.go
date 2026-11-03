@@ -692,7 +692,7 @@ func TestSideCardDiscardGoesToItsOwnersDiscard(t *testing.T) {
 	}
 	tb.Cards["s1"] = &Card{ID: "s1", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, X: 600, Y: 600, Z: 50}
 	tb.Cards["s2"] = &Card{
-		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 600, Y: 620, Z: 49,
+		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 610, Y: 620, Z: 49,
 	}
 	f.g.History = newHistory(testSeed, tb, testNow)
 

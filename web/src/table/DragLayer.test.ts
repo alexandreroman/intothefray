@@ -429,16 +429,16 @@ describe('dragging a table card', () => {
   });
 
   /**
-   * "other" with a chain under it, laid out by the server: o1 20 below it, then o2, a Rhino, 20
-   * below o1.
+   * "other" with a chain under it, laid out by the server: o1 10 to the right of and 20 below it,
+   * then o2, a Rhino, as far from o1.
    */
   function chainView(): View {
     return makeView({
       cards: [
         ...CARDS.filter((c) => c.id !== 'other'),
         card('other', { x: 400, y: 300, z: 3 }),
-        card('o1', { x: 400, y: 320, z: 2, parent: 'other' }),
-        card('o2', { code: '01094', x: 400, y: 340, z: 1, parent: 'o1' }),
+        card('o1', { x: 410, y: 320, z: 2, parent: 'other' }),
+        card('o2', { code: '01094', x: 420, y: 340, z: 1, parent: 'o1' }),
       ],
     });
   }
@@ -456,14 +456,14 @@ describe('dragging a table card', () => {
     expect(outlined()).toEqual(['o2']);
     expect(screen.getByText('Under Rhino')).toBeTruthy();
     expect(screen.queryByText('Under Spider-Man')).toBeNull();
-    // The label stays over the card pointed at, in the column of the whole chain.
+    // The label stays over the card pointed at, not over the end of the chain.
     const hint = document.querySelector<HTMLElement>('.drop-hint');
     expect([parseFloat(hint!.style.left), parseFloat(hint!.style.top)]).toEqual([476, 332]);
   });
 
   it('outlines and names the card before it once a tucked card dragged off the end leaves the chain', async () => {
     await renderTable(chainView());
-    // o2 lies at 420, 380 on the screen; dropped back on "other", it goes under o1 again.
+    // o2 lies at 440, 380 on the screen; dropped back on "other", it goes under o1 again.
     await press(placed('o2'), 470, 530);
     await moveTo(470, 420);
     expect(outlined()).toEqual(['o1']);
@@ -476,7 +476,7 @@ describe('dragging a table card', () => {
   it('lands at the end of the chain of the stack it is dropped on, until the server answers', async () => {
     const { session } = await renderTable(chainView());
     await press(placed('mine'), 50, 400);
-    // Over o2, the last card of the chain, which lies at 420, 380 on the screen.
+    // Over o2, the last card of the chain, which lies at 440, 380 on the screen.
     await moveTo(470, 520);
     expect(outlined()).toEqual(['o2']);
 
@@ -485,13 +485,13 @@ describe('dragging a table card', () => {
       { kind: 'attach', card: 'mine', target: 'o2' },
       0,
     );
-    // In the main card's column, 20 below o2: 400, 360 on the table.
-    expect(corners()).toEqual([['mine', 420, 400]]);
+    // 10 to the right of and 20 below o2: 430, 360 on the table.
+    expect(corners()).toEqual([['mine', 450, 400]]);
   });
 
   it('moves a tucked card alone, and takes its drop on its own stack', async () => {
     const { session } = await renderTable(chainView());
-    // o1 lies at 420, 360 on the screen.
+    // o1 lies at 430, 360 on the screen.
     await press(placed('o1'), 470, 510);
     await moveTo(470, 420);
     expect(placed('o1').classList).toContain('lifted');
@@ -505,8 +505,8 @@ describe('dragging a table card', () => {
       { kind: 'attach', card: 'o1', target: 'other' },
       0,
     );
-    // To the end of the chain, which closes behind it: under o2, once o2 has moved up to 320.
-    expect(corners()).toEqual([['o1', 420, 380]]);
+    // To the end of the chain, which closes behind it: under o2, once o2 has moved up to 410, 320.
+    expect(corners()).toEqual([['o1', 440, 380]]);
   });
 
   it('offers no card of its own chain to a main card: dropped there, it moves', async () => {
@@ -514,16 +514,16 @@ describe('dragging a table card', () => {
     await press(placed('other'), 470, 420);
     expect(placed('o1').classList).not.toContain('drop-target');
     // Down to o2's own spot, over the chain it carries.
-    await moveTo(470, 460);
+    await moveTo(490, 460);
     for (const id of ['other', 'o1', 'o2']) {
       expect(placed(id).classList, id).toContain('lifted');
       expect(placed(id).classList, id).not.toContain('drop-target');
     }
     expect(screen.queryByText(/^Under /)).toBeNull();
 
-    await release(470, 460);
+    await release(490, 460);
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'move', card: 'other', x: 400, y: 340 },
+      { kind: 'move', card: 'other', x: 420, y: 340 },
       0,
     );
   });

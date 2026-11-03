@@ -8,9 +8,12 @@ import (
 	"strings"
 )
 
-// Positions inside a card stack: an attached card sits this far below its
-// target.
-const attachOffsetY = 20
+// Positions inside a card stack: an attached card sits this far to the right
+// of and below its target, so that every card of the stack stays readable.
+const (
+	attachOffsetX = 10
+	attachOffsetY = 20
+)
 
 // gridSize is the snapping step of table coordinates.
 const gridSize = 10
@@ -350,16 +353,16 @@ func (t *Table) detach(c *Card) {
 }
 
 // layOutStack lays out the stack of main, a main card, wherever its cards
-// were: each tucked card lies in main's column, attachOffsetY below the card
-// it is tucked under, so that every card stays readable. The stack takes
-// fresh Zs from nextZ, main on top, each card beneath the one it is tucked
-// under. Fresh Zs keep every Z unique and positive, and bring the stack to
-// the top of the table, as a move does. It is the single place that places
-// and orders the cards of a stack.
+// were: each tucked card lies attachOffsetX to the right of and attachOffsetY
+// below the card it is tucked under, so that every card stays readable. The
+// stack takes fresh Zs from nextZ, main on top, each card beneath the one it
+// is tucked under. Fresh Zs keep every Z unique and positive, and bring the
+// stack to the top of the table, as a move does. It is the single place that
+// places and orders the cards of a stack.
 func (t *Table) layOutStack(main *Card) {
 	tucked := t.chain(main)
 	for i, c := range tucked {
-		c.X = main.X
+		c.X = main.X + (i+1)*attachOffsetX
 		c.Y = main.Y + (i+1)*attachOffsetY
 	}
 	for _, c := range slices.Backward(tucked) {

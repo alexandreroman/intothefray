@@ -98,9 +98,9 @@ func checkIntegrity(t *testing.T, table *Table) {
 // checkStacks verifies that the table cards form stacks laid out as
 // layOutStack does: every card has at most one card tucked directly under it,
 // following the cards it is tucked under leads to a main card without a
-// cycle, and each tucked card lies in its main card's column, attachOffsetY
-// below the card it is tucked under and beneath it. Every table card has a Z
-// of its own, above 0.
+// cycle, and each tucked card lies attachOffsetX to the right of and
+// attachOffsetY below the card it is tucked under, and beneath it. Every
+// table card has a Z of its own, above 0.
 func checkStacks(t *testing.T, table *Table) {
 	t.Helper()
 	tuckedUnder := map[string]string{}
@@ -139,9 +139,10 @@ func checkStacks(t *testing.T, table *Table) {
 			continue
 		}
 		above := table.Cards[c.Parent]
-		if c.X != main.X || c.Y != main.Y+depth*attachOffsetY || c.Z >= above.Z {
+		wantX, wantY := main.X+depth*attachOffsetX, main.Y+depth*attachOffsetY
+		if c.X != wantX || c.Y != wantY || c.Z >= above.Z {
 			t.Errorf("card %s lies at (%d,%d,%d), want (%d,%d) in the stack of %s, beneath %s (Z %d)",
-				id, c.X, c.Y, c.Z, main.X, main.Y+depth*attachOffsetY, main.ID, above.ID, above.Z)
+				id, c.X, c.Y, c.Z, wantX, wantY, main.ID, above.ID, above.Z)
 		}
 	}
 }

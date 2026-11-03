@@ -36,8 +36,8 @@ func TestGroupMoveKeepsOffsets(t *testing.T) {
 	if c1.X != 500 || c1.Y != 500 {
 		t.Errorf("c1 at (%d,%d), want (500,500)", c1.X, c1.Y)
 	}
-	if c2.X != 500 || c2.Y != 520 || c2.Parent != "c1" {
-		t.Errorf("c2 at (%d,%d) under %q, want (500,520) under c1", c2.X, c2.Y, c2.Parent)
+	if c2.X != 510 || c2.Y != 520 || c2.Parent != "c1" {
+		t.Errorf("c2 at (%d,%d) under %q, want (510,520) under c1", c2.X, c2.Y, c2.Parent)
 	}
 	if c7.X != 1000 || c7.Y != 320 {
 		t.Errorf("c7 at (%d,%d), want (1000,320)", c7.X, c7.Y)

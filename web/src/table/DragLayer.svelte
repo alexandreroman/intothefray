@@ -625,7 +625,7 @@
       showHint({ kind: 'pile', id: target.pile }, label, target.rect);
     } else if (target?.kind === 'card' && found?.action && tucks(found.action)) {
       // The card it goes directly under, the last of that stack's chain, is outlined and named.
-      // The label stays over the card pointed at, in the same column: the host may lie under it.
+      // The label stays over the card pointed at: the host may lie beneath it.
       const host = tuckHost(target.card, interaction.dragging?.lifted ?? [], cards);
       const name = faceOf(host)?.name ?? 'a card';
       const label = { glyph: TUCK_GLYPH, text: `Under ${name}`, tuck: true };

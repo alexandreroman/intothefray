@@ -12,6 +12,7 @@ import {
   stackOf,
   tuckHost,
   tuckSpot,
+  ATTACH_OFFSET_X,
   ATTACH_OFFSET_Y,
   type DragSource,
   type DropRect,
@@ -608,27 +609,30 @@ describe('stackOf', () => {
 });
 
 describe('tuckSpot', () => {
-  // A chain laid out by the server: c1 and c2 in r's column, 20 apart.
+  // A chain laid out by the server: each card 10 to the right of and 20 below the one before.
   const chain = [
     card('r', { x: 400, y: 300 }),
-    card('c1', { x: 400, y: 320, parent: 'r' }),
-    card('c2', { x: 400, y: 340, parent: 'c1' }),
+    card('c1', { x: 410, y: 320, parent: 'r' }),
+    card('c2', { x: 420, y: 340, parent: 'c1' }),
     card('free', { x: 100, y: 100 }),
   ];
 
-  it("is the end of the chain, in the main card's column, whatever card of it is the target", () => {
+  it('is the end of the chain, down and to the right of its last card, whatever card of it is the target', () => {
     for (const target of ['r', 'c1', 'c2']) {
-      expect(tuckSpot(target, ['free'], chain), target).toEqual({ x: 400, y: 360 });
+      expect(tuckSpot(target, ['free'], chain), target).toEqual({ x: 430, y: 360 });
     }
   });
 
   it('is under the main card alone when nothing is tucked under it', () => {
-    expect(tuckSpot('free', ['h1'], chain)).toEqual({ x: 100, y: 100 + ATTACH_OFFSET_Y });
+    expect(tuckSpot('free', ['h1'], chain)).toEqual({
+      x: 100 + ATTACH_OFFSET_X,
+      y: 100 + ATTACH_OFFSET_Y,
+    });
   });
 
   it('leaves out a tucked card dropped on its own stack: it goes to the end of the chain', () => {
-    expect(tuckSpot('r', ['c1'], chain)).toEqual({ x: 400, y: 340 });
-    expect(tuckSpot('c2', ['c1'], chain)).toEqual({ x: 400, y: 340 });
+    expect(tuckSpot('r', ['c1'], chain)).toEqual({ x: 420, y: 340 });
+    expect(tuckSpot('c2', ['c1'], chain)).toEqual({ x: 420, y: 340 });
   });
 
   it('is null for a target off the table', () => {

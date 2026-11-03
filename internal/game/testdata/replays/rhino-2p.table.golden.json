@@ -274,7 +274,7 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "pile",
-      "x": 800,
+      "x": 810,
       "y": 210,
       "z": 23,
       "pile": "disc:p1"
@@ -663,7 +663,7 @@
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "x": 850,
+      "x": 860,
       "y": 220,
       "z": 37,
       "parent": "c56jwxnas",
@@ -916,7 +916,7 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "table",
-      "x": 890,
+      "x": 900,
       "y": 20,
       "z": 21,
       "parent": "c4p53zsux"
