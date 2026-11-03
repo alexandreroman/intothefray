@@ -304,6 +304,19 @@ describe('ScenarioPicker Add a set menu', () => {
   });
 });
 
+describe('ScenarioPicker filter fields', () => {
+  it('offer no saved entries and no spelling marks', async () => {
+    renderPicker({ ...rhino, modulars: [] });
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+
+    for (const label of ['Filter by scenario or pack', 'Filter sets']) {
+      const field = screen.getByLabelText(label);
+      expect(field.getAttribute('autocomplete')).toBe('off');
+      expect(field.getAttribute('spellcheck')).toBe('false');
+    }
+  });
+});
+
 describe('ScenarioPicker Add a set menu groups', () => {
   // Several packs, sets listed out of pack order: the menu follows the packs, then the sets' own order.
   const packed: Index = {

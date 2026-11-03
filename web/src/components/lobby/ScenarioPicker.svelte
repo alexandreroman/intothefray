@@ -417,6 +417,8 @@
         class="filter"
         aria-label="Filter by scenario or pack"
         placeholder="Filter by scenario or pack…"
+        autocomplete="off"
+        spellcheck="false"
         bind:value={filter}
       />
     {/if}
@@ -574,6 +576,8 @@
                       class="mfilter"
                       aria-label="Filter sets"
                       placeholder="Filter sets…"
+                      autocomplete="off"
+                      spellcheck="false"
                       bind:value={setFilter}
                       bind:this={menuField}
                       onkeydown={onMenuFieldKeydown}
