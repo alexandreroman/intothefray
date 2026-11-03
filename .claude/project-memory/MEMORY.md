@@ -81,3 +81,4 @@
 - [Revealed card is its deck's top card](references/project_deck_reveal.md) — encounter and own hidden decks reveal; top card; tokens; dragged landscape
 - [No compatibility for games in progress](references/feedback_no_live_game_compat.md) — action changes ignore stored histories; simplest design
 - [Memory notes carry no dates](references/feedback_timeless_memory.md) — timeless notes: decisions and reasons, no dates
+- [Immutable views](references/project_view_immutable.md) — raw view, reused card objects, byId; one CardView redraw per moved card
