@@ -80,18 +80,14 @@ them in `packs/.cache`, merges the hand-written files of
 `packs/curated/`, and writes `packs/dist/`. Commit the regenerated files
 with the change that caused them; never edit `packs/dist/` by hand.
 
-Card images are served from `https://img.intothefray.xyz`, filled by the
-private `intothefray-img` repository. To add images:
-
-1. `make sources`, then commit `packs/images/sources.json`;
-2. `make publish` in `intothefray-img`, which writes
-   `packs/images/manifest.json` here;
-3. `make packs`, then commit the manifest and `packs/dist/`.
-
-`make packs` fails without the manifest and drops a card that has a face
-without an English image. Its report lists the French coverage and the
-records taken from mc4db. The merging rules are documented in
-`internal/packgen/`; the curated formats in `internal/packgen/curated/`.
+Card images are served from `https://img.intothefray.xyz`.
+`make sources` lists the candidate images of every face in
+`packs/images/sources.json`; `packs/images/manifest.json` gives each face
+its image URLs on the CDN. `make packs` fails without the manifest and
+drops a card that has a face without an English image. Its report lists
+the French coverage and the records taken from mc4db. The merging rules
+are documented in `internal/packgen/`; the curated formats in
+`internal/packgen/curated/`.
 
 ## Continuous integration
 
