@@ -1,4 +1,5 @@
 import { modal } from '../components/modal.svelte';
+import { releaseFocus } from '../lib/releaseFocus';
 import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
 import type { Rect } from './drag';
@@ -294,7 +295,9 @@ class TableInteraction {
       return;
     }
     // No text selection or native image drag: the press may become our drag.
+    // That keeps the focus where it was, on a control the table lets go of.
     event.preventDefault();
+    releaseFocus(event.currentTarget);
     this.held = {
       element,
       pointerId: event.pointerId,

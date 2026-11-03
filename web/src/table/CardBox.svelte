@@ -11,6 +11,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
+  import { releaseFocus } from '../lib/releaseFocus';
   import { scrollFade } from '../lib/scrollFade';
   import type {
     Action,
@@ -412,6 +413,7 @@
       return;
     }
     event.preventDefault();
+    releaseFocus(event.currentTarget);
     drag = {
       key: tile.key,
       start: { x: event.clientX, y: event.clientY },

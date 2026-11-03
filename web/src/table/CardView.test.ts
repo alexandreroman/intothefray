@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import CardView from './CardView.svelte';
+import { interaction } from './interaction.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox } from './layout';
 import { card } from './fixtures.testing';
@@ -331,5 +332,45 @@ describe('CardView', () => {
     });
     expect(container.querySelector('.tokens')).toBeNull();
     expect(container.querySelector('.statuses')).toBeNull();
+  });
+});
+
+// A press cancels the browser's focus move (interaction.press): the control
+// clicked last would otherwise keep the focus, and Space or Enter activate it.
+describe('a press on a card', () => {
+  afterEach(() => {
+    interaction.reset();
+    document.body.replaceChildren();
+  });
+
+  /** A control of the page outside the table, focused as a click leaves it. */
+  function focusedOutside(html: string): HTMLElement {
+    const holder = document.createElement('div');
+    holder.innerHTML = html;
+    document.body.append(holder);
+    const control = holder.firstElementChild as HTMLElement;
+    control.focus();
+    expect(document.activeElement).toBe(control);
+    return control;
+  }
+
+  it('takes the focus away from a top bar button', async () => {
+    const button = focusedOutside('<button>Fullscreen</button>');
+    const { container } = render(CardView, { card: tableCard(), face: face() });
+
+    await fireEvent.pointerDown(cardElement(container), { button: 0 });
+
+    expect(interaction.held?.element).toEqual({ kind: 'card', id: 'c1' });
+    expect(document.activeElement).not.toBe(button);
+  });
+
+  it('leaves the focus in a text field', async () => {
+    const field = focusedOutside('<input />');
+    const { container } = render(CardView, { card: tableCard(), face: face() });
+
+    await fireEvent.pointerDown(cardElement(container), { button: 0 });
+
+    expect(interaction.held?.element).toEqual({ kind: 'card', id: 'c1' });
+    expect(document.activeElement).toBe(field);
   });
 });
