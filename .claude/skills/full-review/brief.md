@@ -34,7 +34,7 @@ The whole repository: `cmd/` (`intothefray`, `packgen`), `internal/`
 TypeScript, ESLint and Prettier configs, `Caddyfile`), `Makefile`,
 `Dockerfile`, `.dockerignore`, `.gitignore`, `compose.yaml`, `.air.toml`,
 `.golangci.yml`, `mise.toml`, `.casper.json`, `scripts/casper.sh`,
-`.github/workflows/`, `README.md`, `CLAUDE.md` and
+`.github/workflows/`, `README.md`, `DEVELOPMENT.md`, `CLAUDE.md` and
 `.claude/project-memory/`.
 
 Leave unchanged:
@@ -126,15 +126,16 @@ fullscreen and Escape handling, and touch input.
    test helpers (`*.testing.ts` files included); `Makefile` targets,
    variables and scripts nobody uses; compose, Docker, Caddy and CI settings
    that restate a default; stale, duplicated or contradicting passages in
-   `README.md` and `CLAUDE.md`; stale, duplicated or contradicting memory
-   notes and their `MEMORY.md` lines. Two traps: a Go function only the
-   tests reach is not dead when it is a test seam the design relies on, and
-   an export only a test imports is dead only if the test exists for it
-   alone.
+   `README.md`, `DEVELOPMENT.md` and `CLAUDE.md`; stale, duplicated or
+   contradicting memory notes and their `MEMORY.md` lines. Two traps: a Go
+   function only the tests reach is not dead when it is a test seam the
+   design relies on, and an export only a test imports is dead only if the
+   test exists for it alone.
 2. **Be rigorous about the accuracy of every document against the code.**
-   Check every claim in `README.md`, `CLAUDE.md` (its module list and
-   commands included), the memory notes, the code comments, the `make help`
-   texts and `scripts/casper.sh` against what the code does. The memory
+   Check every claim in `README.md`, `DEVELOPMENT.md`, `CLAUDE.md` (its
+   module list and commands included), the memory notes, the code
+   comments, the `make help` texts and `scripts/casper.sh` against what the
+   code does. The memory
    notes record the decisions: when a note and the code disagree, find out
    which side is intended (the note, the local design spec, `git log`). A
    deliberate as-built behaviour means fixing the note; a departure from a
