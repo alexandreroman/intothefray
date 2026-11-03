@@ -6,6 +6,8 @@ friends, up to four decks at the table. It is a pure sandbox: cards move
 the way they would on a real table, and the app never applies the game's
 rules.
 
+![The Into The Fray home page](.github/images/home.webp)
+
 ## Features
 
 - **Play in the browser**: no install, no account, desktop or touch screen
