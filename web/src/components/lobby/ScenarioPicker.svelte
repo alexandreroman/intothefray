@@ -2,6 +2,7 @@
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
   import { slide } from 'svelte/transition';
+  import { tick, untrack } from 'svelte';
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
   import { overflowTip } from '../../lib/overflowTip';
@@ -15,6 +16,7 @@
     type Difficulty,
     type Index,
     type LobbyConfig,
+    type PackRef,
     type ScenarioRef,
     type SetRef,
     type View,
@@ -50,6 +52,8 @@
 
   let filter = $state('');
   let menuOpen = $state(false);
+  // The Add a set menu's own filter, empty each time the menu opens.
+  let setFilter = $state('');
 
   const isHost = $derived(view.you.host);
   const config = $derived(view.config);
@@ -115,6 +119,30 @@
   );
   // Each group of the menu is labelled by its pack's name.
   const uid = $props.id();
+
+  /** Text as a filter compares it: without accents, case or surrounding spaces. */
+  function fold(text: string): string {
+    return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+  }
+
+  const setQuery = $derived(fold(setFilter));
+
+  /** Whether the pack's or the set's name, shown or English, holds the Add a set menu's filter. */
+  function matchesSetQuery(ref: PackRef | SetRef): boolean {
+    return fold(localizedName(ref, lang)).includes(setQuery) || fold(ref.name).includes(setQuery);
+  }
+
+  // A pack whose name matches keeps all its sets; another keeps those whose name matches.
+  const shownModularGroups = $derived(
+    setQuery === ''
+      ? modularGroups
+      : modularGroups
+          .map((group) => ({
+            pack: group.pack,
+            sets: matchesSetQuery(group.pack) ? group.sets : group.sets.filter(matchesSetQuery),
+          }))
+          .filter((group) => group.sets.length > 0),
+  );
 
   function packName(code: string): string {
     return packNames.get(code) ?? code;
@@ -253,10 +281,41 @@
     configure({ modulars: config.modulars.filter((m) => m !== code) });
   }
 
+  function toggleMenu(): void {
+    if (!menuOpen) {
+      setFilter = '';
+    }
+    menuOpen = !menuOpen;
+  }
+
   let addWrap = $state<HTMLElement>();
   let addButton = $state<HTMLElement>();
   let menu = $state<HTMLElement>();
+  let menuField = $state<HTMLInputElement>();
+  let menuList = $state<HTMLElement>();
+  // The size of the unfiltered menu: it keeps it while the host filters, so that it stays still.
+  let menuSize = $state<{ w: number; h: number } | null>(null);
   let menuPlace = $state<DropdownPlace | null>(null);
+  const menuPlaced = $derived(menuPlace !== null);
+
+  /**
+   * The menu's whole size, even while it is cut to scroll: the field, the list's full height, the
+   * padding and the borders. The size it is given is let go while it is measured, then restored as
+   * Svelte set it.
+   */
+  function measureMenu(menu: HTMLElement, list: HTMLElement): { w: number; h: number } {
+    const { width, height } = menu.style;
+    menu.style.width = '';
+    menu.style.height = '';
+    const aroundList = menu.offsetHeight - list.clientHeight;
+    const size = {
+      w: menu.getBoundingClientRect().width,
+      h: Math.min(aroundList + list.scrollHeight, MENU_MAX_HEIGHT),
+    };
+    menu.style.width = width;
+    menu.style.height = height;
+    return size;
+  }
 
   /**
    * Places the open Add a set menu inside the room, under its button or above it. placeUnder
@@ -264,29 +323,62 @@
    * page.
    */
   function placeMenu(): void {
-    if (!menu || !addWrap || !addButton) {
+    if (!menuSize || !addWrap || !addButton) {
       return;
     }
-    // Its whole size, even while it is cut to scroll: the content's height, and the borders.
-    const borders = menu.offsetHeight - menu.clientHeight;
-    const size = {
-      w: menu.getBoundingClientRect().width,
-      h: Math.min(menu.scrollHeight + borders, MENU_MAX_HEIGHT),
-    };
-    const place = placeUnder(addButton.getBoundingClientRect(), size, room(), MENU_GAP);
+    const place = placeUnder(addButton.getBoundingClientRect(), menuSize, room(), MENU_GAP);
     const origin = addWrap.getBoundingClientRect();
     menuPlace = { ...place, left: place.left - origin.left, top: place.top - origin.top };
   }
 
-  // Placed as it opens, and again when its sets change; unplaced, and so unseen, while closed.
+  // Measured and placed as it opens, and again when its sets change: measured only while
+  // unfiltered, so that filtering leaves its size alone. Unplaced, and so unseen, while closed.
   $effect(() => {
     void modularGroups;
-    if (menu) {
+    const open = menu && menuList ? { menu, list: menuList } : null;
+    untrack(() => {
+      if (!open) {
+        menuSize = null;
+        menuPlace = null;
+        return;
+      }
+      if (setQuery === '') {
+        menuSize = measureMenu(open.menu, open.list);
+      }
       placeMenu();
-    } else {
-      menuPlace = null;
-    }
+    });
   });
+
+  // The field takes the keys once the menu shows: an unseen field takes no focus. The menu is
+  // placed in an effect, and shows on the next update, once the template gives it .placed.
+  $effect(() => {
+    if (!menuPlaced) {
+      return;
+    }
+    const field = untrack(() => menuField);
+    void tick().then(() => {
+      if (field?.isConnected) {
+        field.focus();
+      }
+    });
+  });
+
+  // ArrowDown goes down to the first set; Enter adds the set the filter leaves alone. Escape closes
+  // the menu, as anywhere (the window's handler).
+  function onMenuFieldKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      menuList?.querySelector('button')?.focus();
+      return;
+    }
+    if (event.key === 'Enter') {
+      const sets = shownModularGroups.flatMap((group) => group.sets);
+      const [only] = sets;
+      if (sets.length === 1 && only !== undefined) {
+        addModular(only);
+      }
+    }
+  }
 
   // A click on the Add a set button or in its menu is not outside: the button toggles the menu.
   function closeMenuOnOutsideClick(event: MouseEvent): void {
@@ -465,34 +557,50 @@
                   class="add"
                   aria-expanded={menuOpen}
                   bind:this={addButton}
-                  onclick={() => (menuOpen = !menuOpen)}>+ Add a set</button
+                  onclick={toggleMenu}>+ Add a set</button
                 >
                 {#if menuOpen}
                   <div
                     class="menu"
-                    class:placed={menuPlace !== null}
+                    class:placed={menuPlaced}
                     bind:this={menu}
                     style:left="{menuPlace?.left ?? 0}px"
                     style:top="{menuPlace?.top ?? 0}px"
-                    style:max-height="{menuPlace?.maxHeight ?? MENU_MAX_HEIGHT}px"
+                    style:width={menuSize ? `${menuSize.w}px` : undefined}
+                    style:height={menuSize ? `${menuPlace?.maxHeight ?? menuSize.h}px` : undefined}
                   >
-                    {#each modularGroups as group (group.pack.code)}
-                      {@const headingId = `${uid}-pack-${group.pack.code}`}
-                      <div role="group" aria-labelledby={headingId}>
-                        <div class="mpk" id={headingId}>{localizedName(group.pack, lang)}</div>
-                        {#each group.sets as set (set.code)}
-                          <button class="btn-ghost" onclick={() => addModular(set)}>
-                            {localizedName(set, lang)}
-                            {#if recommended.includes(set.code)}
-                              <span class="rec">★ recommended</span>
-                            {/if}
-                            {#if set.kind === 'main_scheme'}
-                              <span class="scheme">main scheme</span>
-                            {/if}
-                          </button>
-                        {/each}
-                      </div>
-                    {/each}
+                    <input
+                      type="text"
+                      class="mfilter"
+                      aria-label="Filter sets"
+                      placeholder="Filter sets…"
+                      bind:value={setFilter}
+                      bind:this={menuField}
+                      onkeydown={onMenuFieldKeydown}
+                    />
+                    <div class="mlist" bind:this={menuList} {@attach scrollFade}>
+                      {#each shownModularGroups as group (group.pack.code)}
+                        {@const headingId = `${uid}-pack-${group.pack.code}`}
+                        <div role="group" aria-labelledby={headingId}>
+                          <div class="mpk" id={headingId}>{localizedName(group.pack, lang)}</div>
+                          {#each group.sets as set (set.code)}
+                            <button class="btn-ghost" onclick={() => addModular(set)}>
+                              {localizedName(set, lang)}
+                              {#if recommended.includes(set.code)}
+                                <span class="rec">★ recommended</span>
+                              {/if}
+                              {#if set.kind === 'main_scheme'}
+                                <span class="scheme">main scheme</span>
+                              {/if}
+                            </button>
+                          {/each}
+                        </div>
+                      {:else}
+                        <div class="mnone">
+                          {modularGroups.length === 0 ? 'No set to add' : 'No matching set'}
+                        </div>
+                      {/each}
+                    </div>
                   </div>
                 {/if}
               </span>
@@ -817,12 +925,14 @@
     font-size: 13px;
   }
 
-  /* Measured before it is placed: unseen until then. */
+  /* Measured before it is placed: unseen until then. The field stays on top; the list under it
+     scrolls. */
   .menu {
     position: absolute;
     z-index: 10;
     visibility: hidden;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     background: var(--panel-2);
     border: 1px solid var(--line-strong);
     border-radius: 12px;
@@ -833,6 +943,29 @@
 
   .menu.placed {
     visibility: visible;
+  }
+
+  /* The global field, sized to the menu's rows. */
+  .menu .mfilter {
+    flex-shrink: 0;
+    margin-bottom: 4px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  /* Its whole height while the menu is measured, then the menu's height left: it scrolls when cut,
+     and fills the menu when the filter leaves fewer sets. */
+  .mlist {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .mnone {
+    color: var(--muted);
+    padding: 6px 10px;
+    font-size: 13px;
   }
 
   .menu button {
