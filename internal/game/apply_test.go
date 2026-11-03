@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"errors"
 	"maps"
 	"reflect"
@@ -55,52 +56,39 @@ func TestMoveCarriesAttachments(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActMove, Card: "c1", X: 304, Y: 296})
 
-	c1, c2 := table.Cards["c1"], table.Cards["c2"]
-	if c1.X != 300 || c1.Y != 300 {
-		t.Errorf("c1 at (%d,%d), want (300,300)", c1.X, c1.Y)
-	}
-	if c2.X != 300 || c2.Y != 320 {
-		t.Errorf("c2 at (%d,%d), want (300,320)", c2.X, c2.Y)
-	}
-	if c2.Parent != "c1" {
-		t.Errorf("c2 parent = %q, want c1", c2.Parent)
-	}
-	if c2.Z >= c1.Z || c1.Z != 11 {
-		t.Errorf("Z c1=%d c2=%d, want c2 below c1 and c1 on top", c1.Z, c2.Z)
+	checkAt(t, table, "c1", 300, 300)
+	checkStack(t, table, "c1", "c2")
+	if c1 := table.Cards["c1"]; c1.Z != 11 {
+		t.Errorf("c1.Z = %d, want 11, on top of the table", c1.Z)
 	}
 }
 
 func TestMoveCarriesTheWholeStack(t *testing.T) {
 	table := newTestTable()
-	// c7 carries two attachments where they were dropped, c1 (with c2 still
-	// tucked under it) and c3, and c4, tucked at the default offset.
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 640, Y: 100, Placed: true})
-	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 700, Y: 140, Placed: true})
+	// c7 carries c1 (with c2 still tucked under it), c3, then c4.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7"})
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c4", Target: "c7"})
-	stack := []string{"c1", "c2", "c3", "c4"}
-	type offset struct{ dx, dy int }
-	offsets := map[string]offset{}
-	host := table.Cards["c7"]
-	for _, id := range stack {
-		c := table.Cards[id]
-		offsets[id] = offset{c.X - host.X, c.Y - host.Y}
-	}
 
 	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 1000, Y: 500})
 
-	host = table.Cards["c7"]
-	if host.X != 1000 || host.Y != 500 {
-		t.Fatalf("c7 at (%d,%d), want (1000,500)", host.X, host.Y)
-	}
-	for _, id := range stack {
-		c := table.Cards[id]
-		if got := (offset{c.X - host.X, c.Y - host.Y}); got != offsets[id] {
-			t.Errorf("%s lies at offset %v from c7, want %v", id, got, offsets[id])
-		}
-		if c.Z >= host.Z {
-			t.Errorf("%s Z = %d, want below c7 (%d)", id, c.Z, host.Z)
-		}
-	}
+	checkAt(t, table, "c7", 1000, 500)
+	checkStack(t, table, "c7", "c1", "c2", "c3", "c4")
+	checkUniqueZ(t, table)
+}
+
+func TestMoveATuckedCardClosesItsStack(t *testing.T) {
+	table := newChainTable(t)
+
+	mustApply(t, table, Action{Kind: ActMove, Card: "c10", X: 1000, Y: 500})
+
+	// c11 takes the place of c10, under c9.
+	checkStack(t, table, "c7", "c9", "c11")
+	checkAt(t, table, "c11", 600, 60)
+	checkAt(t, table, "c10", 1000, 500)
+	checkStack(t, table, "c10")
+	checkZOrder(t, table, "c11", "c9", "c7", "c10")
+	checkUniqueZ(t, table)
 }
 
 func TestMoveClearsOnPile(t *testing.T) {
@@ -119,39 +107,94 @@ func TestAttach(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c1"})
 
-	// c1 already carries c2 at (100,220): c7 goes beneath it.
-	c7 := table.Cards["c7"]
-	if c7.Parent != "c1" || c7.X != 100 || c7.Y != 240 || c7.Z >= table.Cards["c2"].Z {
-		t.Errorf("c7 = %+v, want tucked under c1, beneath c2, at (100,240)", c7)
+	// c1 already carries c2 at (100,220): c7 goes under c2.
+	checkStack(t, table, "c1", "c2", "c7")
+	checkAt(t, table, "c7", 100, 240)
+	checkUniqueZ(t, table)
+}
+
+func TestAttachIgnoresTheDropPoint(t *testing.T) {
+	table := newTestTable()
+
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 654, Y: 87})
+
+	// c1 carries c2: both line up under c7, in its column.
+	checkStack(t, table, "c7", "c1", "c2")
+	checkAt(t, table, "c1", 600, 40)
+	checkUniqueZ(t, table)
+}
+
+func TestAttachToAnyCardOfAStackGoesToItsEnd(t *testing.T) {
+	for _, target := range []string{"c7", "c9", "c10", "c11"} {
+		t.Run(target, func(t *testing.T) {
+			table := newChainTable(t)
+			putOnTable(table, "c12", 300, 400, 7)
+
+			mustApply(t, table, Action{Kind: ActAttach, Card: "c12", Target: target})
+
+			checkStack(t, table, "c7", "c9", "c10", "c11", "c12")
+			checkUniqueZ(t, table)
+		})
 	}
 }
 
-func TestAttachWhereDropped(t *testing.T) {
+func TestAttachAStackAppendsItWhole(t *testing.T) {
 	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
 
-	// c1 carries c2, tucked 20 below it: both go where c1 is dropped, behind c7.
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7", X: 654, Y: 87, Placed: true})
+	// c1 carries c2: both go under c9, in their own order.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
 
-	c1, c2, c7 := table.Cards["c1"], table.Cards["c2"], table.Cards["c7"]
-	if c1.Parent != "c7" || c1.X != 650 || c1.Y != 90 || c1.Z >= c7.Z {
-		t.Errorf("c1 = %+v, want under c7 where dropped, at (650,90)", c1)
-	}
-	if c2.Parent != "c1" || c2.X != 650 || c2.Y != 110 || c2.Z >= c1.Z {
-		t.Errorf("c2 = %+v, want still under c1, at (650,110)", c2)
+	checkStack(t, table, "c7", "c9", "c1", "c2")
+	checkUniqueZ(t, table)
+}
+
+func TestAttachATuckedCardTakesItAloneOutOfItsStack(t *testing.T) {
+	table := newChainTable(t)
+
+	// c9 leaves c10 and c11 behind, under c7.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c1"})
+
+	checkStack(t, table, "c7", "c10", "c11")
+	checkStack(t, table, "c1", "c2", "c9")
+	checkUniqueZ(t, table)
+}
+
+func TestAttachATuckedCardToItsOwnStackMovesItToTheEnd(t *testing.T) {
+	for _, target := range []string{"c7", "c10", "c11"} {
+		t.Run(target, func(t *testing.T) {
+			table := newChainTable(t)
+
+			mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: target})
+
+			checkStack(t, table, "c7", "c10", "c11", "c9")
+			checkUniqueZ(t, table)
+		})
 	}
 }
 
 func TestAttachRejectsCycle(t *testing.T) {
-	table := newTestTable()
-	before := table.Clone()
-
-	err := apply(table, Action{Kind: ActAttach, Card: "c1", Target: "c2"})
-
-	if !errors.Is(err, ErrInvalid) {
-		t.Fatalf("err = %v, want ErrInvalid", err)
+	tests := []struct{ card, target string }{
+		{"c7", "c7"},
+		{"c7", "c9"},
+		{"c7", "c11"},
+		{"c10", "c10"},
 	}
-	if !reflect.DeepEqual(before, table) {
-		t.Error("table changed by a rejected action")
+	for _, tt := range tests {
+		t.Run(tt.card+" on "+tt.target, func(t *testing.T) {
+			table := newChainTable(t)
+			before := table.Clone()
+
+			err := apply(table, Action{Kind: ActAttach, Card: tt.card, Target: tt.target})
+
+			if !errors.Is(err, ErrInvalid) {
+				t.Fatalf("err = %v, want ErrInvalid", err)
+			}
+			if !reflect.DeepEqual(before, table) {
+				t.Error("table changed by a rejected action")
+			}
+		})
 	}
 }
 
@@ -160,11 +203,52 @@ func putOnTable(table *Table, id string, x, y, z int) {
 	table.Cards[id] = &Card{ID: id, Owner: NoOwner, Home: PileEncounter, Zone: ZoneTable, X: x, Y: y, Z: z}
 }
 
+// newChainTable returns the test table (see newTestTable) with c9, c10 and
+// c11, loose encounter cards, attached one after the other to c7: the stack
+// c7, c9, c10, c11.
+func newChainTable(t *testing.T) *Table {
+	t.Helper()
+	table := newTestTable()
+	putOnTable(table, "c9", 300, 400, 7)
+	putOnTable(table, "c10", 320, 420, 8)
+	putOnTable(table, "c11", 340, 440, 9)
+	for _, id := range []string{"c9", "c10", "c11"} {
+		mustApply(t, table, Action{Kind: ActAttach, Card: id, Target: "c7"})
+	}
+	checkStack(t, table, "c7", "c9", "c10", "c11")
+	return table
+}
+
 // checkAt fails when card id does not lie at (x, y).
 func checkAt(t *testing.T, table *Table, id string, x, y int) {
 	t.Helper()
 	if c := table.Cards[id]; c.X != x || c.Y != y {
 		t.Errorf("%s at (%d,%d), want (%d,%d)", id, c.X, c.Y, x, y)
+	}
+}
+
+// checkStack fails when ids, its main card first, are not a whole stack laid
+// out in that order: each card tucked under the previous one, in the main
+// card's column, attachOffsetY below it and beneath it, and no card tucked
+// under the last one.
+func checkStack(t *testing.T, table *Table, ids ...string) {
+	t.Helper()
+	main := table.Cards[ids[0]]
+	if main.Zone != ZoneTable || main.Parent != "" {
+		t.Errorf("%s in zone %q under %q, want a main card on the table", main.ID, main.Zone, main.Parent)
+	}
+	for i := 1; i < len(ids); i++ {
+		above, c := table.Cards[ids[i-1]], table.Cards[ids[i]]
+		if c.Zone != ZoneTable || c.Parent != above.ID {
+			t.Errorf("%s in zone %q under %q, want on the table under %s", c.ID, c.Zone, c.Parent, above.ID)
+		}
+		checkAt(t, table, c.ID, main.X, main.Y+i*attachOffsetY)
+	}
+	bottomUp := slices.Clone(ids)
+	slices.Reverse(bottomUp)
+	checkZOrder(t, table, bottomUp...)
+	if next := table.tuckedUnder(ids[len(ids)-1]); next != nil {
+		t.Errorf("%s is tucked under %s, the last card of the stack", next.ID, ids[len(ids)-1])
 	}
 }
 
@@ -207,24 +291,10 @@ func TestAttachTwoUnderTheSameHost(t *testing.T) {
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
 	mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c7"})
 
-	// c10 goes beneath c9, its bottom edge showing below c9's.
+	// c10 goes under c9, its bottom edge showing below c9's.
+	checkStack(t, table, "c7", "c9", "c10")
 	checkAt(t, table, "c9", 600, 40)
 	checkAt(t, table, "c10", 600, 60)
-	checkZOrder(t, table, "c10", "c9", "c7")
-	checkUniqueZ(t, table)
-}
-
-func TestAttachTwoWhereDroppedUnderTheSameHost(t *testing.T) {
-	table := newTestTable()
-	putOnTable(table, "c9", 300, 400, 7)
-	putOnTable(table, "c10", 320, 420, 8)
-
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7", X: 700, Y: 100, Placed: true})
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c7", X: 650, Y: 80, Placed: true})
-
-	checkAt(t, table, "c9", 700, 100)
-	checkAt(t, table, "c10", 650, 80)
-	checkZOrder(t, table, "c10", "c9", "c7")
 	checkUniqueZ(t, table)
 }
 
@@ -238,9 +308,7 @@ func TestGroupOfTwoAttachesUnderTheSameHost(t *testing.T) {
 		Action{Kind: ActAttach, Card: "c10", Target: "c7"},
 	))
 
-	checkAt(t, table, "c9", 600, 40)
-	checkAt(t, table, "c10", 600, 60)
-	checkZOrder(t, table, "c10", "c9", "c7")
+	checkStack(t, table, "c7", "c9", "c10")
 	checkUniqueZ(t, table)
 }
 
@@ -249,64 +317,10 @@ func TestPlayUnderAHostWithAnAttachment(t *testing.T) {
 
 	// c1 already carries c2 at (100,220).
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c1"})
-	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c2"})
 
-	checkAt(t, table, "c2", 100, 220)
-	checkAt(t, table, "c3", 100, 240)
+	checkStack(t, table, "c1", "c2", "c3", "c6")
 	checkAt(t, table, "c6", 100, 260)
-	checkZOrder(t, table, "c6", "c3", "c2", "c1")
-	checkUniqueZ(t, table)
-}
-
-func TestAttachAStackUnderAHostWithAnAttachment(t *testing.T) {
-	table := newTestTable()
-	putOnTable(table, "c9", 300, 400, 7)
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
-
-	// c1 carries c2: both go beneath c9, in their own order.
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
-
-	checkAt(t, table, "c9", 600, 40)
-	checkAt(t, table, "c1", 600, 60)
-	checkAt(t, table, "c2", 600, 80)
-	checkZOrder(t, table, "c2", "c1", "c9", "c7")
-	checkUniqueZ(t, table)
-}
-
-func TestAttachUnderATuckedCard(t *testing.T) {
-	table := newTestTable()
-	putOnTable(table, "c9", 300, 400, 7)
-	putOnTable(table, "c10", 320, 420, 8)
-	putOnTable(table, "c11", 340, 440, 9)
-	// c7 carries c9, then c1 (with c2), then c10, each beneath the previous.
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c7"})
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c7"})
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c7"})
-	checkZOrder(t, table, "c10", "c2", "c1", "c9", "c7")
-
-	// c11 goes beneath c1's stack, above c10 which lay below that stack.
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c11", Target: "c1"})
-
-	c1 := table.Cards["c1"]
-	checkAt(t, table, "c11", c1.X, table.Cards["c2"].Y+attachOffsetY)
-	if got := table.Cards["c11"].Parent; got != "c1" {
-		t.Errorf("c11 parent = %q, want c1", got)
-	}
-	checkZOrder(t, table, "c10", "c11", "c2", "c1", "c9", "c7")
-	checkUniqueZ(t, table)
-}
-
-func TestReattachToItsOwnHost(t *testing.T) {
-	table := newTestTable()
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c1"})
-	checkZOrder(t, table, "c7", "c2", "c1")
-
-	// c2 goes beneath c7, the rest of c1's stack; its own place does not count.
-	mustApply(t, table, Action{Kind: ActAttach, Card: "c2", Target: "c1"})
-
-	checkAt(t, table, "c7", 100, 240)
-	checkAt(t, table, "c2", 100, 260)
-	checkZOrder(t, table, "c2", "c7", "c1")
 	checkUniqueZ(t, table)
 }
 
@@ -324,6 +338,66 @@ func TestLeavingPlayDiscardsAttachments(t *testing.T) {
 	}
 	if c1.Zone != ZonePile || c1.Pile != "disc:p0" || table.Cards["c2"].Parent != "" {
 		t.Errorf("c1 = %+v, c2 = %+v", c1, table.Cards["c2"])
+	}
+}
+
+func TestDiscardingTheMainCardSendsItsStackToItsDestinations(t *testing.T) {
+	table := newChainTable(t)
+	// c1, with c2 still tucked under it, comes last in the stack of c7.
+	mustApply(t, table, Action{Kind: ActAttach, Card: "c1", Target: "c10"})
+
+	mustApply(t, table, Action{Kind: ActDiscard, Card: "c7"})
+
+	// The stack goes from its last card up, each card to its own discard pile.
+	checkPileCards(t, table, "disc:p0", "c2", "c1")
+	checkPileCards(t, table, PileEncounterDiscard, "c11", "c10", "c9", "c7")
+	for _, id := range []string{"c7", "c9", "c10", "c11", "c1", "c2"} {
+		if c := table.Cards[id]; c.Zone != ZonePile || c.Parent != "" {
+			t.Errorf("%s in zone %q under %q, want in a pile, free", id, c.Zone, c.Parent)
+		}
+	}
+}
+
+func TestATuckedCardLeavingTheTableClosesItsStack(t *testing.T) {
+	tests := []struct {
+		name string
+		a    Action
+		pile string // where c2 lands; "" for the hand
+	}{
+		{"discard", Action{Kind: ActDiscard, Card: "c2"}, "disc:p0"},
+		{"to hand", Action{Kind: ActToHand, Card: "c2"}, ""},
+		{"to deck", renamedTo(Action{Kind: ActToDeck, Card: "c2", Where: whereTop}, "c2"), "deck:p0"},
+		{"to deck bottom", renamedTo(Action{Kind: ActToDeck, Card: "c2", Where: whereBottom}, "c2"), "deck:p0"},
+		{
+			"shuffled into deck",
+			shuffleTo(Action{Kind: ActToDeck, Card: "c2", Where: whereShuffle}, "c5", "c2", "c4", "c6"),
+			"deck:p0",
+		},
+		{"to pile", Action{Kind: ActToPile, Card: "c2", Target: PileVictory}, PileVictory},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			table := newTestTable()
+			putOnTable(table, "c9", 300, 400, 7)
+			putOnTable(table, "c10", 320, 420, 8)
+			// c2 lies in the middle of the stack c1, c2, c9, c10.
+			mustApply(t, table, Action{Kind: ActAttach, Card: "c9", Target: "c1"})
+			mustApply(t, table, Action{Kind: ActAttach, Card: "c10", Target: "c1"})
+
+			mustApply(t, table, tt.a)
+
+			// c9 and c10 move up, under c1.
+			checkStack(t, table, "c1", "c9", "c10")
+			checkAt(t, table, "c9", 100, 220)
+			checkUniqueZ(t, table)
+			c2 := table.Cards[cmp.Or(tt.a.Renames["c2"], "c2")]
+			if c2.Parent != "" || c2.Zone == ZoneTable || c2.Pile != tt.pile {
+				t.Errorf("c2 = %+v, want in pile %q, tucked under nothing", c2, tt.pile)
+			}
+			if got := table.Piles[PileEncounterDiscard].Cards; len(got) != 0 {
+				t.Errorf("encounter discard = %v, want the rest of the stack still on the table", got)
+			}
+		})
 	}
 }
 
@@ -535,32 +609,29 @@ func TestPlayUnderACardFromAPile(t *testing.T) {
 
 	mustApply(t, table, Action{Kind: ActPlay, Card: "c6", Target: "c1"})
 
-	// c1 already carries c2 at (100,220): c6 goes beneath it.
+	// c1 already carries c2 at (100,220): c6 goes under c2.
 	c6 := table.Cards["c6"]
-	if c6.Zone != ZoneTable || c6.Pile != "" || !c6.FaceDown || c6.Parent != "c1" ||
+	if c6.Zone != ZoneTable || c6.Pile != "" || !c6.FaceDown || c6.Parent != "c2" ||
 		c6.X != 100 || c6.Y != 240 {
-		t.Errorf("c6 = %+v, want face down under c1 at (100,240)", c6)
+		t.Errorf("c6 = %+v, want face down under c2 at (100,240)", c6)
 	}
 	if got := table.Piles["deck:p0"].Cards; !slices.Equal(got, []string{"c4", "c5"}) {
 		t.Errorf("deck = %v, want [c4 c5]", got)
 	}
 }
 
-func TestPlayUnderACardWhereDropped(t *testing.T) {
+func TestPlayUnderACardIgnoresTheDropPoint(t *testing.T) {
 	table := newTestTable()
 
-	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 712, Y: 4, Placed: true})
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c3", Target: "c7", X: 712, Y: 4})
 
-	c3, c7 := table.Cards["c3"], table.Cards["c7"]
-	if c3.Zone != ZoneTable || c3.Parent != "c7" || c3.X != 710 || c3.Y != 0 || c3.Z >= c7.Z {
-		t.Errorf("c3 = %+v, want under c7 where dropped, at (710,0)", c3)
-	}
+	checkStack(t, table, "c7", "c3")
+	checkAt(t, table, "c3", 600, 40)
 
-	// Moving the host carries it along, at the same offset.
+	// Moving the host carries it along, still in its column.
 	mustApply(t, table, Action{Kind: ActMove, Card: "c7", X: 800, Y: 100})
-	if c3 := table.Cards["c3"]; c3.X != 910 || c3.Y != 80 {
-		t.Errorf("c3 = (%d,%d) after its host moved, want (910,80)", c3.X, c3.Y)
-	}
+	checkStack(t, table, "c7", "c3")
+	checkAt(t, table, "c3", 800, 120)
 }
 
 func TestPlayUnderRefusesATargetOffTheTable(t *testing.T) {
@@ -628,6 +699,35 @@ func newStageTable() *Table {
 		{Key: "villain", Label: "Villain", Current: "c20", Cards: []string{"c20", "c22"}, Villain: true},
 	}
 	return table
+}
+
+func TestStageChangeKeepsTheStack(t *testing.T) {
+	tests := []struct {
+		name  string
+		setUp func(t *testing.T, table *Table)
+		want  []string // the stack after the change, its main card first
+	}{
+		{"main card", func(t *testing.T, table *Table) {
+			mustApply(t, table, Action{Kind: ActAttach, Card: "c7", Target: "c20"})
+		}, []string{"c22", "c21", "c7"}},
+		{"tucked card", func(t *testing.T, table *Table) {
+			mustApply(t, table, Action{Kind: ActAttach, Card: "c20", Target: "c1"})
+		}, []string{"c1", "c2", "c22", "c21"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			table := newStageTable()
+			tt.setUp(t, table)
+
+			mustApply(t, table, Action{Kind: ActChooseStage, Stage: "villain", Card: "c22", Face: 0})
+
+			checkStack(t, table, tt.want...)
+			checkUniqueZ(t, table)
+			if c20 := table.Cards["c20"]; c20.Zone != ZoneStage || c20.Parent != "" {
+				t.Errorf("c20 = %+v, want in the stage zone, tucked under nothing", c20)
+			}
+		})
+	}
 }
 
 func TestTokenNeverNegative(t *testing.T) {

@@ -66,10 +66,10 @@ func addFreshIDs(t *Table, renames map[string]string, ids []string, rng *rand.Ra
 // of its place, so that nobody can tie the card that comes out later to the
 // one they saw go: every card a sends onto a deck, but one that lands on top
 // of a side deck that shows it, and a card taken into a hand out of a hand or
-// face down off the table. That covers the cards tucked under a card leaving
-// the table that go to the bottom of a deck (see tuckedDestination). The
-// cards a shuffle into a deck gathers are left out: the shuffle renames them
-// (see reidentify).
+// face down off the table. That covers the cards a card leaving the table
+// carries (see carried) that go to the bottom of a deck (see
+// tuckedDestination). The cards a shuffle into a deck gathers are left out:
+// the shuffle renames them (see reidentify).
 func (t *Table) renamedOnTheWay(a Action) []string {
 	c, ok := t.Cards[a.Card]
 	if !ok {
@@ -103,9 +103,9 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 	return append(ids, t.sentUnderDecks(c, a)...)
 }
 
-// sentUnderDecks returns the cards tucked under c that go to the bottom of a
-// deck when a takes c off the table (see tuckedUnderDecks), but those a
-// shuffle of c into a deck gathers.
+// sentUnderDecks returns the cards c carries (see carried) that go to the
+// bottom of a deck when a takes c off the table (see tuckedUnderDecks), but
+// those a shuffle of c into a deck gathers.
 func (t *Table) sentUnderDecks(c *Card, a Action) []string {
 	if c.Zone != ZoneTable {
 		return nil
@@ -121,11 +121,12 @@ func (t *Table) sentUnderDecks(c *Card, a Action) []string {
 	return ids
 }
 
-// tuckedUnderDecks returns the cards tucked under c, a table card, that go to
-// the bottom of a deck when c leaves the table (see tuckedDestination).
+// tuckedUnderDecks returns the cards c, a table card, carries (see carried)
+// that go to the bottom of a deck when c leaves the table (see
+// tuckedDestination).
 func (t *Table) tuckedUnderDecks(c *Card) []string {
 	var ids []string
-	for _, child := range t.descendants(c.ID) {
+	for _, child := range t.carried(c) {
 		if _, bottom, ok := t.tuckedDestination(child); ok && bottom {
 			ids = append(ids, child.ID)
 		}
@@ -154,8 +155,8 @@ func (t *Table) checkRenamedOnTheWay(a Action) (map[string]string, error) {
 // keeps the new id it was given, so that later events still name it, and a
 // card now among them gets one from rng. The sub-actions of a group are each
 // renamed on the table the previous ones leave, as applyGroup performs them.
-// A rebuild uses it for an event whose cards tucked under the card it moves,
-// or under the card revealed on its deck, changed (see replayEvent).
+// A rebuild uses it for an event whose cards carried by the card it moves, or
+// by the card revealed on its deck, changed (see replayEvent).
 func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 	if a.Kind == ActGroup {
 		staged := t.Clone()
@@ -230,7 +231,7 @@ func renamesCards(a Action) bool {
 }
 
 // takesAway are the kinds that may take a card out of its place, and with it
-// the cards tucked under it (see renamedOnTheWay).
+// the cards it carries (see carried and renamedOnTheWay).
 var takesAway = map[Kind]bool{
 	ActToDeck:  true,
 	ActToHand:  true,

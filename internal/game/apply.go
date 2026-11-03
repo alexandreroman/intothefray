@@ -80,8 +80,8 @@ func splitRenames(t *Table, renames map[string]string, hidden []string) (map[str
 // revealedRenames returns the renames among renames of the cards revealed on
 // a deck of t. Covered by a card put on top, such a card stays in its deck: an
 // open view that holds it keeps following it under its new id (see
-// renameInViews). The cards tucked under it drop out of the views as they
-// drop out of sight.
+// renameInViews). The cards it carries drop out of the views as they drop
+// out of sight.
 func revealedRenames(t *Table, renames map[string]string) map[string]string {
 	revealed := map[string]string{}
 	for old, id := range renames {
@@ -253,11 +253,12 @@ func (t *Table) discardPileID(c *Card) string {
 	return playerDiscardID(PlayerArea(c.Owner))
 }
 
-// tuckedDestination returns the pile a card tucked under a card leaving the
-// table goes to: the pile it is discarded to, on top. A side deck or scenario
-// deck card whose cards are never discarded goes to the bottom of its deck
-// instead (bottom is then true), as Daredevil's Sense cards do, so that it
-// never keeps its host on the table. ok is false when there is no such pile.
+// tuckedDestination returns the pile a card carried by a card leaving the
+// table goes to (see carried): the pile it is discarded to, on top. A side
+// deck or scenario deck card whose cards are never discarded goes to the
+// bottom of its deck instead (bottom is then true), as Daredevil's Sense
+// cards do, so that it never keeps its host on the table. ok is false when
+// there is no such pile.
 func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	if pile, ok := t.Piles[t.discardPileID(c)]; ok {
 		return pile, false, true
@@ -271,12 +272,12 @@ func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 }
 
 // shuffledIntoDeck returns the cards a shuffle of c into deck (see toDeckID)
-// gathers: the cards of deck, the cards tucked under c that leaving the table
-// sends to deck (see tuckedDestination), then c.
+// gathers: the cards of deck, the cards c carries (see carried) that leaving
+// the table sends to deck (see tuckedDestination), then c.
 func (t *Table) shuffledIntoDeck(c *Card, deck *Pile) []string {
 	cards := without(deck.Cards, c.ID)
 	if c.Zone == ZoneTable {
-		for _, child := range t.descendants(c.ID) {
+		for _, child := range t.carried(c) {
 			if pile, _, ok := t.tuckedDestination(child); ok && pile == deck {
 				cards = append(cards, child.ID)
 			}
@@ -291,36 +292,91 @@ func byZThenID(a, b *Card) int {
 	return cmp.Or(cmp.Compare(a.Z, b.Z), cmp.Compare(a.ID, b.ID))
 }
 
-// descendants returns every card tucked under id, directly or not, from the
-// lowest Z to the highest.
-func (t *Table) descendants(id string) []*Card {
-	var found []*Card
-	seen := map[string]bool{id: true}
-	queue := []string{id}
-	for len(queue) > 0 {
-		parent := queue[0]
-		queue = queue[1:]
-		for _, c := range t.Cards {
-			if c.Parent == parent && !seen[c.ID] {
-				seen[c.ID] = true
-				found = append(found, c)
-				queue = append(queue, c.ID)
-			}
+// A stack is a chain of table cards: its main card, tucked under no card,
+// the card tucked under the main card, the card tucked under that one, and so
+// on to the last card of the stack. A card has at most one card tucked
+// directly under it (see Card.Parent).
+
+// tuckedUnder returns the card tucked directly under id, or nil.
+func (t *Table) tuckedUnder(id string) *Card {
+	for _, c := range t.Cards {
+		if c.Parent == id {
+			return c
 		}
 	}
-	slices.SortFunc(found, byZThenID)
-	return found
+	return nil
+}
+
+// chain returns the cards that follow c in its stack, the one tucked
+// directly under c first: for a main card, every other card of its stack.
+func (t *Table) chain(c *Card) []*Card {
+	var cards []*Card
+	for next := t.tuckedUnder(c.ID); next != nil; next = t.tuckedUnder(next.ID) {
+		cards = append(cards, next)
+	}
+	return cards
+}
+
+// mainCard returns the main card of the stack c belongs to: c itself when it
+// is tucked under no card.
+func (t *Table) mainCard(c *Card) *Card {
+	for c.Parent != "" {
+		c = t.Cards[c.Parent]
+	}
+	return c
+}
+
+// carried returns the cards that come along when c moves or leaves the
+// table: for a main card, every other card of its stack, the one tucked
+// directly under it first; for a tucked card, none, as it leaves its stack
+// alone (see detach).
+func (t *Table) carried(c *Card) []*Card {
+	if c.Parent != "" {
+		return nil
+	}
+	return t.chain(c)
+}
+
+// detach takes c, a tucked card, out of its stack, which closes up: the card
+// tucked under c, if any, gets tucked under the card c was tucked under, and
+// the stack is laid out again (see layOutStack).
+func (t *Table) detach(c *Card) {
+	main := t.mainCard(c)
+	if next := t.tuckedUnder(c.ID); next != nil {
+		next.Parent = c.Parent
+	}
+	c.Parent = ""
+	t.layOutStack(main)
+}
+
+// layOutStack lays out the stack of main, a main card, wherever its cards
+// were: each tucked card lies in main's column, attachOffsetY below the card
+// it is tucked under, so that every card stays readable. The stack takes
+// fresh Zs from nextZ, main on top, each card beneath the one it is tucked
+// under. Fresh Zs keep every Z unique and positive, and bring the stack to
+// the top of the table, as a move does. It is the single place that places
+// and orders the cards of a stack.
+func (t *Table) layOutStack(main *Card) {
+	tucked := t.chain(main)
+	for i, c := range tucked {
+		c.X = main.X
+		c.Y = main.Y + (i+1)*attachOffsetY
+	}
+	for _, c := range slices.Backward(tucked) {
+		c.Z = t.nextZ()
+	}
+	main.Z = t.nextZ()
 }
 
 // checkLeave verifies that c can be taken out of its current place and that
-// everything tucked under it has a discard pile to go to.
+// every card it carries (see carried) has a discard pile to go to.
 func (t *Table) checkLeave(c *Card) error {
 	switch c.Zone {
 	case ZoneTable:
 		if err := t.checkStaysOnTable(c); err != nil {
 			return err
 		}
-		for _, child := range t.descendants(c.ID) {
+		for _, child := range t.carried(c) {
 			if err := t.checkStaysOnTable(child); err != nil {
 				return err
 			}
@@ -382,13 +438,15 @@ func handOf(t *Table, id string) Area {
 	return ""
 }
 
-// leave takes c out of its current place and resets it. Cards tucked under
-// it are discarded (see tuckedDestination). checkLeave must have succeeded
-// first.
+// leave takes c out of its current place and resets it. A main card leaving
+// the table discards the cards it carries (see carried and
+// tuckedDestination), from the last card of its stack up; a tucked card
+// leaves its stack, which closes up (see detach). checkLeave must have
+// succeeded first.
 func (t *Table) leave(c *Card) {
 	switch c.Zone {
 	case ZoneTable:
-		for _, child := range t.descendants(c.ID) {
+		for _, child := range slices.Backward(t.carried(c)) {
 			t.removeArrows(child.ID)
 			resetCard(child)
 			pile, bottom, _ := t.tuckedDestination(child)
@@ -399,6 +457,9 @@ func (t *Table) leave(c *Card) {
 			} else {
 				t.pushOnPile(pile, child)
 			}
+		}
+		if c.Parent != "" {
+			t.detach(c)
 		}
 		t.removeArrows(c.ID)
 	case ZoneHand:
@@ -430,26 +491,20 @@ func (t *Table) pushOnPile(pile *Pile, c *Card) {
 	c.Pile = pile.ID
 }
 
+// applyMove moves a table card to a point. A main card takes its stack along;
+// a tucked card leaves its stack (see detach) and lies there alone, on top.
 func applyMove(t *Table, a Action) error {
 	c, err := t.tableCard(a.Card)
 	if err != nil {
 		return err
 	}
 
-	x, y := snap(a.X), snap(a.Y)
-	dx, dy := x-c.X, y-c.Y
-	children := t.descendants(c.ID)
-
-	// Children go just below the moved card, which takes the top Z.
-	for _, child := range children {
-		child.X += dx
-		child.Y += dy
-		child.Z = t.nextZ()
+	if c.Parent != "" {
+		t.detach(c)
 	}
-	c.X, c.Y = x, y
-	c.Z = t.nextZ()
-	c.Parent = ""
+	c.X, c.Y = snap(a.X), snap(a.Y)
 	c.OnPile = ""
+	t.layOutStack(c)
 	return nil
 }
 
@@ -472,80 +527,41 @@ func applyAttach(t *Table, a Action) error {
 		return err
 	}
 
-	t.tuckUnder(c, target, a)
+	t.tuckUnder(c, target)
 	return nil
 }
 
-// checkTuckTarget refuses to tuck c under target when target is c itself or a
-// card tucked beneath c: either would make a cycle of attachments.
+// checkTuckTarget refuses to tuck c under target when target is c itself or,
+// c being a main card, a card of its stack: c would carry target along and
+// make a cycle of attachments.
 func (t *Table) checkTuckTarget(c, target *Card) error {
 	if c == target {
 		return invalid("card %q cannot be attached to itself", c.ID)
 	}
-	if slices.Contains(t.descendants(c.ID), target) {
+	if slices.Contains(t.carried(c), target) {
 		return invalid("card %q is tucked under %q", target.ID, c.ID)
 	}
 	return nil
 }
 
-// tuckUnder tucks c, with the cards tucked under it, beneath the stack of
-// target: target and every card tucked under it, directly or not. c lies as
-// tuckedPlace says, the cards under it keeping their offsets to it, and the
-// tree target belongs to takes fresh Zs (see restack).
-func (t *Table) tuckUnder(c, target *Card, a Action) {
-	moving := append(t.descendants(c.ID), c)
-	slices.SortFunc(moving, byZThenID)
-	// c may already lie in that stack, when it is attached to its own host again.
-	stack := withoutCards(append(t.descendants(target.ID), target), moving)
-
-	x, y := tuckedPlace(target, stack, a)
-	dx, dy := x-c.X, y-c.Y
-	for _, m := range moving {
-		m.X += dx
-		m.Y += dy
+// tuckUnder puts c at the end of the stack target belongs to, whichever card
+// of that stack target is: c gets tucked under its last card. A main card
+// comes with the cards it carries, a tucked card alone, out of its own stack
+// (see detach), even when that is the stack of target. The stack is then
+// laid out again (see layOutStack). checkTuckTarget must have succeeded
+// first.
+func (t *Table) tuckUnder(c, target *Card) {
+	if c.Parent != "" {
+		t.detach(c)
 	}
-	c.Parent = target.ID
+	main := t.mainCard(target)
+	last := main
+	if tucked := t.chain(main); len(tucked) > 0 {
+		last = tucked[len(tucked)-1]
+	}
+	c.Parent = last.ID
 	c.OnPile = ""
-	t.restack(target, stack, moving)
-}
-
-// tuckedPlace returns where a card tucked under target by a lies: where it
-// was dropped (Action.Placed), snapped to the grid, or else in target's
-// column, just below the lowest card of stack (target and the cards tucked
-// under it), so that its bottom edge shows and every card stays readable.
-func tuckedPlace(target *Card, stack []*Card, a Action) (x, y int) {
-	if a.Placed {
-		return snap(a.X), snap(a.Y)
-	}
-	bottom := target.Y
-	for _, c := range stack {
-		bottom = max(bottom, c.Y)
-	}
-	return target.X, bottom + attachOffsetY
-}
-
-// restack gives fresh Zs, from nextZ, to the whole tree target belongs to,
-// with the moving cards tucked into it just beneath stack (see tuckUnder).
-// The other cards keep their order, the root on top of them all. Fresh Zs
-// keep every Z unique and positive, and bring the tree to the top of the
-// table, as a move does.
-func (t *Table) restack(target *Card, stack, moving []*Card) {
-	root := target
-	for root.Parent != "" {
-		root = t.Cards[root.Parent]
-	}
-	tree := withoutCards(append(t.descendants(root.ID), root), moving)
-	slices.SortFunc(tree, byZThenID)
-
-	lowest := slices.IndexFunc(tree, func(c *Card) bool { return slices.Contains(stack, c) })
-	for _, c := range slices.Concat(tree[:lowest], moving, tree[lowest:]) {
-		c.Z = t.nextZ()
-	}
-}
-
-// withoutCards returns cards, dropping those in removed.
-func withoutCards(cards, removed []*Card) []*Card {
-	return slices.DeleteFunc(cards, func(c *Card) bool { return slices.Contains(removed, c) })
+	t.layOutStack(main)
 }
 
 func applyToHand(t *Table, a Action) error {
@@ -625,8 +641,8 @@ func applyToDeck(t *Table, a Action) error {
 		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile, and
-		// Renames also covers the cards tucked under c that go to the bottom
-		// of another deck (see renamedOnTheWay).
+		// Renames also covers the cards c carries that go to the bottom of
+		// another deck (see renamedOnTheWay).
 		shuffled := t.shuffledIntoDeck(c, deck)
 		newIDs, err := checkFreshIDs(t, a.Renames, slices.Concat(shuffled, t.renamedOnTheWay(a)))
 		if err != nil {
@@ -717,12 +733,12 @@ func landsFaceDown(pile *Pile) bool {
 }
 
 // applyPlay puts a card from a hand or a pile on the table: at a point, or,
-// with a target, tucked under that table card as attach does. It lands face
-// up, but when dropped out of a pile that hides its cards (see landsFaceDown):
-// an explicit Play (a.FaceUp) lands it face up there too. A card revealed on a
-// deck is played as that deck's top card, face up, as everybody saw it, with
-// the tokens it carries there (see inPlayCard). A version of its owner's
-// identity takes the identity over, and stays face up.
+// with a target, at the end of that table card's stack as attach does. It
+// lands face up, but when dropped out of a pile that hides its cards (see
+// landsFaceDown): an explicit Play (a.FaceUp) lands it face up there too. A
+// card revealed on a deck is played as that deck's top card, face up, as
+// everybody saw it, with the tokens it carries there (see inPlayCard). A
+// version of its owner's identity takes the identity over, and stays face up.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -734,8 +750,8 @@ func applyPlay(t *Table, a Action) error {
 	}
 	var target *Card
 	if a.Target != "" {
-		// A revealed card is on the table already, its attachments too: it
-		// cannot be tucked under itself or one of them.
+		// A revealed card is on the table already, its stack too: it cannot
+		// be tucked under itself or a card it carries.
 		if target, err = t.tableCard(a.Target); err != nil {
 			return err
 		}
@@ -764,7 +780,7 @@ func applyPlay(t *Table, a Action) error {
 	}
 	c.Zone = ZoneTable
 	c.Pile = ""
-	t.tuckUnder(c, target, a)
+	t.tuckUnder(c, target)
 	return nil
 }
 
@@ -945,11 +961,9 @@ func applyChooseStage(t *Table, a Action) error {
 		return invalid("card %q is not waiting in the stage zone", chosen.ID)
 	}
 
-	// The chosen card takes the place of the previous one, children included.
-	for _, c := range t.Cards {
-		if c.Parent == previous.ID {
-			c.Parent = chosen.ID
-		}
+	// The chosen card takes the place of the previous one in its stack.
+	if next := t.tuckedUnder(previous.ID); next != nil {
+		next.Parent = chosen.ID
 	}
 	chosen.Zone = ZoneTable
 	chosen.X, chosen.Y, chosen.Z = previous.X, previous.Y, previous.Z

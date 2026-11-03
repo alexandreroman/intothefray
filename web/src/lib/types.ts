@@ -125,6 +125,10 @@ export interface CardView {
   x: number;
   y: number;
   z: number;
+  /**
+   * The card this one is tucked directly under, in its stack's chain: a main card (none) first,
+   * each card holding at most one.
+   */
   parent?: string;
   onPile?: string;
   exhausted?: boolean;
@@ -370,8 +374,6 @@ export interface Action {
   area?: Area; // whose hand (handOrder), or who is dealt a card (deal)
   x?: number;
   y?: number;
-  /** A card tucked under `target` (attach, play) lies at `x`, `y`, where it was dropped. */
-  placed?: boolean;
   /** An explicit Play: the card lands face up, even out of a deck that hides its cards. A drag sends none. */
   faceUp?: boolean;
   n?: number;

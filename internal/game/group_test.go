@@ -193,14 +193,47 @@ func TestGroupRejectsDuplicateCard(t *testing.T) {
 	), ErrInvalid)
 }
 
-func TestGroupRejectsDescendant(t *testing.T) {
+// newStackFixture returns a resolve fixture whose own table card carries the
+// encounter table card, then the hand card, in one stack.
+func newStackFixture(t *testing.T) *resolveFixture {
+	t.Helper()
 	f := newResolveFixture(t)
 	mustApply(t, f.g.Table, Action{Kind: ActAttach, Card: f.encTable, Target: f.ownTable})
-	host := Action{Kind: ActDiscard, Card: f.ownTable}
-	tucked := Action{Kind: ActDiscard, Card: f.encTable}
+	mustApply(t, f.g.Table, Action{Kind: ActPlay, Card: f.hand, Target: f.ownTable})
+	checkStack(t, f.g.Table, f.ownTable, f.encTable, f.hand)
+	return f
+}
 
-	checkGroupRejected(t, f, group(host, tucked), ErrInvalid)
-	checkGroupRejected(t, f, group(tucked, host), ErrInvalid)
+func TestGroupRejectsACardItsMainCardCarries(t *testing.T) {
+	f := newStackFixture(t)
+	main := Action{Kind: ActDiscard, Card: f.ownTable}
+
+	for _, id := range []string{f.encTable, f.hand} {
+		tucked := Action{Kind: ActDiscard, Card: id}
+		checkGroupRejected(t, f, group(main, tucked), ErrInvalid)
+		checkGroupRejected(t, f, group(tucked, main), ErrInvalid)
+	}
+}
+
+func TestGroupTakesTuckedCardsOutOfOneStack(t *testing.T) {
+	f := newStackFixture(t)
+
+	resolved, err := resolve(f.g, f.g.actorOf(0), group(
+		Action{Kind: ActMove, Card: f.encTable, X: 100, Y: 100},
+		Action{Kind: ActMove, Card: f.hand, X: 300, Y: 100},
+	), newTestRNG())
+	if err != nil {
+		t.Fatalf("resolve() = %v", err)
+	}
+	mustApply(t, f.g.Table, resolved)
+
+	// A tucked card carries nothing: each one leaves the stack alone.
+	checkStack(t, f.g.Table, f.ownTable)
+	checkStack(t, f.g.Table, f.encTable)
+	checkStack(t, f.g.Table, f.hand)
+	checkAt(t, f.g.Table, f.encTable, 100, 100)
+	checkAt(t, f.g.Table, f.hand, 300, 100)
+	checkUniqueZ(t, f.g.Table)
 }
 
 func TestGroupRejectsOneOrTooMany(t *testing.T) {

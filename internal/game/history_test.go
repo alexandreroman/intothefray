@@ -1035,6 +1035,41 @@ func TestPlayUnderACardIsOneUndoableStep(t *testing.T) {
 	checkIntegrity(t, f.g.Table)
 }
 
+// TestPlayUnderACardNamesTheCardItGoesUnder plays cards under Rhino, which
+// already carries one: each line names the last card of Rhino's stack, the
+// one the played card is tucked under, rather than Rhino.
+func TestPlayUnderACardNamesTheCardItGoesUnder(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 2}, at(1))
+	hand := slices.Clone(f.g.Table.Hands["p0"])
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[0], Target: f.villain()}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], Target: f.villain()}, at(3))
+
+	want := fmt.Sprintf("played %s under %s", f.nameOf(t, hand[1]), f.nameOf(t, hand[0]))
+	if got := f.lastLog().Text; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1], hand[0]}) {
+		t.Errorf("line cards = %v, want [%s %s]", got, hand[1], hand[0])
+	}
+
+	top := topCards(f.g.Table.Piles["deck:p0"], 1)[0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", Target: f.villain()}, at(4))
+
+	if got := f.g.Table.Cards[top].Parent; got != hand[1] {
+		t.Fatalf("deck top tucked under %q, want %s", got, hand[1])
+	}
+	want = "played a card face down from their deck under " + f.nameOf(t, hand[1])
+	if got := f.lastLog().Text; got != want {
+		t.Errorf("line = %q, want %q", got, want)
+	}
+	if got := f.lastLog().Cards; !slices.Equal(got, []string{hand[1]}) {
+		t.Errorf("line cards = %v, want [%s]", got, hand[1])
+	}
+	checkPartRefs(t, f.cat, f.g.Log)
+}
+
 func TestPlayUnderACardReplays(t *testing.T) {
 	f := newDoFixture(t)
 	hero := identityOf(t, f.g, 0)
@@ -1055,6 +1090,43 @@ func TestPlayUnderACardReplays(t *testing.T) {
 	if got, want := mustJSON(t, replayed.Table), mustJSON(t, f.g.Table); got != want {
 		t.Errorf("replayed table differs:\n got %s\nwant %s", got, want)
 	}
+}
+
+// TestStackChangesUndoAndReplay undoes actions taken before arranging ones
+// (a move and an attach, which are not undone): the rebuild replays those on
+// stacks that changed, and each card still goes to the end of its new stack.
+func TestStackChangesUndoAndReplay(t *testing.T) {
+	f := newDoFixture(t)
+	hero := identityOf(t, f.g, 0)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 3}, at(1))
+	hand := slices.Clone(f.g.Table.Hands["p0"])
+	// Each card goes to the end of the stack, whichever card of it is the target.
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[0], Target: hero}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[1], Target: hero}, at(3))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: hand[2], Target: hand[0]}, at(4))
+	checkStack(t, f.g.Table, hero, hand[0], hand[1], hand[2])
+
+	f.mustDo(t, "h", Action{Kind: ActMove, Card: hand[0], X: 800, Y: 300}, at(10))
+	checkStack(t, f.g.Table, hero, hand[1], hand[2])
+	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: hand[1]}, at(20))
+	checkStack(t, f.g.Table, hero, hand[2])
+	f.mustDo(t, "h", Action{Kind: ActAttach, Card: hand[0], Target: hero}, at(30))
+	checkStack(t, f.g.Table, hero, hand[2], hand[0])
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+
+	// The discard is undone: the card it took comes back in its place.
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(40))
+	checkStack(t, f.g.Table, hero, hand[1], hand[2], hand[0])
+	// The last play is undone: its card goes back to the hand.
+	f.mustDo(t, "h", Action{Kind: ActUndo}, at(41))
+	checkStack(t, f.g.Table, hero, hand[1], hand[0])
+	if c := f.g.Table.Cards[hand[2]]; c.Zone != ZoneHand || c.Parent != "" {
+		t.Errorf("%s = %+v, want back in the hand, tucked under nothing", hand[2], c)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
 }
 
 func TestPlayUnderAnotherPlayersHandCardIsForbidden(t *testing.T) {

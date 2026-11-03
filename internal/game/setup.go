@@ -215,12 +215,14 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 
 // newEmptyTable returns a table with every pile of the villain and of every
 // seat, all empty. It has no first player token: setupPlayer places one beside
-// the identity of seat 0 when the game has several seats.
+// the identity of seat 0 when the game has several seats. Table cards take
+// Zs from 1 up: the web app renders a card's Z as its z-index.
 func newEmptyTable(seatCount int) *Table {
 	t := &Table{
 		Cards: map[string]*Card{},
 		Piles: map[string]*Pile{},
 		Hands: map[Area][]string{},
+		NextZ: 1,
 	}
 	villainY := rowY(villainRow)
 	t.addPile(PileEncounter, KindEncounter, NoOwner, deckX, villainY)

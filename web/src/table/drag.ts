@@ -41,6 +41,12 @@ export function unknownTopId(pile: Pick<PileView, 'kind'>): string {
   return pile.kind === 'encounter' ? ENCOUNTER_TOP_ID : DECK_TOP_ID;
 }
 
+/**
+ * How far below the card before it in its chain a tucked card lies, in table
+ * units. It mirrors attachOffsetY in internal/game/apply.go.
+ */
+export const ATTACH_OFFSET_Y = 20;
+
 /** A drop this close to a pile, in screen pixels, goes onto it. */
 const PILE_MARGIN = 20;
 
@@ -81,7 +87,7 @@ type CardRect = Extract<DropRect, { kind: 'card' }>;
 
 /** What is dragged, read from the current view. */
 export type DragSource =
-  /** A table card, with the cards tucked under it. */
+  /** A table card, with what it carries (stackOf). */
   | { kind: 'card'; card: string; x: number; y: number }
   /** A card of the hand of the player seated in `area`. */
   | { kind: 'hand'; card: string; hand: readonly string[]; area: Area }
@@ -243,6 +249,11 @@ function toHand(drag: DragSource): Action | null {
 /** What can be dropped onto a card or a pile: everything but a marker. */
 type CardSource = Exclude<DragSource, { kind: 'marker' }>;
 
+/**
+ * A drop on a card tucks the dragged card into that card's stack. The server
+ * appends it to the end of the chain and lays the chain out itself, whatever
+ * card of the stack it was dropped on: the drop point is not sent (tuckSpot).
+ */
 function onCard(
   drag: CardSource,
   card: string,
@@ -250,20 +261,18 @@ function onCard(
   dealTo: Area,
   rows: RowMap,
 ): Action | null {
-  // Tucked where it is dropped, behind the card: the server keeps the spot (placed).
-  const { x, y } = spotOf(at, rows);
   switch (drag.kind) {
     case 'card':
-      return { kind: 'attach', card: drag.card, target: card, x, y, placed: true };
+      return { kind: 'attach', card: drag.card, target: card };
     case 'hand':
     case 'pile':
       // Played and tucked in one action: one undo step.
-      return { kind: 'play', card: drag.card, target: card, x, y, placed: true };
+      return { kind: 'play', card: drag.card, target: card };
     case 'deck':
       // A side or scenario deck's top card is played and tucked as a hand card is: the server
       // plays the deck's top card, which the client may not know.
       if (isSideDeckId(drag.pile) || isScenarioDeckId(drag.pile)) {
-        return { kind: 'play', pile: drag.pile, target: card, x, y, placed: true };
+        return { kind: 'play', pile: drag.pile, target: card };
       }
       // A deck's top card is played face down where it lands, over that card.
       return place(drag, at, dealTo, rows);
@@ -532,18 +541,108 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   return targets.filter(exists);
 }
 
-/** The card and every table card tucked under it, directly or not: what moves with it. */
+/**
+ * What moves with a table card: a main card (tucked under none) carries its
+ * whole chain, in order; a tucked card moves alone, and the server closes
+ * the chain behind it. It mirrors the server's carried cards
+ * (internal/game/apply.go).
+ */
 export function stackOf(id: string, cards: readonly CardView[]): string[] {
-  const stack = [id];
-  for (let i = 0; i < stack.length; i++) {
-    const parent = stack[i];
-    for (const card of cards) {
-      if (card.parent === parent && card.zone === 'table' && !stack.includes(card.id)) {
-        stack.push(card.id);
-      }
-    }
+  const card = cards.find((c) => c.id === id);
+  if (card?.parent !== undefined) {
+    return [id];
   }
-  return stack;
+  return chainOf(id, cards);
+}
+
+/**
+ * The card, then the table card tucked directly under it, then the one
+ * under that, and so on to the end of the chain: each card holds at most one.
+ */
+function chainOf(id: string, cards: readonly CardView[]): string[] {
+  const chain = [id];
+  let next = tuckedUnder(id, cards);
+  // The includes check guards against a loop in a broken view.
+  while (next !== undefined && !chain.includes(next.id)) {
+    chain.push(next.id);
+    next = tuckedUnder(next.id, cards);
+  }
+  return chain;
+}
+
+function tuckedUnder(id: string, cards: readonly CardView[]): CardView | undefined {
+  return cards.find((card) => card.parent === id && card.zone === 'table');
+}
+
+/** The main card of the stack the card belongs to: up its chain, the card tucked under none. */
+export function mainCardOf(card: CardView, cards: readonly CardView[]): CardView {
+  const cardsById = byId(cards);
+  const seen = new Set([card.id]);
+  let main = card;
+  // The seen set guards against a parent loop in a broken view.
+  while (main.parent !== undefined && !seen.has(main.parent)) {
+    const host = cardsById.get(main.parent);
+    if (host === undefined) {
+      break;
+    }
+    seen.add(host.id);
+    main = host;
+  }
+  return main;
+}
+
+/**
+ * The chain of the stack `target` belongs to, main card first, without the
+ * `moving` cards, which leave it before a card is tucked into it: the cards
+ * staying there. Null when target is not on the table.
+ */
+function stayingChain(
+  target: string,
+  moving: readonly string[],
+  cards: readonly CardView[],
+): CardView[] | null {
+  const host = byId(cards).get(target);
+  if (host?.zone !== 'table') {
+    return null;
+  }
+  const main = mainCardOf(host, cards);
+  return chainOf(main.id, cards)
+    .filter((id) => !moving.includes(id))
+    .flatMap((id) => byId(cards).get(id) ?? []);
+}
+
+/**
+ * The card a drop on `target` tucks the dragged card directly under: the last
+ * card of the chain `target` belongs to, the `moving` cards left out (a tucked
+ * card dropped on its own stack goes to its end). Undefined when target is
+ * not on the table.
+ */
+export function tuckHost(
+  target: string,
+  moving: readonly string[],
+  cards: readonly CardView[],
+): CardView | undefined {
+  return stayingChain(target, moving, cards)?.at(-1);
+}
+
+/**
+ * Where a card tucked into the stack of `target` lies, as the server lays the
+ * chain out: at the end of the chain (tuckHost), in its main card's column,
+ * the i-th tucked card i × ATTACH_OFFSET_Y below the main card. Null when
+ * target is not on the table.
+ */
+export function tuckSpot(
+  target: string,
+  moving: readonly string[],
+  cards: readonly CardView[],
+): Point | null {
+  const staying = stayingChain(target, moving, cards);
+  const main = staying?.[0];
+  if (!staying || !main) {
+    return null;
+  }
+  // The main card is one of the cards staying: with n of them, the new card is the n-th tucked.
+  return { x: main.x, y: main.y + staying.length * ATTACH_OFFSET_Y };
 }
 
 /**

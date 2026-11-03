@@ -10,6 +10,9 @@ import {
   pileTargets,
   sourceOf,
   stackOf,
+  tuckHost,
+  tuckSpot,
+  ATTACH_OFFSET_Y,
   type DragSource,
   type DropRect,
 } from './drag';
@@ -181,15 +184,10 @@ describe('dropAction', () => {
       z: 3,
       rect: rect(0, 0, 1, 1),
     };
-    // Where it is dropped, on the grid: it stays there, behind the card.
-    expect(dropAction(TABLE_CARD, target, { x: 123, y: 456 }, DEAL_TO)).toEqual({
-      kind: 'attach',
-      card: 'c',
-      target: 'hero',
-      x: 120,
-      y: 460,
-      placed: true,
-    });
+    // The server lays the stack out: the drop point is not sent.
+    const action = dropAction(TABLE_CARD, target, { x: 123, y: 456 }, DEAL_TO);
+    expect(action).toEqual({ kind: 'attach', card: 'c', target: 'hero' });
+    expect(action).not.toHaveProperty('placed');
   });
 
   it('drop on own deck pile puts on top', () => {
@@ -298,18 +296,12 @@ describe('dropAction', () => {
       kind: 'play',
       card: 'h2',
       target: 'hero',
-      x: 300,
-      y: 300,
-      placed: true,
     });
     const fromPile: DragSource = { kind: 'pile', pile: 'encd', card: 'top' };
     expect(dropAction(fromPile, onCard, at, DEAL_TO)).toEqual({
       kind: 'play',
       card: 'top',
       target: 'hero',
-      x: 300,
-      y: 300,
-      placed: true,
     });
   });
 
@@ -590,16 +582,83 @@ describe('handAreaOf', () => {
 });
 
 describe('stackOf', () => {
-  it('is the card and every card tucked under it, directly or not', () => {
-    const cards = [
-      card('a'),
-      card('b', { parent: 'a' }),
-      card('c', { parent: 'b' }),
-      card('d', { parent: 'x' }),
-      card('e', { parent: 'a', zone: 'pile' }),
-    ];
-    expect(stackOf('a', cards)).toEqual(['a', 'b', 'c']);
-    expect(stackOf('b', cards)).toEqual(['b', 'c']);
+  // A chain: r, then c1 tucked under it, c2 under c1, c3 under c2; a card in a pile is left out.
+  const chain = [
+    card('c2', { parent: 'c1' }),
+    card('r'),
+    card('c3', { parent: 'c2' }),
+    card('c1', { parent: 'r' }),
+    card('other', { parent: 'x' }),
+    card('gone', { parent: 'c3', zone: 'pile' }),
+  ];
+
+  it('is the whole chain of a main card, in order', () => {
+    expect(stackOf('r', chain)).toEqual(['r', 'c1', 'c2', 'c3']);
+  });
+
+  it('is a tucked card alone, in the middle of the chain or at its end', () => {
+    expect(stackOf('c1', chain)).toEqual(['c1']);
+    expect(stackOf('c2', chain)).toEqual(['c2']);
+    expect(stackOf('c3', chain)).toEqual(['c3']);
+  });
+
+  it('is a card tucked under none alone when nothing is tucked under it', () => {
+    expect(stackOf('solo', [card('solo')])).toEqual(['solo']);
+  });
+});
+
+describe('tuckSpot', () => {
+  // A chain laid out by the server: c1 and c2 in r's column, 20 apart.
+  const chain = [
+    card('r', { x: 400, y: 300 }),
+    card('c1', { x: 400, y: 320, parent: 'r' }),
+    card('c2', { x: 400, y: 340, parent: 'c1' }),
+    card('free', { x: 100, y: 100 }),
+  ];
+
+  it("is the end of the chain, in the main card's column, whatever card of it is the target", () => {
+    for (const target of ['r', 'c1', 'c2']) {
+      expect(tuckSpot(target, ['free'], chain), target).toEqual({ x: 400, y: 360 });
+    }
+  });
+
+  it('is under the main card alone when nothing is tucked under it', () => {
+    expect(tuckSpot('free', ['h1'], chain)).toEqual({ x: 100, y: 100 + ATTACH_OFFSET_Y });
+  });
+
+  it('leaves out a tucked card dropped on its own stack: it goes to the end of the chain', () => {
+    expect(tuckSpot('r', ['c1'], chain)).toEqual({ x: 400, y: 340 });
+    expect(tuckSpot('c2', ['c1'], chain)).toEqual({ x: 400, y: 340 });
+  });
+
+  it('is null for a target off the table', () => {
+    expect(tuckSpot('gone', [], [...chain, card('gone', { zone: 'pile' })])).toBeNull();
+    expect(tuckSpot('missing', [], chain)).toBeNull();
+  });
+});
+
+describe('tuckHost', () => {
+  // r, then c1 tucked under it, c2 under c1.
+  const chain = [card('c1', { parent: 'r' }), card('r'), card('c2', { parent: 'c1' })];
+  const hostOf = (target: string, moving: string[]) => tuckHost(target, moving, chain)?.id;
+
+  it('is the last card of the chain, whatever card of the stack is the target', () => {
+    for (const target of ['r', 'c1', 'c2']) {
+      expect(hostOf(target, ['free']), target).toBe('c2');
+    }
+  });
+
+  it('is the main card when nothing is tucked under it', () => {
+    expect(tuckHost('solo', [], [card('solo')])?.id).toBe('solo');
+  });
+
+  it('leaves out the moving cards: a tucked card dropped on its own stack', () => {
+    expect(hostOf('r', ['c2'])).toBe('c1');
+    expect(hostOf('c2', ['c1'])).toBe('c2');
+  });
+
+  it('is undefined for a target off the table', () => {
+    expect(hostOf('missing', [])).toBeUndefined();
   });
 });
 
@@ -914,9 +973,6 @@ describe('side decks', () => {
         kind: 'play',
         pile: deck,
         target: 'x',
-        x: 40,
-        y: 60,
-        placed: true,
       });
     }
   });
@@ -989,9 +1045,6 @@ describe('a scenario deck', () => {
       kind: 'play',
       pile: 'sdeck:weapons',
       target: 'x',
-      x: 40,
-      y: 60,
-      placed: true,
     });
   });
 

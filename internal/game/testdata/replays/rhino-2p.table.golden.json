@@ -1,8 +1,62 @@
 {
   "cards": {
-    "c23bxphcm": {
-      "id": "c23bxphcm",
-      "code": "01099",
+    "c32hkpmqa": {
+      "id": "c32hkpmqa",
+      "code": "01004",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
+    "c3c5mtrmj": {
+      "id": "c3c5mtrmj",
+      "code": "01005",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "c3cyzdgvj": {
+      "id": "c3cyzdgvj",
+      "code": "01004",
+      "face": 0,
+      "faces": 1,
+      "faceDown": true,
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "table",
+      "x": 420,
+      "y": 90,
+      "z": 15
+    },
+    "c3r5d8tff": {
+      "id": "c3r5d8tff",
+      "code": "01096",
+      "face": 0,
+      "faces": 1,
+      "back": "villain",
+      "owner": -1,
+      "home": "enc",
+      "zone": "stage",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "c3sp2dus2": {
+      "id": "c3sp2dus2",
+      "code": "01109",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -14,22 +68,9 @@
       "z": 0,
       "pile": "enc"
     },
-    "c3cyzdgvj": {
-      "id": "c3cyzdgvj",
-      "code": "01004",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "hand",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "c3h6azg9d": {
-      "id": "c3h6azg9d",
-      "code": "01057",
+    "c3uv25cmy": {
+      "id": "c3uv25cmy",
+      "code": "01058",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -41,32 +82,19 @@
       "z": 0,
       "pile": "deck:p1"
     },
-    "c3p7fqpy7": {
-      "id": "c3p7fqpy7",
-      "code": "01103",
+    "c46bgpjyw": {
+      "id": "c46bgpjyw",
+      "code": "01007",
       "face": 0,
       "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
       "zone": "pile",
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
-    },
-    "c3r5d8tff": {
-      "id": "c3r5d8tff",
-      "code": "01096",
-      "face": 0,
-      "faces": 1,
-      "back": "villain",
-      "owner": -1,
-      "home": "enc",
-      "zone": "table",
-      "x": 300,
-      "y": 30,
-      "z": 30
+      "pile": "deck:p1"
     },
     "c4jehyayp": {
       "id": "c4jehyayp",
@@ -82,20 +110,6 @@
       "z": 0,
       "pile": "aside:p0"
     },
-    "c4ncs542k": {
-      "id": "c4ncs542k",
-      "code": "01100",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
     "c4p53zsux": {
       "id": "c4p53zsux",
       "code": "01005",
@@ -104,42 +118,17 @@
       "back": "player",
       "owner": 1,
       "home": "deck:p1",
-      "zone": "hand",
-      "x": 0,
+      "zone": "table",
+      "x": 890,
       "y": 0,
-      "z": 0
+      "z": 22,
+      "status": {
+        "locked": 1
+      }
     },
-    "c55kaeppm": {
-      "id": "c55kaeppm",
-      "code": "01058",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p1"
-    },
-    "c5vrtms9y": {
-      "id": "c5vrtms9y",
-      "code": "01052",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p0"
-    },
-    "c5zts74ta": {
-      "id": "c5zts74ta",
-      "code": "01105",
+    "c4w8zvvua": {
+      "id": "c4w8zvvua",
+      "code": "01189",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -151,9 +140,23 @@
       "z": 0,
       "pile": "enc"
     },
-    "c62btdnve": {
-      "id": "c62btdnve",
-      "code": "01187",
+    "c56jwxnas": {
+      "id": "c56jwxnas",
+      "code": "01110",
+      "face": 0,
+      "faces": 1,
+      "faceDown": true,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "table",
+      "x": 850,
+      "y": 200,
+      "z": 38
+    },
+    "c6cqpsgpw": {
+      "id": "c6cqpsgpw",
+      "code": "01165",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -164,61 +167,6 @@
       "y": 0,
       "z": 0,
       "pile": "enc"
-    },
-    "c6j5v2csn": {
-      "id": "c6j5v2csn",
-      "code": "01009",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p0"
-    },
-    "c793ru285": {
-      "id": "c793ru285",
-      "code": "01050",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p1"
-    },
-    "c7edczms4": {
-      "id": "c7edczms4",
-      "code": "01050",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p0"
-    },
-    "c7mucxf5b": {
-      "id": "c7mucxf5b",
-      "code": "01057",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "hand",
-      "x": 0,
-      "y": 0,
-      "z": 0
     },
     "c7sqzvnsj": {
       "id": "c7sqzvnsj",
@@ -234,9 +182,64 @@
       "z": 0,
       "pile": "aside:p0"
     },
-    "c8h9try23": {
-      "id": "c8h9try23",
-      "code": "01009",
+    "c84m7ca9z": {
+      "id": "c84m7ca9z",
+      "code": "01110",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "c8gc6sjch": {
+      "id": "c8gc6sjch",
+      "code": "01051",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
+    "c8kbcqhx8": {
+      "id": "c8kbcqhx8",
+      "code": "01112",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "c8kv4m2nz": {
+      "id": "c8kv4m2nz",
+      "code": "01055",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "c96dzjnpd": {
+      "id": "c96dzjnpd",
+      "code": "01054",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -247,47 +250,6 @@
       "y": 0,
       "z": 0,
       "pile": "deck:p1"
-    },
-    "c8np9ajm5": {
-      "id": "c8np9ajm5",
-      "code": "01111",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "c8rah8xcp": {
-      "id": "c8rah8xcp",
-      "code": "01003",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "hand",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "c8wmb2urs": {
-      "id": "c8wmb2urs",
-      "code": "01105",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
     },
     "c9vqye7uf": {
       "id": "c9vqye7uf",
@@ -312,221 +274,13 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "pile",
-      "x": 780,
-      "y": 320,
-      "z": 19,
-      "pile": "aside:p0"
+      "x": 800,
+      "y": 210,
+      "z": 23,
+      "pile": "disc:p1"
     },
-    "cac8bqex6": {
-      "id": "cac8bqex6",
-      "code": "01110",
-      "face": 0,
-      "faces": 1,
-      "faceDown": true,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "table",
-      "x": 140,
-      "y": 30,
-      "z": 20
-    },
-    "cajpwnbs6": {
-      "id": "cajpwnbs6",
-      "code": "01101",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "can5ex7ua": {
-      "id": "can5ex7ua",
-      "code": "01052",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p1"
-    },
-    "cbqjyr59x": {
-      "id": "cbqjyr59x",
-      "code": "01101",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "ccak7dtd9": {
-      "id": "ccak7dtd9",
-      "code": "01056",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p0"
-    },
-    "cd7q8redz": {
-      "id": "cd7q8redz",
-      "code": "01053",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "hand",
-      "x": 40,
-      "y": 280,
-      "z": 7
-    },
-    "cdyvj6xc3": {
-      "id": "cdyvj6xc3",
-      "code": "01187",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "ce6tatprj": {
-      "id": "ce6tatprj",
-      "code": "01165",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "cedq5xre8": {
-      "id": "cedq5xre8",
-      "code": "01002",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "hand",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "cekpkknhp": {
-      "id": "cekpkknhp",
-      "code": "01058",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "pile",
-      "x": 220,
-      "y": 140,
-      "z": 10,
-      "pile": "disc:p0"
-    },
-    "cfx63zk3p": {
-      "id": "cfx63zk3p",
-      "code": "01008",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p1"
-    },
-    "cfzunhmj3": {
-      "id": "cfzunhmj3",
-      "code": "01106",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "cguyptdvd": {
-      "id": "cguyptdvd",
-      "code": "01002",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p1"
-    },
-    "che2ee6va": {
-      "id": "che2ee6va",
-      "code": "01104",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "chff8uheg": {
-      "id": "chff8uheg",
-      "code": "01098",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "chgefd7rp": {
-      "id": "chgefd7rp",
+    "cah2z45kq": {
+      "id": "cah2z45kq",
       "code": "01099",
       "face": 0,
       "faces": 1,
@@ -539,37 +293,23 @@
       "z": 0,
       "pile": "enc"
     },
-    "chjz34dk4": {
-      "id": "chjz34dk4",
-      "code": "01054",
+    "cap7vuyk7": {
+      "id": "cap7vuyk7",
+      "code": "01106",
       "face": 0,
       "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
       "zone": "pile",
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "enc"
     },
-    "chmrubv7p": {
-      "id": "chmrubv7p",
-      "code": "01059",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "deck:p1"
-    },
-    "chxsz54vn": {
-      "id": "chxsz54vn",
-      "code": "01005",
+    "cawh3tz4h": {
+      "id": "cawh3tz4h",
+      "code": "01055",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -581,9 +321,23 @@
       "z": 0,
       "pile": "deck:p0"
     },
-    "cj3brjwtj": {
-      "id": "cj3brjwtj",
-      "code": "01112",
+    "cb2rkv4pt": {
+      "id": "cb2rkv4pt",
+      "code": "01057",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
+    "cb7hf8ysu": {
+      "id": "cb7hf8ysu",
+      "code": "01187",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -595,37 +349,9 @@
       "z": 0,
       "pile": "enc"
     },
-    "cj4tdjcbc": {
-      "id": "cj4tdjcbc",
-      "code": "01190",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "cj5y5ezxt": {
-      "id": "cj5y5ezxt",
-      "code": "01108",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "cjkxrnjtx": {
-      "id": "cjkxrnjtx",
-      "code": "01051",
+    "cbe6n9gpr": {
+      "id": "cbe6n9gpr",
+      "code": "01052",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -637,22 +363,37 @@
       "z": 0,
       "pile": "deck:p1"
     },
-    "cjyqcketf": {
-      "id": "cjyqcketf",
-      "code": "01059",
+    "ccqf7amju": {
+      "id": "ccqf7amju",
+      "code": "01165",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 30,
+      "z": 26,
+      "pile": "encd"
+    },
+    "cd6ydw3q9": {
+      "id": "cd6ydw3q9",
+      "code": "01009",
       "face": 0,
       "faces": 1,
       "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "hand",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "pile",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "pile": "deck:p1"
     },
-    "cjz4jdayn": {
-      "id": "cjz4jdayn",
-      "code": "01109",
+    "cdfv6c7te": {
+      "id": "cdfv6c7te",
+      "code": "01106",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -664,9 +405,9 @@
       "z": 0,
       "pile": "enc"
     },
-    "ck78jkx8z": {
-      "id": "ck78jkx8z",
-      "code": "01006",
+    "cep57uejw": {
+      "id": "cep57uejw",
+      "code": "01058",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -676,6 +417,75 @@
       "x": 0,
       "y": 0,
       "z": 0
+    },
+    "cfnyscqrg": {
+      "id": "cfnyscqrg",
+      "code": "01050",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "cfw47qh7b": {
+      "id": "cfw47qh7b",
+      "code": "01106",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "cg48345fa": {
+      "id": "cg48345fa",
+      "code": "01059",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p1"
+    },
+    "chwcs3svj": {
+      "id": "chwcs3svj",
+      "code": "01190",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "encd"
+    },
+    "cjssameux": {
+      "id": "cjssameux",
+      "code": "01104",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 30,
+      "z": 14,
+      "pile": "enc"
     },
     "ckavtt6fr": {
       "id": "ckavtt6fr",
@@ -699,39 +509,30 @@
       "back": "villain",
       "owner": -1,
       "home": "enc",
-      "zone": "stage",
-      "x": 0,
-      "y": 0,
-      "z": 0
+      "zone": "table",
+      "x": 420,
+      "y": 20,
+      "z": 34,
+      "status": {
+        "locked": 1
+      }
     },
-    "cm8utfyqd": {
-      "id": "cm8utfyqd",
-      "code": "01007",
+    "cknp5txrz": {
+      "id": "cknp5txrz",
+      "code": "01107",
       "face": 0,
       "faces": 1,
-      "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "hand",
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "pile": "encd"
     },
-    "cmh4fbb7w": {
-      "id": "cmh4fbb7w",
-      "code": "01006",
-      "face": 0,
-      "faces": 1,
-      "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "hand",
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "cmhpfzh49": {
-      "id": "cmhpfzh49",
+    "ckp3dwauq": {
+      "id": "ckp3dwauq",
       "code": "01054",
       "face": 0,
       "faces": 1,
@@ -743,6 +544,88 @@
       "y": 0,
       "z": 0,
       "pile": "deck:p0"
+    },
+    "ckuy4pnw6": {
+      "id": "ckuy4pnw6",
+      "code": "01098",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "ckw77waux": {
+      "id": "ckw77waux",
+      "code": "01051",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p1"
+    },
+    "ckz954xpm": {
+      "id": "ckz954xpm",
+      "code": "01103",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "cm344h5u3": {
+      "id": "cm344h5u3",
+      "code": "01009",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "cm9n3r42r": {
+      "id": "cm9n3r42r",
+      "code": "01101",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "cmbnjka8c": {
+      "id": "cmbnjka8c",
+      "code": "01008",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
     },
     "cmvq6tcpc": {
       "id": "cmvq6tcpc",
@@ -758,23 +641,39 @@
       "z": 0,
       "pile": "aside:p1"
     },
+    "cmy7fvc4a": {
+      "id": "cmy7fvc4a",
+      "code": "01003",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
     "cn5ph3gpe": {
       "id": "cn5ph3gpe",
       "code": "01097",
-      "face": 0,
+      "face": 1,
       "faces": 2,
       "back": "villain",
       "owner": -1,
       "home": "enc",
       "zone": "table",
-      "x": 380,
-      "y": 280,
-      "z": 31,
-      "parent": "cwwnhqp2r"
+      "x": 850,
+      "y": 220,
+      "z": 37,
+      "parent": "c56jwxnas",
+      "mods": {
+        "def": -1
+      }
     },
-    "cn83n96zn": {
-      "id": "cn83n96zn",
-      "code": "01189",
+    "cn7yy7m26": {
+      "id": "cn7yy7m26",
+      "code": "01104",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -782,36 +681,23 @@
       "home": "enc",
       "zone": "pile",
       "x": 0,
-      "y": 0,
-      "z": 0,
+      "y": 30,
+      "z": 28,
       "pile": "enc"
     },
-    "cnrc4hea3": {
-      "id": "cnrc4hea3",
-      "code": "01165",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "encd"
-    },
-    "cnytrgzun": {
-      "id": "cnytrgzun",
-      "code": "01053",
+    "cp4ukz42e": {
+      "id": "cp4ukz42e",
+      "code": "01057",
       "face": 0,
       "faces": 1,
       "back": "player",
       "owner": 1,
       "home": "deck:p1",
-      "zone": "hand",
+      "zone": "pile",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "pile": "deck:p1"
     },
     "cp5ykazx6": {
       "id": "cp5ykazx6",
@@ -827,9 +713,22 @@
       "z": 0,
       "pile": "aside:p0"
     },
-    "cqtvq5gmb": {
-      "id": "cqtvq5gmb",
-      "code": "01188",
+    "cpjmsz9a2": {
+      "id": "cpjmsz9a2",
+      "code": "01002",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "table",
+      "x": 400,
+      "y": 70,
+      "z": 27
+    },
+    "cqhykf88e": {
+      "id": "cqhykf88e",
+      "code": "01105",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -841,9 +740,9 @@
       "z": 0,
       "pile": "enc"
     },
-    "crxyf4464": {
-      "id": "crxyf4464",
-      "code": "01106",
+    "cqs3pqqeh": {
+      "id": "cqs3pqqeh",
+      "code": "01100",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -855,9 +754,37 @@
       "z": 0,
       "pile": "enc"
     },
-    "csak58b6y": {
-      "id": "csak58b6y",
-      "code": "01110",
+    "cqtcrpjrh": {
+      "id": "cqtcrpjrh",
+      "code": "01187",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "encd"
+    },
+    "crah65s2y": {
+      "id": "crah65s2y",
+      "code": "01007",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
+    "cs4aw4hse": {
+      "id": "cs4aw4hse",
+      "code": "01108",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -869,9 +796,22 @@
       "z": 0,
       "pile": "enc"
     },
-    "csddp3k3b": {
-      "id": "csddp3k3b",
-      "code": "01112",
+    "cs7hmhvr6": {
+      "id": "cs7hmhvr6",
+      "code": "01053",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "hand",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "csdbghyga": {
+      "id": "csdbghyga",
+      "code": "01099",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -881,7 +821,7 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "encd"
     },
     "csm5cnqj5": {
       "id": "csm5cnqj5",
@@ -897,50 +837,19 @@
       "z": 0,
       "pile": "aside:p0"
     },
-    "csp2zubft": {
-      "id": "csp2zubft",
-      "code": "01106",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "table",
-      "x": 970,
-      "y": 190,
-      "z": 33,
-      "parent": "cwwnhqp2r",
-      "status": {
-        "tough": 1
-      }
-    },
-    "csq3ze7ft": {
-      "id": "csq3ze7ft",
-      "code": "01104",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "csufar9gc": {
-      "id": "csufar9gc",
-      "code": "01055",
+    "cspdz9u34": {
+      "id": "cspdz9u34",
+      "code": "01059",
       "face": 0,
       "faces": 1,
       "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
+      "owner": 0,
+      "home": "deck:p0",
       "zone": "pile",
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p0"
     },
     "cszysvnkv": {
       "id": "cszysvnkv",
@@ -956,22 +865,23 @@
       "z": 0,
       "pile": "aside:p1"
     },
-    "ct5dpja4m": {
-      "id": "ct5dpja4m",
-      "code": "01007",
+    "ctgq8syte": {
+      "id": "ctgq8syte",
+      "code": "01002",
       "face": 0,
       "faces": 1,
       "back": "player",
-      "owner": 1,
-      "home": "deck:p1",
-      "zone": "hand",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "pile": "deck:p0"
     },
-    "ctt4rve3w": {
-      "id": "ctt4rve3w",
-      "code": "01056",
+    "ctz7dxv7f": {
+      "id": "ctz7dxv7f",
+      "code": "01008",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -982,20 +892,6 @@
       "y": 0,
       "z": 0,
       "pile": "deck:p1"
-    },
-    "ctynsgra9": {
-      "id": "ctynsgra9",
-      "code": "01107",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
     },
     "ctz9r4kc9": {
       "id": "ctz9r4kc9",
@@ -1011,19 +907,47 @@
       "z": 0,
       "pile": "aside:p1"
     },
-    "cv2gum4sw": {
-      "id": "cv2gum4sw",
-      "code": "01008",
+    "cuqku3y77": {
+      "id": "cuqku3y77",
+      "code": "01056",
       "face": 0,
       "faces": 1,
       "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "table",
+      "x": 890,
+      "y": 20,
+      "z": 21,
+      "parent": "c4p53zsux"
+    },
+    "curykn9kd": {
+      "id": "curykn9kd",
+      "code": "01102",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
       "zone": "pile",
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "enc"
+    },
+    "cuyykvzag": {
+      "id": "cuyykvzag",
+      "code": "01101",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
     },
     "cvczayu4v": {
       "id": "cvczayu4v",
@@ -1038,6 +962,90 @@
       "y": 0,
       "z": 0
     },
+    "cvehswjng": {
+      "id": "cvehswjng",
+      "code": "01056",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 800,
+      "y": 190,
+      "z": 24,
+      "pile": "vic"
+    },
+    "cvmy99et9": {
+      "id": "cvmy99et9",
+      "code": "01050",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
+    "cvw59s9fd": {
+      "id": "cvw59s9fd",
+      "code": "01006",
+      "face": 0,
+      "faces": 1,
+      "back": "player",
+      "owner": 0,
+      "home": "deck:p0",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p0"
+    },
+    "cw7rsawdp": {
+      "id": "cw7rsawdp",
+      "code": "01186",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "cwkk5mtxa": {
+      "id": "cwkk5mtxa",
+      "code": "01111",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
+    "cwm9gavc7": {
+      "id": "cwm9gavc7",
+      "code": "01112",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
+    },
     "cwwnhqp2r": {
       "id": "cwwnhqp2r",
       "code": "01001",
@@ -1047,10 +1055,31 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "table",
-      "x": 380,
-      "y": 240,
-      "z": 34,
+      "x": 300,
+      "y": 410,
+      "z": 3,
+      "exhausted": true,
+      "status": {
+        "locked": 3
+      },
+      "mods": {
+        "atk": -2
+      },
       "identity": true
+    },
+    "cx2z7zpmx": {
+      "id": "cx2z7zpmx",
+      "code": "01105",
+      "face": 0,
+      "faces": 1,
+      "back": "encounter",
+      "owner": -1,
+      "home": "enc",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "enc"
     },
     "cx3a7hfr7": {
       "id": "cx3a7hfr7",
@@ -1066,9 +1095,9 @@
       "z": 0,
       "pile": "aside:p1"
     },
-    "cxbe98qhh": {
-      "id": "cxbe98qhh",
-      "code": "01102",
+    "cx7bdntqx": {
+      "id": "cx7bdntqx",
+      "code": "01186",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -1080,23 +1109,23 @@
       "z": 0,
       "pile": "enc"
     },
-    "cy2jmgydg": {
-      "id": "cy2jmgydg",
-      "code": "01055",
+    "cx82pepv6": {
+      "id": "cx82pepv6",
+      "code": "01006",
       "face": 0,
       "faces": 1,
       "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
-      "zone": "table",
-      "x": 300,
-      "y": 50,
-      "z": 29,
-      "parent": "c3r5d8tff"
+      "owner": 1,
+      "home": "deck:p1",
+      "zone": "pile",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "pile": "deck:p1"
     },
-    "cy8eunrp6": {
-      "id": "cy8eunrp6",
-      "code": "01004",
+    "cy8uujnnb": {
+      "id": "cy8uujnnb",
+      "code": "01052",
       "face": 0,
       "faces": 1,
       "back": "player",
@@ -1107,37 +1136,23 @@
       "y": 0,
       "z": 0
     },
-    "cyax4jdhe": {
-      "id": "cyax4jdhe",
-      "code": "01051",
+    "cyymparn2": {
+      "id": "cyymparn2",
+      "code": "01053",
       "face": 0,
       "faces": 1,
       "back": "player",
-      "owner": 0,
-      "home": "deck:p0",
+      "owner": 1,
+      "home": "deck:p1",
       "zone": "pile",
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p1"
     },
-    "cyp3qn7q4": {
-      "id": "cyp3qn7q4",
-      "code": "01186",
-      "face": 0,
-      "faces": 1,
-      "back": "encounter",
-      "owner": -1,
-      "home": "enc",
-      "zone": "pile",
-      "x": 0,
-      "y": 0,
-      "z": 0,
-      "pile": "enc"
-    },
-    "cz3uw96jf": {
-      "id": "cz3uw96jf",
-      "code": "01186",
+    "cz2syf95r": {
+      "id": "cz2syf95r",
+      "code": "01188",
       "face": 0,
       "faces": 1,
       "back": "encounter",
@@ -1158,10 +1173,15 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "table",
-      "x": 380,
-      "y": 260,
-      "z": 32,
-      "parent": "cwwnhqp2r",
+      "x": 0,
+      "y": 220,
+      "z": 25,
+      "tokens": {
+        "thr": 2
+      },
+      "mods": {
+        "atk": 3
+      },
       "identity": true
     }
   },
@@ -1177,8 +1197,7 @@
         "c7sqzvnsj",
         "csm5cnqj5",
         "cp5ykazx6",
-        "c4jehyayp",
-        "cab89hsja"
+        "c4jehyayp"
       ]
     },
     "aside:p1": {
@@ -1202,14 +1221,16 @@
       "x": 0,
       "y": 410,
       "cards": [
-        "c6j5v2csn",
-        "ccak7dtd9",
-        "cv2gum4sw",
-        "chxsz54vn",
-        "c5vrtms9y",
-        "c7edczms4",
-        "cyax4jdhe",
-        "cmhpfzh49"
+        "cvw59s9fd",
+        "cawh3tz4h",
+        "cspdz9u34",
+        "c32hkpmqa",
+        "crah65s2y",
+        "c8gc6sjch",
+        "cb2rkv4pt",
+        "ckp3dwauq",
+        "cvmy99et9",
+        "ctgq8syte"
       ]
     },
     "deck:p1": {
@@ -1219,18 +1240,17 @@
       "x": 0,
       "y": 630,
       "cards": [
-        "c3h6azg9d",
-        "c8h9try23",
-        "cfx63zk3p",
-        "chjz34dk4",
-        "ctt4rve3w",
-        "cjkxrnjtx",
-        "chmrubv7p",
-        "can5ex7ua",
-        "cguyptdvd",
-        "c55kaeppm",
-        "csufar9gc",
-        "c793ru285"
+        "cd6ydw3q9",
+        "c3uv25cmy",
+        "c96dzjnpd",
+        "cbe6n9gpr",
+        "ctz7dxv7f",
+        "cyymparn2",
+        "cp4ukz42e",
+        "cx82pepv6",
+        "cg48345fa",
+        "ckw77waux",
+        "c46bgpjyw"
       ]
     },
     "disc:p0": {
@@ -1239,9 +1259,7 @@
       "owner": 0,
       "x": 130,
       "y": 410,
-      "cards": [
-        "cekpkknhp"
-      ]
+      "cards": []
     },
     "disc:p1": {
       "id": "disc:p1",
@@ -1249,7 +1267,9 @@
       "owner": 1,
       "x": 130,
       "y": 630,
-      "cards": []
+      "cards": [
+        "cab89hsja"
+      ]
     },
     "enc": {
       "id": "enc",
@@ -1258,35 +1278,32 @@
       "x": 0,
       "y": 30,
       "cards": [
-        "ctynsgra9",
-        "ce6tatprj",
-        "cbqjyr59x",
-        "c23bxphcm",
-        "cajpwnbs6",
-        "c5zts74ta",
-        "c4ncs542k",
-        "crxyf4464",
-        "cn83n96zn",
-        "c3p7fqpy7",
-        "cxbe98qhh",
-        "c8np9ajm5",
-        "cqtvq5gmb",
-        "cdyvj6xc3",
-        "csak58b6y",
-        "cj5y5ezxt",
-        "cyp3qn7q4",
-        "csq3ze7ft",
-        "chff8uheg",
-        "chgefd7rp",
-        "cj3brjwtj",
-        "cjz4jdayn",
-        "cz3uw96jf",
-        "c8wmb2urs",
-        "csddp3k3b",
-        "cj4tdjcbc",
-        "c62btdnve",
-        "che2ee6va",
-        "cfzunhmj3"
+        "cah2z45kq",
+        "c3sp2dus2",
+        "cs4aw4hse",
+        "cjssameux",
+        "c4w8zvvua",
+        "c8kbcqhx8",
+        "ckz954xpm",
+        "cqs3pqqeh",
+        "cb7hf8ysu",
+        "cn7yy7m26",
+        "ckuy4pnw6",
+        "c6cqpsgpw",
+        "cwm9gavc7",
+        "cx7bdntqx",
+        "cw7rsawdp",
+        "cap7vuyk7",
+        "curykn9kd",
+        "c84m7ca9z",
+        "cuyykvzag",
+        "cdfv6c7te",
+        "cx2z7zpmx",
+        "cm9n3r42r",
+        "cz2syf95r",
+        "cqhykf88e",
+        "cwkk5mtxa",
+        "cfw47qh7b"
       ]
     },
     "encd": {
@@ -1296,7 +1313,11 @@
       "x": 130,
       "y": 30,
       "cards": [
-        "cnrc4hea3"
+        "csdbghyga",
+        "chwcs3svj",
+        "cqtcrpjrh",
+        "ccqf7amju",
+        "cknp5txrz"
       ]
     },
     "saside": {
@@ -1313,33 +1334,31 @@
       "owner": -1,
       "x": 0,
       "y": 30,
-      "cards": []
+      "cards": [
+        "cvehswjng"
+      ]
     }
   },
   "hands": {
     "p0": [
-      "cd7q8redz",
-      "cjyqcketf",
-      "c7mucxf5b",
-      "cm8utfyqd",
-      "cy8eunrp6",
-      "cedq5xre8",
-      "c8rah8xcp",
-      "ck78jkx8z"
+      "cmbnjka8c",
+      "cmy7fvc4a",
+      "c3c5mtrmj",
+      "cy8uujnnb",
+      "cep57uejw",
+      "cm344h5u3",
+      "cs7hmhvr6"
     ],
     "p1": [
-      "cmh4fbb7w",
-      "ct5dpja4m",
-      "cnytrgzun",
-      "c4p53zsux",
-      "c3cyzdgvj"
+      "cfnyscqrg",
+      "c8kv4m2nz"
     ]
   },
   "stages": [
     {
       "key": "villain",
       "label": "Villain",
-      "current": "c3r5d8tff",
+      "current": "ckesc9e6h",
       "cards": [
         "cvczayu4v",
         "ckesc9e6h",
@@ -1357,53 +1376,8 @@
     }
   ],
   "firstPlayer": {
-    "x": 630,
-    "y": 130
+    "x": 880,
+    "y": 200
   },
-  "arrows": [
-    {
-      "from": "cz3w3cktw",
-      "to": "cn5ph3gpe",
-      "seat": 0
-    }
-  ],
-  "views": {
-    "p0": {
-      "pile": "enc",
-      "mode": "search",
-      "cards": [
-        "cnrc4hea3",
-        "cfzunhmj3",
-        "che2ee6va",
-        "c62btdnve",
-        "cj4tdjcbc",
-        "csddp3k3b",
-        "c8wmb2urs",
-        "cz3uw96jf",
-        "cjz4jdayn",
-        "cj3brjwtj",
-        "chgefd7rp",
-        "chff8uheg",
-        "csq3ze7ft",
-        "cyp3qn7q4",
-        "cj5y5ezxt",
-        "csak58b6y",
-        "cdyvj6xc3",
-        "cqtvq5gmb",
-        "c8np9ajm5",
-        "cxbe98qhh",
-        "c3p7fqpy7",
-        "cn83n96zn",
-        "crxyf4464",
-        "c4ncs542k",
-        "c5zts74ta",
-        "cajpwnbs6",
-        "c23bxphcm",
-        "cbqjyr59x",
-        "ce6tatprj",
-        "ctynsgra9"
-      ]
-    }
-  },
-  "nextZ": 35
+  "nextZ": 39
 }

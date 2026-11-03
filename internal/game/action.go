@@ -56,10 +56,6 @@ type Action struct {
 	Area   Area   `json:"area,omitempty"`   // whose hand (handOrder; filled by resolve for a draw), who is dealt to (deal)
 	X      int    `json:"x,omitempty"`
 	Y      int    `json:"y,omitempty"`
-	// Placed tells that X and Y are where a card tucked under Target was
-	// dropped (attach, play under a card): it lies there, behind its host,
-	// rather than at the default tucked offset (see tuckedPlace).
-	Placed bool `json:"placed,omitempty"`
 	// FaceUp marks an explicit Play: the card lands face up, even out of a
 	// pile that hides its cards (see landsFaceDown). A drag and drop sends
 	// none.
@@ -299,10 +295,10 @@ var groupableKinds = map[Kind]bool{
 
 // resolveGroup checks a group: 2 to maxCount sub-actions of one groupable
 // kind and one Where, none a shuffle into a deck, each on its own card, none
-// tucked under another's. Every sub-action is resolved for who on the table
-// the previous ones leave, as applyGroup performs them, so that its new ids
-// are those apply expects and differ from those picked before. The first
-// error rejects the whole group.
+// carried by another's (see carried). Every sub-action is resolved for who on
+// the table the previous ones leave, as applyGroup performs them, so that its
+// new ids are those apply expects and differ from those picked before. The
+// first error rejects the whole group.
 func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) {
 	if len(a.Actions) < 2 || len(a.Actions) > maxCount {
 		return a, invalid("a group holds 2 to %d actions, not %d", maxCount, len(a.Actions))
@@ -331,7 +327,12 @@ func resolveGroup(g *Game, who actor, a Action, rng *rand.Rand) (Action, error) 
 		cards[sub.Card] = true
 	}
 	for _, sub := range a.Actions {
-		for _, child := range t.descendants(sub.Card) {
+		c, ok := t.Cards[sub.Card]
+		if !ok {
+			// Resolving the sub-action below refuses the unknown card.
+			continue
+		}
+		for _, child := range t.carried(c) {
 			if cards[child.ID] {
 				return a, invalid("card %q is tucked under %q, which comes along", child.ID, sub.Card)
 			}

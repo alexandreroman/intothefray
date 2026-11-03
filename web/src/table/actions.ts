@@ -544,7 +544,7 @@ function leaveRefusal(units: readonly CardView[], table: TableView): string | un
 
 /**
  * Why the card cannot leave the table, or undefined when it can: it is, or
- * holds tucked under it, the card a stage shows or a player's identity. It
+ * carries (stackOf), the card a stage shows or a player's identity. It
  * mirrors checkStaysOnTable, which refuses to take such a card away, so that
  * the menu, the keys and the drag share one rule.
  */

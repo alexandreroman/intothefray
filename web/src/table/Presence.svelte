@@ -432,7 +432,7 @@
 
   /**
    * The cards a player drags, each once, where their corner is, the cards
-   * tucked under the first, and the rest of a group, keeping their offsets as
+   * the first carries, and the rest of a group, keeping their offsets as
    * drawn.
    */
   function ghostsOf(drag: PresenceDrag, origin: DOMRect): TableCard[] {

@@ -12,10 +12,12 @@ import (
 )
 
 // checkIntegrity verifies that every card of the table is in exactly one
-// place (table, hand, pile or stage zone) and that every card id referenced by
-// stages, piles, hands, parents, arrows and views exists.
+// place (table, hand, pile or stage zone), that every card id referenced by
+// stages, piles, hands, parents, arrows and views exists, and that the table
+// cards form laid out stacks (see checkStacks).
 func checkIntegrity(t *testing.T, table *Table) {
 	t.Helper()
+	checkStacks(t, table)
 
 	// Where each id is listed: "pile:<id>", "hand:<area>" or "stage:<key>".
 	listed := map[string][]string{}
@@ -89,6 +91,57 @@ func checkIntegrity(t *testing.T, table *Table) {
 			if _, ok := table.Cards[id]; !ok {
 				t.Errorf("view of %s lists unknown card %s", area, id)
 			}
+		}
+	}
+}
+
+// checkStacks verifies that the table cards form stacks laid out as
+// layOutStack does: every card has at most one card tucked directly under it,
+// following the cards it is tucked under leads to a main card without a
+// cycle, and each tucked card lies in its main card's column, attachOffsetY
+// below the card it is tucked under and beneath it. Every table card has a Z
+// of its own, above 0.
+func checkStacks(t *testing.T, table *Table) {
+	t.Helper()
+	tuckedUnder := map[string]string{}
+	zs := map[int]string{}
+	for id, c := range table.Cards {
+		if c.Zone != ZoneTable {
+			continue
+		}
+		if c.Z < 1 {
+			t.Errorf("card %s has Z %d, want positive", id, c.Z)
+		}
+		if other, ok := zs[c.Z]; ok {
+			t.Errorf("cards %s and %s share Z %d", id, other, c.Z)
+		}
+		zs[c.Z] = id
+		if c.Parent == "" {
+			continue
+		}
+		if other, ok := tuckedUnder[c.Parent]; ok {
+			t.Errorf("cards %s and %s are both tucked under %s", id, other, c.Parent)
+		}
+		tuckedUnder[c.Parent] = id
+	}
+	for id, c := range table.Cards {
+		if c.Zone != ZoneTable || c.Parent == "" {
+			continue
+		}
+		depth := 0
+		main := c
+		for main.Parent != "" && depth <= len(table.Cards) {
+			main = table.Cards[main.Parent]
+			depth++
+		}
+		if main.Parent != "" {
+			t.Errorf("card %s is in a cycle of tucked cards", id)
+			continue
+		}
+		above := table.Cards[c.Parent]
+		if c.X != main.X || c.Y != main.Y+depth*attachOffsetY || c.Z >= above.Z {
+			t.Errorf("card %s lies at (%d,%d,%d), want (%d,%d) in the stack of %s, beneath %s (Z %d)",
+				id, c.X, c.Y, c.Z, main.X, main.Y+depth*attachOffsetY, main.ID, above.ID, above.Z)
 		}
 	}
 }

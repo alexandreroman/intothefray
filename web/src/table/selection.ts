@@ -4,7 +4,7 @@
 // the group.
 
 import type { Action, CardView, View } from '../lib/types';
-import { pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
+import { mainCardOf, pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
 import { TABLE_LIMIT } from './layout';
 import { ALL_ROWS, type RowMap } from './rows';
 
@@ -36,28 +36,20 @@ export function isFree(card: CardView): boolean {
 }
 
 /**
- * The cards a group drag lifts, each with its stack (stackOf): the selected
- * free table cards none of whose hosts, up the chain, is selected, bottom
- * first. A selected card tucked under an unselected one detaches, as a single
- * drag would (memory "Moving card stacks").
+ * The cards a group drag lifts, each with what it carries (stackOf): the
+ * selected free table cards, bottom first, but those whose main card is one
+ * of them, which carries its whole chain. Any other selected tucked card is a
+ * unit of its own and moves alone, as a single drag would (memory "Moving
+ * card stacks"). It mirrors the server's group rule (resolveGroup).
  */
 export function groupUnits(selected: ReadonlySet<string>, cards: readonly CardView[]): string[] {
-  const byId = new Map(cards.map((card) => [card.id, card]));
-  const hostSelected = (card: CardView): boolean => {
-    // The seen set guards against a parent loop in a broken view.
-    const seen = new Set([card.id]);
-    let parent = card.parent;
-    while (parent !== undefined && !seen.has(parent)) {
-      if (selected.has(parent)) {
-        return true;
-      }
-      seen.add(parent);
-      parent = byId.get(parent)?.parent;
-    }
-    return false;
+  const chosen = (card: CardView): boolean => selected.has(card.id) && isFree(card);
+  const carried = (card: CardView): boolean => {
+    const main = mainCardOf(card, cards);
+    return main !== card && chosen(main);
   };
   return cards
-    .filter((card) => selected.has(card.id) && isFree(card) && !hostSelected(card))
+    .filter((card) => chosen(card) && !carried(card))
     .sort((a, b) => a.z - b.z)
     .map((card) => card.id);
 }
@@ -65,13 +57,14 @@ export function groupUnits(selected: ReadonlySet<string>, cards: readonly CardVi
 /**
  * The action a group drop sends, from the action the lead (pressed) card
  * alone would send there: every unit moves by the lead's delta, or goes to
- * the same pile, deck or hand. A drop over a card moves the group there,
- * tucked under nothing. The delta is cut short so that every unit stays
- * within the table, offsets kept. The offsets are those drawn, through
- * `rows`: a group across rows drawn closer or further apart than they lie
- * keeps its shape on the screen. One unit sends its own action; null when
- * the drop does nothing for a group (a play, a deal), moves nothing, or
- * carries more units than the server takes in one group.
+ * the same pile, deck or hand. A group tucks under nothing: dropped over a
+ * card, the lead moves there as over the table (DragLayer.svelte). The delta
+ * is cut short so that every unit stays within the table, offsets kept. The
+ * offsets are those drawn, through `rows`: a group across rows drawn closer
+ * or further apart than they lie keeps its shape on the screen. One unit
+ * sends its own action; null when the drop does nothing for a group (a play,
+ * a deal), moves nothing, or carries more units than the server takes in one
+ * group.
  */
 export function groupAction(
   units: readonly string[],
@@ -83,7 +76,6 @@ export function groupAction(
   let actions: Action[] | null;
   switch (single.kind) {
     case 'move':
-    case 'attach':
       actions = groupMoves(units, lead, single, cards, rows);
       break;
     case 'discard':
