@@ -265,8 +265,8 @@
   }
 
   /*
-    The banner over the buttons, as wide as their row on one line. A row wrapped on a phone
-    cannot be followed by a box that shrinks to fit: the banner and the row take the column.
+    The banner over the buttons, as wide as their row on one line. A wrapped row (narrower than a
+    320px phone) cannot be followed by a box that shrinks to fit: the banner takes the column.
   */
   .row {
     display: grid;
@@ -400,8 +400,8 @@
   /*
     Options and About show their icon only, as What's new does, when the labelled row does not fit:
     Start (227px) + 24 + Options (129) + 24 + About (116) + 24 + What's new (56) = 600px, and 16px
-    of slack for the font's rendering. With less room still, the three squares wrap under Start
-    together (.more); labelled buttons never wrap.
+    of slack for the font's rendering. With less room still, the steps below shrink the row;
+    labelled buttons never wrap.
   */
   @container start (max-width: 615px) {
     .secondary {
@@ -423,6 +423,77 @@
       overflow: hidden;
       clip-path: inset(50%);
       white-space: nowrap;
+    }
+  }
+
+  /*
+    Narrower still, Start and the three squares keep one row: Start shrinks and the gaps tighten,
+    step by step. Each step starts where the row of the step before, measured, no longer fits with
+    16px of slack (8px for the last one, whose row is the one a 320px phone must hold). Under the
+    last step, the squares wrap under Start (.actions wraps), as a safety net only.
+
+    Compact: the icon row at full size needs Start (227px) + 24 + 3 squares (56) + 2 × 24 = 467px.
+  */
+  @container start (max-width: 482px) {
+    .actions {
+      column-gap: 12px;
+    }
+
+    .more {
+      gap: 12px;
+    }
+
+    .actions .btn-primary {
+      gap: 10px;
+      padding: 0 24px;
+      font-size: 15px;
+    }
+  }
+
+  /* Tight: the compact row needs Start (190px) + 12 + 3 squares (56) + 2 × 12 = 394px. */
+  @container start (max-width: 409px) {
+    .actions {
+      column-gap: 8px;
+    }
+
+    .more {
+      gap: 8px;
+    }
+
+    .actions button {
+      height: 48px;
+    }
+
+    .more .secondary {
+      width: 48px;
+    }
+
+    /* Start without its arrow: the label says it all. */
+    .actions .btn-primary {
+      padding: 0 18px;
+      font-size: 14px;
+      clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+    }
+
+    .actions .btn-primary :global(svg) {
+      display: none;
+    }
+  }
+
+  /* Tiny: the tight row needs Start (140px) + 8 + 3 squares (48) + 2 × 8 = 308px. */
+  @container start (max-width: 315px) {
+    .actions button {
+      height: 44px;
+    }
+
+    .more .secondary {
+      width: 44px;
+    }
+
+    .actions .btn-primary {
+      padding: 0 14px;
+      font-size: 13px;
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
     }
   }
 
