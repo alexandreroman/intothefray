@@ -1,4 +1,4 @@
-// Command intothefray runs the Into The Fray game server.
+// Command intothefray runs the Into the Fray game server.
 package main
 
 import (

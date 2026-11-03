@@ -54,7 +54,7 @@ describe('Home', () => {
   it('shows the logo, the pitch and the disclaimer', () => {
     render(Home);
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Into The Fray' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Into the Fray' })).toBeTruthy();
     expect(screen.getByText('Play Marvel Champions in your browser.')).toBeTruthy();
     for (const feature of ['A true sandbox', 'Up to 4 heroes', 'Bring your own deck']) {
       expect(screen.getByText(feature)).toBeTruthy();

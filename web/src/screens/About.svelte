@@ -47,7 +47,7 @@
       <h2>Open source</h2>
       <div class="body">
         <p>
-          Into The Fray is open source, under the
+          Into the Fray is open source, under the
           <a href={LICENSE} target="_blank" rel="noopener noreferrer">Apache-2.0 license</a>.
         </p>
         <p>
@@ -81,7 +81,7 @@
     <section class="row">
       <h2>Unofficial fan project</h2>
       <div class="body">
-        <p>Into The Fray is not affiliated with or endorsed by Fantasy Flight Games or Marvel.</p>
+        <p>Into the Fray is not affiliated with or endorsed by Fantasy Flight Games or Marvel.</p>
         <p>
           Marvel Champions: The Card Game is a trademark of its owners; card images and texts belong
           to their respective owners.

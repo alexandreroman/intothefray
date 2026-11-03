@@ -1,5 +1,5 @@
 /** The name of the app, as the browser tab shows it. */
-export const APP_NAME = 'Into The Fray';
+export const APP_NAME = 'Into the Fray';
 
 /**
  * The browser tab title: the app name, followed by the instance name in parentheses when one is set.

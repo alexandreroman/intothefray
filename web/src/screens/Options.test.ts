@@ -284,7 +284,7 @@ describe('Options', () => {
   it('links to the about screen', async () => {
     window.history.pushState(null, '', '/options');
     render(Options);
-    const link = screen.getByRole('link', { name: 'About Into The Fray' });
+    const link = screen.getByRole('link', { name: 'About Into the Fray' });
     expect(link.getAttribute('href')).toBe('/about');
 
     await fireEvent.click(link);

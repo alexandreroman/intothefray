@@ -220,7 +220,7 @@
     {/if}
 
     <footer>
-      <a class="about-link" href={href('/about')}>About Into The Fray</a>
+      <a class="about-link" href={href('/about')}>About Into the Fray</a>
       <p class="version" class:mismatch={mismatchedServer !== undefined}>
         version
         {#if mismatchedServer}

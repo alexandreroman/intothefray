@@ -35,7 +35,7 @@ function refused(): { promise: Promise<void>; caught: ReturnType<typeof vi.fn> }
 describe('TopBar', () => {
   it('shows the full logo', () => {
     render(TopBar);
-    const logo = screen.getByRole('img', { name: 'Into The Fray' });
+    const logo = screen.getByRole('img', { name: 'Into the Fray' });
     expect(logo.textContent?.replace(/\s+/g, ' ').trim()).toBe('INTO THE FRAY');
   });
 
@@ -321,7 +321,7 @@ describe('TopBar logo', () => {
   it('links home, at the base path', () => {
     render(TopBar, {});
 
-    const link = screen.getByRole('link', { name: 'Into The Fray: home' });
+    const link = screen.getByRole('link', { name: 'Into the Fray: home' });
     expect(link.getAttribute('href')).toBe(import.meta.env.BASE_URL);
   });
 
@@ -329,7 +329,7 @@ describe('TopBar logo', () => {
     window.history.pushState(null, '', '/options');
     render(TopBar, {});
 
-    await fireEvent.click(screen.getByRole('link', { name: 'Into The Fray: home' }));
+    await fireEvent.click(screen.getByRole('link', { name: 'Into the Fray: home' }));
     expect(window.location.pathname).toBe('/');
     expect(route.current).toEqual({ name: 'home' });
   });
@@ -438,7 +438,7 @@ describe('TopBar on scroll', () => {
     expect(header(container).classList).toContain('hidden');
 
     // Hidden, it stays in the accessibility tree: a tab into it brings it back.
-    const home = screen.getByRole('link', { name: 'Into The Fray: home' });
+    const home = screen.getByRole('link', { name: 'Into the Fray: home' });
     home.focus();
     await tick();
     expect(header(container).classList).not.toContain('hidden');
@@ -462,7 +462,7 @@ describe('TopBar on scroll', () => {
     await scrollWindowTo(300);
 
     // The browser scrolls the page up to bring the focused control into view.
-    screen.getByRole('link', { name: 'Into The Fray: home' }).focus();
+    screen.getByRole('link', { name: 'Into the Fray: home' }).focus();
     Object.defineProperty(window, 'scrollY', { value: 95, configurable: true });
     await nextFrame();
     expect(window.scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 300, behavior: 'instant' });
