@@ -81,6 +81,10 @@
   onpointerleave={() => interaction.leave(element)}
   onpointerdown={(event) => interaction.press(element, event)}
 >
+  <!-- An empty pile casts no shadow. -->
+  {#if !empty}
+    <div class="shade"></div>
+  {/if}
   {#if empty}
     <div class="slot"></div>
   {:else if shownTop && !isHidden(shownTop)}
@@ -111,18 +115,24 @@
   .card {
     position: absolute;
     z-index: 0;
-    border-radius: 5px;
     /* Something to drag (.grab), or else a menu to open a box from; nothing on an inert pile. */
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
-    /* The same 45° shadow as a card on the table. */
-    filter: var(--card-shadow);
   }
 
-  .card.empty {
-    filter: none;
+  /*
+    The same 45° shadow as a card on the table, cast from 2px inside its edge, under its face (see --card-shadow). A
+    pile's slot is always portrait: a landscape top card is turned to fit it, and cut with the portrait cut.
+  */
+  .shade {
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    pointer-events: none;
   }
 
   .card.grab {
@@ -162,5 +172,7 @@
     font-size: 9px;
     padding: 0 6px;
     white-space: nowrap;
+    /* It sticks out of the pile's edge, past the pile's shadow: its own, as the status tabs' (CardView). */
+    box-shadow: 0 2px 4px #0009;
   }
 </style>

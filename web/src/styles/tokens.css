@@ -46,9 +46,19 @@
   /* Uniform card corners: a hair off each edge, then rounded like a printed card. */
   --card-cut: inset(0 round 5% / 3.6%);
   --card-cut-land: inset(0 round 3.6% / 5%);
-  /* Light from the top left: a card's shadow is cast at 45°, and falls on the cards underneath. */
-  --card-shadow: drop-shadow(2px 2px 2px #000000c8) drop-shadow(6px 6px 9px #000000a6)
-    drop-shadow(12px 12px 16px #00000059);
+  /* The same corners as a border radius: keep these in step with the cuts above. */
+  --card-radius: 5% / 3.6%;
+  --card-radius-land: 3.6% / 5%;
+  /*
+    Light from the top left: a card's shadow is cast at 45°, and falls on the cards underneath. A box-shadow, cheaper
+    than a drop-shadow filter (which draws the card offscreen), for a box 2px inside the card's edge with the card's
+    corners (--card-radius), hidden under the card: its 2px spread brings the shadow back to the card's outline. A
+    box-shadow is cut away inside its box, so one cast by the card's own box would let the card underneath show through
+    the anti-aliased edge of the cut. The values match the former stacked drop-shadows, whose blur Chrome takes as a
+    standard deviation (half a box-shadow's blur).
+  */
+  --card-shadow:
+    2px 2px 4px 2px #000000c3, 8px 8px 22px 2px #000000c5, 17px 17px 43px 2px #00000047;
   /* The first player token lies flat, lit from above. */
   --token-shadow: drop-shadow(0 3px 4px #000c);
 }
