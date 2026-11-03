@@ -12,7 +12,10 @@ type: project
 - Home tells a visitor about news in two ways: a Fray red dot on a square
   icon-only "What's new" button (sparkle icon, `data-tip` tooltip), and a
   slim banner above the buttons ("New: title", "See what's new",
-  dismiss). Dismissing the banner keeps the dot; opening the dialog
+  dismiss), in a small type (13px text, 12px button). The banner spans
+  exactly the button row, its right edge on the What's new button's; its
+  title wraps rather than widening it. When the row wraps on a phone, the
+  banner takes the full column width. Dismissing the banner keeps the dot; opening the dialog
   clears both. The dialog tags the entries unread at opening as "New".
 - Options and About turn into icon-only squares with tooltips whenever
   their row lacks the room for the labelled buttons: a container query on
