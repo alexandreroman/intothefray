@@ -32,18 +32,20 @@
 
   <ol class="entries" {@attach scrollFade}>
     {#each entries as entry (entry.id)}
-      <li>
-        <div class="meta">
-          <time datetime={entry.date}>{formatNewsDate(entry.date)}</time>
-          {#if unread.has(entry.id)}
-            <span class="tag">New</span>
-          {/if}
-        </div>
-        <h2>{entry.title}</h2>
-        <p>{entry.text}</p>
+      <li class:illustrated={entry.image}>
         {#if entry.image}
-          <img src={entry.image.src} alt={entry.image.alt} loading="lazy" />
+          <img src={entry.image.src} alt={entry.image.alt} width="112" height="84" loading="lazy" />
         {/if}
+        <div class="body">
+          <div class="meta">
+            <time datetime={entry.date}>{formatNewsDate(entry.date)}</time>
+            {#if unread.has(entry.id)}
+              <span class="tag">New</span>
+            {/if}
+          </div>
+          <h2>{entry.title}</h2>
+          <p>{entry.text}</p>
+        </div>
       </li>
     {/each}
   </ol>
@@ -77,7 +79,9 @@
   }
 
   /* The middle of the box, the part that scrolls. */
+  /* A size container: the thumbnails shrink when the list is narrow (a phone). */
   .entries {
+    container: news / inline-size;
     flex: 1 1 auto;
     min-height: 0;
     margin: 0;
@@ -87,11 +91,23 @@
   }
 
   li {
+    padding: 16px 0;
+    border-top: 1px solid var(--panel-2);
+  }
+
+  /* An entry with a thumbnail: the thumbnail on the left, the text beside it, both from the top. */
+  li.illustrated {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    align-items: start;
+    gap: 14px;
+  }
+
+  .body {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 16px 0;
-    border-top: 1px solid var(--panel-2);
   }
 
   li:first-child {
@@ -137,13 +153,27 @@
     color: var(--muted);
   }
 
+  /* A 4:3 capture of the app: the width and height attributes reserve its place before it loads. */
   img {
     display: block;
-    max-width: 100%;
-    height: auto;
-    margin-top: 6px;
+    width: 112px;
+    height: 84px;
+    object-fit: cover;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 8px;
+  }
+
+  /* A phone: a smaller thumbnail, still beside the text. */
+  @container news (max-width: 420px) {
+    li.illustrated {
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+    }
+
+    img {
+      width: 72px;
+      height: 54px;
+    }
   }
 
   .foot {

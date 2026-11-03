@@ -24,6 +24,10 @@ describe('NEWS', () => {
     for (const entry of NEWS) {
       expect(entry.title.trim()).not.toBe('');
       expect(entry.text.trim()).not.toBe('');
+      if (entry.image) {
+        expect(entry.image.src).not.toBe('');
+        expect(entry.image.alt.trim()).not.toBe('');
+      }
     }
   });
 });

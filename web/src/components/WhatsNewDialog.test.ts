@@ -36,12 +36,18 @@ describe('WhatsNewDialog', () => {
     expect(within(second).getByText('29 Oct 2026')).toBeTruthy();
   });
 
-  it('shows an entry image, loaded lazily', () => {
+  it('shows an entry thumbnail beside its text, loaded lazily', () => {
     renderDialog();
     const image = screen.getByRole('img', { name: 'The five villains' });
 
     expect(image.getAttribute('src')).toBe('https://img.example/villains.webp');
     expect(image.getAttribute('loading')).toBe('lazy');
+    expect(image.getAttribute('width')).toBe('112');
+    expect(image.getAttribute('height')).toBe('84');
+    // Beside the text: the illustrated entry lays the two out, the other has its text alone.
+    const [first, second] = screen.getAllByRole('listitem') as [HTMLElement, HTMLElement];
+    expect(first.classList.contains('illustrated')).toBe(true);
+    expect(second.classList.contains('illustrated')).toBe(false);
     expect(screen.getAllByRole('img')).toHaveLength(1);
   });
 

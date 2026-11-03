@@ -1,5 +1,11 @@
 // The "What's new" entries the home screen shows: what changed for the players, newest first.
 
+// Each entry's thumbnail, imported so that the build fingerprints it: a 224×168 capture of the app
+// (twice the 112×84 it is shown at), cropped on one telling detail.
+import frenchCards from '../assets/news/2026-10-20-french-cards.webp';
+import severalDecks from '../assets/news/2026-10-29-several-decks.webp';
+import redSkull from '../assets/news/2026-11-01-red-skull.webp';
+
 /** One piece of news: a feature the players can use. */
 export interface NewsEntry {
   /**
@@ -12,6 +18,7 @@ export interface NewsEntry {
   title: string;
   /** A sentence or two, for the players. */
   text: string;
+  /** A small 4:3 illustration, shown beside the text. */
   image?: { src: string; alt: string };
 }
 
@@ -24,6 +31,7 @@ export const NEWS: NewsEntry[] = [
     text:
       'Take on Crossbones, Absorbing Man, Taskmaster, Zola and Red Skull, in Standard or Expert. ' +
       'Crossbones brings his Experimental Weapons, and Red Skull his own deck of side schemes.',
+    image: { src: redSkull, alt: 'The Red Skull villain card on the table' },
   },
   {
     id: '2026-10-29-several-decks',
@@ -32,12 +40,17 @@ export const NEWS: NewsEntry[] = [
     text:
       'Load several decks and play up to four heroes on your own, or share the table with friends. ' +
       'The hero selector, bottom left, switches between your heroes and their hands.',
+    image: {
+      src: severalDecks,
+      alt: 'The hero selector with three hero avatars, She-Hulk selected',
+    },
   },
   {
     id: '2026-10-20-french-cards',
     date: '2026-10-20',
     title: 'French cards',
     text: 'Prefer your cards in French? Choose French in Options to see French card names and images.',
+    image: { src: frenchCards, alt: "The Absorbing Man villain card in French: L'Homme Absorbant" },
   },
 ];
 
