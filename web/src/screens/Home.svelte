@@ -78,45 +78,48 @@
       </div>
 
       <div class="start">
-        {#if news.bannerEntry}
-          <aside class="banner" aria-label="Latest news">
-            <p><span class="label">New:</span> {news.bannerEntry.title}</p>
-            <button class="see" onclick={openWhatsNew}>See what's new</button>
-            <button
-              class="btn-ghost dismiss"
-              aria-label="Dismiss"
-              onclick={() => news.dismissBanner()}><Icon name="cross" /></button
-            >
-          </aside>
-        {/if}
-        <div class="actions">
-          <button class="btn-primary" disabled={starting} onclick={startGame}>
-            <Icon name="arrow-right" />
-            Start a game
-          </button>
-          <!-- The secondary buttons wrap together, as one group, under Start. -->
-          <div class="more">
-            <!-- An icon only when the row is short of room: the label still names the button, out of sight. -->
-            <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
-              <Icon name="sliders" /><span class="text">Options</span>
+        <!-- As wide as the button row: the banner ends where its last button does. -->
+        <div class="row">
+          {#if news.bannerEntry}
+            <aside class="banner" aria-label="Latest news">
+              <p><span class="label">New:</span> {news.bannerEntry.title}</p>
+              <button class="see" onclick={openWhatsNew}>See what's new</button>
+              <button
+                class="btn-ghost dismiss"
+                aria-label="Dismiss"
+                onclick={() => news.dismissBanner()}><Icon name="cross" /></button
+              >
+            </aside>
+          {/if}
+          <div class="actions">
+            <button class="btn-primary" disabled={starting} onclick={startGame}>
+              <Icon name="arrow-right" />
+              Start a game
             </button>
-            <button class="secondary" data-tip="About" onclick={() => go('/about')}>
-              <Icon name="info" /><span class="text">About</span>
-            </button>
-            <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
-                 how many: so does the button's name. -->
-            <button
-              class="secondary news"
-              aria-label={hasUnread ? "What's new, unread news" : "What's new"}
-              data-tip="What's new"
-              bind:this={newsButton}
-              onclick={openWhatsNew}
-            >
-              <Icon name="sparkle" />
-              {#if hasUnread}
-                <span class="dot" aria-hidden="true"></span>
-              {/if}
-            </button>
+            <!-- The secondary buttons wrap together, as one group, under Start. -->
+            <div class="more">
+              <!-- An icon only when the row is short of room: the label still names the button, out of sight. -->
+              <button class="secondary" data-tip="Options" onclick={() => go('/options')}>
+                <Icon name="sliders" /><span class="text">Options</span>
+              </button>
+              <button class="secondary" data-tip="About" onclick={() => go('/about')}>
+                <Icon name="info" /><span class="text">About</span>
+              </button>
+              <!-- An icon only, so that the four buttons share a row. The dot says there is news, never
+                   how many: so does the button's name. -->
+              <button
+                class="secondary news"
+                aria-label={hasUnread ? "What's new, unread news" : "What's new"}
+                data-tip="What's new"
+                bind:this={newsButton}
+                onclick={openWhatsNew}
+              >
+                <Icon name="sparkle" />
+                {#if hasUnread}
+                  <span class="dot" aria-hidden="true"></span>
+                {/if}
+              </button>
+            </div>
           </div>
         </div>
         {#if error}
@@ -261,6 +264,17 @@
     gap: 14px 24px;
   }
 
+  /*
+    The banner over the buttons, as wide as their row on one line. A row wrapped on a phone
+    cannot be followed by a box that shrinks to fit: the banner and the row take the column.
+  */
+  .row {
+    display: grid;
+    gap: 12px;
+    width: fit-content;
+    max-width: 100%;
+  }
+
   /* Options, About and What's new: one unit in the row, spaced as the row's buttons. */
   .more {
     display: flex;
@@ -328,11 +342,12 @@
 
   /* The newest unread entry, in a slim strip over the buttons; the text wraps on a phone. */
   .banner {
-    max-width: 520px;
+    /* Sized by the row, never sizing it: its text wraps rather than widening the row. */
+    contain: inline-size;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 6px 6px 14px;
+    gap: 6px;
+    padding: 5px 5px 5px 12px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 12px;
@@ -342,7 +357,7 @@
     flex: 1 1 auto;
     min-width: 0;
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.35;
     color: var(--text-soft);
   }
@@ -354,15 +369,15 @@
 
   .banner .see {
     flex: none;
-    height: 32px;
-    padding: 0 12px;
-    font-size: 13px;
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 
   .banner .dismiss {
     flex: none;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     display: grid;
     place-items: center;
@@ -370,8 +385,8 @@
   }
 
   .banner .dismiss :global(svg) {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   /* A size container: the buttons' look follows the room the row has, not the window's width. */
