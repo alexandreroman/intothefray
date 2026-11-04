@@ -737,7 +737,8 @@
         "menagerie_medley"
       ],
       "sets": [
-        "galactic_artifacts"
+        "galactic_artifacts",
+        "ship_command"
       ],
       "localized": {
         "fr": {

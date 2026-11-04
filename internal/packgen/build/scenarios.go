@@ -97,10 +97,10 @@ func buildScenarios(
 			ref.ID = def.ID
 			ref.SelfContained = def.SelfContained
 			ref.MainSchemes = def.MainSchemes
-			ref.Sets = def.Sets
-			// A set the scenario requires is not a modular set to recommend.
+			ref.Sets = scenarioSets(def, cardsByCode)
+			// A set that comes with the scenario is not a modular set to recommend.
 			ref.Recommended = slices.DeleteFunc(ref.Recommended, func(code string) bool {
-				return slices.Contains(def.Sets, code)
+				return slices.Contains(ref.Sets, code)
 			})
 			// The modular sets come with the main scheme set the host picks.
 			if len(def.MainSchemes) > 0 {
@@ -168,6 +168,21 @@ func buildScenarios(
 		}
 	}
 	return scenarios, refs, problems
+}
+
+// scenarioSets returns the encounter sets that come with the scenario besides
+// its villain set, each once: the sets its rules require, then the sets of the
+// cards it sets aside (see pack.ScenarioRef.Sets). A set-aside card of the
+// villain set, as Taskmaster's captives are, adds nothing.
+func scenarioSets(def curated.ScenarioDef, cardsByCode map[string]pack.Card) []string {
+	sets := slices.Clone(def.Sets)
+	for _, code := range def.SetAside {
+		set := cardsByCode[code].Set
+		if set != "" && set != def.VillainSet && !slices.Contains(sets, set) {
+			sets = append(sets, set)
+		}
+	}
+	return sets
 }
 
 // coveredVillainCard returns the lowest-code villain or leader card among the

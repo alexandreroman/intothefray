@@ -679,6 +679,9 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 		table []string
 		// areas are the scenario's own out-of-play areas, empty at setup.
 		areas []pack.ScenarioArea
+		// lobbySets are the sets the index keeps out of the lobby, when they
+		// are more than sets: a set the scenario sets aside comes with it too.
+		lobbySets []string
 	}{
 		{
 			scenario: "brotherhood_of_badoon",
@@ -699,15 +702,16 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 		},
 		{
 			// Ship Command waits aside, out of the encounter deck, and its
-			// Milano does not start in play.
-			scenario: "escape_the_museum",
-			standard: pack.FaceRef{Card: "16080", Face: 0},
-			expert:   pack.FaceRef{Card: "16081", Face: 0},
-			scheme:   pack.FaceRef{Card: "16082", Face: 0},
-			inPlay:   []pack.FaceRef{{Card: "16085", Face: 0}},
-			setAside: []string{"16142", "16143", "16144", "16145", "16146", "16147", "16148"},
-			sets:     []string{"galactic_artifacts"},
-			table:    []string{"16085"},
+			// Milano does not start in play. The lobby does not offer it.
+			scenario:  "escape_the_museum",
+			standard:  pack.FaceRef{Card: "16080", Face: 0},
+			expert:    pack.FaceRef{Card: "16081", Face: 0},
+			scheme:    pack.FaceRef{Card: "16082", Face: 0},
+			inPlay:    []pack.FaceRef{{Card: "16085", Face: 0}},
+			setAside:  []string{"16142", "16143", "16144", "16145", "16146", "16147", "16148"},
+			sets:      []string{"galactic_artifacts"},
+			table:     []string{"16085"},
+			lobbySets: []string{"galactic_artifacts", "ship_command"},
 		},
 		{
 			scenario: "nebula",
@@ -738,9 +742,13 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 				continue
 			}
 			ref := cat.Index().Scenarios[i]
-			if !ref.Supported || ref.SelfContained || ref.Pack != "gmw" || !slices.Equal(ref.Sets, tt.sets) {
+			lobbySets := tt.sets
+			if tt.lobbySets != nil {
+				lobbySets = tt.lobbySets
+			}
+			if !ref.Supported || ref.SelfContained || ref.Pack != "gmw" || !slices.Equal(ref.Sets, lobbySets) {
 				t.Errorf("%s ref = %+v, want supported, not self-contained, in pack gmw, with sets %v",
-					tt.scenario, ref, tt.sets)
+					tt.scenario, ref, lobbySets)
 			}
 		}
 		for _, code := range []string{"the_market", "challenge", "badoon_headhunter"} {

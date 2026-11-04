@@ -83,8 +83,9 @@
   const chosenMainScheme = $derived(
     index.sets.find((s) => mainSchemes.includes(s.code) && config.modulars.includes(s.code)),
   );
-  // The encounter sets the scenario's rules require, like Taskmaster's Hydra Patrol, come with it.
-  const requiredSets = $derived(chosen?.sets ?? []);
+  // The encounter sets that come with the scenario: those its rules require, like Taskmaster's
+  // Hydra Patrol, and those it sets aside, like Escape the Museum's Ship Command.
+  const scenarioSets = $derived(chosen?.sets ?? []);
   // The chosen main scheme set's recommendations are the scenario's.
   const recommended = $derived([
     ...(chosen?.recommended ?? []),
@@ -94,11 +95,11 @@
   const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
 
   /**
-   * Whether the Add a set menu offers the set: a modular set the scenario does not already require,
+   * Whether the Add a set menu offers the set: a modular set that does not come with the scenario,
    * or one main scheme set at most.
    */
   function isAddable(set: SetRef): boolean {
-    if (config.modulars.includes(set.code) || requiredSets.includes(set.code)) {
+    if (config.modulars.includes(set.code) || scenarioSets.includes(set.code)) {
       return false;
     }
     if (set.kind === 'main_scheme') {

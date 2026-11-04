@@ -315,7 +315,7 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 		if slices.Contains(cfg.Modulars[:i], code) {
 			return invalid("duplicate modular set %q", code)
 		}
-		if slices.Contains(scenario.Sets, code) {
+		if comesWithScenario(cat, scenario, code) {
 			return invalid("%q is already part of scenario %q", code, scenario.ID)
 		}
 		if isMainSchemeSet(cat, code) {
@@ -333,6 +333,24 @@ func validateConfig(cfg LobbyConfig, cat *pack.Catalog) error {
 		}
 	}
 	return nil
+}
+
+// comesWithScenario reports whether the set code comes with the scenario: a set
+// its rules require, or one with a card it sets aside, such as the Ship Command
+// set Escape the Museum sets aside whole. Neither is a modular set to pick: its
+// cards would exist twice. The lobby leaves out the same sets (see
+// pack.ScenarioRef.Sets).
+func comesWithScenario(cat *pack.Catalog, scenario pack.Scenario, code string) bool {
+	if slices.Contains(scenario.Sets, code) {
+		return true
+	}
+	for _, aside := range scenario.SetAside {
+		card, _, err := cat.Card(aside)
+		if err == nil && card.Set == code {
+			return true
+		}
+	}
+	return false
 }
 
 // isMainSchemeSet reports whether code names a main scheme set, which sets

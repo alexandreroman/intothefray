@@ -296,8 +296,11 @@ type ScenarioRef struct {
 	SelfContained bool `json:"selfContained,omitempty"`
 	// MainSchemes lists the main scheme sets the scenario is played with.
 	MainSchemes []string `json:"mainSchemes,omitempty"`
-	// Sets lists the encounter sets the scenario's rules add to the villain
-	// set, which the lobby does not offer as modular sets.
+	// Sets lists the encounter sets that come with the scenario besides its
+	// villain set, which the lobby does not offer as modular sets: the sets its
+	// rules add to the villain set (Scenario.Sets), then those with a card it
+	// sets aside (Scenario.SetAside), such as the Ship Command set Escape the
+	// Museum sets aside whole.
 	Sets []string `json:"sets,omitempty"`
 	// Localized holds the overrides of the entry per language code, e.g. "fr".
 	Localized map[string]Localized `json:"localized,omitempty"`
