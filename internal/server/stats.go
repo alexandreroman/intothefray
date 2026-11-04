@@ -29,11 +29,11 @@ type statsCache struct {
 	expires time.Time
 }
 
-// handleStats tells how many games are in progress, every game that has not
-// expired, ended games included, and what the games in play are played with.
-// Both come from the game summaries the store keeps next to the games: the
-// count is the number of game:*:info keys, deduplicated, each written and
-// expiring with its game. No game value is read.
+// handleStats tells how many games are being played and what they are played
+// with. Only games in the playing phase count; lobbies and ended games are
+// left out. Both come from the game summaries the store keeps next to the
+// games, the game:*:info keys, each written and expiring with its game. No
+// game value is read.
 func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 	stats, err := s.readStats(r.Context())
 	if err != nil {
@@ -66,9 +66,9 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 	return s.stats.value, nil
 }
 
-// statsOf counts the games and names what the games in play are played with.
-// The list is sorted by content, so that its order tells nothing of where the
-// games are stored.
+// statsOf names what the games being played are played with, and counts
+// them. The list is sorted by content, so that its order tells nothing of
+// where the games are stored.
 func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 	playing := []playedGame{}
 	for _, summary := range summaries {
@@ -77,7 +77,7 @@ func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 		}
 	}
 	slices.SortFunc(playing, comparePlayedGames)
-	return statsResponse{Games: len(summaries), Playing: playing}
+	return statsResponse{Games: len(playing), Playing: playing}
 }
 
 // playedGameOf names the codes of a summary from the catalog, in English. An

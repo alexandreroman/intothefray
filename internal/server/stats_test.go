@@ -56,26 +56,39 @@ func statsIn(t *testing.T, resp reply) statsResponse {
 	return body
 }
 
-// gamesIn decodes the count of games from a successful stats reply.
+// gamesIn decodes the count of games from a successful stats reply, and
+// checks that it is the length of the list.
 func gamesIn(t *testing.T, resp reply) int {
 	t.Helper()
-	return statsIn(t, resp).Games
+
+	stats := statsIn(t, resp)
+	if stats.Games != len(stats.Playing) {
+		t.Errorf("games = %d, want %d, the length of the list", stats.Games, len(stats.Playing))
+	}
+	return stats.Games
+}
+
+// startGame creates a game hosted by hostName and starts it solo, then
+// returns it with the host's connection.
+func startGame(t *testing.T, ts *httptest.Server, hostName string) (createGameResponse, *testClient) {
+	t.Helper()
+
+	created := createGame(t, ts, hostName)
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, hostName)
+	startSolo(t, host)
+	return created, host
 }
 
 func TestStats(t *testing.T) {
 	ts, _, _ := newStatsServer(t)
-	createGame(t, ts, "Alex")
-	createGame(t, ts, "Sam")
+	startGame(t, ts, "Alex")
+	startGame(t, ts, "Sam")
 
 	resp := getStats(t, ts)
 
 	if got := gamesIn(t, resp); got != 2 {
 		t.Errorf("games = %d, want 2", got)
-	}
-	// Lobbies are counted, not listed, and the list is an array even when
-	// empty.
-	if want := `"playing":[]`; !strings.Contains(string(resp.body), want) {
-		t.Errorf("body = %s, want it to hold %s", resp.body, want)
 	}
 	if got := resp.header.Get("Content-Type"); got != "application/json" {
 		t.Errorf("Content-Type = %q, want application/json", got)
@@ -88,15 +101,30 @@ func TestStats(t *testing.T) {
 	}
 }
 
+func TestStatsWithoutGamesBeingPlayed(t *testing.T) {
+	ts, _, _ := newStatsServer(t)
+	createGame(t, ts, "Alex") // stays in the lobby
+
+	resp := getStats(t, ts)
+
+	if got := gamesIn(t, resp); got != 0 {
+		t.Errorf("games = %d, want 0", got)
+	}
+	// The list is an array even when empty.
+	if want := `"playing":[]`; !strings.Contains(string(resp.body), want) {
+		t.Errorf("body = %s, want it to hold %s", resp.body, want)
+	}
+}
+
 func TestStatsCachesTheReplyForAMinute(t *testing.T) {
 	ts, _, advance := newStatsServer(t)
-	createGame(t, ts, "Alex")
+	startGame(t, ts, "Alex")
 
 	if got := gamesIn(t, getStats(t, ts)); got != 1 {
 		t.Fatalf("first games = %d, want 1", got)
 	}
 
-	createGame(t, ts, "Sam")
+	startGame(t, ts, "Sam")
 	advance(59 * time.Second)
 	if got := gamesIn(t, getStats(t, ts)); got != 1 {
 		t.Errorf("games within a minute = %d, want the cached 1", got)
@@ -110,7 +138,7 @@ func TestStatsCachesTheReplyForAMinute(t *testing.T) {
 
 func TestStatsStoreFailure(t *testing.T) {
 	ts, mr, _ := newStatsServer(t)
-	createGame(t, ts, "Alex")
+	startGame(t, ts, "Alex")
 
 	mr.SetError("ERR redis is down")
 	resp := getStats(t, ts)
@@ -139,16 +167,19 @@ func TestStatsStoreFailure(t *testing.T) {
 func TestStatsListsGamesInPlay(t *testing.T) {
 	ts, _, _ := newStatsServer(t)
 	createGame(t, ts, "Sam") // stays in the lobby
-	created := createGame(t, ts, "Alex")
-	host := connect(t, ts, created.ID)
-	host.hello(created.Token, "Alex")
-	startSolo(t, host)
+	_, ender := startGame(t, ts, "Bo")
+	ender.lobby("end", nil)
+	if ended := ender.expect("view"); ended.View.Phase != game.PhaseEnded {
+		t.Fatalf("view after the end = %s, want an ended game", ended.raw)
+	}
+	created, _ := startGame(t, ts, "Alex")
 
 	resp := getStats(t, ts)
 
+	// The lobby and the ended game are neither counted nor listed.
 	got := statsIn(t, resp)
 	want := statsResponse{
-		Games: 2,
+		Games: 1,
 		Playing: []playedGame{{
 			Heroes:   []playedHero{{Hero: "Black Panther", AlterEgo: "T'Challa"}},
 			Scenario: "Rhino",
@@ -201,7 +232,7 @@ func TestStatsOf(t *testing.T) {
 	spiderMan := playedHero{Hero: "Spider-Man", AlterEgo: "Peter Parker"}
 	blackPanther := playedHero{Hero: "Black Panther", AlterEgo: "T'Challa"}
 	want := statsResponse{
-		Games: 5,
+		Games: 3, // the games being played only
 		// Sorted by scenario, then heroes; unknown codes are left out.
 		Playing: []playedGame{
 			{Heroes: []playedHero{}, Scenario: "Klaw", Modulars: []string{"Masters of Evil"}},

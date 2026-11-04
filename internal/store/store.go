@@ -235,13 +235,12 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 	return nil
 }
 
-// GameSummaries returns the summary of every game that has not expired, ended
-// ones included, in no particular order: the number of games in progress is
-// the number of game:*:info keys, deduplicated. It walks those keys with
-// SCAN, which never blocks Redis the way KEYS would, and reads their small
-// values with one MGET per round: it reads no game value. SCAN may return a
-// key twice while Redis resizes its table; such a key is read once, so each
-// game counts once. A game stored before summaries existed has none and is
+// GameSummaries returns the summary of every game that has not expired, in
+// any phase and in no particular order: one per game:*:info key,
+// deduplicated. It walks those keys with SCAN, which never blocks Redis the
+// way KEYS would, and reads their small values with one MGET per round: it
+// reads no game value. SCAN may return a key twice while Redis resizes its
+// table; such a key is read once, so each game appears once. A game stored before summaries existed has none and is
 // left out, and so is a summary that expires during the walk or that cannot
 // be decoded: one bad value must not fail the whole statistics.
 func (s *Store) GameSummaries(ctx context.Context) ([]game.Summary, error) {

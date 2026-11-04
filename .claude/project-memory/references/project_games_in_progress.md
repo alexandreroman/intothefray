@@ -1,6 +1,6 @@
 ---
 name: "Games in progress counter"
-description: "GET /api/stats reads game:<id>:info keys: count of games plus an anonymous list of what started games play; 60 s cache; Home capsule"
+description: "GET /api/stats reads game:<id>:info keys: count and anonymous list of the games being played; 60 s cache; Home capsule"
 type: project
 ---
 
@@ -11,8 +11,8 @@ type: project
   codes of its loaded decks in seat order (`game.Summary`). The store
   writes it with the game and gives it the game's TTL: `Create` sets both
   keys in one Lua script (SET NX on the game, then the summary), `Update`
-  sets it in the game's MULTI, `Touch` expires both keys. A game without a
-  summary is not counted.
+  sets it in the game's MULTI, `Touch` expires both keys in one MULTI. A
+  game without a summary is not counted.
 - `Store.GameSummaries` walks `game:*:info` with `SCAN ... COUNT 1000`,
   MGETs each batch and drops duplicate keys, so the figure is exact. It
   never reads a game value (30 KB to over 1 MB each). Expired or
@@ -20,8 +20,9 @@ type: project
 - `GET /api/stats` replies
   `{"games": N, "playing": [{"heroes": [{"hero", "alterEgo"}], "scenario",
   "modulars": [...]}]}`:
-  - `games` counts every summary: lobby, playing and ended games (ended
-    games stay one hour).
+  - `games` is the number of games in the playing phase, so it always
+    equals the length of `playing`. Lobby and ended games (ended games
+    stay one hour) appear nowhere.
   - `playing` holds one anonymous entry per game in the playing phase,
     with English names from the embedded catalog: the identity card's hero
     face and alter-ego face (`""` when it has none), the scenario name, the

@@ -27,11 +27,11 @@ type versionResponse struct {
 // statsResponse is the reply to GET /api/stats. It is public and cached by
 // proxies: it names cards and sets only, never a game, a player or a deck.
 type statsResponse struct {
-	// Games counts every game that has not expired, in any phase: the number
-	// of game summaries in the store.
+	// Games counts the games being played, those in the playing phase: it is
+	// always the length of Playing.
 	Games int `json:"games"`
-	// Playing lists the games in play, one entry per game; lobbies and ended
-	// games are left out.
+	// Playing lists the games being played, one entry per game; lobbies and
+	// ended games are left out, of the list as of the count.
 	Playing []playedGame `json:"playing"`
 }
 
