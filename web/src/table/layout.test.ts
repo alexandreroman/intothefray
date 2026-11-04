@@ -225,7 +225,7 @@ describe('outOfPlayChips', () => {
     ]);
   });
 
-  it('puts the scenario areas between the victory display and the set-aside cards, by label', () => {
+  it('puts the scenario areas first, by label, before the victory display and set-aside cards', () => {
     const withArea = [
       ...piles,
       pile('area:collection', {
@@ -236,8 +236,8 @@ describe('outOfPlayChips', () => {
       }),
     ];
     expect(outOfPlayChips(-1, withArea)).toEqual([
-      { pile: 'vic', kind: 'victory', label: 'Victory display', count: 0 },
       { pile: 'area:collection', kind: 'scenarioArea', label: 'The Collection', count: 3 },
+      { pile: 'vic', kind: 'victory', label: 'Victory display', count: 0 },
       { pile: 'saside', kind: 'aside', label: 'Set-aside cards', count: 5 },
     ]);
     // An area is the villain frame's: no player's frame shows it.

@@ -48,7 +48,7 @@ const FREE_ROOM_BOTTOM = 300;
 // The surface never grows past where a card can lie plus the largest card, 224 units long.
 const SURFACE_LIMIT = TABLE_LIMIT + 224;
 
-const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['victory', 'scenarioArea', 'aside'];
+const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['scenarioArea', 'victory', 'aside'];
 
 // The prototype's fan (ruling P5a-R5), its lengths 40 % larger with the hand cards.
 const FAN_RADIUS = 1260;
@@ -79,7 +79,7 @@ export function cardBox(size: Size, opts: { faceDown?: boolean; onPile?: boolean
 }
 
 /**
- * A victory display, scenario area or set-aside pile. They are not drawn on the
+ * A scenario area, victory display or set-aside pile. They are not drawn on the
  * table: the chips on their owner's frame open them (outOfPlayChips).
  */
 export function isOutOfPlay(pile: PileView): boolean {
@@ -249,16 +249,16 @@ export function ownerFrames(piles: PileView[]): OwnerFrame[] {
 export interface OutOfPlayChip {
   /** The pile the chip opens. */
   pile: string;
-  kind: 'victory' | 'scenarioArea' | 'aside';
-  /** What the pile is: "Victory display", a scenario area's label ("The Collection"), "Set-aside cards". */
+  kind: 'scenarioArea' | 'victory' | 'aside';
+  /** What the pile is: a scenario area's label ("The Collection"), "Victory display", "Set-aside cards". */
   label: string;
   count: number;
 }
 
 /**
  * The chips of an owner's frame, for the out-of-play piles the table has:
- * the victory display, the scenario's own areas (The Collection) by their
- * label, then the scenario's set-aside cards on the villain's frame (owner
+ * the scenario's own areas (The Collection) by their label, the victory
+ * display, then the scenario's set-aside cards on the villain's frame (owner
  * -1), a player's own set-aside cards on theirs. The pile ids are the
  * server's (internal/game/state.go).
  */
@@ -271,7 +271,7 @@ export function outOfPlayChips(owner: number, piles: readonly PileView[]): OutOf
   const areas = piles
     .filter((pile) => pile.kind === 'scenarioArea')
     .map((pile) => ({ pile: pile.id, kind: 'scenarioArea', label: pile.label ?? '' }) as const);
-  return chipsOf([victory, ...areas, { ...setAside, pile: PILE_SCENARIO_ASIDE }], piles);
+  return chipsOf([...areas, victory, { ...setAside, pile: PILE_SCENARIO_ASIDE }], piles);
 }
 
 /** The chips of the wanted piles the table has, with their counts. */

@@ -84,8 +84,8 @@
 
   /** The icon of each kind of chip. */
   const CHIP_ICONS: Record<OutOfPlayChip['kind'], IconName> = {
+    scenarioArea: 'star',
     victory: 'trophy',
-    scenarioArea: 'showcase',
     aside: 'hourglass',
   };
 

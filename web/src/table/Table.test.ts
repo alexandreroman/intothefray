@@ -328,7 +328,7 @@ describe('Table', () => {
     expect(within(box).getAllByRole('listitem')).toHaveLength(2);
   });
 
-  it("puts a scenario area's chip between the victory display and the set-aside cards", async () => {
+  it("puts a scenario area's chip before the victory display and the set-aside cards", async () => {
     const view = withOutOfPlay(makeView());
     // Alex's card and an encounter card in The Collection.
     view.table!.cards.push(
@@ -349,8 +349,8 @@ describe('Table', () => {
     await catalogLoaded();
 
     expect(chipNames(-1)).toEqual([
-      'Victory display (2)',
       'The Collection (2)',
+      'Victory display (2)',
       'Set-aside cards (0): empty',
     ]);
     expect(surface().querySelector('[data-id="area:collection"]')).toBeNull();

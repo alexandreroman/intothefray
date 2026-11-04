@@ -614,22 +614,23 @@ function moveMenu(units: readonly CardView[], context: Context): ActionItem[] {
     }
   }
 
+  // The scenario's own areas come first and take any card, as the victory display does:
+  // "The Collection".
   const outOfPlay: ActionItem[] = [];
-  if (hasPile(context.table, PILE_VICTORY)) {
-    outOfPlay.push({
-      id: 'victory',
-      label: 'Victory display',
-      group: 0,
-      run: () => actionOver(units, (unit) => toPile(unit, PILE_VICTORY)),
-    });
-  }
-  // The scenario's own areas take any card, as the victory display does: "The Collection".
   for (const area of context.table.piles.filter((pile) => pile.kind === 'scenarioArea')) {
     outOfPlay.push({
       id: area.id,
       label: pileName(area),
       group: 0,
       run: () => actionOver(units, (unit) => toPile(unit, area.id)),
+    });
+  }
+  if (hasPile(context.table, PILE_VICTORY)) {
+    outOfPlay.push({
+      id: 'victory',
+      label: 'Victory display',
+      group: 0,
+      run: () => actionOver(units, (unit) => toPile(unit, PILE_VICTORY)),
     });
   }
   const asides = units.every((unit) => hasPile(context.table, asidePileOf(unit, context.seats)));

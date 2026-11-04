@@ -601,7 +601,7 @@ describe('actionsFor', () => {
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'down' });
   });
 
-  it("offers each scenario area beside the victory display, by the area's label", () => {
+  it("offers each scenario area before the victory display, by the area's label", () => {
     const view = makeView({
       piles: [
         ...makeView().table!.piles,
@@ -616,10 +616,10 @@ describe('actionsFor', () => {
     // Any card goes there, the viewer's, another player's and an encounter card alike.
     for (const id of ['mine', 'theirs', 'enemy']) {
       const move = menuOf(itemsFor({ kind: 'card', id }, view), 'moveTo');
-      const outOfPlay = move.slice(move.findIndex((it) => it.id === 'victory'));
+      const outOfPlay = move.slice(move.findIndex((it) => it.id === 'area:collection'));
       expect(outOfPlay.map((it) => [it.id, it.label])).toEqual([
-        ['victory', 'Victory display'],
         ['area:collection', 'The Collection'],
+        ['victory', 'Victory display'],
         ['aside', 'Set aside'],
       ]);
       expect(actionOf(item(move, 'area:collection'))).toEqual({
@@ -1363,7 +1363,7 @@ describe('a selected group', () => {
     });
   });
 
-  it('a scenario area sends toPile to it per unit, as the victory display does', () => {
+  it('a scenario area, listed before the victory display, sends toPile to it per unit', () => {
     const view = groupView();
     view.table!.piles.push(
       pile('area:collection', {
@@ -1377,7 +1377,9 @@ describe('a selected group', () => {
     if (!Array.isArray(result)) {
       throw new Error(`expected items, got the text "${result.text}"`);
     }
-    const area = item(menuOf(result, 'moveTo'), 'area:collection');
+    const move = menuOf(result, 'moveTo');
+    expect(move.map((it) => it.id)).toEqual(['area:collection', 'victory', 'aside']);
+    const area = item(move, 'area:collection');
     expect(area.label).toBe('The Collection');
     expect(actionOf(area)).toEqual({
       kind: 'group',
