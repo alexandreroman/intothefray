@@ -134,13 +134,21 @@ describe('Home', () => {
     it.each([
       [12, '12 games in progress'],
       [1, '1 game in progress'],
-      [0, '0 games in progress'],
     ])('shows %i as "%s"', async (games, text) => {
       gamesInProgressMock.mockResolvedValue(games);
       render(Home);
 
       expect(await screen.findByText(text)).toBeTruthy();
       expect(gamesInProgressMock).toHaveBeenCalledOnce();
+    });
+
+    it('shows nothing when no game is in progress', async () => {
+      gamesInProgressMock.mockResolvedValue(0);
+      render(Home);
+
+      // Lets the request settle.
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(screen.queryByText(COUNT_LINE)).toBeNull();
     });
 
     it('shows nothing while the count loads', () => {

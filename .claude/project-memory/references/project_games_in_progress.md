@@ -1,6 +1,6 @@
 ---
 name: "Games in progress counter"
-description: "GET /api/stats counts unexpired game keys by SCAN, cached 60 s per instance; Home shows a faint count line"
+description: "GET /api/stats counts unexpired game keys by SCAN, cached 60 s per instance; Home shows a capsule at the top"
 type: project
 ---
 
@@ -20,9 +20,12 @@ type: project
   warning, replies 503 with the usual `{"error": ...}` body and
   `no-store`, and is not cached.
 - Home reads the count once on mount (`web/src/lib/stats.ts`) and shows
-  one faint 13px line under the buttons (and under a start error):
-  "N games in progress", "1 game in progress". Nothing shows while it
-  loads or when the request fails; it is not a live region.
+  it as a small capsule (pill) centred at the top of the page, over the
+  logo: "N games in progress", "1 game in progress", after a Fray red
+  "live" dot that pulses softly. The capsule sits absolutely in the top
+  padding of `main`, so it moves nothing when it fades in; it is still
+  under reduced motion. Nothing shows while the count loads, when the
+  request fails or when the count is 0; it is not a live region.
 
 **Why:** a cheap social signal for visitors, with Redis expiry doing the
 bookkeeping; the cache bounds the cost of SCAN on a public endpoint.
@@ -34,4 +37,4 @@ keyspace grow, behind the same endpoint.
 **How to apply:** keep the count derived from game keys; anything else
 stored under `game:` would be counted too. The README screenshot (see
 [[project_readme_screenshot]]) is captured from a static build without a
-backend, so it shows no count line.
+backend, so it shows no count capsule.
