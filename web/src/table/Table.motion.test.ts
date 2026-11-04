@@ -4,7 +4,7 @@ import { SvelteMap } from 'svelte/reactivity';
 import Table from './Table.svelte';
 import { DECK_TOP_ID } from './drag';
 import { interaction, LINGER_MS } from './interaction.svelte';
-import { motion } from './motion.svelte';
+import { LIFT_SCALE, motion } from './motion.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type {
   Area,
@@ -408,7 +408,7 @@ describe('Table animations', () => {
     });
   });
 
-  it("the viewer's own drop does not move again", async () => {
+  it("the viewer's own drop does not move again: it only settles where it lies", async () => {
     const session = fakeSession();
     const { rerender } = render(Table, {
       session,
@@ -425,7 +425,11 @@ describe('Table animations', () => {
 
     await rerender({ session, view: makeView([card('b', { owner: 1, x: 300 })]) });
     await settle();
-    expect(animationsOf('.surface .card[data-id="b"]')).toEqual([]);
+    const frames = animationsOf('.surface .card[data-id="b"]').map(([keyframes]) => keyframes);
+    expect(frames.map((keyframes) => keyframes.map((frame) => frame.scale))).toEqual([
+      ['1.06', '0.98', '1'],
+    ]);
+    expect(frames.flat().some((frame) => frame.translate !== undefined)).toBe(false);
   });
 
   it('a token change glows in the colour of the player who made it', async () => {
@@ -591,7 +595,19 @@ describe('Table animations', () => {
     const pile = container.querySelector<HTMLElement>('.surface .pile[data-id="disc:p0"]');
     // Until it lands, the pile looks as it did: empty.
     expect(pile?.classList).toContain('empty');
-    expect(animationsOf('.fly')).toHaveLength(1);
+    // It is held up on its way, on the scale property, apart from the transform of its way.
+    const [[, way], [lift, liftOptions]] = animationsOf('.fly') as [
+      [Keyframe[], KeyframeAnimationOptions],
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(lift).toEqual([{ scale: '1' }, { scale: '1.06', offset: 0.45 }, { scale: '1' }]);
+    expect(liftOptions).toMatchObject({
+      duration: way.duration,
+      delay: way.delay,
+      fill: way.fill,
+      easing: 'ease-in-out',
+    });
+    expect(animationsOf('.fly')).toHaveLength(2);
   });
   it('a card put at the bottom of a deck flies below it, then slips under it', async () => {
     const session = fakeSession();
@@ -614,6 +630,8 @@ describe('Table animations', () => {
     // Hidden at the end: under the deck, which lies over it.
     expect(keyframes.at(-1)?.clipPath).toBe('inset(100% 0 0 0)');
     expect(keyframes.at(1)?.clipPath).toBe('inset(0% 0 0 0)');
+    // Slipping under it, it is not held up.
+    expect(animationsOf('.fly')).toHaveLength(1);
   });
 
   describe('draws', () => {
@@ -652,6 +670,10 @@ describe('Table animations', () => {
       expect(String(keyframes[2]?.transform)).toContain('rotateY(90deg)');
       expect(options.duration).toBe(380);
       expect(animationsOf('.fly [data-side="back"]')).toHaveLength(1);
+      // Held up on its way, on the scale property, which the slot's following leaves alone.
+      const lift = animationsOf('.fly').find(([frames]) => frames[0]?.scale !== undefined);
+      expect(lift?.[0].map((frame) => frame.scale)).toEqual(['1', '1.06', '1']);
+      expect(lift?.[1]).toMatchObject({ duration: 380, delay: 0, fill: 'both' });
 
       const fly = container.querySelector('.fly');
       started.find((animation) => animation.element === fly)?.finish();
@@ -678,6 +700,10 @@ describe('Table animations', () => {
       slot.style.left = '200px';
       slot.style.top = '-100px';
       await waitFor(() => expect(endOf()).toEqual({ x: before.x + 200, y: before.y - 100 }));
+      // Its lift keeps its own keyframes.
+      const lift = started.find((animation) => animation.element === fly && animation !== flight);
+      expect(lift?.effect.setKeyframes).not.toHaveBeenCalled();
+      expect(lift?.keyframes.map((frame) => frame.scale)).toEqual(['1', '1.06', '1']);
     });
 
     it('a discard flying meanwhile does not hold up the end of the other animations', async () => {
@@ -985,6 +1011,25 @@ describe('Table animations', () => {
       container.querySelector('.draglayer')?.append(ghost);
     }
 
+    /**
+     * Expects a copy to leave the viewer's own ghost laid at `at`, of `size`: held up there
+     * (LIFT_SCALE), it is that much larger about the same middle.
+     */
+    function expectFromLifted(
+      copy: Element | null,
+      at: Point,
+      size: { w: number; h: number } = { w: 63, h: 88 },
+    ): void {
+      const style = (copy as HTMLElement | null)?.style;
+      const box = [style?.left, style?.top, style?.width, style?.height].map((side) =>
+        Number.parseFloat(side ?? ''),
+      );
+      const w = size.w * LIFT_SCALE;
+      const h = size.h * LIFT_SCALE;
+      const expected = [at.x - (w - size.w) / 2, at.y - (h - size.h) / 2, w, h];
+      box.forEach((side, i) => expect(side).toBeCloseTo(expected[i] ?? NaN));
+    }
+
     it('a card played from the discard slides from the pile to its spot', async () => {
       const { next } = await renderTable(
         makeView([card('c9', { zone: 'pile' })], { piles: [PILES[0]!, discard(['c9'])] }),
@@ -1029,6 +1074,136 @@ describe('Table animations', () => {
       expect(keyframes[0]).toMatchObject({ translate: '-50px 0px' });
     });
 
+    describe("the viewer's own drop on the table", () => {
+      const drop = (lifted: string[]) =>
+        interaction.land({
+          action: 1,
+          element: { kind: 'card', id: lifted[0]! },
+          card: lifted[0]!,
+          lifted,
+          handOrder: null,
+        });
+      const placed = (id: string) => `.surface .card[data-id="${id}"]`;
+      const scalesOf = (id: string) =>
+        animationsOf(placed(id)).filter(([frames]) => frames[0]?.scale !== undefined);
+      const rotatesOf = (id: string) =>
+        animationsOf(placed(id)).filter(([frames]) => frames[0]?.rotate !== undefined);
+
+      /** Stubs the angle the viewer's landed ghosts sway to: jsdom computes no style. */
+      function stubSway(rotate: string) {
+        const computed = window.getComputedStyle;
+        return vi
+          .spyOn(window, 'getComputedStyle')
+          .mockImplementation((element, pseudo) =>
+            element.matches('.draglayer .card.ghost.landed')
+              ? ({ rotate } as CSSStyleDeclaration)
+              : computed(element, pseudo),
+          );
+      }
+
+      it('settles where it lies: down from its lift, dipping, its shadow back under it', async () => {
+        const { next, container } = await renderTable(makeView([card('b', { owner: 1, x: 0 })]));
+        drop(['b']);
+        landGhost(container, 'b', { x: 300, y: 0 });
+
+        await next(makeView([card('b', { owner: 1, x: 300 })]));
+        await waitFor(() => expect(scalesOf('b')).toHaveLength(1));
+        expect(scalesOf('b')).toEqual([
+          [
+            [
+              { scale: '1.06', easing: 'ease-in' },
+              { scale: '0.98', offset: 0.55, easing: 'ease-out' },
+              { scale: '1' },
+            ],
+            { duration: 220 },
+          ],
+        ]);
+        expect(animationsOf(`${placed('b')} > .shade`)).toEqual([
+          [
+            [
+              { translate: '5px 5px', easing: 'ease-in' },
+              { translate: '0px 0px', offset: 0.55 },
+              { translate: '0px 0px' },
+            ],
+            { duration: 220 },
+          ],
+        ]);
+        // Upright as its ghost was: it does not turn.
+        expect(rotatesOf('b')).toEqual([]);
+      });
+
+      it('comes upright from the angle its ghost swayed to', async () => {
+        const spy = stubSway('4.5deg');
+        try {
+          const { next, container } = await renderTable(makeView([card('b', { owner: 1 })]));
+          drop(['b']);
+          landGhost(container, 'b', { x: 300, y: 0 });
+
+          await next(makeView([card('b', { owner: 1, x: 300 })]));
+          await waitFor(() => expect(rotatesOf('b')).toHaveLength(1));
+          expect(rotatesOf('b')).toEqual([
+            [[{ rotate: '4.5deg' }, { rotate: '0deg' }], { duration: 220, easing: 'ease-out' }],
+          ]);
+        } finally {
+          spy.mockRestore();
+        }
+      });
+
+      it('settles every card of a group, each from its own ghost', async () => {
+        const spy = stubSway('-3deg');
+        try {
+          const cards = [card('a', { owner: 1 }), card('b', { owner: 1, x: 100 })];
+          const { next, container } = await renderTable(makeView(cards));
+          drop(['a', 'b']);
+          landGhost(container, 'a', { x: 300, y: 0 });
+          landGhost(container, 'b', { x: 400, y: 0 });
+
+          await next(makeView([card('a', { owner: 1, x: 300 }), card('b', { owner: 1, x: 400 })]));
+          await waitFor(() => expect(scalesOf('b')).toHaveLength(1));
+          for (const id of ['a', 'b']) {
+            expect(scalesOf(id), id).toHaveLength(1);
+            expect(
+              rotatesOf(id).map(([frames]) => frames[0]?.rotate),
+              id,
+            ).toEqual(['-3deg']);
+          }
+        } finally {
+          spy.mockRestore();
+        }
+      });
+
+      it('exhausted meanwhile, it tilts, and the tilt alone plays on its rotate property', async () => {
+        const spy = stubSway('4.5deg');
+        try {
+          const { next, container } = await renderTable(makeView([card('b', { owner: 1 })]));
+          drop(['b']);
+          landGhost(container, 'b', { x: 300, y: 0 });
+
+          await next(
+            makeView([card('b', { owner: 1, x: 300, exhausted: true })], {
+              log: [START, line('exhausted Spider-Man')],
+            }),
+          );
+          await waitFor(() => expect(scalesOf('b')).toHaveLength(1));
+          expect(rotatesOf('b').map(([frames]) => frames[0]?.rotate)).toEqual(['-15deg']);
+        } finally {
+          spy.mockRestore();
+        }
+      });
+
+      it('with reduced motion, it shows at rest at once', async () => {
+        await withReducedMotion(async () => {
+          const { next, container } = await renderTable(makeView([card('b', { owner: 1 })]));
+          drop(['b']);
+          landGhost(container, 'b', { x: 300, y: 0 });
+
+          await next(makeView([card('b', { owner: 1, x: 300 })]));
+          await settle();
+          expect(animate).not.toHaveBeenCalled();
+        });
+      });
+    });
+
     describe("the viewer's own drop tucked into a stack", () => {
       // Sam's "host" with h1 tucked under it; the server lays the chain out.
       const host = card('host', { owner: 1, x: 400, y: 100, z: 3 });
@@ -1045,18 +1220,23 @@ describe('Table animations', () => {
         animationsOf(placed(id)) as [Keyframe[], KeyframeAnimationOptions][];
 
       /**
-       * Expects a card to slide in under its stack in two steps: from `from`, drawn at z above the
-       * stack, out to half its own size down and to the right of its slot, then up into it at its
-       * own z-index.
+       * Expects a card to slide in under its stack in two steps: from `from` at that size, drawn at
+       * z above the stack, out to half its own size down and to the right of its slot, then up into
+       * it at its own z-index.
        */
-      function expectTuck(id: string, from: string, z: number): void {
+      function expectTuck(id: string, from: string, z: number, size = 1): void {
         const { w, h } = sizeOf(id);
         const [[frames, options], [zFrames, zOptions]] = startedOn(id) as [
           [Keyframe[], KeyframeAnimationOptions],
           [Keyframe[], KeyframeAnimationOptions],
         ];
+        expect(Number(frames[0]?.scale)).toBeCloseTo(size);
         expect(frames).toEqual([
-          { translate: from, scale: '1', easing: 'cubic-bezier(.2, .8, .2, 1)' },
+          {
+            translate: from,
+            scale: expect.any(String) as string,
+            easing: 'cubic-bezier(.2, .8, .2, 1)',
+          },
           { translate: `${w / 2}px ${h / 2}px`, scale: '1', offset: 0.5, easing: 'ease-in-out' },
           { translate: '0px 0px', scale: '1' },
         ]);
@@ -1092,9 +1272,10 @@ describe('Table animations', () => {
           ]),
         );
         await waitFor(() => expect(startedOn('m1')).toHaveLength(2));
-        // One block from where it was let go, mine above m1 above host while they shift out.
-        expectTuck('mine', '-40px -50px', 11);
-        expectTuck('m1', '-40px -50px', 10);
+        // One block from where it was let go, held up there, mine above m1 above host while they
+        // shift out.
+        expectTuck('mine', '-40px -50px', 11, LIFT_SCALE);
+        expectTuck('m1', '-40px -50px', 10, LIFT_SCALE);
         // The card it tucks under does not move.
         expect(startedOn('h1')).toEqual([]);
         // The view keeps the z-index the server gave: beneath the stack.
@@ -1184,8 +1365,10 @@ describe('Table animations', () => {
           [Keyframe[], KeyframeAnimationOptions],
         ];
         expect(keyframes[0]).toMatchObject({ translate: '10px 20px' });
-        // The card dragged out already lies where it went.
-        expect(animationsOf(placed('h1'))).toEqual([]);
+        // The card dragged out already lies where it went: it only settles there.
+        const settling = animationsOf(placed('h1')).map(([frames]) => frames);
+        expect(settling.flat().some((frame) => frame.translate !== undefined)).toBe(false);
+        expect(settling.map((frames) => frames[0]?.scale)).toEqual(['1.06']);
       });
 
       it('with reduced motion, it shows at its spot in the chain at once', async () => {
@@ -1282,7 +1465,8 @@ describe('Table animations', () => {
         expect(fly.getAttribute('style')).toContain('left: 600px');
         expect(fly.querySelector('[data-side="back"]')).not.toBeNull();
       }
-      const flights = animationsOf('.fly');
+      // Their ways, apart from their lifts.
+      const flights = animationsOf('.fly').filter(([frames]) => frames[0]?.transform !== undefined);
       expect(flights.map(([frames]) => frames.map((frame) => frame.offset))).toEqual([
         [0, 0.6, 0.8, 1],
         [0, 0.6, 0.8, 1],
@@ -1399,9 +1583,7 @@ describe('Table animations', () => {
 
         await next(makeView([], { piles: piles(21) }));
         await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
-        const style = container.querySelector('.fly')?.getAttribute('style');
-        expect(style).toContain('left: 250px');
-        expect(style).toContain('width: 98px');
+        expectFromLifted(container.querySelector('.fly'), { x: 250, y: 150 }, { w: 98, h: 70 });
         expectQuarterThenFlip(container);
       });
 
@@ -1420,7 +1602,7 @@ describe('Table animations', () => {
 
         await next(makeView([], { piles: piles(21) }));
         await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
-        expect(container.querySelector('.fly')?.getAttribute('style')).toContain('left: 250px');
+        expectFromLifted(container.querySelector('.fly'), { x: 250, y: 150 }, { w: 98, h: 70 });
         // It shows as its ghost does, landscape, not as the deck's slot draws it.
         expect(container.querySelector('.fly img.land')).not.toBeNull();
         expect(container.querySelector('.fly .land-in-portrait')).toBeNull();
@@ -1531,11 +1713,10 @@ describe('Table animations', () => {
       );
       await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
       const fly = container.querySelector('.fly');
-      expect(fly?.getAttribute('style')).toContain('left: 300px');
-      expect(fly?.getAttribute('style')).toContain('top: 200px');
+      expectFromLifted(fly, { x: 300, y: 200 });
       // Face up all along.
       expect(showsBack(fly)).toBe(false);
-      expect(animationsOf('.fly')).toHaveLength(1);
+      expect(animationsOf('.fly [data-side="back"]')).toEqual([]);
     });
 
     it('a card sent to the victory display flies to its chip', async () => {
@@ -1720,8 +1901,7 @@ describe('Table animations', () => {
 
         await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
         const fly = container.querySelector('.fly');
-        expect(fly?.getAttribute('style')).toContain('left: 500px');
-        expect(fly?.getAttribute('style')).toContain('top: 200px');
+        expectFromLifted(fly, { x: 500, y: 200 });
         // It leaves on its back, which gives way once edge-on.
         const back = fly?.querySelector<HTMLElement>('[data-side="back"]');
         expect(back).not.toBeNull();
@@ -1817,7 +1997,8 @@ describe('Table animations', () => {
       { stages: stage('v2'), log: [START, line('replaced the villain Rhino with Rhino')] },
     );
     await rerender({ session, view: next });
-    await waitFor(() => expect(animationsOf('.surface .card[data-id="v2"]')).toHaveLength(2));
+    // The turn, its lift, and the glow.
+    await waitFor(() => expect(animationsOf('.surface .card[data-id="v2"]')).toHaveLength(3));
     const [[keyframes, options]] = animationsOf('.surface .card[data-id="v2"]') as [
       [Keyframe[], KeyframeAnimationOptions],
     ];
@@ -1826,6 +2007,17 @@ describe('Table animations', () => {
       { transform: 'none' },
     ]);
     expect(options.duration).toBe(420);
+    // Put down: held up as it turns in, it settles flat, on the scale property and its shade's offset.
+    const [, [lift, liftOptions]] = animationsOf('.surface .card[data-id="v2"]') as [
+      unknown,
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(lift).toEqual([{ scale: '1.06', easing: 'ease-in' }, { scale: '1' }]);
+    expect(liftOptions.duration).toBe(420);
+    const [[shade]] = animationsOf('.surface .card[data-id="v2"] > .shade') as [
+      [Keyframe[], KeyframeAnimationOptions],
+    ];
+    expect(shade).toEqual([{ translate: '5px 5px', easing: 'ease-in' }, { translate: '0px 0px' }]);
   });
 
   it('an exhausted stage card turns in and keeps its tilt', async () => {
@@ -1852,7 +2044,7 @@ describe('Table animations', () => {
         log: [START, line('turned the villain to Rhino (stage II)')],
       });
       await rerender({ session, view: next });
-      await waitFor(() => expect(animationsOf('.surface .card[data-id="v1"]')).toHaveLength(2));
+      await waitFor(() => expect(animationsOf('.surface .card[data-id="v1"]')).toHaveLength(3));
       const [[keyframes]] = animationsOf('.surface .card[data-id="v1"]') as [
         [Keyframe[], KeyframeAnimationOptions],
       ];
@@ -1896,6 +2088,38 @@ describe('Table animations', () => {
       [Keyframe[], KeyframeAnimationOptions],
     ];
     expect(away).toEqual([{ transform: flat }, { transform: edgeOn }]);
+
+    // Lifted as it turns, highest edge-on, on the scale property and its shade's offset: the old
+    // side rising to edge-on, the card coming back down flat from there.
+    const scales = (selector: string) =>
+      animationsOf(selector).filter(([frames]) => frames[0]?.scale !== undefined);
+    expect(scales('.surface .card[data-id="a"]')).toEqual([
+      [
+        [
+          { scale: '1', easing: 'ease-out' },
+          { scale: '1.06', offset: 0.5, easing: 'ease-in' },
+          { scale: '1' },
+        ],
+        { duration: 360 },
+      ],
+    ]);
+    expect(animationsOf('.surface .card[data-id="a"] > .shade')).toEqual([
+      [
+        [
+          { translate: '0px 0px', easing: 'ease-out' },
+          { translate: '5px 5px', offset: 0.5, easing: 'ease-in' },
+          { translate: '0px 0px' },
+        ],
+        { duration: 360 },
+      ],
+    ]);
+    expect(scales('.surface .card[aria-hidden="true"]')).toEqual([
+      [
+        [{ scale: '1', easing: 'ease-out' }, { scale: '1.06' }],
+        { duration: 180, fill: 'forwards' },
+      ],
+    ]);
+    expect(animationsOf('.surface .card[aria-hidden="true"] > .shade')).toHaveLength(1);
 
     // A stop takes the copy away.
     motion.stop();
@@ -2043,6 +2267,13 @@ describe('Table animations', () => {
       { translate: expect.stringMatching(/^3\d\dpx /), scale: expect.any(String) },
       { translate: '0px 0px', scale: '1' },
     ]);
+    // Its slide plays on the scale property: the turn lifts it not.
+    expect(
+      frames()
+        .flat()
+        .some((frame) => frame.scale === '1.06'),
+    ).toBe(false);
+    expect(animationsOf('.surface .card[data-id="a"] > .shade')).toEqual([]);
   });
 
   it('a glow plays on through an unrelated view', async () => {

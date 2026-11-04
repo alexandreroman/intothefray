@@ -268,15 +268,44 @@
     cursor: grab;
   }
 
-  /* Held up under the pointer. */
+  /*
+    Held up under the pointer, lit from the top left: larger, its shadow cast further down and to
+    the right. The viewer's own ghosts take their lift from the drag layer (--lift-scale and
+    --lift-shade: LIFT_SCALE and LIFT_SHADE in motion.svelte.ts) and sway with the pointer about
+    their middle (--sway, sway.ts), on the scale and rotate properties: apart from the transform
+    of an exhausted card. Another player's are held up a little, upright, their shadow under them.
+    Let go (landed), the viewer's own ghost stays held up where it landed: the view that shows
+    the card settles it on the table from there (motion.svelte.ts).
+  */
   .card.ghost {
     cursor: grabbing;
-    scale: 1.04;
-    transition: scale 0.12s;
+    scale: var(--lift-scale, 1.04);
+    rotate: var(--sway, 0deg);
+    transition: scale 0.14s ease-out;
   }
 
-  .card.landed {
-    scale: 1;
+  .card.ghost .shade {
+    translate: var(--lift-shade, 0px 0px);
+    transition: translate 0.14s ease-out;
+  }
+
+  /* Picked up, the viewer's own ghost rises off the table. */
+  @starting-style {
+    :global(.draglayer) .card.ghost:not(.landed) {
+      scale: 1;
+    }
+
+    :global(.draglayer) .card.ghost:not(.landed) .shade {
+      translate: 0px 0px;
+    }
+  }
+
+  /* Without motion, it shows held up at once. */
+  @media (prefers-reduced-motion: reduce) {
+    .card.ghost,
+    .card.ghost .shade {
+      transition: none;
+    }
   }
 
   /*

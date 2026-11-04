@@ -227,6 +227,7 @@ async function renderTable(view: View = makeView()) {
       current = next;
       await result.rerender({ session, view: next });
     },
+    unmount: result.unmount,
     /** The server refuses the action of that id. */
     async refuse(id: number) {
       session.lastError = { id, code: 'invalid', message: 'refused' };
@@ -889,6 +890,130 @@ describe('dragging a table card', () => {
     await release(50, 400);
     await fireEvent.click(placed('mine'));
     expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+  });
+});
+
+describe('the sway of the dragged card', () => {
+  /** The frames requested and not cancelled, by id. */
+  let frames = new Map<number, FrameRequestCallback>();
+  let lastFrame = 0;
+  /** The time, in ms: performance.now(). */
+  let now = 0;
+
+  beforeEach(() => {
+    frames = new Map();
+    now = 1000;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frames.set(++lastFrame, callback);
+      return lastFrame;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((id) => {
+      frames.delete(id);
+    });
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+  });
+
+  afterEach(() => {
+    reducedMotion.on = false;
+  });
+
+  /** 16 ms later, runs the frames requested until then. */
+  function nextFrame(): void {
+    now += 16;
+    const due = [...frames.values()];
+    frames.clear();
+    for (const callback of due) {
+      callback(now);
+    }
+  }
+
+  /** The lean the ghosts take from the layer, in degrees; NaN when it has none. */
+  function swayOf(): number {
+    const layer = document.querySelector<HTMLElement>('.draglayer');
+    return Number.parseFloat(layer?.style.getPropertyValue('--sway') ?? '');
+  }
+
+  /** Drags "mine" from 50, 400 by dx px a frame, for that many frames. */
+  async function dragBy(dx: number, count: number): Promise<number> {
+    await press(placed('mine'), 50, 400);
+    let x = 50;
+    for (let i = 0; i < count; i++) {
+      x += dx;
+      await moveTo(x, 452);
+      nextFrame();
+    }
+    return x;
+  }
+
+  it('leans the ghost clockwise as the pointer moves right, and back upright once it rests', async () => {
+    await renderTable();
+    await dragBy(8, 12);
+    expect(ghosts()).toHaveLength(1);
+    expect(swayOf()).toBeGreaterThan(2);
+
+    // The pointer rests: the ghost comes upright, and no frame is asked for any more.
+    for (let i = 0; i < 120 && frames.size > 0; i++) {
+      nextFrame();
+    }
+    expect(swayOf()).toBe(0);
+    expect(frames.size).toBe(0);
+  });
+
+  it('leans it the other way as the pointer moves left', async () => {
+    await renderTable();
+    await dragBy(-8, 12);
+    expect(swayOf()).toBeLessThan(-2);
+  });
+
+  it('comes upright after the drop, its landed ghost with it, then stops', async () => {
+    await renderTable();
+    const x = await dragBy(8, 12);
+    await release(x, 452);
+    expect(ghosts()[0]?.classList).toContain('landed');
+    expect(swayOf()).toBeGreaterThan(2);
+
+    for (let i = 0; i < 120 && frames.size > 0; i++) {
+      nextFrame();
+    }
+    expect(swayOf()).toBe(0);
+    expect(frames.size).toBe(0);
+  });
+
+  it('asks for no frame while nothing is dragged', async () => {
+    await renderTable();
+    // The frames the table asks for as it is first drawn.
+    nextFrame();
+    await moveTo(200, 400);
+    await moveTo(300, 400, 0);
+    // A press that has not moved 4 px is no drag yet.
+    await press(placed('mine'), 50, 400);
+    await moveTo(52, 400);
+    expect(frames.size).toBe(0);
+    expect(swayOf()).toBeNaN();
+  });
+
+  it('keeps the ghost upright with reduced motion', async () => {
+    reducedMotion.on = true;
+    await renderTable();
+    await dragBy(8, 12);
+    expect(ghosts()).toHaveLength(1);
+    expect(frames.size).toBe(0);
+    expect(swayOf()).toBeNaN();
+  });
+
+  it('stops when the table goes', async () => {
+    const { unmount } = await renderTable();
+    await dragBy(8, 4);
+    expect(frames.size).toBeGreaterThan(0);
+    unmount();
+    expect(frames.size).toBe(0);
+  });
+
+  it('holds the ghosts up by the lift motion.svelte.ts gives', async () => {
+    await renderTable();
+    const layer = document.querySelector<HTMLElement>('.draglayer');
+    expect(layer?.style.getPropertyValue('--lift-scale')).toBe('1.06');
+    expect(layer?.style.getPropertyValue('--lift-shade')).toBe('5px 5px');
   });
 });
 

@@ -239,7 +239,7 @@ describe('diffViews', () => {
       ]);
     });
 
-    it("tilts when it is the viewer's own drop, which lies where it went", () => {
+    it("tilts when it is the viewer's own drop, which settles where it went", () => {
       const prev = view({ cards: [card('a', { x: 0 })] });
       const next = view({
         cards: [card('a', { x: 300, exhausted: true })],
@@ -248,6 +248,7 @@ describe('diffViews', () => {
 
       expect(diffViews(prev, next, droppedCard('a'))).toEqual([
         { kind: 'tilt', id: 'a', exhausted: true },
+        { kind: 'settle', id: 'a' },
       ]);
     });
 
@@ -825,16 +826,19 @@ describe('diffViews', () => {
     expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'a', toPile: 'disc:p0' }]);
   });
 
-  it('own drop is not animated', () => {
+  it('own drop does not travel again: it settles where it lies, with its stack', () => {
     const prev = view({ cards: [card('a', { x: 0 }), card('u', { x: 0, y: 20, parent: 'a' })] });
     const next = view({
       cards: [card('a', { x: 300 }), card('u', { x: 300, y: 20, parent: 'a' })],
     });
 
-    expect(diffViews(prev, next, droppedCard('a'))).toEqual([]);
+    expect(diffViews(prev, next, droppedCard('a'))).toEqual([
+      { kind: 'settle', id: 'a' },
+      { kind: 'settle', id: 'u' },
+    ]);
   });
 
-  it('own group drop is not animated, while a card moved by another player still travels', () => {
+  it('own group drop settles where it lies, while a card moved by another player still travels', () => {
     const prev = view({
       cards: [card('a', { x: 0 }), card('b', { x: 100 }), card('c', { x: 500 })],
     });
@@ -848,6 +852,8 @@ describe('diffViews', () => {
     };
 
     expect(diffViews(prev, next, groupDrop)).toEqual([
+      { kind: 'settle', id: 'a' },
+      { kind: 'settle', id: 'b' },
       {
         kind: 'move',
         id: 'c',
@@ -1010,8 +1016,10 @@ describe('diffViews', () => {
       expect(diffViews(prev, next, drag)).toEqual([
         { kind: 'enter', id: 'c9', fromPile: 'disc:p0', dropped: true, tuck: { z: 4 } },
       ]);
-      // Not tucked, it already lies where it went.
-      expect(diffViews(prev, next, { ...drag, tucks: false })).toEqual([]);
+      // Not tucked, it already lies where it went: it settles there.
+      expect(diffViews(prev, next, { ...drag, tucks: false })).toEqual([
+        { kind: 'settle', id: 'c9' },
+      ]);
     });
 
     describe('closing behind a tucked card that leaves it', () => {
@@ -1037,7 +1045,10 @@ describe('diffViews', () => {
         const prev = view({ cards: chain });
         const next = view({ cards: [...closed, card('t1', { x: 100, y: 100 })] });
 
-        expect(diffViews(prev, next, droppedCard('t1'))).toEqual(closing);
+        expect(diffViews(prev, next, droppedCard('t1'))).toEqual([
+          ...closing,
+          { kind: 'settle', id: 't1' },
+        ]);
         // Another player's drag slides it from their ghost too.
         expect(diffViews(prev, next)).toEqual([
           ...closing,
@@ -1975,7 +1986,7 @@ describe('diffViews', () => {
       ]);
     });
 
-    it("the viewer's own drop on the table or in the hand still yields nothing", () => {
+    it("the viewer's own drop on the table only settles there, and in the hand yields nothing", () => {
       const prev = view({
         cards: [card('c9', { code: '01001', zone: 'hand' })],
         hands: { p0: ['c9'] },
@@ -1983,7 +1994,7 @@ describe('diffViews', () => {
       const next = view({ cards: [card('c9', { code: '01001', x: 300 })], hands: { p0: [] } });
       const handDrop: OwnDrop = { element: { kind: 'hand', id: 'c9' }, card: 'c9', lifted: ['c9'] };
 
-      expect(diffViews(prev, next, handDrop)).toEqual([]);
+      expect(diffViews(prev, next, handDrop)).toEqual([{ kind: 'settle', id: 'c9' }]);
       expect(diffViews(next, prev, droppedCard('c9'))).toEqual([]);
     });
 

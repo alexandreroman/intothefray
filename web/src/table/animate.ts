@@ -52,6 +52,11 @@ export type Anim =
   | { kind: 'glow'; id: string; color: number }
   /** Exhausted or readied on the table: it tilts to its new angle. */
   | { kind: 'tilt'; id: string; exhausted: boolean }
+  /**
+   * The viewer's own drop let go on the table, which it already lies on: it settles there from its
+   * ghost, held up where it landed. Not one tucked into a stack, which slides in under it.
+   */
+  | { kind: 'settle'; id: string }
   | { kind: 'turnIn'; id: string }
   /**
    * Turned over on the table: flipped, another face shown, or a hidden card come face up; or
@@ -195,7 +200,7 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
     }
     // The viewer's own drop already lies where it went on the table or in the hand, unless it went
     // into a stack: it slides to its spot in the chain from where it was let go, moved or not. Out
-    // of a pile, it enters from there (departures).
+    // of a pile, it enters from there (departures). On the table, it settles where it lies.
     if (dropped.has(card.id)) {
       if (travel?.kind === 'fly') {
         anims.push({ ...travel, dropped: true });
@@ -207,6 +212,8 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
           to: spotOf(card),
           dropped: true,
         });
+      } else if (!tucked && card.zone === 'table') {
+        anims.push({ kind: 'settle', id: card.id });
       }
       continue;
     }

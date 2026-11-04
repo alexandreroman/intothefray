@@ -11,6 +11,7 @@
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import { prefersReducedMotion } from 'svelte/motion';
   import type {
     Action,
     Area,
@@ -53,11 +54,12 @@
   import { backCaption, isHidden, pileBack } from './face';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
-  import { motion } from './motion.svelte';
+  import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import { ALL_ROWS, drawnGap, type RowMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
+  import { Sway } from './sway';
 
   let {
     view,
@@ -120,6 +122,10 @@
   let grab: Point = { x: 0.5, y: 0.5 };
   /** The size of a hand card as it was grabbed, on the screen. */
   let handSize: { w: number; h: number } = { w: HAND_CARD.w, h: HAND_CARD.h };
+  /** The sway of the ghosts: they lean with the pointer's horizontal speed (sway.ts). */
+  const sway = new Sway();
+  /** The frame that steps the sway next, 0 when it rests. */
+  let swayFrame = 0;
   /** The label above the drop target. */
   let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
     null,
@@ -249,6 +255,7 @@
       start(from, pressed.start);
     }
     pointer = at;
+    swayWith(at.x);
     aim();
     if (source) {
       tellOthers(source, at);
@@ -265,6 +272,7 @@
   }
 
   function start(from: DragSource, pressedAt: Point): void {
+    stopSway();
     grab = grabOf(from, pressedAt);
     units = from.kind === 'card' ? groupOf(from.card) : [];
     let lifted: string[] = [];
@@ -279,6 +287,42 @@
       void turnOffPile(card.id, grab);
     }
   }
+
+  /**
+   * Feeds the sway the pointer's move, and steps it at each frame from then on. Per frame, it only
+   * writes --sway on the layer, which the ghosts turn by (CardView.svelte, .hghost): nothing is
+   * redrawn. The other players see the ghosts upright: nothing more is sent to them.
+   */
+  function swayWith(x: number): void {
+    if (prefersReducedMotion.current) {
+      return;
+    }
+    sway.moved(x, performance.now());
+    if (swayFrame === 0) {
+      swayFrame = requestAnimationFrame(stepSway);
+    }
+  }
+
+  /**
+   * One frame of the sway. It goes on until the ghosts are upright and still, the pointer at rest,
+   * past the drag's end too: a drop's ghost, held up where it landed, comes upright meanwhile, and
+   * the card settles on the table from the angle it shows then (motion.settle).
+   */
+  function stepSway(): void {
+    const angle = sway.step(performance.now());
+    layer?.style.setProperty('--sway', `${angle.toFixed(2)}deg`);
+    swayFrame = sway.resting ? 0 : requestAnimationFrame(stepSway);
+  }
+
+  /** Stops the sway, the ghosts upright: a new drag starts from there. */
+  function stopSway(): void {
+    cancelAnimationFrame(swayFrame);
+    swayFrame = 0;
+    sway.reset();
+    layer?.style.removeProperty('--sway');
+  }
+
+  $effect(() => () => stopSway());
 
   /** Once drawn, the ghost of a card picked up off the deck's slot turns to lie landscape. */
   async function turnOffPile(id: string, held: Point): Promise<void> {
@@ -875,8 +919,17 @@
 
 <svelte:window onpointermove={onMove} onpointerup={onUp} onpointercancel={onCancel} />
 
-<!-- The ghosts repeat what is dragged, for the eyes only. -->
-<div class="draglayer" aria-hidden="true" bind:this={layer}>
+<!--
+  The ghosts repeat what is dragged, for the eyes only, held up off the table (--lift-scale,
+  --lift-shade: CardView.svelte, .hghost) and swaying (--sway, stepSway).
+-->
+<div
+  class="draglayer"
+  aria-hidden="true"
+  bind:this={layer}
+  style:--lift-scale={LIFT_SCALE}
+  style:--lift-shade={LIFT_SHADE}
+>
   {#if handGhost}
     {@const face = faceOf(handGhost.card)}
     <div
@@ -934,13 +987,36 @@
     zoom: var(--z, 1);
   }
 
-  /* A hand card brought back over the hand: hand size, growing to table size as it leaves. */
+  /*
+    A hand card brought back over the hand: hand size, growing to table size as it leaves. Held up
+    and swaying about its middle as a table card's ghost is (CardView.svelte); out of the table, it
+    keeps its drop shadow.
+  */
   .hghost {
     position: absolute;
+    scale: var(--lift-scale);
+    rotate: var(--sway, 0deg);
     transition:
       width 0.14s ease-out,
-      height 0.14s ease-out;
+      height 0.14s ease-out,
+      scale 0.14s ease-out;
     filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+  }
+
+  /* Picked up, it rises off the hand. */
+  @starting-style {
+    .hghost {
+      scale: 1;
+    }
+  }
+
+  /* Without motion, it shows held up at once. */
+  @media (prefers-reduced-motion: reduce) {
+    .hghost {
+      transition:
+        width 0.14s ease-out,
+        height 0.14s ease-out;
+    }
   }
 
   /* Above everything, the dragged card included. */
