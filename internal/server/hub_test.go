@@ -789,8 +789,9 @@ func TestReconnectResyncsViewers(t *testing.T) {
 	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
 }
 
-// expireBlocker is a Redis hook that holds every EXPIRE command, the one a
-// touch round sends, until release is closed.
+// expireBlocker is a Redis hook that holds every EXPIRE of a game key, alone
+// or in a pipeline as a touch round sends them, until release is closed.
+// Nothing else is held, so presence commands always go through.
 type expireBlocker struct {
 	entered     chan struct{}
 	enteredOnce sync.Once
@@ -800,17 +801,35 @@ type expireBlocker struct {
 func (b *expireBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
 
 func (b *expireBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
-	return next
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		if slices.ContainsFunc(cmds, isGameExpire) {
+			b.block()
+		}
+		return next(ctx, cmds)
+	}
 }
 
 func (b *expireBlocker) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
 	return func(ctx context.Context, cmd redis.Cmder) error {
-		if cmd.Name() == "expire" {
-			b.enteredOnce.Do(func() { close(b.entered) })
-			<-b.release
+		if isGameExpire(cmd) {
+			b.block()
 		}
 		return next(ctx, cmd)
 	}
+}
+
+func (b *expireBlocker) block() {
+	b.enteredOnce.Do(func() { close(b.entered) })
+	<-b.release
+}
+
+// isGameExpire reports whether cmd is an EXPIRE of a game key.
+func isGameExpire(cmd redis.Cmder) bool {
+	if cmd.Name() != "expire" || len(cmd.Args()) < 2 {
+		return false
+	}
+	key, ok := cmd.Args()[1].(string)
+	return ok && strings.HasPrefix(key, "game:")
 }
 
 func TestSlowTouchDoesNotDelayPresence(t *testing.T) {

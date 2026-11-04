@@ -72,8 +72,8 @@ type Server struct {
 	// createBodyTimeout is the read deadline of a create-game request body;
 	// tests shorten it.
 	createBodyTimeout time.Duration
-	// games caches the count of games served by GET /api/stats.
-	games gamesCount
+	// stats caches the reply of GET /api/stats.
+	stats statsCache
 }
 
 // New builds a Server from its dependencies.

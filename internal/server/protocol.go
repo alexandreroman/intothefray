@@ -24,9 +24,29 @@ type versionResponse struct {
 	Commit string `json:"commit"`
 }
 
-// statsResponse is the reply to GET /api/stats.
+// statsResponse is the reply to GET /api/stats. It is public and cached by
+// proxies: it names cards and sets only, never a game, a player or a deck.
 type statsResponse struct {
-	Games int64 `json:"games"`
+	// Games counts every game that has not expired, in any phase: the number
+	// of game summaries in the store.
+	Games int `json:"games"`
+	// Playing lists the games in play, one entry per game; lobbies and ended
+	// games are left out.
+	Playing []playedGame `json:"playing"`
+}
+
+// playedGame is what one game in play is played with, by English names.
+type playedGame struct {
+	Heroes   []playedHero `json:"heroes"` // seat order
+	Scenario string       `json:"scenario"`
+	Modulars []string     `json:"modulars"`
+}
+
+// playedHero names the identity of a deck in play. AlterEgo is empty for an
+// identity without an alter-ego face.
+type playedHero struct {
+	Hero     string `json:"hero"`
+	AlterEgo string `json:"alterEgo"`
 }
 
 // errorResponse is the body of every HTTP error reply.
