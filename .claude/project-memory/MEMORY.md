@@ -64,8 +64,7 @@
 - [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
-- [Every change of place animates](references/project_card_move_animations.md) — cards travel, turn to their landing side, tilt; hover survives turns
-- [Cards feel lifted, sway and settle](references/project_card_lift.md) — lift 1.06 + shade offset, drag sway ±6°, settle on drop
+- [Every change of place animates](references/project_card_move_animations.md) — cards travel, turn, tilt; lift 1.06, drag sway ±6°, settle on drop
 - [Presence message budget](references/project_presence_budget.md) — none while alone; 150 ms throttle, 3-unit dead zone, events at once
 - [Deployment architecture](references/project_deployment.md) — Pages behind the Cloudflare proxy, VPS at api.intothefray.xyz; CI deploys all
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
