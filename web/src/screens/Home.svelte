@@ -767,14 +767,14 @@
   }
 
   /* A phone: 16px gutters, and a smaller fan under the buttons. The top padding still holds the
-     capsule of games in progress, 14px clear of the page's top and of the logo (at 56px). */
+     capsule of games in progress, 24px clear of the page's top and of the logo (at 76px). */
   @media (max-width: 640px) {
     main {
-      padding: 56px 16px 24px;
+      padding: 76px 16px 24px;
     }
 
     .games {
-      top: 14px;
+      top: 24px;
     }
 
     footer {
