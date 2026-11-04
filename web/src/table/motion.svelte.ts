@@ -347,6 +347,16 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
   return { cx: chip.cx, cy: chip.cy, w: PORTRAIT_CARD.w * zoom, h: PORTRAIT_CARD.h * zoom };
 }
 
+/** A deck's hidden top card the viewer dragged landed as an unknown card, not under its id. */
+function unknownTopGhost(
+  root: HTMLElement,
+  fromPile: string | undefined,
+  piles: readonly PileView[],
+): HTMLElement | null {
+  const pile = piles.find((p) => p.id === fromPile);
+  return pile ? root.querySelector<HTMLElement>(ownGhost(unknownTopId(pile))) : null;
+}
+
 /**
  * What a card about to travel shows on now: another player's ghost of it,
  * where they let it go; else its place on the table or in the hand, under the
@@ -357,11 +367,7 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
 function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HTMLElement | null {
   const find = (selector: string) => root.querySelector<HTMLElement>(selector);
   const placed = (id: string) => `${tableCard(id)}, ${handCard(id)}`;
-  // A deck's hidden top card the viewer dragged landed as an unknown card, not under its id.
-  const unknownTop = (fromPile: string | undefined) => {
-    const pile = piles.find((p) => p.id === fromPile);
-    return pile ? find(ownGhost(unknownTopId(pile))) : null;
-  };
+  const unknownTop = (fromPile: string | undefined) => unknownTopGhost(root, fromPile, piles);
   switch (anim.kind) {
     case 'move': {
       const landed = anim.dropped ? find(ownGhost(anim.id)) : null;
@@ -758,14 +764,20 @@ class TableMotion {
       if (anim.kind !== 'settle') {
         continue;
       }
-      const ghost = root?.querySelector<HTMLElement>(ownGhost(anim.id));
+      const ghost = root
+        ? (root.querySelector<HTMLElement>(ownGhost(anim.id)) ??
+          unknownTopGhost(root, anim.fromPile, tables.before?.piles ?? []))
+        : null;
       if (ghost) {
         swayed.set(anim.id, playingTilt(ghost));
       }
     }
-    // A card sliding to its new place plays on the scale property: it is not lifted as it turns.
-    const sliding = new Set(
-      shown.flatMap((anim) => (anim.kind === 'move' || anim.kind === 'enter' ? [anim.id] : [])),
+    // A card sliding to its new place, or settling where the viewer let it go, plays on the scale
+    // property: it is not lifted as it turns (face up, out of a deck the viewer dragged it off).
+    const onScale = new Set(
+      shown.flatMap((anim) =>
+        anim.kind === 'move' || anim.kind === 'enter' || anim.kind === 'settle' ? [anim.id] : [],
+      ),
     );
     this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;
@@ -845,10 +857,10 @@ class TableMotion {
           this.#settle(root, anim.id, tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0));
           break;
         case 'turnIn':
-          this.#turnIn(root, anim.id, !sliding.has(anim.id));
+          this.#turnIn(root, anim.id, !onScale.has(anim.id));
           break;
         case 'flip':
-          this.#flip(root, anim.id, oldSides.get(anim.id), !sliding.has(anim.id));
+          this.#flip(root, anim.id, oldSides.get(anim.id), !onScale.has(anim.id));
           break;
         case 'glow':
           this.#glow(root, anim.id, anim.color);
@@ -1311,7 +1323,7 @@ class TableMotion {
 
   /**
    * Turns a stage card just chosen in from edge-on, as if put down: lifted, it settles flat (lifts),
-   * unless it slides meanwhile, which plays on the same scale property.
+   * unless it slides or settles meanwhile, which plays on the same scale property.
    */
   #turnIn(root: HTMLElement, id: string, lifts: boolean): void {
     const element = root.querySelector<HTMLElement>(tableCard(id));
@@ -1342,8 +1354,8 @@ class TableMotion {
    * Without an old side (a hidden card come onto the table, or one taken face
    * down into the hand), only the second half plays. An exhausted card keeps
    * its tilt; a hand card keeps its place. A table card is lifted as it turns,
-   * highest edge-on (lifts), unless it slides meanwhile, which plays on the
-   * same scale property.
+   * highest edge-on (lifts), unless it slides or settles meanwhile, which
+   * plays on the same scale property.
    */
   #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined, lifts: boolean): void {
     const onTable = root.querySelector<HTMLElement>(tableCard(id));

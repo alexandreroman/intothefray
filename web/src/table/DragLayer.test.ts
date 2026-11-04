@@ -1009,6 +1009,42 @@ describe('the sway of the dragged card', () => {
     expect(frames.size).toBe(0);
   });
 
+  it('leaves a marker flat: it does not sway', async () => {
+    await renderTable();
+    // The first player token lies at 880, 380 on the screen.
+    const token = document.querySelector<HTMLElement>('.surface .marker')!;
+    await press(token, 900, 400);
+    for (let x = 700; x >= 400; x -= 50) {
+      await moveTo(x, 600);
+      nextFrame();
+    }
+    expect(document.querySelector('.draglayer .marker')).not.toBeNull();
+    expect(swayOf()).toBeNaN();
+    expect(frames.size).toBe(0);
+  });
+
+  it("lets the drag's first ghost rise, not the one a hand card shows as it crosses the hand's edge", async () => {
+    await renderTable();
+    const layer = () => document.querySelector<HTMLElement>('.draglayer')!;
+    // Over the hand, the hand card's ghost rises off it.
+    await press(handCard('h2'), 500, 780);
+    await moveTo(520, 760);
+    expect(document.querySelector('.draglayer .hghost')).not.toBeNull();
+    expect(layer().classList).toContain('rising');
+
+    // Drawn and styled in the next frame, its rise ends one frame later.
+    nextFrame();
+    expect(layer().classList).toContain('rising');
+    nextFrame();
+    await tick();
+    expect(layer().classList).not.toContain('rising');
+
+    // Over the table, its table ghost shows held up at once.
+    await moveTo(300, 450);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['h2']);
+    expect(layer().classList).not.toContain('rising');
+  });
+
   it('holds the ghosts up by the lift motion.svelte.ts gives', async () => {
     await renderTable();
     const layer = document.querySelector<HTMLElement>('.draglayer');

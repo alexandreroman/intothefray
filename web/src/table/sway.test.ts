@@ -66,7 +66,7 @@ describe('Sway', () => {
 
   it('never leans past the limit, however fast the pointer', () => {
     const angles = drag(new Sway(), 20000, 600);
-    expect(Math.max(...angles)).toBeLessThanOrEqual(MAX_SWAY_DEG * 1.2);
+    expect(Math.max(...angles)).toBeLessThanOrEqual(MAX_SWAY_DEG);
     expect(angles.at(-1)).toBeCloseTo(MAX_SWAY_DEG, 0);
   });
 
@@ -99,7 +99,6 @@ describe('Sway', () => {
     const sway = new Sway();
     drag(sway, 400, 300);
     sway.reset();
-    expect(sway.angle).toBe(0);
     expect(sway.resting).toBe(true);
     expect(sway.step(1000)).toBe(0);
   });

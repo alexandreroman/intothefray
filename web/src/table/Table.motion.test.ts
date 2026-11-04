@@ -1191,6 +1191,35 @@ describe('Table animations', () => {
         }
       });
 
+      it("played off the viewer's deck, it settles from the unknown top it landed as, turning face up", async () => {
+        const spy = stubSway('3deg');
+        try {
+          const { next, container } = await renderTable(makeView([], { piles: [samDeck(30)] }));
+          interaction.land({
+            action: 1,
+            element: { kind: 'pile', id: 'deck:p1' },
+            card: null,
+            lifted: [],
+            handOrder: null,
+          });
+          // The deck's top is not known: it landed as an unknown card.
+          landGhost(container, DECK_TOP_ID, { x: 300, y: 0 });
+
+          await next(makeView([card('c7', { owner: 1, x: 300 })], { piles: [samDeck(29)] }));
+          await waitFor(() => expect(scalesOf('c7')).toHaveLength(1));
+          // The settle alone plays on its scale: the turn does not lift it as well.
+          expect(scalesOf('c7')[0]?.[0].map((frame) => frame.scale)).toEqual(['1.06', '0.98', '1']);
+          expect(rotatesOf('c7').map(([frames]) => frames[0]?.rotate)).toEqual(['3deg']);
+          const turns = animationsOf(placed('c7')).filter(([frames]) => frames[0]?.transform);
+          expect(turns.map(([frames]) => frames.map((frame) => frame.transform))).toEqual([
+            ['perspective(700px) rotateY(90deg)', 'perspective(700px) rotateY(0deg)'],
+          ]);
+          expect(animationsOf(`${placed('c7')} > .shade`)).toHaveLength(1);
+        } finally {
+          spy.mockRestore();
+        }
+      });
+
       it('with reduced motion, it shows at rest at once', async () => {
         await withReducedMotion(async () => {
           const { next, container } = await renderTable(makeView([card('b', { owner: 1 })]));

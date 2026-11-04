@@ -24,7 +24,11 @@ const REST_PX_S = 1;
 
 /** The lean a pointer moving at that horizontal speed (px/s) asks for, within MAX_SWAY_DEG. */
 export function swayTarget(speed: number): number {
-  return Math.max(-MAX_SWAY_DEG, Math.min(MAX_SWAY_DEG, speed * DEG_PER_PX_S));
+  return withinSway(speed * DEG_PER_PX_S);
+}
+
+function withinSway(angle: number): number {
+  return Math.max(-MAX_SWAY_DEG, Math.min(MAX_SWAY_DEG, angle));
 }
 
 /** The spring's state: its angle and how fast it turns, in degrees per second. */
@@ -53,11 +57,6 @@ export class Sway {
   #pointer: { x: number; at: number } | null = null;
   /** The time of the last frame. */
   #frame: number | null = null;
-
-  /** The lean, in degrees. */
-  get angle(): number {
-    return this.#spring.angle;
-  }
 
   /** Upright, still, and asked for no lean: nothing changes until the pointer moves again. */
   get resting(): boolean {
@@ -93,7 +92,10 @@ export class Sway {
     this.#pointer = { x, at };
   }
 
-  /** Steps the spring to that time, the time of a frame, and returns the lean. */
+  /**
+   * Steps the spring to that time, the time of a frame, and returns the lean. The spring may
+   * overshoot a full lean a little: the card never leans past MAX_SWAY_DEG.
+   */
   step(at: number): number {
     const dt = this.#frame === null ? 0 : at - this.#frame;
     this.#frame = at;
@@ -105,6 +107,6 @@ export class Sway {
       this.#spring = { angle: 0, spin: 0 };
       this.#speed = 0;
     }
-    return this.#spring.angle;
+    return withinSway(this.#spring.angle);
   }
 }

@@ -126,6 +126,13 @@
   const sway = new Sway();
   /** The frame that steps the sway next, 0 when it rests. */
   let swayFrame = 0;
+  /**
+   * The drag has just started: its first ghost rises off the table or the hand (@starting-style
+   * under .rising). A ghost drawn later, as a hand card crosses the hand's edge, shows held up.
+   */
+  let rising = $state(false);
+  /** The frame that ends the rise, 0 when none is pending. */
+  let riseFrame = 0;
   /** The label above the drop target. */
   let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
     null,
@@ -255,7 +262,10 @@
       start(from, pressed.start);
     }
     pointer = at;
-    swayWith(at.x);
+    // A marker lies flat on the table: it does not sway.
+    if (source?.kind !== 'marker') {
+      swayWith(at.x);
+    }
     aim();
     if (source) {
       tellOthers(source, at);
@@ -273,6 +283,7 @@
 
   function start(from: DragSource, pressedAt: Point): void {
     stopSway();
+    rise();
     grab = grabOf(from, pressedAt);
     units = from.kind === 'card' ? groupOf(from.card) : [];
     let lifted: string[] = [];
@@ -322,7 +333,25 @@
     layer?.style.removeProperty('--sway');
   }
 
-  $effect(() => () => stopSway());
+  /**
+   * Lets the first ghost of the drag rise. It is drawn and styled in the frame after the drag
+   * starts: the rise ends one frame later, the ghost's transition then under way.
+   */
+  function rise(): void {
+    cancelAnimationFrame(riseFrame);
+    rising = true;
+    riseFrame = requestAnimationFrame(() => {
+      riseFrame = requestAnimationFrame(() => {
+        riseFrame = 0;
+        rising = false;
+      });
+    });
+  }
+
+  $effect(() => () => {
+    stopSway();
+    cancelAnimationFrame(riseFrame);
+  });
 
   /** Once drawn, the ghost of a card picked up off the deck's slot turns to lie landscape. */
   async function turnOffPile(id: string, held: Point): Promise<void> {
@@ -926,6 +955,7 @@
 <div
   class="draglayer"
   aria-hidden="true"
+  class:rising
   bind:this={layer}
   style:--lift-scale={LIFT_SCALE}
   style:--lift-shade={LIFT_SHADE}
@@ -1003,9 +1033,9 @@
     filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
   }
 
-  /* Picked up, it rises off the hand. */
+  /* Picked up, it rises off the hand, as the drag's first ghost only. */
   @starting-style {
-    .hghost {
+    .draglayer.rising .hghost {
       scale: 1;
     }
   }

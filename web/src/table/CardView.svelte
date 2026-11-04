@@ -289,13 +289,16 @@
     transition: translate 0.14s ease-out;
   }
 
-  /* Picked up, the viewer's own ghost rises off the table. */
+  /*
+    Picked up, the viewer's own ghost rises off the table, as the drag's first ghost only
+    (.rising, DragLayer.svelte): a ghost drawn as a hand card crosses the hand's edge shows held up.
+  */
   @starting-style {
-    :global(.draglayer) .card.ghost:not(.landed) {
+    :global(.draglayer.rising) .card.ghost:not(.landed) {
       scale: 1;
     }
 
-    :global(.draglayer) .card.ghost:not(.landed) .shade {
+    :global(.draglayer.rising) .card.ghost:not(.landed) .shade {
       translate: 0px 0px;
     }
   }

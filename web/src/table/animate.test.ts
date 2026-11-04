@@ -326,14 +326,17 @@ describe('diffViews', () => {
     // Each also enters from its pile.
     const flipsOf = (anims: Anim[]) => anims.filter((anim) => anim.kind === 'flip');
     expect(flipsOf(diffViews(prev, played))).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
-    // The viewer's own play from the deck turns over too, as it lands.
+    // The viewer's own play from the deck settles where it was let go, turning over as it lands.
     expect(
       diffViews(prev, played, {
         element: { kind: 'pile', id: 'deck:p0' },
         card: 'fromDeck',
         lifted: [],
       }),
-    ).toEqual([{ kind: 'flip', id: 'fromDeck' }]);
+    ).toEqual([
+      { kind: 'settle', id: 'fromDeck', fromPile: 'deck:p0' },
+      { kind: 'flip', id: 'fromDeck' },
+    ]);
     expect(flipsOf(diffViews(view({ piles: [encounter(20)] }), revealed))).toEqual([
       { kind: 'flip', id: 'fromEncounter' },
     ]);
@@ -863,6 +866,21 @@ describe('diffViews', () => {
     ]);
   });
 
+  it("own drop does not settle in a view that did not move it, another player's before its answer", () => {
+    const prev = view({ cards: [card('a', { x: 0 }), card('c', { x: 500 })] });
+    // Another player moves c; the viewer's drop of a still waits for the server.
+    const next = view({ cards: [card('a', { x: 0 }), card('c', { x: 700 })] });
+
+    expect(diffViews(prev, next, droppedCard('a'))).toEqual([
+      {
+        kind: 'move',
+        id: 'c',
+        from: { zone: 'table', x: 500, y: 0 },
+        to: { zone: 'table', x: 700, y: 0 },
+      },
+    ]);
+  });
+
   it('own drop onto a pile flies there from where it was let go', () => {
     const prev = view({ cards: [card('a', { x: 40 })] });
     const next = view({
@@ -1018,7 +1036,7 @@ describe('diffViews', () => {
       ]);
       // Not tucked, it already lies where it went: it settles there.
       expect(diffViews(prev, next, { ...drag, tucks: false })).toEqual([
-        { kind: 'settle', id: 'c9' },
+        { kind: 'settle', id: 'c9', fromPile: 'disc:p0' },
       ]);
     });
 
@@ -1523,7 +1541,7 @@ describe('diffViews', () => {
       expect(diffViews(prev, next)).toEqual([{ kind: 'enter', id: 'c9', fromPile: 'disc:p0' }]);
     });
 
-    it('the top of a deck that shows it, dragged by the viewer onto the table, does not enter', () => {
+    it('the top of a deck that shows it, dragged by the viewer onto the table, settles there', () => {
       const shown = (cards: string[], count: number) => seatPile('deck:p0', { count, cards });
       const prev = view({ cards: [onPile('c1')], piles: [shown(['c1'], 10), discard([])] });
       const next = view({
@@ -1532,7 +1550,10 @@ describe('diffViews', () => {
       });
       const drag: OwnDrop = { element: { kind: 'pile', id: 'deck:p0' }, card: null, lifted: [] };
 
-      expect(diffViews(prev, next, drag)).toEqual([]);
+      // It does not enter: it settles where it was let go.
+      expect(diffViews(prev, next, drag)).toEqual([
+        { kind: 'settle', id: 'c1', fromPile: 'deck:p0' },
+      ]);
       expect(diffViews(prev, next)).toEqual([{ kind: 'enter', id: 'c1', fromPile: 'deck:p0' }]);
     });
 
@@ -1658,15 +1679,17 @@ describe('diffViews', () => {
       expect(diffViews(prev, next)).toEqual([{ kind: 'away', id: 'c2' }]);
     });
 
-    it("the viewer's own deal does not enter again", () => {
+    it("the viewer's own deal does not enter again: it settles, face down, where it was let go", () => {
       const prev = view({ piles: [deck(10), encounter(20)] });
       const next = view({
         cards: [card('dealt', { faceDown: true, back: 'encounter', owner: -1 })],
         piles: [deck(10), encounter(19)],
       });
-      const ownDeal: OwnDrop = { element: { kind: 'pile', id: 'enc' }, card: 'dealt', lifted: [] };
+      const ownDeal: OwnDrop = { element: { kind: 'pile', id: 'enc' }, card: null, lifted: [] };
 
-      expect(diffViews(prev, next, ownDeal)).toEqual([]);
+      expect(diffViews(prev, next, ownDeal)).toEqual([
+        { kind: 'settle', id: 'dealt', fromPile: 'enc' },
+      ]);
     });
 
     it('an encounter card dealt by another player enters from the encounter deck', () => {
@@ -1731,8 +1754,9 @@ describe('diffViews', () => {
         { kind: 'enter', id: 'w', fromPile: 'sdeck:x', dropped: true, tuck: { z: 2 } },
         { kind: 'flip', id: 'w' },
       ]);
-      // Not tucked, it already lies there: it only turns over.
+      // Not tucked, it already lies there: it settles, turning over.
       expect(diffViews(prev, next, { ...ownDrop, tucks: false })).toEqual([
+        { kind: 'settle', id: 'w', fromPile: 'sdeck:x' },
         { kind: 'flip', id: 'w' },
       ]);
     });
