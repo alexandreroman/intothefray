@@ -84,7 +84,7 @@ func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 // unknown scenario gives an empty name; an unknown hero or modular set is left
 // out.
 func (s *Server) playedGameOf(summary game.Summary) playedGame {
-	played := playedGame{Heroes: []playedHero{}, Modulars: []string{}}
+	played := playedGame{Ref: summary.Ref, Heroes: []playedHero{}, Modulars: []string{}}
 	if scenario, ok := s.deps.Catalog.Scenario(summary.Scenario); ok {
 		played.Scenario = scenario.Name
 	}
@@ -127,12 +127,14 @@ func faceOfType(card pack.Card, faceType string) (pack.Face, bool) {
 	return pack.Face{}, false
 }
 
-// comparePlayedGames orders games by scenario, then heroes, then modular sets.
+// comparePlayedGames orders games by scenario, then heroes, then modular sets,
+// and games played with the same by reference, so the order is always the same.
 func comparePlayedGames(a, b playedGame) int {
 	return cmp.Or(
 		strings.Compare(a.Scenario, b.Scenario),
 		slices.CompareFunc(a.Heroes, b.Heroes, comparePlayedHeroes),
 		slices.Compare(a.Modulars, b.Modulars),
+		strings.Compare(a.Ref, b.Ref),
 	)
 }
 

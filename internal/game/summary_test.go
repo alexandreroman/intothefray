@@ -1,12 +1,15 @@
 package game
 
 import (
+	"encoding/json"
 	"slices"
+	"strings"
 	"testing"
 )
 
 func TestSummary(t *testing.T) {
 	g := twoSlotLobby(t)
+	g.StatsRef = "0123456789abcdef"
 	g.Config = LobbyConfig{Scenario: "rhino", Modulars: []string{"bomb_scare", "masters_of_evil"}}
 	// Alex loads his second slot only; Sam loads his single slot.
 	g.Players[0].Decks[1] = &DeckChoice{Hero: "01001a", Name: "Alex's deck", URL: "https://example.com/1"}
@@ -14,6 +17,9 @@ func TestSummary(t *testing.T) {
 
 	got := g.Summary()
 
+	if got.Ref != "0123456789abcdef" {
+		t.Errorf("Ref = %q, want the game's StatsRef", got.Ref)
+	}
 	if got.Phase != PhaseLobby {
 		t.Errorf("Phase = %q, want %q", got.Phase, PhaseLobby)
 	}
@@ -45,5 +51,18 @@ func TestSummaryWithoutDecks(t *testing.T) {
 
 	if got := g.Summary(); len(got.Heroes) != 0 {
 		t.Errorf("Heroes = %v, want none", got.Heroes)
+	}
+}
+
+func TestViewHidesStatsRef(t *testing.T) {
+	g := mustNewGame(t, "g1", "a", "Alex", testNow)
+	g.StatsRef = "0123456789abcdef"
+
+	data, err := json.Marshal(g.ViewFor("a"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), g.StatsRef) {
+		t.Errorf("view = %s, want no statistics reference in it", data)
 	}
 }

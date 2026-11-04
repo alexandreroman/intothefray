@@ -7,9 +7,12 @@ type: project
 # Games in progress counter
 
 - Every game has a small summary key `game:<id>:info` next to its full
-  state `game:<id>`: phase, scenario code, modular set codes and the identity
-  codes of its loaded decks in seat order (`game.Summary`). The store
-  writes it with the game and gives it the game's TTL: `Create` sets both
+  state `game:<id>`: its stats ref, phase, scenario code, modular set codes
+  and the identity codes of its loaded decks in seat order
+  (`game.Summary`). The stats ref (`Game.StatsRef`) is 16 random hex
+  characters drawn once by the server when it creates the game, unrelated
+  to the game id and never sent to viewers. The store writes the summary
+  with the game and gives it the game's TTL: `Create` sets both
   keys in one Lua script (SET NX on the game, then the summary), `Update`
   sets it in the game's MULTI, `Touch` expires both keys in one MULTI. A
   game without a summary is not counted.
@@ -18,16 +21,18 @@ type: project
   never reads a game value (30 KB to over 1 MB each). Expired or
   undecodable values are skipped.
 - `GET /api/stats` replies
-  `{"games": N, "playing": [{"heroes": [{"hero", "alterEgo"}], "scenario",
-  "modulars": [...]}]}`:
+  `{"games": N, "playing": [{"ref", "heroes": [{"hero", "alterEgo"}],
+  "scenario", "modulars": [...]}]}`:
   - `games` is the number of games in the playing phase, so it always
     equals the length of `playing`. Lobby and ended games (ended games
     stay one hour) appear nowhere.
-  - `playing` holds one anonymous entry per game in the playing phase,
-    with English names from the embedded catalog: the identity card's hero
-    face and alter-ego face (`""` when it has none), the scenario name, the
+  - `playing` holds one anonymous entry per game in the playing phase:
+    first its `ref`, which tells games apart from one call to the next
+    and never leads to the game (`""` for a game without one); then
+    English names from the embedded catalog: the identity card's hero face
+    and alter-ego face (`""` when it has none), the scenario name, the
     modular set names. Unknown codes are left out. Entries are sorted by
-    scenario, heroes, then modulars; they carry no game id, player name,
+    scenario, heroes, modulars, then ref; they carry no game id, player name,
     deck name, deck URL or token.
   - `Cache-Control: public, max-age=60`. Each server instance caches the
     whole reply for 60 s under a mutex held during the scan, so an

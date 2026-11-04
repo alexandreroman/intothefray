@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,6 +34,9 @@ const (
 	// maxCreateAttempts bounds the retries when a generated game id is taken.
 	maxCreateAttempts = 5
 	tokenBytes        = 32
+	// statsRefBytes is the size of the random reference of a game in the
+	// public statistics.
+	statsRefBytes = 8
 	// maxCreateBodyBytes bounds the create-game request, which only holds a name.
 	maxCreateBodyBytes = 1 << 10
 	// createBodyTimeout bounds how long a client may take to send the
@@ -216,8 +220,13 @@ func (s *Server) readCreateRequest(w http.ResponseWriter, r *http.Request) (crea
 }
 
 // createGame stores a new game under a fresh id and returns that id. A taken
-// id is retried with another one.
+// id is retried with another one; the game keeps the statistics reference
+// drawn for it, which no stored game depends on.
 func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (string, error) {
+	statsRef, err := newStatsRef()
+	if err != nil {
+		return "", err
+	}
 	for range maxCreateAttempts {
 		id, err := s.newID()
 		if err != nil {
@@ -227,6 +236,7 @@ func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (st
 		if err != nil {
 			return "", err
 		}
+		g.StatsRef = statsRef
 		err = s.deps.Store.Create(ctx, g)
 		if errors.Is(err, store.ErrExists) {
 			continue
@@ -338,6 +348,18 @@ func newGameID() (string, error) {
 		id[i] = gameIDAlphabet[int(b)%len(gameIDAlphabet)]
 	}
 	return string(id), nil
+}
+
+// newStatsRef draws the reference of a game in the public statistics (see
+// game.Game.StatsRef): random, so that it reveals nothing of the game id and
+// every instance agrees on it without a shared secret. Its 16 hex characters
+// never pass for a 10-letter game id.
+func newStatsRef() (string, error) {
+	raw := make([]byte, statsRefBytes)
+	if _, err := rand.Read(raw); err != nil {
+		return "", fmt.Errorf("generate statistics reference: %w", err)
+	}
+	return hex.EncodeToString(raw), nil
 }
 
 func newToken() (string, error) {

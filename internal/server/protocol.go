@@ -25,7 +25,9 @@ type versionResponse struct {
 }
 
 // statsResponse is the reply to GET /api/stats. It is public and cached by
-// proxies: it names cards and sets only, never a game, a player or a deck.
+// proxies: it names cards and sets only, and tells games apart by a random
+// reference that never leads to them; it never names a game id, a player or
+// a deck.
 type statsResponse struct {
 	// Games counts the games being played, those in the playing phase: it is
 	// always the length of Playing.
@@ -37,6 +39,10 @@ type statsResponse struct {
 
 // playedGame is what one game in play is played with, by English names.
 type playedGame struct {
+	// Ref tells the game apart from one call to the next for its whole life:
+	// it is the random StatsRef of the game, which never leads to it. It is
+	// empty for a game created without one.
+	Ref      string       `json:"ref"`
 	Heroes   []playedHero `json:"heroes"` // seat order
 	Scenario string       `json:"scenario"`
 	Modulars []string     `json:"modulars"`

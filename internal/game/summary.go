@@ -3,9 +3,11 @@ package game
 import "slices"
 
 // Summary is what a game is played with, small enough to be read for every
-// game at once. It holds codes only and nothing that tells a game or its
-// players apart.
+// game at once. Besides codes, it holds only the game's StatsRef: nothing that
+// leads to the game or names its players.
 type Summary struct {
+	// Ref is the game's StatsRef, empty for a game created without one.
+	Ref      string   `json:"ref,omitempty"`
 	Phase    Phase    `json:"phase"`
 	Scenario string   `json:"scenario,omitempty"` // LobbyConfig.Scenario
 	Modulars []string `json:"modulars,omitempty"` // LobbyConfig.Modulars codes
@@ -26,6 +28,7 @@ func (g *Game) Summary() Summary {
 		}
 	}
 	return Summary{
+		Ref:      g.StatsRef,
 		Phase:    g.Phase,
 		Scenario: g.Config.Scenario,
 		Modulars: slices.Clone(g.Config.Modulars),

@@ -136,4 +136,8 @@ type Game struct {
 	Table      *Table       `json:"table,omitempty"` // the live table
 	Log        []LogEntry   `json:"log"`
 	History    *History     `json:"history,omitempty"` // set at start; never shown to viewers
+	// StatsRef tells the game apart in the public statistics for its whole
+	// life. It is drawn at random when the game is created, unrelated to ID,
+	// so it never leads to the game; it is never shown to viewers.
+	StatsRef string `json:"statsRef,omitempty"`
 }

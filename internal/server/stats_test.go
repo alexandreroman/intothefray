@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"regexp"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -165,7 +167,7 @@ func TestStatsStoreFailure(t *testing.T) {
 }
 
 func TestStatsListsGamesInPlay(t *testing.T) {
-	ts, _, _ := newStatsServer(t)
+	ts, mr, _ := newStatsServer(t)
 	createGame(t, ts, "Sam") // stays in the lobby
 	_, ender := startGame(t, ts, "Bo")
 	ender.lobby("end", nil)
@@ -181,6 +183,7 @@ func TestStatsListsGamesInPlay(t *testing.T) {
 	want := statsResponse{
 		Games: 1,
 		Playing: []playedGame{{
+			Ref:      storedStatsRef(t, mr, created.ID),
 			Heroes:   []playedHero{{Hero: "Black Panther", AlterEgo: "T'Challa"}},
 			Scenario: "Rhino",
 			Modulars: []string{"Bomb Scare"},
@@ -194,6 +197,71 @@ func TestStatsListsGamesInPlay(t *testing.T) {
 			t.Errorf("body = %s, want no %q in it", resp.body, secret)
 		}
 	}
+}
+
+// statsRefPattern is the format of the statistics reference of a game.
+var statsRefPattern = regexp.MustCompile(`^[0-9a-f]{16}$`)
+
+func TestStatsRefs(t *testing.T) {
+	ts, _, advance := newStatsServer(t)
+	alex, alexHost := startGame(t, ts, "Alex")
+	sam, _ := startGame(t, ts, "Sam")
+
+	first := refsIn(t, getStats(t, ts))
+
+	if len(first) != 2 || first[0] == first[1] {
+		t.Fatalf("refs = %q, want two distinct ones", first)
+	}
+	for _, ref := range first {
+		if !statsRefPattern.MatchString(ref) {
+			t.Errorf("ref %q, want 16 lowercase hex characters", ref)
+		}
+		for _, id := range []string{alex.ID, sam.ID} {
+			if strings.Contains(ref, id) {
+				t.Errorf("ref %q holds game id %q", ref, id)
+			}
+		}
+	}
+
+	// An action rewrites the game; the next scan reads it again.
+	alexHost.send(map[string]any{"type": "action", "id": 1, "action": map[string]any{"kind": "draw", "n": 1}})
+	alexHost.expect("view")
+	advance(statsCacheTTL)
+
+	if again := refsIn(t, getStats(t, ts)); !slices.Equal(again, first) {
+		t.Errorf("refs after an action and a minute = %q, want %q", again, first)
+	}
+}
+
+// refsIn returns the refs of the games listed in a successful stats reply,
+// sorted.
+func refsIn(t *testing.T, resp reply) []string {
+	t.Helper()
+
+	var refs []string
+	for _, played := range statsIn(t, resp).Playing {
+		refs = append(refs, played.Ref)
+	}
+	slices.Sort(refs)
+	return refs
+}
+
+// storedStatsRef returns the statistics reference stored with game id.
+func storedStatsRef(t *testing.T, mr *miniredis.Miniredis, id string) string {
+	t.Helper()
+
+	data, err := mr.Get("game:" + id + ":info")
+	if err != nil {
+		t.Fatalf("read summary of %s: %v", id, err)
+	}
+	var summary game.Summary
+	if err := json.Unmarshal([]byte(data), &summary); err != nil {
+		t.Fatalf("decode summary of %s: %v", id, err)
+	}
+	if !statsRefPattern.MatchString(summary.Ref) {
+		t.Fatalf("stored ref = %q, want 16 lowercase hex characters", summary.Ref)
+	}
+	return summary.Ref
 }
 
 func TestHeroOf(t *testing.T) {
@@ -223,7 +291,8 @@ func TestStatsOf(t *testing.T) {
 		{Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01040a", "01001b"}},
 		{Phase: game.PhaseEnded, Scenario: "rhino", Heroes: []string{"01001a"}},
 		{Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"masters_of_evil", "unknown"}},
-		{Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a", "99999"}},
+		{Ref: "bbbb", Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a", "99999"}},
+		{Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a"}},
 		{Phase: game.PhaseLobby},
 	}
 
@@ -232,12 +301,13 @@ func TestStatsOf(t *testing.T) {
 	spiderMan := playedHero{Hero: "Spider-Man", AlterEgo: "Peter Parker"}
 	blackPanther := playedHero{Hero: "Black Panther", AlterEgo: "T'Challa"}
 	want := statsResponse{
-		Games: 3, // the games being played only
-		// Sorted by scenario, then heroes; unknown codes are left out.
+		Games: 4, // the games being played only
+		// Sorted by scenario, then heroes, then ref; unknown codes are left out.
 		Playing: []playedGame{
 			{Heroes: []playedHero{}, Scenario: "Klaw", Modulars: []string{"Masters of Evil"}},
 			{Heroes: []playedHero{blackPanther, spiderMan}, Scenario: "Rhino", Modulars: []string{}},
-			{Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Modulars: []string{}},
+			{Ref: "aaaa", Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Modulars: []string{}},
+			{Ref: "bbbb", Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Modulars: []string{}},
 		},
 	}
 	if !reflect.DeepEqual(got, want) {
