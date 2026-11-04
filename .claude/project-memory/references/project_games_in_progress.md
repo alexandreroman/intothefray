@@ -27,11 +27,14 @@ type: project
   - `games` is the number of games in the playing phase, so it always
     equals the length of `playing`. Lobby and ended games (ended games
     stay one hour) appear nowhere.
+  - Every empty list and every empty string is left out (`omitempty`):
+    with no game being played the reply is exactly `{"games":0}`. Only
+    `games` is always there.
   - `playing` holds one anonymous entry per game in the playing phase:
     first its `ref`, which tells games apart from one call to the next
-    and never leads to the game (`""` for a game without one); then
+    and never leads to the game (absent for a game without one); then
     English names from the embedded catalog: `heroes`, the identity
-    card's hero face and alter-ego face (`""` when it has none), sorted by
+    card's hero face and alter-ego face (absent when it has none), sorted by
     hero then alter-ego; the scenario name; the difficulty as stored
     (`standard` or `expert`); `sets`, the names of the Standard set
     (Standard, Standard II, Standard III), the Expert set (Expert, Expert
