@@ -275,15 +275,36 @@ func (b *tableBuilder) newCard(code string, owner int, home string) (*Card, pack
 		return nil, pack.Card{}, err
 	}
 	c := &Card{
-		ID:    newCardID(b.table, b.rng, nil),
-		Code:  def.Code,
-		Faces: len(def.Faces),
-		Back:  def.Back,
-		Owner: owner,
-		Home:  home,
+		ID:     newCardID(b.table, b.rng, nil),
+		Code:   def.Code,
+		Faces:  len(def.Faces),
+		Shapes: faceShapes(def.Faces),
+		Back:   def.Back,
+		Owner:  owner,
+		Home:   home,
 	}
 	b.table.Cards[c.ID] = c
 	return c, def, nil
+}
+
+// faceShapes returns the shape of each of faces (see Card.Shapes).
+func faceShapes(faces []pack.Face) []FaceShape {
+	shapes := make([]FaceShape, len(faces))
+	for i, face := range faces {
+		shapes[i] = FaceShape{Size: face.Size, Scheme: isScheme(face.Type)}
+	}
+	return shapes
+}
+
+// isScheme tells whether a face of the given type is a scheme: a main scheme,
+// a side scheme or a player side scheme.
+func isScheme(faceType string) bool {
+	switch faceType {
+	case pack.FaceTypeMainScheme, pack.FaceTypeSideScheme, pack.FaceTypePlayerSideScheme:
+		return true
+	default:
+		return false
+	}
 }
 
 // newEncounterCard creates a card of the encounter deck's owner: nobody.

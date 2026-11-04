@@ -353,22 +353,70 @@ func (t *Table) detach(c *Card) {
 }
 
 // layOutStack lays out the stack of main, a main card, wherever its cards
-// were: each tucked card lies attachOffsetX to the right of and attachOffsetY
-// below the card it is tucked under, so that every card stays readable. The
-// stack takes fresh Zs from nextZ, main on top, each card beneath the one it
-// is tucked under. Fresh Zs keep every Z unique and positive, and bring the
-// stack to the top of the table, as a move does. It is the single place that
-// places and orders the cards of a stack.
+// were: it places them (see placeStack), then gives them fresh Zs from
+// nextZ, main on top, each card beneath the one it is tucked under. Fresh Zs
+// keep every Z unique and positive, and bring the stack to the top of the
+// table, as a move does. With placeStack, it is the single place that places
+// and orders the cards of a stack.
 func (t *Table) layOutStack(main *Card) {
+	t.placeStack(main)
 	tucked := t.chain(main)
-	for i, c := range tucked {
-		c.X = main.X + (i+1)*attachOffsetX
-		c.Y = main.Y + (i+1)*attachOffsetY
-	}
 	for _, c := range slices.Backward(tucked) {
 		c.Z = t.nextZ()
 	}
 	main.Z = t.nextZ()
+}
+
+// placeStack places the tucked cards of the stack of main, a main card, and
+// leaves every Z as it is. Each tucked card lies attachOffsetX to the right of
+// and attachOffsetY below the card it is tucked under, so that every card
+// stays readable, except the first one under a main card that shows a scheme:
+// it lies centred on the scheme, as players lay a card they put on it, but
+// never past the top or left edge of the table.
+func (t *Table) placeStack(main *Card) {
+	above := main
+	for _, c := range t.chain(main) {
+		if above == main && showsScheme(main) {
+			mainWidth, mainHeight := tableBox(main)
+			width, height := tableBox(c)
+			c.X = max(0, main.X+(mainWidth-width)/2)
+			c.Y = max(0, main.Y+(mainHeight-height)/2)
+		} else {
+			c.X = above.X + attachOffsetX
+			c.Y = above.Y + attachOffsetY
+		}
+		above = c
+	}
+}
+
+// tableBox returns the width and height of c as the client draws it on the
+// table (cardBox, web/src/table/layout.ts): a face-down card shows its back,
+// a portrait card; a landscape face revealed on a deck lies turned a quarter,
+// as piles are portrait. A card without shapes lies as a portrait card.
+func tableBox(c *Card) (int, int) {
+	shape, ok := shownShape(c)
+	if c.FaceDown || !ok {
+		return portraitWidth, portraitHeight
+	}
+	width, height := cardWidth(shape.Size), cardHeight(shape.Size)
+	if width > height && c.OnPile != "" {
+		return height, width
+	}
+	return width, height
+}
+
+// showsScheme tells whether c lies face up on a scheme face.
+func showsScheme(c *Card) bool {
+	shape, ok := shownShape(c)
+	return ok && !c.FaceDown && shape.Scheme
+}
+
+// shownShape returns the shape of the face c shows, if c has one.
+func shownShape(c *Card) (FaceShape, bool) {
+	if c.Face < 0 || c.Face >= len(c.Shapes) {
+		return FaceShape{}, false
+	}
+	return c.Shapes[c.Face], true
 }
 
 // checkLeave verifies that c can be taken out of its current place and that
@@ -899,6 +947,8 @@ func applyFlip(t *Table, a Action) error {
 	}
 	c.Face = a.Face
 	c.FaceDown = *a.FaceDown
+	// The side a card shows may change its box, or whether it is a scheme.
+	t.placeStack(t.mainCard(c))
 	return nil
 }
 
@@ -954,6 +1004,7 @@ func applyChooseStage(t *Table, a Action) error {
 	}
 	if chosen.ID == stage.Current {
 		chosen.Face = a.Face
+		t.placeStack(t.mainCard(chosen))
 		return nil
 	}
 	previous, err := t.tableCard(stage.Current)
@@ -984,6 +1035,9 @@ func applyChooseStage(t *Table, a Action) error {
 	previous.OnPile = ""
 	previous.Exhausted = false
 	stage.Current = chosen.ID
+	// The chosen card may not have the box of the previous one, or not be a
+	// scheme when it was, or the other way round.
+	t.placeStack(t.mainCard(chosen))
 	return nil
 }
 

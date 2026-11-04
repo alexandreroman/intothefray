@@ -230,7 +230,8 @@ func checkAt(t *testing.T, table *Table, id string, x, y int) {
 // checkStack fails when ids, its main card first, are not a whole stack laid
 // out in that order: each card tucked under the previous one, attachOffsetX
 // to the right of it, attachOffsetY below it and beneath it, and no card
-// tucked under the last one.
+// tucked under the last one. The main card must show no scheme (see
+// placeStack).
 func checkStack(t *testing.T, table *Table, ids ...string) {
 	t.Helper()
 	main := table.Cards[ids[0]]

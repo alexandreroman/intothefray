@@ -84,6 +84,17 @@ type Card struct {
 	// owner's identity. Setup marks the set-aside identity cards; an identity
 	// replaced by a version becomes one in turn.
 	IdentityVersion bool `json:"identityVersion,omitempty"`
+	// Shapes holds the shape of each face, filled at setup: a stack lies
+	// according to the shapes of its cards (see placeStack). The server keeps
+	// it for itself; the client reads the faces from the card pool.
+	Shapes []FaceShape `json:"shapes,omitempty"`
+}
+
+// FaceShape is what the table layout needs to know about one face of a card.
+type FaceShape struct {
+	Size pack.Size `json:"size,omitempty"`
+	// Scheme marks a main scheme, a side scheme or a player side scheme.
+	Scheme bool `json:"scheme,omitempty"`
 }
 
 // PileKind tells what a pile is used for.
@@ -313,6 +324,7 @@ func (c *Card) clone() *Card {
 	clone.Tokens = maps.Clone(c.Tokens)
 	clone.Status = maps.Clone(c.Status)
 	clone.Mods = maps.Clone(c.Mods)
+	clone.Shapes = slices.Clone(c.Shapes)
 	return &clone
 }
 
