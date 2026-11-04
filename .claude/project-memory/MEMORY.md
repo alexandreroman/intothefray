@@ -95,3 +95,4 @@
 - [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome
 - [Games in progress counter](references/project_games_in_progress.md) — GET /api/stats counts game: keys, 60 s cache; Home top capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
+- [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count

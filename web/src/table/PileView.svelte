@@ -3,6 +3,7 @@
   otherwise its back, with a count pill. An empty pile is a dashed slot.
 -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard, PileView } from '../lib/types';
   import CardBack from './CardBack.svelte';
@@ -33,6 +34,19 @@
   // with the cards still flying to it.
   const arriving = $derived((pile.cards ?? []).filter((id) => motion.flying.has(id)).length);
   const count = $derived(pile.count - interaction.takenFrom(pile.id).length - arriving);
+  // While a view plays on the pile (cards leaving or landing on it, a riffle), its count fades out of
+  // the way and keeps the number it showed as it began: the new one shows as it comes back.
+  const hushed = $derived(motion.isHushed(pile.id));
+  // The count last shown unhushed, from the one the pile is drawn with: a plain variable, as a derived
+  // may not write state.
+  let lastShown = untrack(() => count);
+  const shownCount = $derived.by(() => {
+    if (hushed) {
+      return lastShown;
+    }
+    lastShown = count;
+    return count;
+  });
   // An empty pile has no menu: it is inert, like an empty spot.
   const empty = $derived(count === 0);
   const targeted = $derived(
@@ -99,7 +113,7 @@
   {/if}
 
   {#if !empty}
-    <span class="count">{count}</span>
+    <span class="count" class:hushed aria-hidden={hushed ? 'true' : undefined}>{shownCount}</span>
   {/if}
 
   {#if previewer !== undefined}
@@ -174,5 +188,11 @@
     white-space: nowrap;
     /* It sticks out of the pile's edge, past the pile's shadow: its own, as the status tabs' (CardView). */
     box-shadow: 0 2px 4px #0009;
+    /* A quick fade out of the way of the cards an animation plays over the pile, and back once done. */
+    transition: opacity 0.12s ease-out;
+  }
+
+  .count.hushed {
+    opacity: 0;
   }
 </style>

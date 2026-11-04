@@ -95,7 +95,10 @@ function makeView(
   });
 }
 
-/** A Web Animation as the stub below starts it: it never ends unless cancelled, or finished by a test. */
+/**
+ * A Web Animation as the stub below starts it: it never ends unless cancelled, or finished by a test.
+ * Cancelled, its finished promise rejects, as the browser's does.
+ */
 interface FakeAnimation {
   element: Element;
   keyframes: Keyframe[];
@@ -111,8 +114,10 @@ let started: FakeAnimation[] = [];
 
 const animate = vi.fn(function (this: Element, keyframes: Keyframe[]) {
   let finish = () => {};
-  const finished = new Promise<void>((resolve) => {
+  let abort = () => {};
+  const finished = new Promise<void>((resolve, reject) => {
     finish = resolve;
+    abort = () => reject(new DOMException('The animation was cancelled', 'AbortError'));
   });
   const animation: FakeAnimation = {
     element: this,
@@ -120,6 +125,7 @@ const animate = vi.fn(function (this: Element, keyframes: Keyframe[]) {
     cancelled: false,
     cancel: vi.fn(() => {
       animation.cancelled = true;
+      abort();
     }),
     finish,
     finished,
@@ -2607,6 +2613,404 @@ describe('Table animations', () => {
         });
         await waitFor(() => expect(animationsOf(cardA)).toHaveLength(1));
         expect(tiltsOfA()).toEqual([]);
+      });
+    });
+  });
+
+  describe("a pile's count", () => {
+    const alexDeck = (count: number): PileView => ({
+      id: 'deck:p0',
+      kind: 'deck',
+      owner: 0,
+      x: 480,
+      y: 0,
+      count,
+    });
+    const countOf = (container: HTMLElement, id: string) =>
+      container.querySelector<HTMLElement>(`.surface .pile[data-id="${CSS.escape(id)}"] .count`);
+    /** Lands every copy flying now. */
+    const landFlights = () => {
+      for (const animation of started.filter((a) => a.element.matches('.fly'))) {
+        animation.finish();
+      }
+    };
+
+    it("hides while another player's draw leaves the deck, still showing the count it had", async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+      });
+      await settle();
+      expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed');
+
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(29)], handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      const count = countOf(container, 'deck:p0');
+      expect(count?.classList).toContain('hushed');
+      expect(count?.textContent).toBe('30');
+      // A pile the draw does not touch keeps its count in sight.
+      expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed');
+
+      // Back with the new count once the copy has left.
+      landFlights();
+      await waitFor(() => expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'deck:p0')?.textContent).toBe('29');
+    });
+
+    it("hides while the viewer's own draw flies into the hand", async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { hands: { p1: [] } }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([card('d', { owner: 1, zone: 'hand' })], {
+          piles: [{ ...PILES[0]!, count: 29 }, PILES[1]!],
+          hands: { p1: ['d'] },
+          log: [START, line('drew 1 card', { who: 'Sam', color: 1 })],
+        }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(countOf(container, 'deck:p1')?.classList).toContain('hushed');
+      expect(countOf(container, 'deck:p1')?.textContent).toBe('30');
+
+      landFlights();
+      await waitFor(() => expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'deck:p1')?.textContent).toBe('29');
+    });
+
+    it('stays hidden through two quick draws, until the later one has left', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(29)], handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(1));
+      const [first] = started.filter((a) => a.element.matches('.fly'));
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(28)], handCounts: [7, 5] }),
+      });
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(2));
+
+      first?.finish();
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(1));
+      await settle();
+      expect(countOf(container, 'deck:p0')?.classList).toContain('hushed');
+      expect(countOf(container, 'deck:p0')?.textContent).toBe('30');
+
+      landFlights();
+      await waitFor(() => expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'deck:p0')?.textContent).toBe('28');
+    });
+
+    it('hides on both piles of a card flying from one to the other', async () => {
+      const session = fakeSession();
+      const samDiscard = (cards: string[]): PileView => ({
+        id: 'disc:p1',
+        kind: 'discard',
+        owner: 1,
+        x: 840,
+        y: 0,
+        count: cards.length,
+        cards,
+      });
+      const deck = (count: number): PileView => ({ ...PILES[0]!, count });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('c6', { owner: 1, zone: 'pile' })], {
+          piles: [deck(30), PILES[1]!, samDiscard(['c6'])],
+        }),
+      });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView(
+          [card('c6', { owner: 1, zone: 'pile' }), card('c7', { owner: 1, zone: 'pile' })],
+          {
+            piles: [deck(29), PILES[1]!, samDiscard(['c6', 'c7'])],
+          },
+        ),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(countOf(container, 'deck:p1')?.classList).toContain('hushed');
+      expect(countOf(container, 'deck:p1')?.textContent).toBe('30');
+      // The discard is drawn as it was, its count with it.
+      expect(countOf(container, 'disc:p1')?.classList).toContain('hushed');
+      expect(countOf(container, 'disc:p1')?.textContent).toBe('1');
+
+      landFlights();
+      await waitFor(() => expect(countOf(container, 'disc:p1')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'disc:p1')?.textContent).toBe('2');
+      expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed');
+      expect(countOf(container, 'deck:p1')?.textContent).toBe('29');
+    });
+
+    it('hides while the pile riffles', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, { session, view: makeView([]) });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { log: [START, line('shuffled their deck', { who: 'Sam', color: 1 })] }),
+      });
+      await waitFor(() =>
+        expect(animationsOf('.surface .pile[data-id="deck:p1"]')).toHaveLength(2),
+      );
+      expect(countOf(container, 'deck:p1')?.classList).toContain('hushed');
+
+      for (const animation of started) {
+        animation.finish();
+      }
+      await waitFor(() => expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed'));
+    });
+
+    it('shows again when a newer view stops the flight', async () => {
+      const session = fakeSession();
+      const deck = { ...PILES[0]!, count: 29 };
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { hands: { p1: [] } }),
+      });
+      await settle();
+      await rerender({
+        session,
+        view: makeView([card('d', { owner: 1, zone: 'hand' })], {
+          piles: [deck, PILES[1]!],
+          hands: { p1: ['d'] },
+          log: [START, line('drew 1 card', { who: 'Sam', color: 1 })],
+        }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(countOf(container, 'deck:p1')?.classList).toContain('hushed');
+
+      // Played at once, before its copy lands.
+      await rerender({
+        session,
+        view: makeView([card('d', { owner: 1, x: 300 })], {
+          piles: [deck, PILES[1]!],
+          hands: { p1: [] },
+        }),
+      });
+      await waitFor(() => expect(container.querySelector('.fly')).toBeNull());
+      await waitFor(() => expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'deck:p1')?.textContent).toBe('29');
+    });
+
+    it('shows again after a stop', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+      });
+      await settle();
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(29)], handCounts: [6, 5] }),
+      });
+      await waitFor(() => expect(countOf(container, 'deck:p0')?.classList).toContain('hushed'));
+
+      motion.stop();
+      await waitFor(() => expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'deck:p0')?.textContent).toBe('29');
+    });
+
+    it('shows the latest count when a newer view comes before the first one is drawn', async () => {
+      const session = fakeSession();
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+      });
+      await settle();
+
+      // Two draws in one go: the first view gives way to the second before it is drawn.
+      void rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(29)], handCounts: [6, 5] }),
+      });
+      await rerender({
+        session,
+        view: makeView([], { piles: [...PILES, alexDeck(28)], handCounts: [7, 5] }),
+      });
+      await waitFor(() => expect(container.querySelectorAll('.fly')).toHaveLength(1));
+      expect(countOf(container, 'deck:p0')?.classList).toContain('hushed');
+
+      landFlights();
+      await waitFor(() => expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'deck:p0')?.textContent).toBe('28');
+    });
+
+    describe('of a pile a card is played from onto the table', () => {
+      const host = card('host', { owner: 1, x: 400, y: 100, z: 3 });
+      const discard = (cards: string[]): PileView => ({ ...PILES[1]!, count: cards.length, cards });
+      const cards = [host, card('c8', { zone: 'pile' }), card('c9', { zone: 'pile' })];
+      const placed = '.surface .card[data-id="c9"]';
+
+      it('hides while the card slides out of it', async () => {
+        const session = fakeSession();
+        const { rerender, container } = render(Table, {
+          session,
+          view: makeView(cards, { piles: [PILES[0]!, discard(['c8', 'c9'])] }),
+        });
+        await settle();
+
+        await rerender({
+          session,
+          view: makeView([host, card('c8', { zone: 'pile' }), card('c9', { x: 300, y: 100 })], {
+            piles: [PILES[0]!, discard(['c8'])],
+            log: [START, line('played Spider-Man')],
+          }),
+        });
+        await waitFor(() => expect(animationsOf(placed)).toHaveLength(1));
+        expect(countOf(container, 'disc:p0')?.classList).toContain('hushed');
+        expect(countOf(container, 'disc:p0')?.getAttribute('aria-hidden')).toBe('true');
+        expect(countOf(container, 'disc:p0')?.textContent).toBe('2');
+
+        for (const animation of started) {
+          animation.finish();
+        }
+        await waitFor(() =>
+          expect(countOf(container, 'disc:p0')?.classList).not.toContain('hushed'),
+        );
+        expect(countOf(container, 'disc:p0')?.hasAttribute('aria-hidden')).toBe(false);
+        expect(countOf(container, 'disc:p0')?.textContent).toBe('1');
+      });
+
+      it("stays in sight for the viewer's own drop tucked into a stack, which slides from its ghost", async () => {
+        const session = fakeSession();
+        const { rerender, container } = render(Table, {
+          session,
+          view: makeView(cards, { piles: [PILES[0]!, discard(['c8', 'c9'])] }),
+        });
+        await settle();
+        interaction.land({
+          action: 1,
+          element: { kind: 'pile', id: 'disc:p0' },
+          card: 'c9',
+          lifted: [],
+          tucks: true,
+          handOrder: null,
+        });
+
+        await rerender({
+          session,
+          view: makeView(
+            [
+              { ...host, z: 9 },
+              card('c8', { zone: 'pile' }),
+              card('c9', { x: 410, y: 120, z: 8, parent: 'host' }),
+            ],
+            { piles: [PILES[0]!, discard(['c8'])] },
+          ),
+        });
+        // As DragLayer does once the view shows the drop.
+        interaction.endLanding();
+        await waitFor(() => expect(animationsOf(placed)).not.toHaveLength(0));
+        expect(countOf(container, 'disc:p0')?.classList).not.toContain('hushed');
+        expect(countOf(container, 'disc:p0')?.textContent).toBe('1');
+      });
+    });
+
+    it("hides only on the pile the viewer's own drop of a pile's top flies to", async () => {
+      const session = fakeSession();
+      const samDeck = (count: number): PileView => ({ ...PILES[0]!, count });
+      const samDiscard = (cards: string[]): PileView => ({
+        id: 'disc:p1',
+        kind: 'discard',
+        owner: 1,
+        x: 840,
+        y: 0,
+        count: cards.length,
+        cards,
+      });
+      const { rerender, container } = render(Table, {
+        session,
+        view: makeView([card('c6', { owner: 1, zone: 'pile' })], {
+          piles: [samDeck(30), PILES[1]!, samDiscard(['c6'])],
+        }),
+      });
+      await settle();
+      interaction.land({
+        action: 1,
+        element: { kind: 'pile', id: 'deck:p1' },
+        card: null,
+        lifted: [],
+        handOrder: null,
+      });
+
+      await rerender({
+        session,
+        view: makeView(
+          [card('c6', { owner: 1, zone: 'pile' }), card('c7', { owner: 1, zone: 'pile' })],
+          { piles: [samDeck(29), PILES[1]!, samDiscard(['c6', 'c7'])] },
+        ),
+      });
+      // As DragLayer does once the view shows the drop.
+      interaction.endLanding();
+      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+      expect(countOf(container, 'disc:p1')?.classList).toContain('hushed');
+      expect(countOf(container, 'disc:p1')?.textContent).toBe('1');
+      // The deck counted the card out as it was dragged off it: it shows its new count at once.
+      expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed');
+      expect(countOf(container, 'deck:p1')?.textContent).toBe('29');
+
+      landFlights();
+      await waitFor(() => expect(countOf(container, 'disc:p1')?.classList).not.toContain('hushed'));
+      expect(countOf(container, 'disc:p1')?.textContent).toBe('2');
+    });
+
+    it('shows at once without Web Animations, where nothing plays', async () => {
+      Element.prototype.animate = undefined as unknown as typeof Element.prototype.animate;
+      const session = fakeSession();
+      const { rerender, container } = render(Table, { session, view: makeView([]) });
+      await settle();
+
+      await rerender({
+        session,
+        view: makeView([], { log: [START, line('shuffled their deck', { who: 'Sam', color: 1 })] }),
+      });
+      // Not even for a moment, as the view is drawn.
+      expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed');
+      await settle();
+      expect(countOf(container, 'deck:p1')?.classList).not.toContain('hushed');
+    });
+
+    it('stays in sight with reduced motion', async () => {
+      await withReducedMotion(async () => {
+        const session = fakeSession();
+        const { rerender, container } = render(Table, {
+          session,
+          view: makeView([], { piles: [...PILES, alexDeck(30)] }),
+        });
+        await settle();
+
+        await rerender({
+          session,
+          view: makeView([], {
+            piles: [...PILES, alexDeck(29)],
+            handCounts: [6, 5],
+            log: [START, line('shuffled their deck')],
+          }),
+        });
+        expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed');
+        await settle();
+        expect(countOf(container, 'deck:p0')?.classList).not.toContain('hushed');
+        expect(countOf(container, 'deck:p0')?.textContent).toBe('29');
       });
     });
   });

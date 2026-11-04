@@ -12,7 +12,7 @@
 
 import { tick } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
-import { SvelteSet } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import {
   MARKERS,
   markerPoint,
@@ -451,6 +451,34 @@ function pileOf(anim: Anim): string | null {
   }
 }
 
+/**
+ * The table piles whose count hides while the animation plays (TableMotion.isHushed): those it
+ * leaves or lands on, and a pile riffled or turning a new top card face up. The viewer's own drop
+ * of a pile's card leaves from its ghost, clear of the pile, whose count went down with the drag
+ * (interaction.takenFrom): only the pile it lands on hides its count.
+ */
+function hushedPiles(anim: Anim): string[] {
+  switch (anim.kind) {
+    case 'fly':
+      return anim.fromPile === undefined || anim.dropped
+        ? [anim.toPile]
+        : [anim.toPile, anim.fromPile];
+    case 'under':
+      return [anim.toPile];
+    case 'enter':
+      return anim.dropped ? [] : [anim.fromPile];
+    case 'draw':
+      return [anim.fromPile];
+    case 'drawAway':
+    case 'arrive':
+    case 'shuffle':
+    case 'reveal':
+      return [anim.pile];
+    default:
+      return [];
+  }
+}
+
 /** The back a copy shows for a card the viewer did not see: the one its pile shows. */
 function backOf(pile: PileView | undefined): Pick<UnseenHandFlight, 'back' | 'caption'> {
   return { back: pile ? pileBack(pile) : 'player', caption: pile ? pileCaption(pile) : undefined };
@@ -752,6 +780,15 @@ class TableMotion {
    */
   frame = $state(0);
 
+  /**
+   * Whether a pile's count hides (PileView): something leaves or lands on it, or it riffles or turns
+   * a new top card face up, in a view still playing. It hides as the view is drawn and shows again
+   * once the last of it has ended, landed or stopped.
+   */
+  isHushed(pile: string): boolean {
+    return this.#hushes.has(pile);
+  }
+
   /** Whether cards move on the screen: animated to a new place, or flying to and from piles. */
   get moving(): boolean {
     return this.#cardsMoving || this.flights.length > 0;
@@ -771,6 +808,11 @@ class TableMotion {
   #nextKey = 0;
   // Counts the views animated: a view that came while the previous one was drawn takes over.
   #generation = 0;
+  // The piles whose count hides (isHushed), with how many views still play on each: a pile shows its
+  // count again only once the last of them has ended.
+  readonly #hushes = new SvelteMap<string, number>();
+  // What waits for each flight to end, by its key: called once it has landed or was stopped (#release).
+  #flightEnds = new Map<number, () => void>();
 
   /**
    * To call as a new view is about to be drawn: measures the cards that will
@@ -880,161 +922,224 @@ class TableMotion {
     for (const id of drawn) {
       this.drawing.add(id);
     }
-    // The side a card showed before it was turned over: the new view is about to replace it.
-    // A card taken into the hand turns there, with no old side: it is drawn on the table only.
-    const intoHand = new Set(
-      (tables.after?.cards ?? []).flatMap((card) => (card.zone === 'hand' ? [card.id] : [])),
-    );
+    // The piles the view plays on hide their count from the start, still showing the one they had:
+    // their new count shows once the cards have landed. Without Web Animations (#run), nothing plays
+    // on them: they keep it in sight, rather than hide it as the view is drawn.
+    const animates = typeof root.animate === 'function';
+    const hushed = new Set(animates ? shown.flatMap(hushedPiles) : []);
+    for (const pile of hushed) {
+      this.#hush(pile);
+    }
+    // The piles whose count shows again once what plays on them has ended (playing). Any other shows
+    // it again as the view is drawn, even should drawing it throw: motion lasts as long as the page.
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const oldSides = new Map<string, HTMLElement>();
-    for (const anim of shown) {
-      if (anim.kind !== 'flip' || intoHand.has(anim.id)) {
-        continue;
+    const handedOver = new Set<string>();
+    try {
+      // The side a card showed before it was turned over: the new view is about to replace it.
+      // A card taken into the hand turns there, with no old side: it is drawn on the table only.
+      const intoHand = new Set(
+        (tables.after?.cards ?? []).flatMap((card) => (card.zone === 'hand' ? [card.id] : [])),
+      );
+      // eslint-disable-next-line svelte/prefer-svelte-reactivity
+      const oldSides = new Map<string, HTMLElement>();
+      for (const anim of shown) {
+        if (anim.kind !== 'flip' || intoHand.has(anim.id)) {
+          continue;
+        }
+        const element = root.querySelector(tableCard(anim.id));
+        if (element instanceof HTMLElement) {
+          oldSides.set(anim.id, element.cloneNode(true) as HTMLElement);
+        }
       }
-      const element = root.querySelector(tableCard(anim.id));
-      if (element instanceof HTMLElement) {
-        oldSides.set(anim.id, element.cloneNode(true) as HTMLElement);
-      }
-    }
 
-    await tick();
-    // A newer view came meanwhile, and animates from what is drawn now.
-    if (generation !== this.#generation) {
-      for (const id of flying) {
-        this.flying.delete(id);
+      await tick();
+      // A newer view came meanwhile, and animates from what is drawn now.
+      if (generation !== this.#generation) {
+        for (const id of flying) {
+          this.flying.delete(id);
+        }
+        for (const id of drawn) {
+          this.drawing.delete(id);
+        }
+        return;
       }
-      for (const id of drawn) {
-        this.drawing.delete(id);
-      }
-      return;
-    }
 
-    const cardsBefore = new Map((tables.before?.cards ?? []).map((card) => [card.id, card]));
-    const cardsAfter = new Map((tables.after?.cards ?? []).map((card) => [card.id, card]));
-    const pileViews = new Map((tables.before?.piles ?? []).map((pile) => [pile.id, pile]));
-    const flights: Flight[] = [];
-    const shuffled: string[] = [];
-    for (const anim of shown) {
-      switch (anim.kind) {
-        // A card come onto the table slides out of its pile as a moved card does.
-        case 'move':
-        case 'enter':
-          this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
-          break;
-        case 'marker':
-          this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom);
-          break;
-        case 'tilt':
-          this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0);
-          break;
-        // A card tilting meanwhile (exhausted or readied by another player) tilts on the same rotate
-        // property: it comes upright from its sway at once.
-        case 'settle':
-          this.#settle(root, anim.id, tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0));
-          break;
-        case 'turnIn':
-          this.#turnIn(root, anim.id, !onScale.has(anim.id));
-          break;
-        case 'flip':
-          this.#flip(root, anim.id, oldSides.get(anim.id), !onScale.has(anim.id));
-          break;
-        case 'glow':
-          this.#glow(root, anim.id, anim.color);
-          break;
-        // Riffled below, once the copies flying into the pile are known.
-        case 'shuffle':
-          shuffled.push(anim.pile);
-          break;
-        case 'reveal':
-          this.#reveal(root, anim.pile);
-          break;
-        case 'under': {
-          const flight = this.#flight(
-            root,
-            anim.toPile,
-            before.get(anim.id),
-            cardsBefore.get(anim.id),
-            {
-              under: true,
-            },
-          );
-          if (flight) {
-            flights.push(flight);
-          }
-          break;
+      const cardsBefore = new Map((tables.before?.cards ?? []).map((card) => [card.id, card]));
+      const cardsAfter = new Map((tables.after?.cards ?? []).map((card) => [card.id, card]));
+      const pileViews = new Map((tables.before?.piles ?? []).map((pile) => [pile.id, pile]));
+      const flights: Flight[] = [];
+      const shuffled: string[] = [];
+      // What plays on each pile: its count shows again once all of it has ended.
+      // eslint-disable-next-line svelte/prefer-svelte-reactivity
+      const playing = new Map<string, Promise<unknown>[]>();
+      const playsOn = (pile: string, ended: Promise<unknown> | undefined) => {
+        if (!ended) {
+          return;
         }
-        case 'fly': {
-          // Turning face up, it shows the face it lands on: it may lie face down before, or be new
-          // in the view, out of a deck. Otherwise it shows as it left.
-          const card =
-            anim.turns === 'up'
-              ? (cardsAfter.get(anim.id) ?? cardsBefore.get(anim.id))
-              : (cardsBefore.get(anim.id) ?? cardsAfter.get(anim.id));
-          const from = before.get(anim.id);
-          const flight = this.#flight(root, anim.toPile, from, card, {
-            asOnPile: facesAsOnPile(anim, card, from),
-            turns: anim.turns,
-          });
-          if (flight) {
-            flights.push(flight);
-          } else {
-            this.flying.delete(anim.id);
-          }
-          break;
+        let endings = playing.get(pile);
+        if (!endings) {
+          endings = [];
+          playing.set(pile, endings);
         }
-        case 'away': {
-          const from = before.get(anim.id);
-          const card = cardsBefore.get(anim.id);
-          if (from && card) {
-            flights.push(this.#awayFlight(undefined, from, card, pileViews));
-          }
-          break;
+        endings.push(ended);
+      };
+      // A copy plays on the piles its animation hushes until it has landed or was stopped. Its key
+      // stays the same once staggered.
+      const launch = (anim: Anim, flight: Flight) => {
+        flights.push(flight);
+        const piles = hushedPiles(anim);
+        if (piles.length === 0) {
+          return;
         }
-        case 'arrive': {
-          const from = pilesBefore.get(anim.pile);
-          const card = anim.card === undefined ? undefined : cardsAfter.get(anim.card);
-          if (from) {
-            flights.push({
-              kind: 'arrive',
-              key: ++this.#nextKey,
-              card,
-              ...backOf(pileViews.get(anim.pile)),
-              pile: anim.pile,
-              from,
-              delay: 0,
+        const ended = this.#ended(flight);
+        for (const pile of piles) {
+          playsOn(pile, ended);
+        }
+      };
+      for (const anim of shown) {
+        switch (anim.kind) {
+          case 'move':
+            this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
+            break;
+          // A card come onto the table slides out of its pile as a moved card does.
+          case 'enter': {
+            const slide = this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
+            playsOn(anim.fromPile, slide?.finished);
+            break;
+          }
+          case 'marker':
+            this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom);
+            break;
+          case 'tilt':
+            this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0);
+            break;
+          // A card tilting meanwhile (exhausted or readied by another player) tilts on the same rotate
+          // property: it comes upright from its sway at once.
+          case 'settle':
+            this.#settle(root, anim.id, tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0));
+            break;
+          case 'turnIn':
+            this.#turnIn(root, anim.id, !onScale.has(anim.id));
+            break;
+          case 'flip':
+            this.#flip(root, anim.id, oldSides.get(anim.id), !onScale.has(anim.id));
+            break;
+          case 'glow':
+            this.#glow(root, anim.id, anim.color);
+            break;
+          // Riffled below, once the copies flying into the pile are known.
+          case 'shuffle':
+            shuffled.push(anim.pile);
+            break;
+          case 'reveal':
+            playsOn(anim.pile, this.#reveal(root, anim.pile)?.finished);
+            break;
+          case 'under': {
+            const flight = this.#flight(
+              root,
+              anim.toPile,
+              before.get(anim.id),
+              cardsBefore.get(anim.id),
+              {
+                under: true,
+              },
+            );
+            if (flight) {
+              launch(anim, flight);
+            }
+            break;
+          }
+          case 'fly': {
+            // Turning face up, it shows the face it lands on: it may lie face down before, or be new
+            // in the view, out of a deck. Otherwise it shows as it left.
+            const card =
+              anim.turns === 'up'
+                ? (cardsAfter.get(anim.id) ?? cardsBefore.get(anim.id))
+                : (cardsBefore.get(anim.id) ?? cardsAfter.get(anim.id));
+            const from = before.get(anim.id);
+            const flight = this.#flight(root, anim.toPile, from, card, {
+              asOnPile: facesAsOnPile(anim, card, from),
+              turns: anim.turns,
             });
-          } else if (anim.card !== undefined) {
-            this.flying.delete(anim.card);
+            if (flight) {
+              launch(anim, flight);
+            } else {
+              this.flying.delete(anim.id);
+            }
+            break;
           }
-          break;
+          case 'away': {
+            const from = before.get(anim.id);
+            const card = cardsBefore.get(anim.id);
+            if (from && card) {
+              launch(anim, this.#awayFlight(undefined, from, card, pileViews));
+            }
+            break;
+          }
+          case 'arrive': {
+            const from = pilesBefore.get(anim.pile);
+            const card = anim.card === undefined ? undefined : cardsAfter.get(anim.card);
+            if (from) {
+              launch(anim, {
+                kind: 'arrive',
+                key: ++this.#nextKey,
+                card,
+                ...backOf(pileViews.get(anim.pile)),
+                pile: anim.pile,
+                from,
+                delay: 0,
+              });
+            } else if (anim.card !== undefined) {
+              this.flying.delete(anim.card);
+            }
+            break;
+          }
+          case 'draw': {
+            const from = pilesBefore.get(anim.fromPile);
+            const card = cardsAfter.get(anim.id);
+            const flight =
+              from && card ? this.#drawFlight(root, anim, from, card, pileViews) : null;
+            if (flight) {
+              launch(anim, flight);
+            }
+            if (flight?.kind !== 'draw') {
+              this.drawing.delete(anim.id);
+            }
+            break;
+          }
+          case 'drawAway': {
+            const from = pilesBefore.get(anim.pile);
+            if (from) {
+              const card = anim.card === undefined ? undefined : cardsBefore.get(anim.card);
+              launch(anim, this.#awayFlight(anim.pile, from, card, pileViews));
+            }
+            break;
+          }
         }
-        case 'draw': {
-          const from = pilesBefore.get(anim.fromPile);
-          const card = cardsAfter.get(anim.id);
-          const flight = from && card ? this.#drawFlight(root, anim, from, card, pileViews) : null;
-          if (flight) {
-            flights.push(flight);
-          }
-          if (flight?.kind !== 'draw') {
-            this.drawing.delete(anim.id);
-          }
-          break;
+      }
+      const launched = staggered(flights);
+      for (const pile of shuffled) {
+        for (const animation of this.#riffle(root, pile, lastLanding(launched, pile))) {
+          playsOn(pile, animation.finished);
         }
-        case 'drawAway': {
-          const from = pilesBefore.get(anim.pile);
-          if (from) {
-            const card = anim.card === undefined ? undefined : cardsBefore.get(anim.card);
-            flights.push(this.#awayFlight(anim.pile, from, card, pileViews));
-          }
-          break;
+      }
+      this.flights = [...this.flights, ...launched];
+      for (const pile of hushed) {
+        const endings = playing.get(pile);
+        if (endings) {
+          void Promise.allSettled(endings).then(() => this.#unhush(pile));
+          handedOver.add(pile);
+        }
+      }
+    } finally {
+      // A pile nothing plays on after all (a newer view took over, or its cards or itself were not found)
+      // shows its count at once.
+      for (const pile of hushed) {
+        if (!handedOver.has(pile)) {
+          this.#unhush(pile);
         }
       }
     }
-    const launched = staggered(flights);
-    for (const pile of shuffled) {
-      this.#riffle(root, pile, lastLanding(launched, pile));
-    }
-    this.flights = [...this.flights, ...launched];
   }
 
   /**
@@ -1275,9 +1380,14 @@ class TableMotion {
     }
   }
 
-  /** The ended flights' cards show where they went, unless another copy of them still flies there. */
+  /**
+   * The ended flights' cards show where they went, unless another copy of them still flies there;
+   * what waited for them to end (#ended) goes on.
+   */
   #release(ended: Flight[]): void {
     for (const flight of ended) {
+      this.#flightEnds.get(flight.key)?.();
+      this.#flightEnds.delete(flight.key);
       const waiting = this.#waitingFor(flight);
       const id = flight.card?.id;
       if (!waiting || id === undefined) {
@@ -1289,24 +1399,46 @@ class TableMotion {
     }
   }
 
-  /** Slides a card to its new place; tucked into a stack (tuck), it slides in under the stack. */
+  /** Resolves once the flight has landed or was stopped. */
+  #ended(flight: Flight): Promise<void> {
+    return new Promise((resolve) => this.#flightEnds.set(flight.key, resolve));
+  }
+
+  /** Hides a pile's count for one more view (isHushed). */
+  #hush(pile: string): void {
+    this.#hushes.set(pile, (this.#hushes.get(pile) ?? 0) + 1);
+  }
+
+  /** One view less plays on the pile: with none left, its count shows again. */
+  #unhush(pile: string): void {
+    const views = (this.#hushes.get(pile) ?? 0) - 1;
+    if (views > 0) {
+      this.#hushes.set(pile, views);
+    } else {
+      this.#hushes.delete(pile);
+    }
+  }
+
+  /**
+   * Slides a card to its new place; tucked into a stack (tuck), it slides in under the stack. Returns
+   * the animation that takes it there, if one plays.
+   */
   #move(
     root: HTMLElement,
     id: string,
     from: Measured | undefined,
     zoom: number,
     tuck: Tuck | undefined,
-  ): void {
+  ): Animation | null {
     const element = root.querySelector<HTMLElement>(`${tableCard(id)}, ${handCard(id)}`);
     if (!element || !from) {
-      return;
+      return null;
     }
     if (tuck) {
-      this.#tuck(element, from, zoom, cardSubject(id), tuck);
-    } else {
-      // Moving cards are followed frame by frame, for the arrows drawn between them.
-      this.#slide(element, from, zoom, cardSubject(id), true);
+      return this.#tuck(element, from, zoom, cardSubject(id), tuck);
     }
+    // Moving cards are followed frame by frame, for the arrows drawn between them.
+    return this.#slide(element, from, zoom, cardSubject(id), true);
   }
 
   /**
@@ -1316,7 +1448,13 @@ class TableMotion {
    * comes back as the first step ends. Even a card already on its slot, the end of its own chain,
    * shifts out and back in.
    */
-  #tuck(element: HTMLElement, from: Measured, zoom: number, subject: Subject, tuck: Tuck): void {
+  #tuck(
+    element: HTMLElement,
+    from: Measured,
+    zoom: number,
+    subject: Subject,
+    tuck: Tuck,
+  ): Animation | null {
     const to = measure(element, zoom);
     // Translations are in the element's own units: table units on a zoomed surface.
     const scale = scaleOf(element, zoom);
@@ -1327,7 +1465,7 @@ class TableMotion {
     const stagingY = (to.h / scale) * TUCK_STAGING;
     const duration = TUCK_OUT_MS + TUCK_IN_MS;
     // Each keyframe's easing plays from it to the next one: one step each.
-    this.#run(
+    const slide = this.#run(
       element,
       [
         { translate: `${dx}px ${dy}px`, scale: `${size}`, easing: MOVE_EASING },
@@ -1349,6 +1487,7 @@ class TableMotion {
       { duration: TUCK_OUT_MS },
       subject,
     );
+    return slide;
   }
 
   /** Slides a marker from where it lay; no arrow follows it. */
@@ -1366,7 +1505,7 @@ class TableMotion {
     zoom: number,
     subject: Subject,
     moves: boolean,
-  ): void {
+  ): Animation | null {
     const to = measure(element, zoom);
     // Translations are in the element's own units: table units on a zoomed surface.
     const scale = scaleOf(element, zoom);
@@ -1374,10 +1513,10 @@ class TableMotion {
     const dy = (from.cy - to.cy) / scale;
     const size = to.w ? from.w / to.w : 1;
     if (Math.abs(dx) + Math.abs(dy) <= 1 && Math.abs(size - 1) <= 0.02) {
-      return;
+      return null;
     }
     // The translate and scale properties leave the element's own transform (a card's tilt) alone.
-    this.#run(
+    return this.#run(
       element,
       [
         { translate: `${dx}px ${dy}px`, scale: `${size}` },
@@ -1581,12 +1720,12 @@ class TableMotion {
    * The new top card of a side deck turns face up on its pile, as a hidden
    * card come onto the table does: the second half of a flip, from edge-on.
    */
-  #reveal(root: HTMLElement, id: string): void {
+  #reveal(root: HTMLElement, id: string): Animation | null {
     const art = root.querySelector<HTMLElement>(`${tablePile(id)} .art`);
     if (!art) {
-      return;
+      return null;
     }
-    this.#run(
+    return this.#run(
       art,
       [
         { transform: `${FLIP_PERSPECTIVE} rotateY(90deg)` },
@@ -1620,13 +1759,15 @@ class TableMotion {
   /**
    * The prototype's riffle: copies of the pile split left and right, then
    * riffle back into it, after delay (ms): once the cards flying into it land.
+   * Returns the animations it plays.
    */
-  #riffle(root: HTMLElement, id: string, delay: number): void {
+  #riffle(root: HTMLElement, id: string, delay: number): Animation[] {
     const pile = root.querySelector<HTMLElement>(tablePile(id));
     const art = pile?.querySelector('.art');
     if (!pile || !art || typeof pile.animate !== 'function') {
-      return;
+      return [];
     }
+    const animations: Animation[] = [];
     for (let i = 0; i < RIFFLE_COPIES; i++) {
       const copy = document.createElement('div');
       copy.setAttribute('aria-hidden', 'true');
@@ -1662,17 +1803,20 @@ class TableMotion {
         copy.remove();
         this.#copies.delete(copy);
       };
-      animation?.finished.then(remove, remove);
+      if (animation) {
+        animation.finished.then(remove, remove);
+        animations.push(animation);
+      }
     }
     // The copies live in the pile's stacking context, so the pile itself rises over its neighbours (all at
     // level 0) while they fan out, then drops back to its stylesheet level.
-    this.#run(
+    const rise = this.#run(
       pile,
       [{ zIndex: 1 }, { zIndex: 1 }],
       { duration: RIFFLE_SPAN_MS, delay },
       pileSubject(id),
     );
-    this.#run(
+    const bounce = this.#run(
       pile,
       [
         { transform: 'scale(1)' },
@@ -1683,6 +1827,12 @@ class TableMotion {
       { duration: PILE_BOUNCE_MS, delay, easing: 'ease-out' },
       pileSubject(id),
     );
+    for (const animation of [rise, bounce]) {
+      if (animation) {
+        animations.push(animation);
+      }
+    }
+    return animations;
   }
 
   /** A copy of a card from where it showed (from) to the pile it went to, where that pile shows. */
