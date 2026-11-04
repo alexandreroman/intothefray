@@ -32,9 +32,7 @@ export const NEWS: NewsEntry[] = [
     title: "The Galaxy's Most Wanted scenarios",
     text:
       'Take on the Brotherhood of Badoon, the Collector twice (Infiltrate the Museum, Escape the Museum), ' +
-      'Nebula and Ronan the Accuser, in Standard or Expert. The Milano starts in play against Badoon, Nebula ' +
-      'and Ronan, and in Infiltrate the Museum the Collector keeps the cards he takes in The Collection, ' +
-      'beside the victory display.',
+      'Nebula and Ronan the Accuser, in Standard or Expert.',
     image: { src: galaxysMostWanted, alt: 'The Collector villain card on the table' },
   },
   {
