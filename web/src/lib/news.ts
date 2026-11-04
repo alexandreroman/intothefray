@@ -6,6 +6,7 @@ import frenchCards from '../assets/news/2026-10-20-french-cards.webp';
 import severalDecks from '../assets/news/2026-10-29-several-decks.webp';
 import redSkull from '../assets/news/2026-11-01-red-skull.webp';
 import shareLink from '../assets/news/2026-11-03-share-link.webp';
+import galaxysMostWanted from '../assets/news/2026-11-05-galaxys-most-wanted.webp';
 
 /** One piece of news: a feature the players can use. */
 export interface NewsEntry {
@@ -25,6 +26,17 @@ export interface NewsEntry {
 
 /** Every entry, newest first (news.test.ts checks it). */
 export const NEWS: NewsEntry[] = [
+  {
+    id: '2026-11-05-galaxys-most-wanted',
+    date: '2026-11-05',
+    title: "The Galaxy's Most Wanted scenarios",
+    text:
+      'Take on the Brotherhood of Badoon, the Collector twice (Infiltrate the Museum, Escape the Museum), ' +
+      'Nebula and Ronan the Accuser, in Standard or Expert. The Milano starts in play against Badoon, Nebula ' +
+      'and Ronan, and in Infiltrate the Museum the Collector keeps the cards he takes in The Collection, ' +
+      'beside the victory display.',
+    image: { src: galaxysMostWanted, alt: 'The Collector villain card on the table' },
+  },
   {
     id: '2026-11-03-share-link',
     date: '2026-11-03',
