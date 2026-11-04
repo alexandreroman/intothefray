@@ -4,10 +4,11 @@
 // a pile, out of one into the hand, or between two piles, and copies going
 // into or out of a hand the viewer does not see. An out-of-play pile is not
 // drawn: the chip on its owner's frame stands for it, a card flying to it
-// fades out into it (CHIP_FADE_FROM), and a card leaves it at a card's size
-// (measureOrigin). Nothing here holds the table up: the new
-// view is drawn at once, in its final state, and the animations only paint
-// over it, never catching the pointer.
+// fades out into it (CHIP_FADE_FROM), turning over first where it starts when
+// it turns (flipsFirst), and a card leaves it at a card's size
+// (measureOrigin). Nothing here holds the table up: the new view is drawn at
+// once, in its final state, and the animations only paint over it, never
+// catching the pointer.
 
 import { tick } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
@@ -92,9 +93,18 @@ const FLY_EASING = 'cubic-bezier(.3, .7, .2, 1)';
 /**
  * A copy flying to an out-of-play pile's chip fades out from this far into its flight, evenly to
  * its end: as it shrinks into the chip, it vanishes into the pile instead of going all at once
- * when it lands. Its way eases out, so it is then all but on the chip.
+ * when it lands. Its way eases out, so it is then all but on the chip. A copy that turns over
+ * first (flipsFirst) fades from this far into its flight once turned (CHIP_FLIP_FADE_FROM).
  */
 const CHIP_FADE_FROM = 0.55;
+/**
+ * A copy flying to a chip that turns over on its way does so first, where it starts, as a card
+ * turned over on the table does (FLIP_MS), edge-on half way, then flies to the chip (FLY_MS).
+ */
+const CHIP_FLIP_MS = FLIP_MS + FLY_MS;
+const CHIP_EDGE_ON = FLIP_MS / 2 / CHIP_FLIP_MS;
+const CHIP_FLIES_AT = FLIP_MS / CHIP_FLIP_MS;
+const CHIP_FLIP_FADE_FROM = CHIP_FLIES_AT + CHIP_FADE_FROM * (1 - CHIP_FLIES_AT);
 /**
  * A landscape copy flying to a portrait pile turns a quarter on its way
  * (quarterFrames); when it turns over, it does so once on the pile, as a
@@ -161,7 +171,10 @@ interface PileFlight extends FlightBase {
    * clockwise on its way, as the pile draws it, then turns over there.
    */
   quarter: boolean;
-  /** It goes to an out-of-play pile's chip: it fades out into it on the last part of its way. */
+  /**
+   * It goes to an out-of-play pile's chip: it fades out into it on the last part of its way. When it
+   * turns over, it does so first, where it starts (flipsFirst).
+   */
   fades: boolean;
 }
 
@@ -522,12 +535,22 @@ const FLIGHT_LIFT_FRAMES: Keyframe[] = [
   { scale: '1' },
 ];
 
-/** A copy flying to an out-of-play pile's chip fades out into it (CHIP_FADE_FROM). */
-const CHIP_FADE_FRAMES: Keyframe[] = [
-  { opacity: 1 },
-  { opacity: 1, offset: CHIP_FADE_FROM },
-  { opacity: 0 },
+/**
+ * A copy turning over before it flies to a chip (flipsFirst) rises as it turns, easing out to
+ * edge-on, stays held up until it leaves, then comes down on its way. The keyframes carry their own
+ * easing: the animation runs linear.
+ */
+const CHIP_FLIP_LIFT_FRAMES: Keyframe[] = [
+  { scale: '1', offset: 0, easing: 'ease-out' },
+  { scale: `${LIFT_SCALE}`, offset: CHIP_EDGE_ON },
+  { scale: `${LIFT_SCALE}`, offset: CHIP_FLIES_AT, easing: 'ease-in-out' },
+  { scale: '1', offset: 1 },
 ];
+
+/** A copy flying to an out-of-play pile's chip fades out into it, evenly from fadeFrom of its way. */
+function chipFadeFrames(fadeFrom: number): Keyframe[] {
+  return [{ opacity: 1 }, { opacity: 1, offset: fadeFrom }, { opacity: 0 }];
+}
 
 const DRAW_AWAY_FRAMES: Keyframe[] = [
   { transform: 'translate(0, 0) scale(1)', opacity: 1 },
@@ -597,13 +620,48 @@ function quarterFrames(flight: PileFlight): Keyframe[] {
   ];
 }
 
-/** How long a copy takes to get where it goes, turned over there when it turns a quarter on its way. */
+/**
+ * A copy flying to an out-of-play pile's chip that turns over on its way does so first, where it
+ * starts (chipFlipFrames): turning in the last part of its way, it would be all but faded out.
+ */
+function flipsFirst(flight: PileFlight): boolean {
+  return flight.fades && flight.turns !== undefined;
+}
+
+/**
+ * A turning copy's way to an out-of-play pile's chip (flipsFirst): it turns over where it starts,
+ * easing in to edge-on and out flat again, as a card turned over on the table does, then flies to
+ * the chip. The keyframes carry their own easing: the animation runs linear.
+ */
+function chipFlipFrames(flight: PileFlight): Keyframe[] {
+  const dx = flight.to.cx - flight.from.cx;
+  const dy = flight.to.cy - flight.from.cy;
+  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  // Part of the way there, turned about its vertical axis by turn degrees, as turningFrames has it.
+  const pose = (progress: number, turn: number): string =>
+    `${FLIP_PERSPECTIVE} translate(${dx * progress}px, ${dy * progress}px)` +
+    ` scale(${1 + (scale - 1) * progress}) rotateY(${turn}deg)`;
+  return [
+    { transform: pose(0, 0), offset: 0, easing: 'ease-in' },
+    { transform: pose(0, 90), offset: CHIP_EDGE_ON, easing: 'ease-out' },
+    { transform: pose(0, 0), offset: CHIP_FLIES_AT, easing: FLY_EASING },
+    { transform: pose(1, 0), offset: 1 },
+  ];
+}
+
+/**
+ * How long a copy takes to get where it goes: turned over there when it turns a quarter on its way,
+ * or turned over first when it goes to a chip.
+ */
 function flightMs(flight: Flight): number {
   if (flight.kind !== 'toPile') {
     return DRAW_MS;
   }
   if (flight.under) {
     return UNDER_MS;
+  }
+  if (flipsFirst(flight)) {
+    return CHIP_FLIP_MS;
   }
   return flight.quarter && flight.turns ? QUARTER_FLIP_MS : FLY_MS;
 }
@@ -1003,12 +1061,22 @@ class TableMotion {
         let edgeOn = DRAW_EDGE_ON;
         // Its keyframes carry their easing, for the back to switch sides as it is edge-on.
         let easing: string = FLY_EASING;
+        let lift = FLIGHT_LIFT_FRAMES;
+        let liftEasing = 'ease-in-out';
+        let fadeFrom = CHIP_FADE_FROM;
         if (flight.under) {
           frames = underFrames(flight);
         } else if (flight.quarter) {
           frames = quarterFrames(flight);
           edgeOn = QUARTER_EDGE_ON;
           easing = 'linear';
+        } else if (flipsFirst(flight)) {
+          frames = chipFlipFrames(flight);
+          edgeOn = CHIP_EDGE_ON;
+          easing = 'linear';
+          lift = CHIP_FLIP_LIFT_FRAMES;
+          liftEasing = 'linear';
+          fadeFrom = CHIP_FLIP_FADE_FROM;
         } else if (flight.turns) {
           frames = turningFrames(flight.from, flight.to, 0, true);
         }
@@ -1017,13 +1085,12 @@ class TableMotion {
         // On the scale property, apart from the transform its way plays on. Slipping under its
         // pile, it stays flat: the pile lies over it.
         if (!flight.under) {
-          const lift = { ...options, easing: 'ease-in-out' };
-          animations.push(this.#run(element, FLIGHT_LIFT_FRAMES, lift, null));
+          animations.push(this.#run(element, lift, { ...options, easing: liftEasing }, null));
         }
         // On the opacity of the copy itself: a turning copy's back plays on its own element.
         if (flight.fades) {
           const fade = { ...options, easing: 'linear' };
-          animations.push(this.#run(element, CHIP_FADE_FRAMES, fade, null));
+          animations.push(this.#run(element, chipFadeFrames(fadeFrom), fade, null));
         }
         if (flight.turns) {
           turnBack(backFrames(flight.turns, edgeOn), options);

@@ -1469,6 +1469,12 @@ describe('Table animations', () => {
       expect(String(keyframes.at(-1)?.transform)).toContain(' rotate(0deg) ');
       expect(options.easing).toBe('cubic-bezier(.3, .7, .2, 1)');
       expect(back?.classList).not.toContain('upright');
+      // Drawn on the table, the deck shows it land: it turns on its way, held up, and does not fade.
+      const lifts = animationsOf('.fly').filter(([frames]) => frames[0]?.scale !== undefined);
+      expect(
+        lifts.map(([frames, lift]) => [frames.map((frame) => frame.offset), lift.easing]),
+      ).toEqual([[[undefined, 0.45, undefined], 'ease-in-out']]);
+      expect(fadesOf('.fly')).toEqual([]);
 
       // The deck lists none of its cards: an unrelated view does not cut the flight.
       await next(makeView([card('z', { x: 500 })], { piles: [samDeck(31), PILES[1]!] }));
@@ -1773,7 +1779,7 @@ describe('Table animations', () => {
       expect(animationsOf('.fly [data-side="back"]')).toEqual([]);
     });
 
-    it('a card sent to the victory display flies to its chip, fading into it', async () => {
+    describe('to the victory display', () => {
       const villain: PileView[] = [
         ...PILES,
         { id: 'enc', kind: 'encounter', owner: -1, x: 0, y: 300, count: 20 },
@@ -1781,21 +1787,99 @@ describe('Table animations', () => {
       ];
       const withVictory = (cards: string[]) =>
         villain.map((pile) => (pile.id === 'vic' ? { ...pile, count: cards.length, cards } : pile));
-      const { next, container } = await renderTable(
-        makeView([card('v', { owner: -1, x: 400 })], { piles: withVictory([]) }),
-      );
-      const chip = container.querySelector<HTMLElement>('.surface .chip[data-pile="vic"]')!;
-      chip.style.left = '900px';
-      chip.style.top = '280px';
-      chip.style.width = '40px';
-      chip.style.height = '20px';
 
-      await next(makeView([card('v', { owner: -1, zone: 'pile' })], { piles: withVictory(['v']) }));
-      await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
-      expect(motion.flights).toMatchObject([
-        { kind: 'toPile', pile: 'vic', to: { cx: 920, cy: 290 }, fades: true },
-      ]);
-      expectFadesIntoChip();
+      /** Places the victory display's chip, wider than tall, as jsdom lays nothing out. */
+      function placeChip(container: Element): void {
+        const chip = container.querySelector<HTMLElement>('.surface .chip[data-pile="vic"]')!;
+        chip.style.left = '900px';
+        chip.style.top = '280px';
+        chip.style.width = '40px';
+        chip.style.height = '20px';
+      }
+
+      it('a card sent there flies to its chip, fading into it', async () => {
+        const { next, container } = await renderTable(
+          makeView([card('v', { owner: -1, x: 400 })], { piles: withVictory([]) }),
+        );
+        placeChip(container);
+
+        await next(
+          makeView([card('v', { owner: -1, zone: 'pile' })], { piles: withVictory(['v']) }),
+        );
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(motion.flights).toMatchObject([
+          { kind: 'toPile', pile: 'vic', to: { cx: 920, cy: 290 }, fades: true },
+        ]);
+        expectFadesIntoChip();
+      });
+
+      it('a face-down card sent there turns face up where it lies, then flies to the chip', async () => {
+        const { next, container } = await renderTable(
+          makeView([card('v', { owner: -1, x: 400, faceDown: true, code: undefined })], {
+            piles: withVictory([]),
+          }),
+        );
+        placeChip(container);
+
+        await next(
+          makeView([card('v', { owner: -1, zone: 'pile' })], { piles: withVictory(['v']) }),
+        );
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(motion.flights).toMatchObject([
+          { kind: 'toPile', pile: 'vic', turns: 'up', fades: true },
+        ]);
+        // A turn as a card turned over on the table (360 ms), then the flight (420 ms).
+        const edgeOn = 180 / 780;
+        const turned = 360 / 780;
+        const [[way, options]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+        expect(options).toMatchObject({ duration: 780, easing: 'linear' });
+        // From the card's middle (456, 78.5) to the chip's (920, 290), at the chip's width.
+        const pose = (translate: string, scale: number, turn: number) =>
+          `perspective(700px) translate(${translate}) scale(${scale}) rotateY(${turn}deg)`;
+        expect(way).toEqual([
+          { transform: pose('0px, 0px', 1, 0), offset: 0, easing: 'ease-in' },
+          { transform: pose('0px, 0px', 1, 90), offset: edgeOn, easing: 'ease-out' },
+          {
+            transform: pose('0px, 0px', 1, 0),
+            offset: turned,
+            easing: 'cubic-bezier(.3, .7, .2, 1)',
+          },
+          // Scaled from 1 down to the chip's width, as the way computes it.
+          { transform: pose('464px, 211.5px', 1 + (40 / 112 - 1), 0), offset: 1 },
+        ]);
+        // Its back gives way to its face once edge-on, in place.
+        const [[back, backOptions]] = animationsOf('.fly [data-side="back"]') as [
+          [Keyframe[], KeyframeAnimationOptions],
+        ];
+        expect(back.map((frame) => [frame.offset, frame.opacity])).toEqual([
+          [0, 1],
+          [edgeOn, 1],
+          [edgeOn, 0],
+          [1, 0],
+        ]);
+        expect(backOptions).toMatchObject({ duration: 780, easing: 'linear' });
+        // Held up from edge-on until it leaves, then put down on its way.
+        const lifts = animationsOf('.fly').filter(([frames]) => frames[0]?.scale !== undefined);
+        expect(lifts).toHaveLength(1);
+        const [[lift, liftOptions]] = lifts as [[Keyframe[], KeyframeAnimationOptions]];
+        expect(lift.map((frame) => [frame.offset, frame.scale])).toEqual([
+          [0, '1'],
+          [edgeOn, `${LIFT_SCALE}`],
+          [turned, `${LIFT_SCALE}`],
+          [1, '1'],
+        ]);
+        expect(liftOptions).toMatchObject({ duration: 780, easing: 'linear' });
+        // It fades out over the last 45 % of its flight, once turned.
+        const fades = fadesOf('.fly');
+        expect(fades).toHaveLength(1);
+        const [[fade, fadeOptions]] = fades as [[Keyframe[], KeyframeAnimationOptions]];
+        expect(fade).toEqual([
+          { opacity: 1 },
+          { opacity: 1, offset: turned + 0.55 * (1 - turned) },
+          { opacity: 0 },
+        ]);
+        expect(fadeOptions).toMatchObject({ duration: 780, easing: 'linear' });
+      });
     });
 
     describe('out of a set-aside pile', () => {
