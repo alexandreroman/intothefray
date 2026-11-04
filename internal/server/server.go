@@ -248,9 +248,8 @@ const statusGameNotFound = websocket.StatusCode(4404)
 // hands it to serveConn.
 func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	_, _, err := s.deps.Store.Load(r.Context(), id)
-	notFound := errors.Is(err, store.ErrNotFound)
-	if err != nil && !notFound {
+	exists, err := s.gameExists(r.Context(), id)
+	if err != nil {
 		s.deps.Logger.Error("load game", "game_id", id, "error", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
@@ -272,11 +271,27 @@ func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 		s.deps.Logger.Warn("websocket upgrade refused", "game_id", id, "error", err)
 		return
 	}
-	if notFound {
+	if !exists {
 		s.rejectUnknownGame(r.Context(), conn)
 		return
 	}
 	s.serveConn(r.Context(), conn, id)
+}
+
+// gameExists reports whether the game exists. An id newGameID cannot have
+// generated names no game: Redis is not asked.
+func (s *Server) gameExists(ctx context.Context, id string) (bool, error) {
+	if !validGameID(id) {
+		return false, nil
+	}
+	_, _, err := s.deps.Store.Load(ctx, id)
+	if errors.Is(err, store.ErrNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // rejectUnknownGame tells the viewer that its game does not exist, then
@@ -295,6 +310,21 @@ func (s *Server) rejectUnknownGame(ctx context.Context, conn *websocket.Conn) {
 	}
 	// A failed close means the client is gone: there is nobody left to report it to.
 	_ = conn.Close(statusGameNotFound, "game not found")
+}
+
+// validGameID reports whether id has the format of the ids newGameID
+// generates. Only such an id from a request path reaches the store: it holds
+// no colon, so it never names another key of a game, such as game:<id>:info.
+func validGameID(id string) bool {
+	if len(id) != gameIDLength {
+		return false
+	}
+	for _, r := range id {
+		if !strings.ContainsRune(gameIDAlphabet, r) {
+			return false
+		}
+	}
+	return true
 }
 
 func newGameID() (string, error) {

@@ -288,11 +288,11 @@ func TestRemovePlayerByColor(t *testing.T) {
 }
 
 func TestSendViewResendsWhenOnlyTheAudienceChanges(t *testing.T) {
-	g, err := game.NewGame("abc", "host-token", "Alex", time.Now())
+	g, err := game.NewGame(testGameID, "host-token", "Alex", time.Now())
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := newConn(nil, "abc", slog.New(slog.NewTextHandler(io.Discard, nil)))
+	c := newConn(nil, testGameID, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	host := g.Players[0].Color
 
 	// Each step builds on the views sent by the previous ones. A nil

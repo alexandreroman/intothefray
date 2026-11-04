@@ -1,19 +1,19 @@
 ---
 name: "Games in progress counter"
-description: "GET /api/stats reads game-summary: keys: count of games plus an anonymous list of what started games play; 60 s cache; Home capsule"
+description: "GET /api/stats reads game:<id>:info keys: count of games plus an anonymous list of what started games play; 60 s cache; Home capsule"
 type: project
 ---
 
 # Games in progress counter
 
-- Every game has a small summary key `game-summary:<id>` next to
-  `game:<id>`: phase, scenario code, modular set codes and the identity
+- Every game has a small summary key `game:<id>:info` next to its full
+  state `game:<id>`: phase, scenario code, modular set codes and the identity
   codes of its loaded decks in seat order (`game.Summary`). The store
   writes it with the game and gives it the game's TTL: `Create` sets both
   keys in one Lua script (SET NX on the game, then the summary), `Update`
   sets it in the game's MULTI, `Touch` expires both keys. A game without a
   summary is not counted.
-- `Store.GameSummaries` walks `game-summary:*` with `SCAN ... COUNT 1000`,
+- `Store.GameSummaries` walks `game:*:info` with `SCAN ... COUNT 1000`,
   MGETs each batch and drops duplicate keys, so the figure is exact. It
   never reads a game value (30 KB to over 1 MB each). Expired or
   undecodable values are skipped.

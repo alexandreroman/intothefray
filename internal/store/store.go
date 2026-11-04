@@ -25,22 +25,21 @@ const (
 	endedGameTTL = time.Hour
 	// retryJitter scales the random pause between two Update attempts.
 	retryJitter = 2 * time.Millisecond
-	// gameSummaryScanBatch is the COUNT hint of the SCAN rounds of
-	// GameSummaries.
-	gameSummaryScanBatch = 1000
+	// infoScanBatch is the COUNT hint of the SCAN rounds of GameSummaries.
+	infoScanBatch = 1000
 
-	eventsPattern = "game:*:events"
-	eventsSuffix  = ":events"
+	// The keys of a game are game:<id>, the game, game:<id>:info, its
+	// summary, and online:<id>, its online connections; game:<id>:events is
+	// the pub/sub channel of its events, not a key. The server only hands
+	// over the ids it generates, which hold no colon, so no id names another
+	// game's key.
 	gamePrefix    = "game:"
-	// onlinePrefix starts the keys of the online connections. It is not
-	// gamePrefix: a game id comes from the request path, and no id must
-	// name another game's set of connections.
+	infoSuffix    = ":info"
+	infoPattern   = gamePrefix + "*" + infoSuffix
+	eventsSuffix  = ":events"
+	eventsPattern = gamePrefix + "*" + eventsSuffix
+	// onlinePrefix starts the keys of the online connections of the games.
 	onlinePrefix = "online:"
-	// gameSummaryPrefix starts the keys of the game summaries, one per game,
-	// written and expiring with it. It does not start with gamePrefix: a game
-	// id comes from the request path, and anything under gamePrefix would be
-	// taken for a game.
-	gameSummaryPrefix = "game-summary:"
 	// connectionSeparator joins the id and the token of a connection in the
 	// set. The id comes first: it is generated without the separator, whereas
 	// nothing bounds what a token holds.
@@ -94,7 +93,7 @@ type record struct {
 
 // Store persists games in Redis, one JSON value per game under game:<id>, next
 // to a small JSON summary of the game (see game.Summary) under
-// game-summary:<id>, written and expiring with it.
+// game:<id>:info, written and expiring with it.
 type Store struct {
 	rdb *redis.Client
 	ttl time.Duration
@@ -118,7 +117,7 @@ func (s *Store) Create(ctx context.Context, g *game.Game) error {
 	if err != nil {
 		return err
 	}
-	keys := []string{gameKey(g.ID), gameSummaryKey(g.ID)}
+	keys := []string{gameKey(g.ID), infoKey(g.ID)}
 	ttl := s.ttlFor(g.Phase).Milliseconds()
 	created, err := createScript.Run(ctx, s.rdb, keys, data, summary, ttl).Int()
 	if err != nil {
@@ -180,7 +179,7 @@ func (s *Store) Update(
 		ttl := s.ttlFor(rec.Game.Phase)
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			pipe.Set(ctx, key, data, ttl)
-			pipe.Set(ctx, gameSummaryKey(id), summary, ttl)
+			pipe.Set(ctx, infoKey(id), summary, ttl)
 			return nil
 		})
 		if err != nil {
@@ -222,7 +221,7 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 	var touched *redis.BoolCmd
 	_, err = s.rdb.Pipelined(ctx, func(pipe redis.Pipeliner) error {
 		touched = pipe.Expire(ctx, gameKey(id), ttl)
-		pipe.Expire(ctx, gameSummaryKey(id), ttl)
+		pipe.Expire(ctx, infoKey(id), ttl)
 		return nil
 	})
 	if err != nil {
@@ -236,7 +235,7 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 
 // GameSummaries returns the summary of every game that has not expired, ended
 // ones included, in no particular order: the number of games in progress is
-// the number of game-summary: keys, deduplicated. It walks those keys with
+// the number of game:*:info keys, deduplicated. It walks those keys with
 // SCAN, which never blocks Redis the way KEYS would, and reads their small
 // values with one MGET per round: it reads no game value. SCAN may return a
 // key twice while Redis resizes its table; such a key is read once, so each
@@ -250,7 +249,7 @@ func (s *Store) GameSummaries(ctx context.Context) ([]game.Summary, error) {
 		cursor    uint64
 	)
 	for {
-		keys, next, err := s.rdb.Scan(ctx, cursor, gameSummaryPrefix+"*", gameSummaryScanBatch).Result()
+		keys, next, err := s.rdb.Scan(ctx, cursor, infoPattern, infoScanBatch).Result()
 		if err != nil {
 			return nil, fmt.Errorf("scan game summaries: %w", err)
 		}
@@ -447,8 +446,8 @@ func gameKey(id string) string {
 	return gamePrefix + id
 }
 
-func gameSummaryKey(id string) string {
-	return gameSummaryPrefix + id
+func infoKey(id string) string {
+	return gamePrefix + id + infoSuffix
 }
 
 func onlineKey(id string) string {

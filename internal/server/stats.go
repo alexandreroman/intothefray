@@ -32,7 +32,7 @@ type statsCache struct {
 // handleStats tells how many games are in progress, every game that has not
 // expired, ended games included, and what the games in play are played with.
 // Both come from the game summaries the store keeps next to the games: the
-// count is the number of game-summary: keys, deduplicated, each written and
+// count is the number of game:*:info keys, deduplicated, each written and
 // expiring with its game. No game value is read.
 func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 	stats, err := s.readStats(r.Context())

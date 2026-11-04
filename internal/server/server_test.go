@@ -27,7 +27,14 @@ import (
 	"github.com/alexandreroman/intothefray/packs"
 )
 
-const allowedOrigin = "http://localhost:8080"
+const (
+	allowedOrigin = "http://localhost:8080"
+	// testGameID is a game id in the format newGameID generates, for the tests
+	// that store a game themselves.
+	testGameID = "testgame23"
+	// unknownGameID has the format of a game id, but names no game.
+	unknownGameID = "unseengame"
+)
 
 func newTestServer(t *testing.T) (*httptest.Server, *miniredis.Miniredis) {
 	t.Helper()
@@ -416,24 +423,71 @@ func TestCreateGameSlowBody(t *testing.T) {
 }
 
 func TestUnknownGameWS(t *testing.T) {
-	ts, _ := newTestServer(t)
-	client := connect(t, ts, "nosuchgame")
+	tests := []struct {
+		name string
+		id   string
+	}{
+		{"unknown game", unknownGameID},
+		{"id too short", "abc"},
+		{"id naming another key", "abcdefg:ab"},
+		{"id with an uppercase letter", "Abcdefghjk"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts, _ := newTestServer(t)
+			client := connect(t, ts, tt.id)
+
+			assertGameNotFound(t, client)
+		})
+	}
+}
+
+func TestInvalidGameIDWSSkipsRedis(t *testing.T) {
+	ts, mr := newTestServer(t)
+	mr.SetError("ERR redis is down")
+
+	// A Redis read would have failed with a 500 instead of an upgrade.
+	client := connect(t, ts, "abcdefg:ab")
+
+	assertGameNotFound(t, client)
+}
+
+// assertGameNotFound checks that the server tells client its game does not
+// exist, then closes the connection with statusGameNotFound.
+func assertGameNotFound(t *testing.T, client *testClient) {
+	t.Helper()
 
 	msg := client.expect("error")
 	if msg.Code != "notFound" || msg.Message != errorTexts[codeNotFound] {
 		t.Errorf("error = %q %q, want notFound with its fixed text", msg.Code, msg.Message)
 	}
-
 	_, _, err := client.ws.Read(t.Context())
-	if got := websocket.CloseStatus(err); got != 4404 {
-		t.Errorf("close status = %d (%v), want 4404", got, err)
+	if got := websocket.CloseStatus(err); got != statusGameNotFound {
+		t.Errorf("close status = %d (%v), want %d", got, err, statusGameNotFound)
+	}
+}
+
+func TestValidGameID(t *testing.T) {
+	for range 100 {
+		id, err := newGameID()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !validGameID(id) {
+			t.Fatalf("validGameID(%q) = false for a generated id", id)
+		}
+	}
+	for _, id := range []string{"", "abc", "abcdefghjkm", "abcdefg:ab", "Abcdefghjk", "abcdefghjo", "abcdefgh\u00e9"} {
+		if validGameID(id) {
+			t.Errorf("validGameID(%q) = true, want false", id)
+		}
 	}
 }
 
 func TestUnknownGameWSChecksOrigin(t *testing.T) {
 	ts, _ := newTestServer(t)
 
-	_, status, err := dial(t, wsURL(ts, "nosuchgame"), "https://evil.example")
+	_, status, err := dial(t, wsURL(ts, unknownGameID), "https://evil.example")
 
 	if err == nil {
 		t.Fatal("dial succeeded, want an error")

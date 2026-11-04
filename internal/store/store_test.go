@@ -236,7 +236,7 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 	if err := s.Touch(ctx, "abc"); err != nil {
 		t.Fatalf("Touch: %v", err)
 	}
-	assertTTL(t, mr, time.Hour, "game:abc", "game-summary:abc")
+	assertTTL(t, mr, time.Hour, "game:abc", "game:abc:info")
 }
 
 // assertTTL fails the test unless every key expires after want.
@@ -477,7 +477,7 @@ func TestCreateWritesSummary(t *testing.T) {
 	if got := storedSummary(t, mr, "abc"); !reflect.DeepEqual(got, want) {
 		t.Errorf("summary = %+v, want %+v", got, want)
 	}
-	assertTTL(t, mr, testTTL, "game:abc", "game-summary:abc")
+	assertTTL(t, mr, testTTL, "game:abc", "game:abc:info")
 }
 
 func TestCreateExistingGameKeepsItsSummary(t *testing.T) {
@@ -521,7 +521,7 @@ func TestUpdateWritesSummary(t *testing.T) {
 	if got := storedSummary(t, mr, "abc"); !reflect.DeepEqual(got, want) {
 		t.Errorf("summary = %+v, want %+v", got, want)
 	}
-	if ttl := mr.TTL("game-summary:abc"); ttl != testTTL {
+	if ttl := mr.TTL("game:abc:info"); ttl != testTTL {
 		t.Errorf("summary ttl = %v, want %v (reset by the write)", ttl, testTTL)
 	}
 }
@@ -540,7 +540,7 @@ func TestEndedGameSummaryTTL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Update: %v", err)
 	}
-	if ttl := mr.TTL("game-summary:abc"); ttl != time.Hour {
+	if ttl := mr.TTL("game:abc:info"); ttl != time.Hour {
 		t.Errorf("summary ttl = %v, want 1h", ttl)
 	}
 }
@@ -556,7 +556,7 @@ func TestTouchExtendsSummary(t *testing.T) {
 	if err := s.Touch(ctx, "abc"); err != nil {
 		t.Fatalf("Touch: %v", err)
 	}
-	if ttl := mr.TTL("game-summary:abc"); ttl != testTTL {
+	if ttl := mr.TTL("game:abc:info"); ttl != testTTL {
 		t.Errorf("summary ttl = %v, want %v", ttl, testTTL)
 	}
 }
@@ -567,7 +567,7 @@ func TestTouchGameWithoutSummary(t *testing.T) {
 	if err := s.Create(ctx, newGame("abc")); err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	mr.Del("game-summary:abc")
+	mr.Del("game:abc:info")
 	mr.FastForward(time.Hour)
 
 	if err := s.Touch(ctx, "abc"); err != nil {
@@ -576,7 +576,7 @@ func TestTouchGameWithoutSummary(t *testing.T) {
 	if ttl := mr.TTL("game:abc"); ttl != testTTL {
 		t.Errorf("game ttl = %v, want %v", ttl, testTTL)
 	}
-	if mr.Exists("game-summary:abc") {
+	if mr.Exists("game:abc:info") {
 		t.Error("Touch created a summary")
 	}
 }
@@ -630,7 +630,7 @@ func TestGameSummaries(t *testing.T) {
 		if err := s.Create(t.Context(), newGame("abc")); err != nil {
 			t.Fatalf("Create: %v", err)
 		}
-		if err := mr.Set(gameSummaryKey("bad"), "not json"); err != nil {
+		if err := mr.Set(infoKey("bad"), "not json"); err != nil {
 			t.Fatal(err)
 		}
 
@@ -670,7 +670,7 @@ func TestGameSummaries(t *testing.T) {
 		s, mr := newTestStore(t)
 		const games = 2500
 		for i := range games {
-			if err := mr.Set(gameSummaryKey(strconv.Itoa(i)), `{"phase":"lobby"}`); err != nil {
+			if err := mr.Set(infoKey(strconv.Itoa(i)), `{"phase":"lobby"}`); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -694,7 +694,7 @@ func TestGameSummariesFailsWhenRedisIsDown(t *testing.T) {
 func storedSummary(t *testing.T, mr *miniredis.Miniredis, id string) game.Summary {
 	t.Helper()
 
-	data, err := mr.Get(gameSummaryKey(id))
+	data, err := mr.Get(infoKey(id))
 	if err != nil {
 		t.Fatalf("read summary of %s: %v", id, err)
 	}
