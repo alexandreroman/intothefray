@@ -24,6 +24,11 @@ type versionResponse struct {
 	Commit string `json:"commit"`
 }
 
+// statsResponse is the reply to GET /api/stats.
+type statsResponse struct {
+	Games int64 `json:"games"`
+}
+
 // errorResponse is the body of every HTTP error reply.
 type errorResponse struct {
 	Error string `json:"error"`

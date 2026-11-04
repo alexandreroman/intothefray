@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
-  import { slide, type TransitionConfig } from 'svelte/transition';
+  import { fade, slide, type TransitionConfig } from 'svelte/transition';
   import { createGame } from '../lib/api';
   import { playerName } from '../lib/names';
   import { NewsState } from '../lib/newsState.svelte';
   import { setToken } from '../lib/prefs';
   import { gamePath, go } from '../lib/router.svelte';
+  import { fetchGamesInProgress } from '../lib/stats';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
   import Tooltip from '../components/Tooltip.svelte';
@@ -16,9 +17,27 @@
 
   /** How long the banner takes to leave, folding up as it fades out. */
   const BANNER_LEAVE_MS = 220;
+  /** How long the count of games in progress takes to fade in once it arrives. */
+  const GAMES_FADE_MS = 400;
 
   let starting = $state(false);
   let error = $state('');
+
+  // The count of games in progress, unknown while it loads or when it cannot be read.
+  let gamesInProgress = $state<number>();
+  // An empty table is not worth a word: the count shows from one game up.
+  const showsGamesInProgress = $derived(gamesInProgress !== undefined && gamesInProgress > 0);
+  const gamesInProgressText = $derived(
+    gamesInProgress === 1 ? '1 game in progress' : `${gamesInProgress} games in progress`,
+  );
+
+  onMount(() => {
+    // A count that cannot be read is simply not shown: it is a nicety, not something to report.
+    fetchGamesInProgress().then(
+      (games) => (gamesInProgress = games),
+      () => {},
+    );
+  });
 
   const news = new NewsState();
   const hasUnread = $derived(news.unread.length > 0);
@@ -101,6 +120,13 @@
   <div class="halo"></div>
 
   <main>
+    <!-- Out of the flow, in the page's top padding: the page stays put when the count arrives. -->
+    {#if showsGamesInProgress}
+      <p class="games" in:fade={{ duration: prefersReducedMotion.current ? 0 : GAMES_FADE_MS }}>
+        <span class="live" aria-hidden="true"></span>{gamesInProgressText}
+      </p>
+    {/if}
+
     <div class="intro">
       <h1><Logo variant="stacked" size="inherit" /></h1>
 
@@ -222,6 +248,8 @@
     background: var(--table-bg);
     /* The fanned cards reach past a narrow screen: they are cut, never scrolled to. */
     overflow: hidden;
+    /* Measured by the column layout's query (at the end): the page's width, without a scrollbar. */
+    container: home / inline-size;
   }
 
   /* Red dots fading out around the fanned cards. */
@@ -250,6 +278,58 @@
     align-items: center;
     gap: 48px 64px;
     animation: rise 0.25s ease-out;
+  }
+
+  /*
+    The count of games in progress: a capsule centred on the page, in the middle of main's top
+    padding, so that it covers nothing and pushes nothing down. 28px high: 13px text on an 18px
+    line, 4px of padding and a 1px border; 22px from the top, it ends 22px over the logo (at 72px).
+    In the column layout (see the queries at the end), 24px from the top and 40px clear of the logo
+    (at 92px).
+  */
+  .games {
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    translate: -50%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 4px 10px;
+    font-size: 13px;
+    line-height: 18px;
+    white-space: nowrap;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+
+  /* Live: a Fray red dot, with a soft ring rising from it and fading out. */
+  .live {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: live 2s ease-out infinite;
+  }
+
+  @keyframes live {
+    from {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent);
+    }
+
+    to {
+      box-shadow: 0 0 0 5px transparent;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live {
+      animation: none;
+    }
   }
 
   .intro {
@@ -690,10 +770,29 @@
     color: var(--faint);
   }
 
-  /* A phone: 16px gutters, and a smaller fan under the buttons. */
+  /*
+    The column layout: the fan wraps under the intro once main's content box is narrower than their
+    flex bases and the column gap, 520 + 64 + 400 = 984px, that is a page under 984 + 2 × 24px of
+    side padding = 1032px. Change this breakpoint along with them. A container query rather than a
+    media query: .home's width leaves out a classic scrollbar, as the wrap does, where the viewport's
+    includes it. The capsule of games in progress sits 24px from the page's top, 40px clear of the logo
+    (at 92px).
+  */
+  @container home (max-width: 1031px) {
+    main {
+      padding-top: 92px;
+    }
+
+    .games {
+      top: 24px;
+    }
+  }
+
+  /* A phone: 16px gutters, and a smaller fan under the buttons. The top padding stays that of the
+     column layout above. */
   @media (max-width: 640px) {
     main {
-      padding: 40px 16px 24px;
+      padding: 92px 16px 24px;
     }
 
     footer {

@@ -25,6 +25,8 @@ const (
 	endedGameTTL = time.Hour
 	// retryJitter scales the random pause between two Update attempts.
 	retryJitter = 2 * time.Millisecond
+	// countScanBatch is the COUNT hint of the SCAN rounds of CountGames.
+	countScanBatch = 1000
 
 	eventsPattern = "game:*:events"
 	eventsSuffix  = ":events"
@@ -186,6 +188,29 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 		return fmt.Errorf("touch game %s: %w", id, ErrNotFound)
 	}
 	return nil
+}
+
+// CountGames returns how many games have not expired, ended ones included.
+// It walks the game keys with SCAN, which never blocks Redis the way KEYS
+// would, and reads no game value. SCAN may return a key twice while Redis
+// resizes its table: the count may then run slightly high, which a rough
+// figure tolerates better than holding every key to remove duplicates.
+func (s *Store) CountGames(ctx context.Context) (int64, error) {
+	var (
+		count  int64
+		cursor uint64
+	)
+	for {
+		keys, next, err := s.rdb.Scan(ctx, cursor, gamePrefix+"*", countScanBatch).Result()
+		if err != nil {
+			return 0, fmt.Errorf("count games: %w", err)
+		}
+		count += int64(len(keys))
+		if next == 0 {
+			return count, nil
+		}
+		cursor = next
+	}
 }
 
 // Publish sends payload to every instance subscribed to the game's events.
