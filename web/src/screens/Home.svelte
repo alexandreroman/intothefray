@@ -284,7 +284,8 @@
     The count of games in progress: a capsule centred on the page, in the middle of main's top
     padding, so that it covers nothing and pushes nothing down. 28px high: 13px text on an 18px
     line, 4px of padding and a 1px border; 22px from the top, it ends 22px over the logo (at 72px).
-    In the column layout (see the queries at the end), 24px clear of both, the logo at 76px.
+    In the column layout (see the queries at the end), 24px from the top and 40px clear of the logo
+    (at 92px).
   */
   .games {
     position: absolute;
@@ -774,12 +775,12 @@
     flex bases and the column gap, 520 + 64 + 400 = 984px, that is a page under 984 + 2 × 24px of
     side padding = 1032px. Change this breakpoint along with them. A container query rather than a
     media query: .home's width leaves out a classic scrollbar, as the wrap does, where the viewport's
-    includes it. The capsule of games in progress gets 24px clear of the page's top and of the logo
-    (at 76px).
+    includes it. The capsule of games in progress sits 24px from the page's top, 40px clear of the logo
+    (at 92px).
   */
   @container home (max-width: 1031px) {
     main {
-      padding-top: 76px;
+      padding-top: 92px;
     }
 
     .games {
@@ -791,7 +792,7 @@
      column layout above. */
   @media (max-width: 640px) {
     main {
-      padding: 76px 16px 24px;
+      padding: 92px 16px 24px;
     }
 
     footer {
