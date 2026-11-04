@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,6 +34,9 @@ const (
 	// maxCreateAttempts bounds the retries when a generated game id is taken.
 	maxCreateAttempts = 5
 	tokenBytes        = 32
+	// statsRefBytes is the size of the random reference of a game in the
+	// public statistics.
+	statsRefBytes = 8
 	// maxCreateBodyBytes bounds the create-game request, which only holds a name.
 	maxCreateBodyBytes = 1 << 10
 	// createBodyTimeout bounds how long a client may take to send the
@@ -72,8 +76,8 @@ type Server struct {
 	// createBodyTimeout is the read deadline of a create-game request body;
 	// tests shorten it.
 	createBodyTimeout time.Duration
-	// games caches the count of games served by GET /api/stats.
-	games gamesCount
+	// stats caches the reply of GET /api/stats.
+	stats statsCache
 }
 
 // New builds a Server from its dependencies.
@@ -216,8 +220,13 @@ func (s *Server) readCreateRequest(w http.ResponseWriter, r *http.Request) (crea
 }
 
 // createGame stores a new game under a fresh id and returns that id. A taken
-// id is retried with another one.
+// id is retried with another one; the game keeps the statistics reference
+// drawn for it, which no stored game depends on.
 func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (string, error) {
+	statsRef, err := newStatsRef()
+	if err != nil {
+		return "", err
+	}
 	for range maxCreateAttempts {
 		id, err := s.newID()
 		if err != nil {
@@ -227,6 +236,7 @@ func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (st
 		if err != nil {
 			return "", err
 		}
+		g.StatsRef = statsRef
 		err = s.deps.Store.Create(ctx, g)
 		if errors.Is(err, store.ErrExists) {
 			continue
@@ -248,9 +258,8 @@ const statusGameNotFound = websocket.StatusCode(4404)
 // hands it to serveConn.
 func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	_, _, err := s.deps.Store.Load(r.Context(), id)
-	notFound := errors.Is(err, store.ErrNotFound)
-	if err != nil && !notFound {
+	exists, err := s.gameExists(r.Context(), id)
+	if err != nil {
 		s.deps.Logger.Error("load game", "game_id", id, "error", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
@@ -272,11 +281,27 @@ func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 		s.deps.Logger.Warn("websocket upgrade refused", "game_id", id, "error", err)
 		return
 	}
-	if notFound {
+	if !exists {
 		s.rejectUnknownGame(r.Context(), conn)
 		return
 	}
 	s.serveConn(r.Context(), conn, id)
+}
+
+// gameExists reports whether the game exists. An id newGameID cannot have
+// generated names no game: Redis is not asked.
+func (s *Server) gameExists(ctx context.Context, id string) (bool, error) {
+	if !validGameID(id) {
+		return false, nil
+	}
+	_, _, err := s.deps.Store.Load(ctx, id)
+	if errors.Is(err, store.ErrNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // rejectUnknownGame tells the viewer that its game does not exist, then
@@ -297,6 +322,21 @@ func (s *Server) rejectUnknownGame(ctx context.Context, conn *websocket.Conn) {
 	_ = conn.Close(statusGameNotFound, "game not found")
 }
 
+// validGameID reports whether id has the format of the ids newGameID
+// generates. Only such an id from a request path reaches the store: it holds
+// no colon, so it never names another key of a game, such as game:<id>:info.
+func validGameID(id string) bool {
+	if len(id) != gameIDLength {
+		return false
+	}
+	for _, r := range id {
+		if !strings.ContainsRune(gameIDAlphabet, r) {
+			return false
+		}
+	}
+	return true
+}
+
 func newGameID() (string, error) {
 	id := make([]byte, gameIDLength)
 	if _, err := rand.Read(id); err != nil {
@@ -308,6 +348,18 @@ func newGameID() (string, error) {
 		id[i] = gameIDAlphabet[int(b)%len(gameIDAlphabet)]
 	}
 	return string(id), nil
+}
+
+// newStatsRef draws the reference of a game in the public statistics (see
+// game.Game.StatsRef): random, so that it reveals nothing of the game id and
+// every instance agrees on it without a shared secret. Its 16 hex characters
+// never pass for a 10-letter game id.
+func newStatsRef() (string, error) {
+	raw := make([]byte, statsRefBytes)
+	if _, err := rand.Read(raw); err != nil {
+		return "", fmt.Errorf("generate statistics reference: %w", err)
+	}
+	return hex.EncodeToString(raw), nil
 }
 
 func newToken() (string, error) {

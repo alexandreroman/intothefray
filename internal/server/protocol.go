@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
 // createGameRequest is the body of POST /api/games.
@@ -24,9 +25,42 @@ type versionResponse struct {
 	Commit string `json:"commit"`
 }
 
-// statsResponse is the reply to GET /api/stats.
+// statsResponse is the reply to GET /api/stats. It is public and cached by
+// proxies: it names cards and sets only, and tells games apart by a random
+// reference that never leads to them; it never names a game id, a player or
+// a deck.
 type statsResponse struct {
-	Games int64 `json:"games"`
+	// Games counts the games being played, those in the playing phase: it is
+	// always the length of Playing.
+	Games int `json:"games"`
+	// Playing lists the games being played, one entry per game; lobbies and
+	// ended games are left out, of the list as of the count.
+	Playing []playedGame `json:"playing"`
+}
+
+// playedGame is what one game in play is played with, by English names. Its
+// lists are sorted alphabetically, so that a game reads the same whatever its
+// seat and set order.
+type playedGame struct {
+	// Ref tells the game apart from one call to the next for its whole life:
+	// it is the random StatsRef of the game, which never leads to it. It is
+	// empty for a game created without one.
+	Ref        string          `json:"ref"`
+	Heroes     []playedHero    `json:"heroes"` // by hero name, then alter-ego name
+	Scenario   string          `json:"scenario"`
+	Difficulty pack.Difficulty `json:"difficulty"` // "standard" or "expert", as configured
+	// Sets names the encounter sets the game adds to its scenario, its
+	// Standard, Expert and modular sets, sorted by name, such as
+	// ["Bomb Scare", "Expert II", "Standard III"]. A set the game plays
+	// without, or whose code is unknown to the catalog, is not in the list.
+	Sets []string `json:"sets"`
+}
+
+// playedHero names the identity of a deck in play. AlterEgo is empty for an
+// identity without an alter-ego face.
+type playedHero struct {
+	Hero     string `json:"hero"`
+	AlterEgo string `json:"alterEgo"`
 }
 
 // errorResponse is the body of every HTTP error reply.

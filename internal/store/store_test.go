@@ -2,8 +2,11 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"maps"
+	"reflect"
+	"slices"
 	"strconv"
 	"sync"
 	"testing"
@@ -233,8 +236,17 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 	if err := s.Touch(ctx, "abc"); err != nil {
 		t.Fatalf("Touch: %v", err)
 	}
-	if ttl := mr.TTL("game:abc"); ttl != time.Hour {
-		t.Errorf("ttl = %v, want 1h", ttl)
+	assertTTL(t, mr, time.Hour, "game:abc", "game:abc:info")
+}
+
+// assertTTL fails the test unless every key expires after want.
+func assertTTL(t *testing.T, mr *miniredis.Miniredis, want time.Duration, keys ...string) {
+	t.Helper()
+
+	for _, key := range keys {
+		if ttl := mr.TTL(key); ttl != want {
+			t.Errorf("ttl of %s = %v, want %v", key, ttl, want)
+		}
 	}
 }
 
@@ -452,22 +464,230 @@ func TestResubscribeSendsResync(t *testing.T) {
 	}
 }
 
-func TestCountGames(t *testing.T) {
+func TestCreateWritesSummary(t *testing.T) {
+	s, mr := newTestStore(t)
+	g := newGame("abc")
+	g.Config.Scenario = "rhino"
+
+	if err := s.Create(t.Context(), g); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	want := game.Summary{Phase: game.PhaseLobby, Scenario: "rhino"}
+	if got := storedSummary(t, mr, "abc"); !reflect.DeepEqual(got, want) {
+		t.Errorf("summary = %+v, want %+v", got, want)
+	}
+	assertTTL(t, mr, testTTL, "game:abc", "game:abc:info")
+}
+
+func TestCreateExistingGameKeepsItsSummary(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	first := newGame("abc")
+	first.Config.Scenario = "rhino"
+	if err := s.Create(ctx, first); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	second := newGame("abc")
+	second.Config.Scenario = "klaw"
+	if err := s.Create(ctx, second); !errors.Is(err, ErrExists) {
+		t.Fatalf("second Create: err = %v, want ErrExists", err)
+	}
+
+	if got := storedSummary(t, mr, "abc"); got.Scenario != "rhino" {
+		t.Errorf("summary scenario = %q, want rhino, the first game's", got.Scenario)
+	}
+}
+
+func TestUpdateWritesSummary(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	if err := s.Create(ctx, newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	mr.FastForward(time.Hour)
+
+	_, _, err := s.Update(ctx, "abc", func(g *game.Game) error {
+		g.Phase = game.PhasePlaying
+		g.Config.Modulars = []string{"bomb_scare"}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Update: %v", err)
+	}
+
+	want := game.Summary{Phase: game.PhasePlaying, Modulars: []string{"bomb_scare"}}
+	if got := storedSummary(t, mr, "abc"); !reflect.DeepEqual(got, want) {
+		t.Errorf("summary = %+v, want %+v", got, want)
+	}
+	if ttl := mr.TTL("game:abc:info"); ttl != testTTL {
+		t.Errorf("summary ttl = %v, want %v (reset by the write)", ttl, testTTL)
+	}
+}
+
+func TestEndedGameSummaryTTL(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	if err := s.Create(ctx, newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	_, _, err := s.Update(ctx, "abc", func(g *game.Game) error {
+		g.Phase = game.PhaseEnded
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Update: %v", err)
+	}
+	if ttl := mr.TTL("game:abc:info"); ttl != time.Hour {
+		t.Errorf("summary ttl = %v, want 1h", ttl)
+	}
+}
+
+func TestTouchExtendsSummary(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	if err := s.Create(ctx, newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	mr.FastForward(time.Hour)
+
+	if err := s.Touch(ctx, "abc"); err != nil {
+		t.Fatalf("Touch: %v", err)
+	}
+	if ttl := mr.TTL("game:abc:info"); ttl != testTTL {
+		t.Errorf("summary ttl = %v, want %v", ttl, testTTL)
+	}
+}
+
+// pipelineRecorder is a Redis hook that records the commands of every
+// pipeline, MULTI and EXEC included, as their names.
+type pipelineRecorder struct {
+	mu        sync.Mutex
+	pipelines [][]string
+}
+
+func (r *pipelineRecorder) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+func (r *pipelineRecorder) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
+
+func (r *pipelineRecorder) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		names := make([]string, 0, len(cmds))
+		for _, cmd := range cmds {
+			names = append(names, cmd.Name())
+		}
+		r.mu.Lock()
+		r.pipelines = append(r.pipelines, names)
+		r.mu.Unlock()
+		return next(ctx, cmds)
+	}
+}
+
+func TestTouchExpiresBothKeysInOneTransaction(t *testing.T) {
+	mr := miniredis.RunT(t)
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = rdb.Close() })
+	s := New(rdb, testTTL)
+	if err := s.Create(t.Context(), newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	recorder := &pipelineRecorder{}
+	rdb.AddHook(recorder)
+
+	if err := s.Touch(t.Context(), "abc"); err != nil {
+		t.Fatalf("Touch: %v", err)
+	}
+
+	// Other pipelines, such as the CLIENT SETINFO of a new connection, are
+	// not Touch's.
+	var expiring [][]string
+	for _, names := range recorder.pipelines {
+		if slices.Contains(names, "expire") {
+			expiring = append(expiring, names)
+		}
+	}
+	want := [][]string{{"multi", "expire", "expire", "exec"}}
+	if !reflect.DeepEqual(expiring, want) {
+		t.Errorf("pipelines with an EXPIRE = %v, want %v", expiring, want)
+	}
+}
+
+func TestTouchGameWithoutSummary(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	if err := s.Create(ctx, newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	mr.Del("game:abc:info")
+	mr.FastForward(time.Hour)
+
+	if err := s.Touch(ctx, "abc"); err != nil {
+		t.Fatalf("Touch: %v", err)
+	}
+	if ttl := mr.TTL("game:abc"); ttl != testTTL {
+		t.Errorf("game ttl = %v, want %v", ttl, testTTL)
+	}
+	if mr.Exists("game:abc:info") {
+		t.Error("Touch created a summary")
+	}
+}
+
+func TestGameSummaries(t *testing.T) {
 	t.Run("no game", func(t *testing.T) {
 		s, _ := newTestStore(t)
 
-		assertGameCount(t, s, 0)
+		assertSummaryCount(t, s, 0)
 	})
 
-	t.Run("several games", func(t *testing.T) {
+	t.Run("one summary per game", func(t *testing.T) {
 		s, _ := newTestStore(t)
-		for _, id := range []string{"a", "b", "c"} {
-			if err := s.Create(t.Context(), newGame(id)); err != nil {
-				t.Fatalf("Create %s: %v", id, err)
+		ctx := t.Context()
+		for _, scenario := range []string{"rhino", "klaw", "ultron"} {
+			g := newGame(scenario + "-game")
+			g.Config.Scenario = scenario
+			if err := s.Create(ctx, g); err != nil {
+				t.Fatalf("Create %s: %v", g.ID, err)
 			}
 		}
 
-		assertGameCount(t, s, 3)
+		summaries, err := s.GameSummaries(ctx)
+		if err != nil {
+			t.Fatalf("GameSummaries: %v", err)
+		}
+		var scenarios []string
+		for _, summary := range summaries {
+			scenarios = append(scenarios, summary.Scenario)
+		}
+		slices.Sort(scenarios)
+		if want := []string{"klaw", "rhino", "ultron"}; !slices.Equal(scenarios, want) {
+			t.Errorf("scenarios = %v, want %v", scenarios, want)
+		}
+	})
+
+	t.Run("games without a summary are left out", func(t *testing.T) {
+		s, mr := newTestStore(t)
+		if err := s.Create(t.Context(), newGame("abc")); err != nil {
+			t.Fatalf("Create: %v", err)
+		}
+		if err := mr.Set(gameKey("old"), "{}"); err != nil {
+			t.Fatal(err)
+		}
+
+		assertSummaryCount(t, s, 1)
+	})
+
+	t.Run("undecodable summaries are left out", func(t *testing.T) {
+		s, mr := newTestStore(t)
+		if err := s.Create(t.Context(), newGame("abc")); err != nil {
+			t.Fatalf("Create: %v", err)
+		}
+		if err := mr.Set(infoKey("bad"), "not json"); err != nil {
+			t.Fatal(err)
+		}
+
+		assertSummaryCount(t, s, 1)
 	})
 
 	t.Run("online connections are not games", func(t *testing.T) {
@@ -481,10 +701,10 @@ func TestCountGames(t *testing.T) {
 			t.Fatalf("KeepOnline: %v", err)
 		}
 
-		assertGameCount(t, s, 1)
+		assertSummaryCount(t, s, 1)
 	})
 
-	t.Run("expired games are not counted", func(t *testing.T) {
+	t.Run("expired games are left out", func(t *testing.T) {
 		s, mr := newTestStore(t)
 		ctx := t.Context()
 		if err := s.Create(ctx, newGame("old")); err != nil {
@@ -496,41 +716,56 @@ func TestCountGames(t *testing.T) {
 		}
 		mr.FastForward(time.Minute)
 
-		assertGameCount(t, s, 1)
+		assertSummaryCount(t, s, 1)
 	})
 
 	t.Run("more games than one scan page", func(t *testing.T) {
 		s, mr := newTestStore(t)
 		const games = 2500
 		for i := range games {
-			if err := mr.Set(gameKey(strconv.Itoa(i)), "{}"); err != nil {
+			if err := mr.Set(infoKey(strconv.Itoa(i)), `{"phase":"lobby"}`); err != nil {
 				t.Fatal(err)
 			}
 		}
 
-		assertGameCount(t, s, games)
+		assertSummaryCount(t, s, games)
 	})
 }
 
-func TestCountGamesFailsWhenRedisIsDown(t *testing.T) {
+func TestGameSummariesFailsWhenRedisIsDown(t *testing.T) {
 	s, mr := newTestStore(t)
 	mr.Close()
 
 	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 	defer cancel()
-	if _, err := s.CountGames(ctx); err == nil {
-		t.Error("CountGames succeeded without Redis, want an error")
+	if _, err := s.GameSummaries(ctx); err == nil {
+		t.Error("GameSummaries succeeded without Redis, want an error")
 	}
 }
 
-func assertGameCount(t *testing.T, s *Store, want int64) {
+// storedSummary decodes the summary stored for game id.
+func storedSummary(t *testing.T, mr *miniredis.Miniredis, id string) game.Summary {
 	t.Helper()
 
-	got, err := s.CountGames(t.Context())
+	data, err := mr.Get(infoKey(id))
 	if err != nil {
-		t.Fatalf("CountGames: %v", err)
+		t.Fatalf("read summary of %s: %v", id, err)
 	}
-	if got != want {
-		t.Errorf("CountGames = %d, want %d", got, want)
+	var summary game.Summary
+	if err := json.Unmarshal([]byte(data), &summary); err != nil {
+		t.Fatalf("decode summary of %s: %v", id, err)
+	}
+	return summary
+}
+
+func assertSummaryCount(t *testing.T, s *Store, want int) {
+	t.Helper()
+
+	got, err := s.GameSummaries(t.Context())
+	if err != nil {
+		t.Fatalf("GameSummaries: %v", err)
+	}
+	if len(got) != want {
+		t.Errorf("GameSummaries returned %d summaries, want %d", len(got), want)
 	}
 }

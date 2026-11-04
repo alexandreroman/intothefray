@@ -40,6 +40,12 @@ type cardPoolResponse struct {
 // of the server.
 func (s *Server) handleGameCards(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+	if !validGameID(id) {
+		// An id newGameID cannot have generated names no game: Redis is not
+		// asked.
+		writeUncachedError(w, http.StatusNotFound, "game not found")
+		return
+	}
 	g, _, err := s.deps.Store.Load(r.Context(), id)
 	if errors.Is(err, store.ErrNotFound) {
 		writeUncachedError(w, http.StatusNotFound, "game not found")

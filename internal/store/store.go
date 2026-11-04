@@ -25,15 +25,20 @@ const (
 	endedGameTTL = time.Hour
 	// retryJitter scales the random pause between two Update attempts.
 	retryJitter = 2 * time.Millisecond
-	// countScanBatch is the COUNT hint of the SCAN rounds of CountGames.
-	countScanBatch = 1000
+	// infoScanBatch is the COUNT hint of the SCAN rounds of GameSummaries.
+	infoScanBatch = 1000
 
-	eventsPattern = "game:*:events"
-	eventsSuffix  = ":events"
+	// The keys of a game are game:<id>, the game, game:<id>:info, its
+	// summary, and online:<id>, its online connections; game:<id>:events is
+	// the pub/sub channel of its events, not a key. The server only hands
+	// over the ids it generates, which hold no colon, so no id names another
+	// game's key.
 	gamePrefix    = "game:"
-	// onlinePrefix starts the keys of the online connections. It is not
-	// gamePrefix: a game id comes from the request path, and no id must
-	// name another game's set of connections.
+	infoSuffix    = ":info"
+	infoPattern   = gamePrefix + "*" + infoSuffix
+	eventsSuffix  = ":events"
+	eventsPattern = gamePrefix + "*" + eventsSuffix
+	// onlinePrefix starts the keys of the online connections of the games.
 	onlinePrefix = "online:"
 	// connectionSeparator joins the id and the token of a connection in the
 	// set. The id comes first: it is generated without the separator, whereas
@@ -47,6 +52,20 @@ var (
 	// ErrExists reports a Create on an id that is already taken.
 	ErrExists = errors.New("game already exists")
 )
+
+// createScript stores a game and its summary in one step, so that no game is
+// ever left without a summary: it sets the game key (KEYS[1]) to ARGV[1]
+// unless it exists, and only then the summary key (KEYS[2]) to ARGV[2], both
+// expiring after ARGV[3] milliseconds. It returns 1 when it stored the game, 0
+// when the id is taken; a taken id never overwrites the summary of the game
+// that holds it.
+var createScript = redis.NewScript(`
+if not redis.call("SET", KEYS[1], ARGV[1], "NX", "PX", ARGV[3]) then
+	return 0
+end
+redis.call("SET", KEYS[2], ARGV[2], "PX", ARGV[3])
+return 1
+`)
 
 // Event is a message published on a game's channel, or a resync notice.
 type Event struct {
@@ -72,7 +91,9 @@ type record struct {
 	Game    *game.Game `json:"game"`
 }
 
-// Store persists games in Redis, one JSON value per game.
+// Store persists games in Redis, one JSON value per game under game:<id>, next
+// to a small JSON summary of the game (see game.Summary) under
+// game:<id>:info, written and expiring with it.
 type Store struct {
 	rdb *redis.Client
 	ttl time.Duration
@@ -85,17 +106,24 @@ func New(rdb *redis.Client, ttl time.Duration) *Store {
 	return &Store{rdb: rdb, ttl: ttl}
 }
 
-// Create stores a new game at version 1. It fails if the id is taken.
+// Create stores a new game at version 1, and its summary, atomically. It fails
+// if the id is taken.
 func (s *Store) Create(ctx context.Context, g *game.Game) error {
 	data, err := json.Marshal(record{Version: 1, Game: g})
 	if err != nil {
 		return fmt.Errorf("encode game %s: %w", g.ID, err)
 	}
-	created, err := s.rdb.SetNX(ctx, gameKey(g.ID), data, s.ttlFor(g.Phase)).Result()
+	summary, err := encodeSummary(g)
+	if err != nil {
+		return err
+	}
+	keys := []string{gameKey(g.ID), infoKey(g.ID)}
+	ttl := s.ttlFor(g.Phase).Milliseconds()
+	created, err := createScript.Run(ctx, s.rdb, keys, data, summary, ttl).Int()
 	if err != nil {
 		return fmt.Errorf("create game %s: %w", g.ID, err)
 	}
-	if !created {
+	if created == 0 {
 		return fmt.Errorf("create game %s: %w", g.ID, ErrExists)
 	}
 	return nil
@@ -115,10 +143,11 @@ func (s *Store) Load(ctx context.Context, id string) (*game.Game, int64, error) 
 }
 
 // Update applies fn to the stored game and writes the result with the
-// version incremented. Concurrent writers are handled optimistically: when
-// the key changes under us, the whole load-fn-write cycle runs again, so fn
-// must be safe to call several times. An error from fn aborts the update
-// without writing and is returned as is.
+// version incremented, along with its summary in the same transaction.
+// Concurrent writers are handled optimistically: when the key changes under
+// us, the whole load-fn-write cycle runs again, so fn must be safe to call
+// several times. An error from fn aborts the update without writing and is
+// returned as is.
 func (s *Store) Update(
 	ctx context.Context, id string, fn func(*game.Game) error,
 ) (*game.Game, int64, error) {
@@ -143,8 +172,14 @@ func (s *Store) Update(
 		if err != nil {
 			return fmt.Errorf("encode game %s: %w", id, err)
 		}
+		summary, err := encodeSummary(rec.Game)
+		if err != nil {
+			return err
+		}
+		ttl := s.ttlFor(rec.Game.Phase)
 		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			pipe.Set(ctx, key, data, s.ttlFor(rec.Game.Phase))
+			pipe.Set(ctx, key, data, ttl)
+			pipe.Set(ctx, infoKey(id), summary, ttl)
 			return nil
 		})
 		if err != nil {
@@ -174,40 +209,65 @@ func (s *Store) Update(
 		id, maxUpdateAttempts, redis.TxFailedErr)
 }
 
-// Touch resets the expiry of a game without changing it.
+// Touch resets the expiry of a game and of its summary without changing them,
+// in one MULTI/EXEC: both expiries change together or not at all. Like Create's
+// script and Update's transaction, it always gives both keys the same expiry
+// at once. A game without a summary, such as one stored before summaries
+// existed, is touched all the same.
 func (s *Store) Touch(ctx context.Context, id string) error {
 	g, _, err := s.Load(ctx, id)
 	if err != nil {
 		return err
 	}
-	touched, err := s.rdb.Expire(ctx, gameKey(id), s.ttlFor(g.Phase)).Result()
+	ttl := s.ttlFor(g.Phase)
+	var touched *redis.BoolCmd
+	_, err = s.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		touched = pipe.Expire(ctx, gameKey(id), ttl)
+		pipe.Expire(ctx, infoKey(id), ttl)
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("touch game %s: %w", id, err)
 	}
-	if !touched {
+	if !touched.Val() {
 		return fmt.Errorf("touch game %s: %w", id, ErrNotFound)
 	}
 	return nil
 }
 
-// CountGames returns how many games have not expired, ended ones included.
-// It walks the game keys with SCAN, which never blocks Redis the way KEYS
-// would, and reads no game value. SCAN may return a key twice while Redis
-// resizes its table: the count may then run slightly high, which a rough
-// figure tolerates better than holding every key to remove duplicates.
-func (s *Store) CountGames(ctx context.Context) (int64, error) {
+// GameSummaries returns the summary of every game that has not expired, in
+// any phase and in no particular order: one per game:*:info key,
+// deduplicated. It walks those keys with SCAN, which never blocks Redis the
+// way KEYS would, and reads their small values with one MGET per round: it
+// reads no game value. SCAN may return a key twice while Redis resizes its
+// table; such a key is read once, so each game appears once. A game stored before summaries existed has none and is
+// left out, and so is a summary that expires during the walk or that cannot
+// be decoded: one bad value must not fail the whole statistics.
+func (s *Store) GameSummaries(ctx context.Context) ([]game.Summary, error) {
 	var (
-		count  int64
-		cursor uint64
+		summaries []game.Summary
+		seen      = make(map[string]bool)
+		cursor    uint64
 	)
 	for {
-		keys, next, err := s.rdb.Scan(ctx, cursor, gamePrefix+"*", countScanBatch).Result()
+		keys, next, err := s.rdb.Scan(ctx, cursor, infoPattern, infoScanBatch).Result()
 		if err != nil {
-			return 0, fmt.Errorf("count games: %w", err)
+			return nil, fmt.Errorf("scan game summaries: %w", err)
 		}
-		count += int64(len(keys))
+		keys = unseen(keys, seen)
+		if len(keys) > 0 {
+			values, err := s.rdb.MGet(ctx, keys...).Result()
+			if err != nil {
+				return nil, fmt.Errorf("read game summaries: %w", err)
+			}
+			for _, value := range values {
+				if summary, ok := decodeSummary(value); ok {
+					summaries = append(summaries, summary)
+				}
+			}
+		}
 		if next == 0 {
-			return count, nil
+			return summaries, nil
 		}
 		cursor = next
 	}
@@ -387,6 +447,10 @@ func gameKey(id string) string {
 	return gamePrefix + id
 }
 
+func infoKey(id string) string {
+	return gamePrefix + id + infoSuffix
+}
+
 func onlineKey(id string) string {
 	return onlinePrefix + id
 }
@@ -416,4 +480,39 @@ func decode(id string, data []byte) (*record, error) {
 		return nil, fmt.Errorf("decode game %s: %w", id, err)
 	}
 	return &rec, nil
+}
+
+func encodeSummary(g *game.Game) ([]byte, error) {
+	data, err := json.Marshal(g.Summary())
+	if err != nil {
+		return nil, fmt.Errorf("encode summary of game %s: %w", g.ID, err)
+	}
+	return data, nil
+}
+
+// decodeSummary decodes a value read by MGET. It reports false for a key that
+// no longer exists (a nil value) and for a value that is not a summary.
+func decodeSummary(value any) (game.Summary, bool) {
+	data, ok := value.(string)
+	if !ok {
+		return game.Summary{}, false
+	}
+	var summary game.Summary
+	if err := json.Unmarshal([]byte(data), &summary); err != nil {
+		return game.Summary{}, false
+	}
+	return summary, true
+}
+
+// unseen returns the keys not in seen, and adds them to it.
+func unseen(keys []string, seen map[string]bool) []string {
+	fresh := make([]string, 0, len(keys))
+	for _, key := range keys {
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		fresh = append(fresh, key)
+	}
+	return fresh
 }

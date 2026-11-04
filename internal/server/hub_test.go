@@ -502,7 +502,7 @@ func TestPresenceRateLimit(t *testing.T) {
 }
 
 func TestPresenceNeverDropsSlowViewer(t *testing.T) {
-	c := newConn(nil, "game", slog.New(slog.NewTextHandler(io.Discard, nil)))
+	c := newConn(nil, testGameID, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	for range sendQueueSize/2 + 1 {
 		c.send(errorMessage{Type: typeError, Code: codeInvalid})
 	}
@@ -680,14 +680,14 @@ func TestConnectionClosedDuringRenewalStopsCounting(t *testing.T) {
 	t.Cleanup(func() { _ = rdb.Close() })
 	srv.deps.Store = store.New(rdb, time.Hour)
 
-	g, err := game.NewGame("abc", "host-token", "Alex", time.Now())
+	g, err := game.NewGame(testGameID, "host-token", "Alex", time.Now())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := srv.deps.Store.Create(t.Context(), g); err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	carol := newConn(nil, "abc", srv.deps.Logger)
+	carol := newConn(nil, testGameID, srv.deps.Logger)
 	carol.token, carol.onlineID = "carol-token", "tab"
 	srv.hub.register(carol)
 
@@ -705,7 +705,7 @@ func TestConnectionClosedDuringRenewalStopsCounting(t *testing.T) {
 	if !closed {
 		t.Fatal("the round renewed no lease")
 	}
-	online, err := srv.deps.Store.Online(t.Context(), "abc", time.Now())
+	online, err := srv.deps.Store.Online(t.Context(), testGameID, time.Now())
 	if err != nil {
 		t.Fatalf("Online: %v", err)
 	}
@@ -789,8 +789,9 @@ func TestReconnectResyncsViewers(t *testing.T) {
 	alex.awaitView(func(v game.View) bool { return len(v.Players) == 2 })
 }
 
-// expireBlocker is a Redis hook that holds every EXPIRE command, the one a
-// touch round sends, until release is closed.
+// expireBlocker is a Redis hook that holds every EXPIRE of a game key, alone
+// or in a pipeline, such as the MULTI/EXEC a touch round sends, until release
+// is closed. Nothing else is held, so presence commands always go through.
 type expireBlocker struct {
 	entered     chan struct{}
 	enteredOnce sync.Once
@@ -800,17 +801,37 @@ type expireBlocker struct {
 func (b *expireBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
 
 func (b *expireBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
-	return next
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		if slices.ContainsFunc(cmds, isGameExpire) {
+			b.block()
+		}
+		return next(ctx, cmds)
+	}
 }
 
 func (b *expireBlocker) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
 	return func(ctx context.Context, cmd redis.Cmder) error {
-		if cmd.Name() == "expire" {
-			b.enteredOnce.Do(func() { close(b.entered) })
-			<-b.release
+		if isGameExpire(cmd) {
+			b.block()
 		}
 		return next(ctx, cmd)
 	}
+}
+
+func (b *expireBlocker) block() {
+	b.enteredOnce.Do(func() { close(b.entered) })
+	<-b.release
+}
+
+// isGameExpire reports whether cmd is an EXPIRE of a key of a game, game:<id>
+// or game:<id>:info, as a touch round sends. The online: keys of the
+// presence rounds never match.
+func isGameExpire(cmd redis.Cmder) bool {
+	if cmd.Name() != "expire" || len(cmd.Args()) < 2 {
+		return false
+	}
+	key, ok := cmd.Args()[1].(string)
+	return ok && strings.HasPrefix(key, "game:")
 }
 
 func TestSlowTouchDoesNotDelayPresence(t *testing.T) {

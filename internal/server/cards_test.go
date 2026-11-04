@@ -26,11 +26,11 @@ func newCardsServer(t *testing.T) (ts *httptest.Server, started *game.Game, lobb
 	ts = httptest.NewServer(srv.Handler())
 	t.Cleanup(ts.Close)
 
-	started = newCardsGame(t, "started")
+	started = newCardsGame(t, "startedgm2")
 	if err := started.Start(cardsHostToken, srv.deps.Catalog, 42, time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	lobby := newCardsGame(t, "lobby")
+	lobby := newCardsGame(t, "queuedgame")
 	for _, g := range []*game.Game{started, lobby} {
 		if err := srv.deps.Store.Create(t.Context(), g); err != nil {
 			t.Fatal(err)
@@ -151,7 +151,10 @@ func TestGameCardsErrors(t *testing.T) {
 		wantStatus int
 		wantError  string
 	}{
-		{"unknown game", "nosuchgame", http.StatusNotFound, "game not found"},
+		{"unknown game", unknownGameID, http.StatusNotFound, "game not found"},
+		{"id too short", "abc", http.StatusNotFound, "game not found"},
+		{"id naming another key", "abcdefg:ab", http.StatusNotFound, "game not found"},
+		{"id with an uppercase letter", "Abcdefghjk", http.StatusNotFound, "game not found"},
 		{"game in its lobby", lobbyID, http.StatusConflict, "the game has not started"},
 	}
 	for _, tt := range tests {
@@ -169,6 +172,18 @@ func TestGameCardsErrors(t *testing.T) {
 				t.Errorf("body = %s, want error %q", resp.body, tt.wantError)
 			}
 		})
+	}
+}
+
+func TestGameCardsInvalidIDSkipsRedis(t *testing.T) {
+	ts, mr := newTestServer(t)
+	mr.SetError("ERR redis is down")
+
+	resp := getCards(t, ts, "abcdefg:ab", nil)
+
+	// A Redis read would have failed with a 500.
+	if resp.status != http.StatusNotFound {
+		t.Errorf("status = %d, want %d", resp.status, http.StatusNotFound)
 	}
 }
 
