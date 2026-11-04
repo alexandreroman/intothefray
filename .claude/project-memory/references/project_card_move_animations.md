@@ -13,7 +13,14 @@ type: project
   as a portrait table card (112×157 units at the zoom) centred on it,
   so it travels at a card's size, never squashed or turned a quarter
   (`measureOrigin` in `motion.svelte.ts`); a card going to a chip
-  shrinks into the chip's box.
+  shrinks into the chip's box and fades out into it, evenly over the
+  last 45 % of its flight (`CHIP_FADE_FROM` = 0.55, `PileFlight.fades`),
+  for every viewer, single cards and groups alike. A card going to a chip
+  that turns over does so first, where it starts, as a table card turned
+  over does (360 ms, edge-on half way, held up), then flies to the chip
+  (420 ms) and fades out over the last 45 % of that flight (`flipsFirst`,
+  `CHIP_FLIP_MS`): turning at the end of its way, it would be all but
+  faded out. A card leaving a chip shows at full opacity all along.
 - A card the viewer cannot see travels as a back: out of a face-down pile
   it leaves on its back and turns to its face where it lands face up; a
   card that lands face down stays a back. A card taken face down off the
@@ -24,7 +31,8 @@ type: project
   another side than it showed (`turnOf` in `animate.ts`): a face-up
   card put on a deck turns face down, a face-down card or a deck's
   hidden top dropped on a discard pile turns face up; a card that
-  keeps its side flies as it is. The same rule holds for every viewer.
+  keeps its side flies as it is; to a chip, it turns over before it
+  flies. The same rule holds for every viewer.
 - A hand the viewer does not see stays subtle: a card going into it slides
   down and fades out where it was; a card coming out of it rises into its
   pile, or turns face up where it lands on the table.
