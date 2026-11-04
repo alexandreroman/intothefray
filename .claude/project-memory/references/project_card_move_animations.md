@@ -1,6 +1,6 @@
 ---
 name: "Every change of place animates"
-description: "Cards travel from origin to destination; hidden cards travel as backs; unseen hands stay subtle"
+description: "Cards travel from origin to destination; hidden cards travel as backs; held-up cards lift, sway and settle"
 type: project
 ---
 
@@ -40,8 +40,9 @@ type: project
   (the actor of the last new line). The client matches the server's
   English wording of those lines (`internal/game/narrate.go` names the
   verbs).
-- The viewer's own drop never animates twice (`OwnDrop`): on the table
-  or in the hand it already lies where it went; onto a pile, each of its
+- The viewer's own drop never travels twice (`OwnDrop`): on the table
+  or in the hand it already lies where it went (on the table, it settles:
+  see below); onto a pile, each of its
   cards flies there from where it was let go (its landed ghost). A drop
   that tucks into a stack (`OwnDrop.tucks`) lands where it was let go,
   and each of its cards, a carried chain included, slides from its ghost
@@ -62,18 +63,44 @@ type: project
   keys follow its new face at once, for every viewer. Edge-on, it is out
   of reach of the pointer, so the rehover after a view and the card's
   `pointerleave` leave it hovered while it turns (`motion.isTurning`).
+- Cards feel physical, discreetly. A card held up off the table (dragged,
+  turning over, flying) is 6 % larger (`LIFT_SCALE`) and its `.shade`
+  falls 5 px down and to the right (`LIFT_SHADE`): the light comes from
+  the top left. Both constants live in `motion.svelte.ts`; the drag layer
+  hands them to the ghosts' CSS as `--lift-scale` and `--lift-shade`.
+- The viewer's own drag ghosts sway with the pointer's horizontal speed
+  (`sway.ts`): a spring-damped lean, clockwise to the right, ±6° at most,
+  upright again once the pointer rests, each ghost about its own centre
+  (groups and stacks alike). A `requestAnimationFrame` loop in
+  `DragLayer.svelte` writes `--sway` on the layer, only while the spring
+  moves. The sway is local: presence sends nothing for it, and other
+  players' ghosts stay upright at their 1.04 lift.
+- A dropped ghost stays held up where it landed until the view shows the
+  card. A drop on the table then settles (`settle`): 1.06 → 0.98 → 1 over
+  220 ms (`SETTLE_MS`), the shade back under it, upright from the ghost's
+  lean. A tucked drop, a flight or a slide leaves from the ghost at its
+  lifted size.
+- A table card turning over (`flip`, `turnIn`) rises to 1.06 at edge-on
+  and comes back down; one that slides in the same view is not lifted, as
+  both play on `scale`. Copies flying to a pile (not under it) or into the
+  hand rise to 1.06 at 45 % of the way.
 - A card exhausted or readied on the table tilts to its new angle
   (`tilt`, 180 ms) through the same diff, so a view after a reconnection
   gap, or under reduced motion, plays nothing. The tilt plays on the CSS
-  `rotate` property, apart from the `transform` the flip turns and the
-  `translate` a move slides. A card that comes onto the table exhausted
-  lands tilted.
+  `rotate` property, like the drag sway, apart from the `transform` the
+  flip turns, the `translate` a move slides and the `scale` a lift or a
+  settle plays on; a card never plays two motions on one property. A
+  card that comes onto the table exhausted lands tilted.
 
 **Why:** decided with the user: players follow what happened
-at the table without reading the history.
+at the table without reading the history, and cards feel physical and
+alive without drawing attention, while staying cheap to paint (no filter on
+table cards, no box-shadow animation; see [[project_card_paint_cost]]).
 
 **How to apply:** a new way for a card to change place needs its motion in
 `animate.ts` and `motion.svelte.ts`, reusing the kinds of `Anim` (`move`,
 `fly`, `enter`, `draw`, `drawAway`, `under`, `away`, `arrive`, `flip`,
-`tilt`, `turnIn`, `reveal`, `shuffle`, `marker`, `glow`) and the existing timing
-constants. Spec 5.5 ("Every change of place animates") holds the rule.
+`tilt`, `turnIn`, `reveal`, `shuffle`, `marker`, `glow`, `settle`), the existing
+timing constants and `LIFT_SCALE` / `LIFT_SHADE` for a card held up. Reduced
+motion keeps only the change glow and the static lift of a drag ghost.
+Spec 5.5 ("Every change of place animates") holds the rule.

@@ -52,6 +52,12 @@ export type Anim =
   | { kind: 'glow'; id: string; color: number }
   /** Exhausted or readied on the table: it tilts to its new angle. */
   | { kind: 'tilt'; id: string; exhausted: boolean }
+  /**
+   * The viewer's own drop that this view lays on the table, where it already lies: it settles there
+   * from its ghost, held up where it landed. Out of a pile (fromPile), its ghost may be the pile's
+   * unknown top card (unknownTopId). Not one tucked into a stack, which slides in under it.
+   */
+  | { kind: 'settle'; id: string; fromPile?: string }
   | { kind: 'turnIn'; id: string }
   /**
    * Turned over on the table: flipped, another face shown, or a hidden card come face up; or
@@ -195,7 +201,9 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
     }
     // The viewer's own drop already lies where it went on the table or in the hand, unless it went
     // into a stack: it slides to its spot in the chain from where it was let go, moved or not. Out
-    // of a pile, it enters from there (departures).
+    // of a pile, it enters from there (departures). Moved on the table by this view, it settles
+    // where it lies: a view that did not move it, another player's before the drop's answer, finds
+    // it where it was, out of sight under its ghost.
     if (dropped.has(card.id)) {
       if (travel?.kind === 'fly') {
         anims.push({ ...travel, dropped: true });
@@ -207,6 +215,8 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
           to: spotOf(card),
           dropped: true,
         });
+      } else if (!tucked && travel?.kind === 'move' && card.zone === 'table') {
+        anims.push({ kind: 'settle', id: card.id });
       }
       continue;
     }
@@ -768,7 +778,7 @@ interface OwnCards {
  * pile's cards top first, so that the top ones fly when a pile gives many
  * (MAX_PILE_FLIGHTS); they land in the order they lie on the pile they go to
  * (inPileOrder). The viewer's own drop out of a pile tucked into a stack
- * enters from where it was let go.
+ * enters from where it was let go; otherwise on the table, it settles there.
  */
 function departures(
   before: TableView,
@@ -783,7 +793,8 @@ function departures(
   // A pile's drag carries its top card only.
   const draggedTop = listedCards(before).find((listed) => listed.pile === draggedPile)?.id;
   // The viewer's own drop, or the top of a pile they dragged, already lies where it went, unless it went
-  // to a pile or into a stack: it flies or slides there from where it was let go.
+  // to a pile or into a stack: it flies or slides there from where it was let go. On the table, it
+  // settles where it lies.
   const keep = (anim: Departure | null) => {
     if (!anim) {
       return;
@@ -794,6 +805,8 @@ function departures(
       anims.push(anim);
     } else if (anim.kind === 'fly' || (anim.kind === 'enter' && tucked)) {
       anims.push({ ...anim, dropped: true });
+    } else if (anim.kind === 'enter') {
+      anims.push({ kind: 'settle', id: anim.id, fromPile: anim.fromPile });
     }
   };
   for (const was of before.cards) {
@@ -883,7 +896,8 @@ function originOf(card: CardView, shrunk: PileView[], tally: Tally): Origin | nu
  * first (inPileOrder), and one out of a hand rises into it. A card drawn into
  * the viewer's hand is a draw (drawsOf). The viewer's own drop of a deck's
  * hidden top card on a pile that shows it flies there from where it was let
- * go, on its back; tucked into a stack, it enters from where it was let go.
+ * go, on its back; tucked into a stack, it enters from where it was let go;
+ * otherwise on the table, it settles there.
  */
 function arrivals(
   before: TableView,
@@ -910,6 +924,8 @@ function arrivals(
       anims.push({ kind: 'enter', id: card.id, fromPile: origin.pile });
     } else if ('pile' in origin && tucked) {
       anims.push({ kind: 'enter', id: card.id, fromPile: origin.pile, dropped: true });
+    } else if ('pile' in origin) {
+      anims.push({ kind: 'settle', id: card.id, fromPile: origin.pile });
     }
     if (!isHidden(card)) {
       anims.push({ kind: 'flip', id: card.id });

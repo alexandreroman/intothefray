@@ -28,6 +28,22 @@ import { pileBack, pileCaption } from './face';
 import { EXHAUST_DEGREES, PORTRAIT_CARD } from './layout';
 import { tableCard, tablePile } from './screen';
 
+/**
+ * A card held up off the table: dragged, turning over, flying. It shows a little larger, and its
+ * shadow (.shade) falls further down and to the right of it, as the light comes from the top left.
+ * The drag layer passes both to the ghosts' styles (--lift-scale, --lift-shade).
+ */
+export const LIFT_SCALE = 1.06;
+export const LIFT_SHADE = '5px 5px';
+/**
+ * The viewer's own drop settles on the table once the view shows it: down from its lift, dipping a
+ * little below its size (SETTLE_DIP, at SETTLE_DIPS_AT), its shadow back under it, upright.
+ */
+const SETTLE_MS = 220;
+const SETTLE_DIP = 0.98;
+const SETTLE_DIPS_AT = 0.55;
+/** A copy flying to a pile or to the hand is held up highest this far into its way. */
+const FLIGHT_LIFT_AT = 0.45;
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
 const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
@@ -183,8 +199,9 @@ type Flight = PileFlight | DrawFlight | AwayFlight | ArriveFlight;
 const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 /** A card another player drags, or has just let go of (Presence.svelte). */
 const remoteGhost = (id: string) => `.presence .card.ghost[data-id="${CSS.escape(id)}"]`;
-/** The viewer's own drop, lying where it landed until the view shows it (DragLayer.svelte). */
-const ownGhost = (id: string) => `.draglayer .card.ghost.landed[data-id="${CSS.escape(id)}"]`;
+/** The viewer's own drop, held up where it landed until the view shows it (DragLayer.svelte). */
+const OWN_GHOST = '.draglayer .card.ghost.landed';
+const ownGhost = (id: string) => `${OWN_GHOST}[data-id="${CSS.escape(id)}"]`;
 /**
  * A pile where it shows: drawn on the table, or, out of play, the chip on its
  * owner's frame (Surface.svelte). A pile is never both.
@@ -245,9 +262,13 @@ function subjectsOf(table: TableView | undefined): Set<Subject> {
   return subjects;
 }
 
-/** How much an element is scaled on the screen: by the zoom on the table, by the hand's own transform. */
+/**
+ * How much an element is scaled on the screen: by the zoom on the table and in the drag layer, by
+ * the hand's own transform. Not by a lift or a sway, nor by an exhausted card's tilt: its box on
+ * the screen grows with them.
+ */
 function scaleOf(element: HTMLElement, zoom: number): number {
-  if (element.closest('.surface')) {
+  if (element.closest('.surface, .draglayer')) {
     return zoom;
   }
   const width = element.offsetWidth;
@@ -306,18 +327,34 @@ function measure(element: HTMLElement, zoom: number): Measured {
 }
 
 /**
- * Where a card leaves from (originOf, pilePlace): where it shows, or, out of
+ * Where a card leaves from (originOf, pilePlace): where it shows, the
+ * viewer's own drop at the size it is held up at, or, out of
  * an out-of-play pile, a card on the chip that stands for the pile. The chip
  * is wider than tall and smaller than a card, but a card leaves it as a card:
  * it travels at a card's size, from the chip's middle, and a portrait card
  * does not count as landscape for the quarter turn (PileFlight.quarter).
  */
 function measureOrigin(element: HTMLElement, zoom: number): Measured {
+  if (element.matches(OWN_GHOST)) {
+    // Held up where it was let go: it leaves at that size, the lift easing off on its way.
+    const ghost = measure(element, zoom);
+    return { ...ghost, w: ghost.w * LIFT_SCALE, h: ghost.h * LIFT_SCALE };
+  }
   if (!element.matches('.surface .chip[data-pile]')) {
     return measure(element, zoom);
   }
   const chip = measure(element, zoom);
   return { cx: chip.cx, cy: chip.cy, w: PORTRAIT_CARD.w * zoom, h: PORTRAIT_CARD.h * zoom };
+}
+
+/** A deck's hidden top card the viewer dragged landed as an unknown card, not under its id. */
+function unknownTopGhost(
+  root: HTMLElement,
+  fromPile: string | undefined,
+  piles: readonly PileView[],
+): HTMLElement | null {
+  const pile = piles.find((p) => p.id === fromPile);
+  return pile ? root.querySelector<HTMLElement>(ownGhost(unknownTopId(pile))) : null;
 }
 
 /**
@@ -330,11 +367,7 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
 function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HTMLElement | null {
   const find = (selector: string) => root.querySelector<HTMLElement>(selector);
   const placed = (id: string) => `${tableCard(id)}, ${handCard(id)}`;
-  // A deck's hidden top card the viewer dragged landed as an unknown card, not under its id.
-  const unknownTop = (fromPile: string | undefined) => {
-    const pile = piles.find((p) => p.id === fromPile);
-    return pile ? find(ownGhost(unknownTopId(pile))) : null;
-  };
+  const unknownTop = (fromPile: string | undefined) => unknownTopGhost(root, fromPile, piles);
   switch (anim.kind) {
     case 'move': {
       const landed = anim.dropped ? find(ownGhost(anim.id)) : null;
@@ -449,6 +482,34 @@ function backFrames(turns: Turn, edgeOn: number): Keyframe[] {
     { opacity: then, offset: 1 },
   ];
 }
+
+/** A lift of a turning card: up to edge-on, back down flat from there, or both in turn (#lift). */
+type Lift = 'up' | 'down' | 'upAndDown';
+
+/** The keyframes of a lift on a card's scale property, or on its shade's translate property. */
+function liftFrames(property: 'scale' | 'translate', lift: Lift): Keyframe[] {
+  const flat = property === 'scale' ? '1' : '0px 0px';
+  const lifted = property === 'scale' ? `${LIFT_SCALE}` : LIFT_SHADE;
+  switch (lift) {
+    case 'up':
+      return [{ [property]: flat, easing: 'ease-out' }, { [property]: lifted }];
+    case 'down':
+      return [{ [property]: lifted, easing: 'ease-in' }, { [property]: flat }];
+    case 'upAndDown':
+      return [
+        { [property]: flat, easing: 'ease-out' },
+        { [property]: lifted, offset: 0.5, easing: 'ease-in' },
+        { [property]: flat },
+      ];
+  }
+}
+
+/** A copy flying to a pile or to the hand is held up on its way (LIFT_SCALE), then put down. */
+const FLIGHT_LIFT_FRAMES: Keyframe[] = [
+  { scale: '1' },
+  { scale: `${LIFT_SCALE}`, offset: FLIGHT_LIFT_AT },
+  { scale: '1' },
+];
 
 const DRAW_AWAY_FRAMES: Keyframe[] = [
   { transform: 'translate(0, 0) scale(1)', opacity: 1 },
@@ -696,6 +757,28 @@ class TableMotion {
         tilting.set(anim.id, playingTilt(element));
       }
     }
+    // The viewer's own drop settles upright from the angle its ghost swayed to (#settle).
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const swayed = new Map<string, number>();
+    for (const anim of shown) {
+      if (anim.kind !== 'settle') {
+        continue;
+      }
+      const ghost = root
+        ? (root.querySelector<HTMLElement>(ownGhost(anim.id)) ??
+          unknownTopGhost(root, anim.fromPile, tables.before?.piles ?? []))
+        : null;
+      if (ghost) {
+        swayed.set(anim.id, playingTilt(ghost));
+      }
+    }
+    // A card sliding to its new place, or settling where the viewer let it go, plays on the scale
+    // property: it is not lifted as it turns (face up, out of a deck the viewer dragged it off).
+    const onScale = new Set(
+      shown.flatMap((anim) =>
+        anim.kind === 'move' || anim.kind === 'enter' || anim.kind === 'settle' ? [anim.id] : [],
+      ),
+    );
     this.#stopFor(shown, tables.after);
     const generation = ++this.#generation;
     if (!root || shown.length === 0) {
@@ -768,11 +851,16 @@ class TableMotion {
         case 'tilt':
           this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0);
           break;
+        // A card tilting meanwhile (exhausted or readied by another player) tilts on the same rotate
+        // property: it comes upright from its sway at once.
+        case 'settle':
+          this.#settle(root, anim.id, tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0));
+          break;
         case 'turnIn':
-          this.#turnIn(root, anim.id);
+          this.#turnIn(root, anim.id, !onScale.has(anim.id));
           break;
         case 'flip':
-          this.#flip(root, anim.id, oldSides.get(anim.id));
+          this.#flip(root, anim.id, oldSides.get(anim.id), !onScale.has(anim.id));
           break;
         case 'glow':
           this.#glow(root, anim.id, anim.color);
@@ -908,6 +996,12 @@ class TableMotion {
         }
         const options = { ...timing, easing, duration: flightMs(flight) };
         animations.push(this.#run(element, frames, options, null));
+        // On the scale property, apart from the transform its way plays on. Slipping under its
+        // pile, it stays flat: the pile lies over it.
+        if (!flight.under) {
+          const lift = { ...options, easing: 'ease-in-out' };
+          animations.push(this.#run(element, FLIGHT_LIFT_FRAMES, lift, null));
+        }
         if (flight.turns) {
           turnBack(backFrames(flight.turns, edgeOn), options);
         }
@@ -924,6 +1018,15 @@ class TableMotion {
           this.#follow(toSlot, flight);
         }
         animations.push(toSlot);
+        // On the scale property: the keyframes #follow rewrites leave it alone.
+        animations.push(
+          this.#run(
+            element,
+            FLIGHT_LIFT_FRAMES,
+            { ...timing, duration: DRAW_MS, easing: 'ease-in-out' },
+            null,
+          ),
+        );
         if (!flight.faceUp) {
           turnBack(backFrames('up', DRAW_EDGE_ON), { ...timing, duration: DRAW_MS });
         }
@@ -1218,7 +1321,11 @@ class TableMotion {
     );
   }
 
-  #turnIn(root: HTMLElement, id: string): void {
+  /**
+   * Turns a stage card just chosen in from edge-on, as if put down: lifted, it settles flat (lifts),
+   * unless it slides or settles meanwhile, which plays on the same scale property.
+   */
+  #turnIn(root: HTMLElement, id: string, lifts: boolean): void {
     const element = root.querySelector<HTMLElement>(tableCard(id));
     if (!element) {
       return;
@@ -1236,6 +1343,9 @@ class TableMotion {
     if (turn) {
       this.#turning.set(turn, id);
     }
+    if (lifts) {
+      this.#lift(element, 'down', { duration: TURN_IN_MS }, cardSubject(id));
+    }
   }
 
   /**
@@ -1243,9 +1353,11 @@ class TableMotion {
    * away to edge-on, then the card, drawn with its new side, turns back flat.
    * Without an old side (a hidden card come onto the table, or one taken face
    * down into the hand), only the second half plays. An exhausted card keeps
-   * its tilt; a hand card keeps its place.
+   * its tilt; a hand card keeps its place. A table card is lifted as it turns,
+   * highest edge-on (lifts), unless it slides or settles meanwhile, which
+   * plays on the same scale property.
    */
-  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined): void {
+  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined, lifts: boolean): void {
     const onTable = root.querySelector<HTMLElement>(tableCard(id));
     const element = onTable ?? root.querySelector<HTMLElement>(handCard(id));
     if (!element || typeof element.animate !== 'function') {
@@ -1279,6 +1391,9 @@ class TableMotion {
         { duration: half, easing: 'ease-in', fill: 'forwards' },
         cardSubject(id),
       );
+      if (onTable && lifts) {
+        this.#lift(oldSide, 'up', { duration: half, fill: 'forwards' }, cardSubject(id));
+      }
       const remove = () => {
         oldSide.remove();
         this.#copies.delete(oldSide);
@@ -1301,6 +1416,74 @@ class TableMotion {
     );
     if (turn && onTable) {
       this.#turning.set(turn, id);
+    }
+    if (onTable && lifts) {
+      const lift = oldSide ? 'upAndDown' : 'down';
+      this.#lift(element, lift, { duration: oldSide ? FLIP_MS : half }, cardSubject(id));
+    }
+  }
+
+  /**
+   * Lifts a table card off the table, or sets it back down, as it turns: its scale and its
+   * shade's offset (LIFT_SCALE, LIFT_SHADE), apart from the transform the turn plays on. Rising, it
+   * eases out; coming down, it eases in, put down.
+   */
+  #lift(
+    element: HTMLElement,
+    lift: Lift,
+    options: KeyframeAnimationOptions,
+    subject: Subject,
+  ): void {
+    this.#run(element, liftFrames('scale', lift), options, subject);
+    const shade = element.querySelector<HTMLElement>(':scope > .shade');
+    if (shade) {
+      this.#run(shade, liftFrames('translate', lift), options, subject);
+    }
+  }
+
+  /**
+   * Settles the viewer's own drop on the table, from its ghost held up where it was let go: it
+   * comes down from its lift, dipping a little below its size before it rests, its shadow back
+   * under it, and upright from the angle its ghost swayed to (swayed, in degrees). No other
+   * animation plays on a card just dropped on the table: it already lies where it went.
+   */
+  #settle(root: HTMLElement, id: string, swayed: number): void {
+    const element = root.querySelector<HTMLElement>(tableCard(id));
+    if (!element) {
+      return;
+    }
+    const subject = cardSubject(id);
+    const options = { duration: SETTLE_MS };
+    this.#run(
+      element,
+      [
+        { scale: `${LIFT_SCALE}`, easing: 'ease-in' },
+        { scale: `${SETTLE_DIP}`, offset: SETTLE_DIPS_AT, easing: 'ease-out' },
+        { scale: '1' },
+      ],
+      options,
+      subject,
+    );
+    const shade = element.querySelector<HTMLElement>(':scope > .shade');
+    if (shade) {
+      this.#run(
+        shade,
+        [
+          { translate: LIFT_SHADE, easing: 'ease-in' },
+          { translate: '0px 0px', offset: SETTLE_DIPS_AT },
+          { translate: '0px 0px' },
+        ],
+        options,
+        subject,
+      );
+    }
+    if (Math.abs(swayed) >= 0.1) {
+      this.#run(
+        element,
+        [{ rotate: `${swayed}deg` }, { rotate: '0deg' }],
+        { ...options, easing: 'ease-out' },
+        subject,
+      );
     }
   }
 
