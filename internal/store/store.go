@@ -209,9 +209,11 @@ func (s *Store) Update(
 		id, maxUpdateAttempts, redis.TxFailedErr)
 }
 
-// Touch resets the expiry of a game and of its summary without changing them.
-// A game without a summary, such as one stored before summaries existed, is
-// touched all the same.
+// Touch resets the expiry of a game and of its summary without changing them,
+// in one MULTI/EXEC: both expiries change together or not at all. Like Create's
+// script and Update's transaction, it always gives both keys the same expiry
+// at once. A game without a summary, such as one stored before summaries
+// existed, is touched all the same.
 func (s *Store) Touch(ctx context.Context, id string) error {
 	g, _, err := s.Load(ctx, id)
 	if err != nil {
@@ -219,7 +221,7 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 	}
 	ttl := s.ttlFor(g.Phase)
 	var touched *redis.BoolCmd
-	_, err = s.rdb.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+	_, err = s.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		touched = pipe.Expire(ctx, gameKey(id), ttl)
 		pipe.Expire(ctx, infoKey(id), ttl)
 		return nil

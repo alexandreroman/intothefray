@@ -561,6 +561,59 @@ func TestTouchExtendsSummary(t *testing.T) {
 	}
 }
 
+// pipelineRecorder is a Redis hook that records the commands of every
+// pipeline, MULTI and EXEC included, as their names.
+type pipelineRecorder struct {
+	mu        sync.Mutex
+	pipelines [][]string
+}
+
+func (r *pipelineRecorder) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+func (r *pipelineRecorder) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
+
+func (r *pipelineRecorder) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		names := make([]string, 0, len(cmds))
+		for _, cmd := range cmds {
+			names = append(names, cmd.Name())
+		}
+		r.mu.Lock()
+		r.pipelines = append(r.pipelines, names)
+		r.mu.Unlock()
+		return next(ctx, cmds)
+	}
+}
+
+func TestTouchExpiresBothKeysInOneTransaction(t *testing.T) {
+	mr := miniredis.RunT(t)
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = rdb.Close() })
+	s := New(rdb, testTTL)
+	if err := s.Create(t.Context(), newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	recorder := &pipelineRecorder{}
+	rdb.AddHook(recorder)
+
+	if err := s.Touch(t.Context(), "abc"); err != nil {
+		t.Fatalf("Touch: %v", err)
+	}
+
+	// Other pipelines, such as the CLIENT SETINFO of a new connection, are
+	// not Touch's.
+	var expiring [][]string
+	for _, names := range recorder.pipelines {
+		if slices.Contains(names, "expire") {
+			expiring = append(expiring, names)
+		}
+	}
+	want := [][]string{{"multi", "expire", "expire", "exec"}}
+	if !reflect.DeepEqual(expiring, want) {
+		t.Errorf("pipelines with an EXPIRE = %v, want %v", expiring, want)
+	}
+}
+
 func TestTouchGameWithoutSummary(t *testing.T) {
 	s, mr := newTestStore(t)
 	ctx := t.Context()

@@ -790,8 +790,8 @@ func TestReconnectResyncsViewers(t *testing.T) {
 }
 
 // expireBlocker is a Redis hook that holds every EXPIRE of a game key, alone
-// or in a pipeline as a touch round sends them, until release is closed.
-// Nothing else is held, so presence commands always go through.
+// or in a pipeline, such as the MULTI/EXEC a touch round sends, until release
+// is closed. Nothing else is held, so presence commands always go through.
 type expireBlocker struct {
 	entered     chan struct{}
 	enteredOnce sync.Once
