@@ -94,3 +94,4 @@
 - [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only
 - [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome
 - [Games in progress counter](references/project_games_in_progress.md) — GET /api/stats counts game: keys, 60 s cache; Home top capsule
+- [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar

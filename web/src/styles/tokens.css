@@ -96,6 +96,20 @@ body {
 }
 
 /*
+  While a dialog is open, the page under it does not scroll (modal.svelte.ts). Hidden, its
+  overflow keeps the scroll offset; no rubber band either (iOS). A classic scrollbar's room
+  stays (the gutter class), so the content does not widen under the dialog.
+*/
+html.scroll-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.scroll-locked-gutter {
+  scrollbar-gutter: stable;
+}
+
+/*
   The buttons, one hover per kind:
   - standard (this rule): rounded, raised ink; a lighter surface and a brighter edge on hover;
     every action but the main one, in a dialog too (Cancel, Close);
