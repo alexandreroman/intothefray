@@ -28,14 +28,16 @@ type versionResponse struct {
 // statsResponse is the reply to GET /api/stats. It is public and cached by
 // proxies: it names cards and sets only, and tells games apart by a random
 // reference that never leads to them; it never names a game id, a player or
-// a deck.
+// a deck. Every list and string of the reply is left out when empty, but the
+// count always shows, so the reply without a game being played is
+// {"games":0}.
 type statsResponse struct {
 	// Games counts the games being played, those in the playing phase: it is
 	// always the length of Playing.
 	Games int `json:"games"`
 	// Playing lists the games being played, one entry per game; lobbies and
 	// ended games are left out, of the list as of the count.
-	Playing []playedGame `json:"playing"`
+	Playing []playedGame `json:"playing,omitempty"`
 }
 
 // playedGame is what one game in play is played with, by English names. Its
@@ -44,23 +46,23 @@ type statsResponse struct {
 type playedGame struct {
 	// Ref tells the game apart from one call to the next for its whole life:
 	// it is the random StatsRef of the game, which never leads to it. It is
-	// empty for a game created without one.
-	Ref        string          `json:"ref"`
-	Heroes     []playedHero    `json:"heroes"` // by hero name, then alter-ego name
-	Scenario   string          `json:"scenario"`
-	Difficulty pack.Difficulty `json:"difficulty"` // "standard" or "expert", as configured
+	// left out for a game created without one.
+	Ref        string          `json:"ref,omitempty"`
+	Heroes     []playedHero    `json:"heroes,omitempty"`     // by hero name, then alter-ego name
+	Scenario   string          `json:"scenario,omitempty"`   // left out when unknown to the catalog
+	Difficulty pack.Difficulty `json:"difficulty,omitempty"` // "standard" or "expert", as configured
 	// Sets names the encounter sets the game adds to its scenario, its
 	// Standard, Expert and modular sets, sorted by name, such as
 	// ["Bomb Scare", "Expert II", "Standard III"]. A set the game plays
 	// without, or whose code is unknown to the catalog, is not in the list.
-	Sets []string `json:"sets"`
+	Sets []string `json:"sets,omitempty"`
 }
 
-// playedHero names the identity of a deck in play. AlterEgo is empty for an
-// identity without an alter-ego face.
+// playedHero names the identity of a deck in play. AlterEgo is left out for
+// an identity without an alter-ego face.
 type playedHero struct {
-	Hero     string `json:"hero"`
-	AlterEgo string `json:"alterEgo"`
+	Hero     string `json:"hero,omitempty"`
+	AlterEgo string `json:"alterEgo,omitempty"`
 }
 
 // errorResponse is the body of every HTTP error reply.

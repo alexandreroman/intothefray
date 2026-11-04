@@ -70,7 +70,7 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 // them. The list is sorted by random ref (see comparePlayedGames), so that its
 // order tells nothing of where the games are stored.
 func (s *Server) statsOf(summaries []game.Summary) statsResponse {
-	playing := []playedGame{}
+	var playing []playedGame
 	for _, summary := range summaries {
 		if summary.Phase == game.PhasePlaying {
 			playing = append(playing, s.playedGameOf(summary))
@@ -84,12 +84,7 @@ func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 // sorts its heroes and sets by name. An unknown scenario gives an empty name;
 // an unknown hero or set is left out.
 func (s *Server) playedGameOf(summary game.Summary) playedGame {
-	played := playedGame{
-		Ref:        summary.Ref,
-		Heroes:     []playedHero{},
-		Difficulty: summary.Difficulty,
-		Sets:       []string{},
-	}
+	played := playedGame{Ref: summary.Ref, Difficulty: summary.Difficulty}
 	if scenario, ok := s.deps.Catalog.Scenario(summary.Scenario); ok {
 		played.Scenario = scenario.Name
 	}

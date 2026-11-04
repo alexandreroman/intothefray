@@ -123,9 +123,9 @@ func TestStatsWithoutGamesBeingPlayed(t *testing.T) {
 	if got := gamesIn(t, resp); got != 0 {
 		t.Errorf("games = %d, want 0", got)
 	}
-	// The list is an array even when empty.
-	if want := `"playing":[]`; !strings.Contains(string(resp.body), want) {
-		t.Errorf("body = %s, want it to hold %s", resp.body, want)
+	// The empty list is left out; the encoder ends the body with a newline.
+	if want := `{"games":0}` + "\n"; string(resp.body) != want {
+		t.Errorf("body = %q, want %q", resp.body, want)
 	}
 }
 
@@ -217,19 +217,31 @@ func TestStatsDifficultyAndSets(t *testing.T) {
 		difficulty pack.Difficulty
 		standard   string
 		expert     string
+		modulars   []string
 		wantSets   []string
+		wantKeys   []string
 	}{
 		{
 			name:       "expert with Standard II and Expert II",
 			difficulty: pack.Expert,
 			standard:   "standard_ii",
 			expert:     "expert_ii",
+			modulars:   []string{"bomb_scare"},
 			wantSets:   []string{"Bomb Scare", "Expert II", "Standard II"},
+			wantKeys:   []string{"difficulty", "heroes", "ref", "scenario", "sets"},
 		},
 		{
 			name:       "without a Standard or Expert set",
 			difficulty: pack.Standard,
+			modulars:   []string{"bomb_scare"},
 			wantSets:   []string{"Bomb Scare"},
+			wantKeys:   []string{"difficulty", "heroes", "ref", "scenario", "sets"},
+		},
+		{
+			// The empty list of sets is left out of the entry.
+			name:       "without any encounter set",
+			difficulty: pack.Standard,
+			wantKeys:   []string{"difficulty", "heroes", "ref", "scenario"},
 		},
 	}
 	for _, tt := range tests {
@@ -237,6 +249,7 @@ func TestStatsDifficultyAndSets(t *testing.T) {
 			ts, _, _ := newStatsServer(t)
 			cfg := game.DefaultConfig(testCatalog(t), "rhino")
 			cfg.Difficulty, cfg.Standard, cfg.Expert = tt.difficulty, tt.standard, tt.expert
+			cfg.Modulars = tt.modulars
 			startGameWith(t, ts, "Alex", cfg)
 
 			resp := getStats(t, ts)
@@ -251,14 +264,14 @@ func TestStatsDifficultyAndSets(t *testing.T) {
 			if got := playing[0].Sets; !slices.Equal(got, tt.wantSets) {
 				t.Errorf("sets = %q, want %q", got, tt.wantSets)
 			}
-			assertEntryKeys(t, resp)
+			assertEntryKeys(t, resp, tt.wantKeys)
 		})
 	}
 }
 
 // assertEntryKeys checks that the first entry of a stats reply has exactly
-// the keys of the API, whatever the game is played with.
-func assertEntryKeys(t *testing.T, resp reply) {
+// the want keys, sorted.
+func assertEntryKeys(t *testing.T, resp reply, want []string) {
 	t.Helper()
 
 	var body struct {
@@ -271,7 +284,7 @@ func assertEntryKeys(t *testing.T, resp reply) {
 		t.Fatalf("body = %s, want a game", resp.body)
 	}
 	keys := slices.Sorted(maps.Keys(body.Playing[0]))
-	if want := []string{"difficulty", "heroes", "ref", "scenario", "sets"}; !slices.Equal(keys, want) {
+	if !slices.Equal(keys, want) {
 		t.Errorf("entry keys = %q, want %q", keys, want)
 	}
 }
@@ -349,7 +362,7 @@ func TestHeroOf(t *testing.T) {
 
 	got := heroOf(card)
 
-	// No alter-ego face: the field is still there, empty, like on every hero.
+	// No alter-ego face: the field is empty, and left out of the JSON.
 	if want := (playedHero{Hero: "Mighty Side"}); got != want {
 		t.Errorf("heroOf = %+v, want %+v", got, want)
 	}
@@ -357,7 +370,7 @@ func TestHeroOf(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := `{"hero":"Mighty Side","alterEgo":""}`; string(data) != want {
+	if want := `{"hero":"Mighty Side"}`; string(data) != want {
 		t.Errorf("JSON = %s, want %s", data, want)
 	}
 }
@@ -402,14 +415,35 @@ func TestStatsOf(t *testing.T) {
 		// Sorted by ref; the games without one come first, by scenario. Heroes
 		// and sets are sorted by name; unknown codes are left out.
 		Playing: []playedGame{
-			{Heroes: []playedHero{}, Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
-			{Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Sets: []string{}},
-			{Ref: "aaaa", Heroes: []playedHero{}, Scenario: "Klaw", Sets: []string{"Masters of Evil"}},
+			{Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
+			{Heroes: []playedHero{spiderMan}, Scenario: "Rhino"},
+			{Ref: "aaaa", Scenario: "Klaw", Sets: []string{"Masters of Evil"}},
 			sameContent("bbbb"),
 			sameContent("cccc"),
 		},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("statsOf = %+v, want %+v", got, want)
+	}
+}
+
+func TestStatsJSONLeavesOutEmptyFields(t *testing.T) {
+	s := &Server{deps: Deps{Catalog: testCatalog(t)}}
+	summaries := []game.Summary{
+		{Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Difficulty: pack.Standard, Heroes: []string{"01001a"}},
+		// No ref, no difficulty, and a scenario, hero and set unknown to the
+		// catalog: every field of the entry is empty.
+		{Phase: game.PhasePlaying, Scenario: "nope", Heroes: []string{"99999"}, Modulars: []string{"unknown"}},
+	}
+
+	data, err := json.Marshal(s.statsOf(summaries))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := `{"games":2,"playing":[{},{"ref":"aaaa",` +
+		`"heroes":[{"hero":"Spider-Man","alterEgo":"Peter Parker"}],"scenario":"Klaw","difficulty":"standard"}]}`
+	if string(data) != want {
+		t.Errorf("JSON = %s, want %s", data, want)
 	}
 }
