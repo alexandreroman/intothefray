@@ -38,5 +38,20 @@
   "dreadpool": {"setAside": ["44038", "44039", "44040", "44041", "44042"]},
   "hydra_camp": {"unlisted": true},
   "expcamp": {"unlisted": true},
-  "exper_weapon": {"unlisted": true}
+  "exper_weapon": {"unlisted": true},
+  "ship_command": {
+    "inPlay": {
+      "standard": [{"card": "16142", "face": 0}],
+      "expert": [{"card": "16142", "face": 0}]
+    }
+  },
+  "power_stone": {
+    "inPlay": {
+      "standard": [{"card": "16149", "face": 0}],
+      "expert": [{"card": "16149", "face": 0}]
+    }
+  },
+  "the_market": {"unlisted": true},
+  "challenge": {"unlisted": true},
+  "badoon_headhunter": {"unlisted": true}
 }

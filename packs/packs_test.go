@@ -151,8 +151,8 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 17 {
-			t.Errorf("supported scenarios = %d, want 17", supported)
+		if supported != 22 {
+			t.Errorf("supported scenarios = %d, want 22", supported)
 		}
 	})
 }
@@ -653,6 +653,184 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 	}
 }
 
+// TestEmbeddedGalaxysMostWanted checks the five scenarios of The Galaxy's
+// Most Wanted: their stages, the cards they start in play or set aside, the
+// encounter sets they require with those sets' Setup cards (the Milano, the
+// Power Stone), and the campaign sets the pack keeps out of the lobby.
+func TestEmbeddedGalaxysMostWanted(t *testing.T) {
+	cat, err := packs.Catalog()
+	if err != nil {
+		t.Fatalf("Catalog() error = %v", err)
+	}
+
+	tests := []struct {
+		scenario string
+		// standard and expert are the villain cards each difficulty starts
+		// on, scheme the main scheme both start on.
+		standard pack.FaceRef
+		expert   pack.FaceRef
+		scheme   pack.FaceRef
+		inPlay   []pack.FaceRef
+		setAside []string
+		sets     []string
+		// table lists the cards setup lays on the table: the scenario's
+		// in-play cards and the Setup cards of the sets it requires. The
+		// other cards of those sets lie in the encounter deck.
+		table []string
+	}{
+		{
+			scenario: "brotherhood_of_badoon",
+			standard: pack.FaceRef{Card: "16058", Face: 0},
+			expert:   pack.FaceRef{Card: "16059", Face: 0},
+			scheme:   pack.FaceRef{Card: "16061", Face: 0},
+			inPlay:   []pack.FaceRef{{Card: "16063", Face: 0}},
+			sets:     []string{"ship_command"},
+			table:    []string{"16063", "16142"},
+		},
+		{
+			scenario: "infiltrate_the_museum",
+			standard: pack.FaceRef{Card: "16070", Face: 0},
+			expert:   pack.FaceRef{Card: "16071", Face: 0},
+			scheme:   pack.FaceRef{Card: "16073", Face: 0},
+			sets:     []string{"galactic_artifacts"},
+		},
+		{
+			// Ship Command waits aside, out of the encounter deck, and its
+			// Milano does not start in play.
+			scenario: "escape_the_museum",
+			standard: pack.FaceRef{Card: "16080", Face: 0},
+			expert:   pack.FaceRef{Card: "16081", Face: 0},
+			scheme:   pack.FaceRef{Card: "16082", Face: 0},
+			inPlay:   []pack.FaceRef{{Card: "16085", Face: 0}},
+			setAside: []string{"16142", "16143", "16144", "16145", "16146", "16147", "16148"},
+			sets:     []string{"galactic_artifacts"},
+			table:    []string{"16085"},
+		},
+		{
+			scenario: "nebula",
+			standard: pack.FaceRef{Card: "16088", Face: 0},
+			expert:   pack.FaceRef{Card: "16089", Face: 0},
+			scheme:   pack.FaceRef{Card: "16091", Face: 0},
+			inPlay:   []pack.FaceRef{{Card: "16093", Face: 0}},
+			sets:     []string{"power_stone", "ship_command"},
+			table:    []string{"16093", "16142", "16149"},
+		},
+		{
+			// The Universal Weapon lies by Ronan for the players to attach.
+			scenario: "ronan",
+			standard: pack.FaceRef{Card: "16103", Face: 0},
+			expert:   pack.FaceRef{Card: "16104", Face: 0},
+			scheme:   pack.FaceRef{Card: "16106", Face: 0},
+			inPlay:   []pack.FaceRef{{Card: "16108", Face: 0}, {Card: "16109", Face: 0, With: "villain"}},
+			sets:     []string{"power_stone", "ship_command"},
+			table:    []string{"16108", "16109", "16142", "16149"},
+		},
+	}
+
+	t.Run("index", func(t *testing.T) {
+		for _, tt := range tests {
+			i := slices.IndexFunc(cat.Index().Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == tt.scenario })
+			if i < 0 {
+				t.Errorf("scenario ref %s not found", tt.scenario)
+				continue
+			}
+			ref := cat.Index().Scenarios[i]
+			if !ref.Supported || ref.SelfContained || ref.Pack != "gmw" || !slices.Equal(ref.Sets, tt.sets) {
+				t.Errorf("%s ref = %+v, want supported, not self-contained, in pack gmw, with sets %v",
+					tt.scenario, ref, tt.sets)
+			}
+		}
+		for _, code := range []string{"the_market", "challenge", "badoon_headhunter"} {
+			if set, ok := cat.Set(code); !ok || !set.Unlisted {
+				t.Errorf("set %s = %+v, want unlisted", code, set)
+			}
+		}
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.scenario+"/starts", func(t *testing.T) {
+			scenario, ok := cat.Scenario(tt.scenario)
+			if !ok {
+				t.Fatalf("scenario %s not found", tt.scenario)
+			}
+			villains := map[pack.Difficulty]pack.FaceRef{pack.Standard: tt.standard, pack.Expert: tt.expert}
+			for difficulty, villain := range villains {
+				start := scenario.Start[difficulty]
+				if got := start.Top["villain"]; got != villain {
+					t.Errorf("%s villain = %+v, want %+v", difficulty, got, villain)
+				}
+				if got := start.Top["scheme"]; got != tt.scheme {
+					t.Errorf("%s scheme = %+v, want %+v", difficulty, got, tt.scheme)
+				}
+				if !slices.Equal(start.InPlay, tt.inPlay) {
+					t.Errorf("%s in play = %v, want %v", difficulty, start.InPlay, tt.inPlay)
+				}
+			}
+			if !slices.Equal(scenario.SetAside, tt.setAside) {
+				t.Errorf("set aside = %v, want %v", scenario.SetAside, tt.setAside)
+			}
+			if !slices.Equal(scenario.Sets, tt.sets) {
+				t.Errorf("sets = %v, want %v", scenario.Sets, tt.sets)
+			}
+		})
+
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scenario+"/"+string(difficulty), func(t *testing.T) {
+				cfg := game.LobbyConfig{Scenario: tt.scenario, Difficulty: difficulty, Modulars: []string{}}
+				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
+
+				// Each card lies in one place only: a card on the table or
+				// set aside is out of the encounter deck.
+				want := map[string][]string{}
+				for _, setCode := range tt.sets {
+					set, ok := cat.Set(setCode)
+					if !ok {
+						t.Fatalf("no set %q", setCode)
+					}
+					for _, code := range set.Cards {
+						card, _, err := cat.Card(code)
+						if err != nil {
+							t.Fatal(err)
+						}
+						want[card.Code] = slices.Repeat([]string{game.PileEncounter}, card.Quantity)
+					}
+				}
+				for _, code := range tt.table {
+					want[code] = []string{"table"}
+				}
+				for _, code := range tt.setAside {
+					want[code] = []string{game.PileScenarioAside}
+				}
+				for code, places := range want {
+					if got := placesOf(table, code); !slices.Equal(got, places) {
+						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
+					}
+				}
+			})
+		}
+	}
+
+	// With the sets a lobby would bring, every card of the encounter sets
+	// exists exactly as many times as printed.
+	for _, tt := range tests {
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scenario+"/"+string(difficulty)+"/copies", func(t *testing.T) {
+				cfg := game.DefaultConfig(cat, tt.scenario)
+				cfg.Difficulty = difficulty
+				if difficulty == pack.Expert {
+					cfg.Expert = "expert"
+				}
+				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
+
+				scenario, _ := cat.Scenario(tt.scenario)
+				setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, scenario.Sets...)
+				setCodes = append(setCodes, cfg.Modulars...)
+				checkEmbeddedSetCopies(t, cat, table, setCodes)
+			})
+		}
+	}
+}
+
 // checkEmbeddedSetCopies verifies that every card of the given sets is on the
 // table exactly as many times as its quantity. Empty set codes are skipped.
 func checkEmbeddedSetCopies(t *testing.T, cat *pack.Catalog, table *game.Table, setCodes []string) {
@@ -875,9 +1053,11 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 
 	// The only cards placed in play are the cards a scenario's printed setup
 	// puts in play, environments and side schemes (Criminal Enterprise, Ultron
-	// Drones, Public Support, Day of Reckoning): any other card stays in the
-	// encounter deck for the players.
-	t.Run("scenario in-play cards are environments or side schemes", func(t *testing.T) {
+	// Drones, Public Support, Day of Reckoning), and the attachments it gives
+	// a villain, laid out with that villain's stage for the players to attach
+	// (Ronan's Universal Weapon): any other card stays in the encounter deck
+	// for the players.
+	t.Run("scenario in-play cards are environments, side schemes or stage attachments", func(t *testing.T) {
 		for _, file := range files {
 			for _, scenario := range file.Scenarios {
 				for difficulty, start := range scenario.Start {
@@ -886,8 +1066,12 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 						if err != nil || ref.Face < 0 || ref.Face >= len(card.Faces) {
 							continue // reported by "scenarios resolve"
 						}
-						if got := card.Faces[ref.Face].Type; got != "environment" && got != "side_scheme" {
-							t.Errorf("scenario %s %s starts %s face %d in play, a %s, want an environment or a side scheme",
+						switch got := card.Faces[ref.Face].Type; {
+						case got == "environment" || got == "side_scheme":
+						case got == "attachment" && ref.With != "":
+						default:
+							t.Errorf("scenario %s %s starts %s face %d in play, a %s, "+
+								"want an environment, a side scheme or an attachment with a stage",
 								scenario.ID, difficulty, ref.Card, ref.Face, got)
 						}
 					}

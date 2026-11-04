@@ -696,9 +696,12 @@
       "name": "Brotherhood Of Badoon",
       "pack": "gmw",
       "image": "https://img.intothefray.xyz/cards/en/16058.3591114b204d.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "band_of_badoon"
+      ],
+      "sets": [
+        "ship_command"
       ],
       "localized": {
         "fr": {
@@ -711,9 +714,12 @@
       "name": "Infiltrate the Museum",
       "pack": "gmw",
       "image": "https://img.intothefray.xyz/cards/en/16070.bb985b7bc03a.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "menagerie_medley"
+      ],
+      "sets": [
+        "galactic_artifacts"
       ],
       "localized": {
         "fr": {
@@ -726,9 +732,12 @@
       "name": "Escape the Museum",
       "pack": "gmw",
       "image": "https://img.intothefray.xyz/cards/en/16080a.f1a0e9b60f4a.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "menagerie_medley"
+      ],
+      "sets": [
+        "galactic_artifacts"
       ],
       "localized": {
         "fr": {
@@ -741,9 +750,13 @@
       "name": "Nebula",
       "pack": "gmw",
       "image": "https://img.intothefray.xyz/cards/en/16088.35679678c380.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "space_pirates"
+      ],
+      "sets": [
+        "power_stone",
+        "ship_command"
       ]
     },
     {
@@ -751,9 +764,13 @@
       "name": "Ronan the Accuser",
       "pack": "gmw",
       "image": "https://img.intothefray.xyz/cards/en/16103.97852bcc6462.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "kree_militant"
+      ],
+      "sets": [
+        "power_stone",
+        "ship_command"
       ],
       "localized": {
         "fr": {
@@ -1562,17 +1579,6 @@
       }
     },
     {
-      "code": "badoon_headhunter",
-      "name": "Badoon Headhunter",
-      "pack": "gmw",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Traqueur Badoon"
-        }
-      }
-    },
-    {
       "code": "band_of_badoon",
       "name": "Band of Badoon",
       "pack": "gmw",
@@ -1580,17 +1586,6 @@
       "localized": {
         "fr": {
           "name": "Troupe de Badoon"
-        }
-      }
-    },
-    {
-      "code": "challenge",
-      "name": "Challenge",
-      "pack": "gmw",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Défi"
         }
       }
     },
@@ -1657,17 +1652,6 @@
       "localized": {
         "fr": {
           "name": "Pirates de l'Espace"
-        }
-      }
-    },
-    {
-      "code": "the_market",
-      "name": "The Market",
-      "pack": "gmw",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Le Marché"
         }
       }
     },

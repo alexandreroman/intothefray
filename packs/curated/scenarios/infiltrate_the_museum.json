@@ -1,0 +1,51 @@
+{
+  "id": "infiltrate_the_museum",
+  "villainSet": "infiltrate_the_museum",
+  "sets": [
+    "galactic_artifacts"
+  ],
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "16070",
+        "16071",
+        "16072"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "16073"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "16070",
+          "face": 0
+        },
+        "scheme": {
+          "card": "16073",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "16071",
+          "face": 0
+        },
+        "scheme": {
+          "card": "16073",
+          "face": 0
+        }
+      }
+    }
+  }
+}
