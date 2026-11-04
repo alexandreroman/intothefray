@@ -1070,26 +1070,30 @@ describe('dragging from a pile', () => {
     expect(session.act).not.toHaveBeenCalled();
   });
 
-  it('deals the encounter card where it lands, even over a card', async () => {
+  it('deals the encounter card under the card it is dropped on', async () => {
     const { session } = await renderTable();
     await press(placed('enc'), 70, 100);
+    // Over "other", at 420, 340 on the screen, in Alex's row.
     await moveTo(470, 420);
-    // It is not tucked: no outline, no label.
-    expect(placed('other').classList).not.toContain('drop-target');
-    expect(screen.queryByText(/^Under/)).toBeNull();
+    expect(placed('other').classList).toContain('drop-target');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
 
     await release(470, 420);
-    // Held by its middle: its corner at 414, 341.5 on the screen, 394, 301.5 on the table, in
-    // Alex's row, which starts 30 above his deck (at 300).
+    // The drop point is not sent: the server lays the stack out.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'deal',
         area: 'p0',
-        x: 390,
-        y: 300,
+        target: 'other',
       },
       0,
     );
+    // Held by its middle, it lies where it was let go, its corner at 414, 341.5 on the screen: the
+    // next view slides it to the end of the chain.
+    const [ghost] = ghosts();
+    expect(ghost?.style.left).toBe('414px');
+    expect(ghost?.style.top).toBe('341.5px');
+    expect(interaction.landing).toMatchObject({ tucks: true });
   });
 
   it('deals to the player whose row it lands in, or to the viewer in the villain row', async () => {
@@ -1177,6 +1181,30 @@ describe("dragging the top card of the viewer's deck", () => {
       },
       0,
     );
+  });
+
+  it('plays it under the card it is dropped on, where it was let go until the server answers', async () => {
+    const { session } = await renderTable();
+    await press(placed('deck:p0'), 690, 410);
+    // Over "other", at 420, 340 on the screen.
+    await moveTo(470, 420);
+    expect(placed('other').classList).toContain('drop-target');
+    expect(screen.getByText('Under Spider-Man')).toBeTruthy();
+
+    await release(470, 420);
+    // The drop point is not sent: the server lays the stack out, and plays the card face down.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      {
+        kind: 'play',
+        pile: 'deck:p0',
+        target: 'other',
+      },
+      0,
+    );
+    const [ghost] = ghosts();
+    expect(ghost?.style.left).toBe('414px');
+    expect(ghost?.style.top).toBe('341.5px');
+    expect(interaction.landing).toMatchObject({ tucks: true });
   });
 
   it('draws it when dropped on the hand, and discards it on the discard pile', async () => {

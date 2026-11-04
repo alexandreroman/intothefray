@@ -87,13 +87,16 @@ export type DragSource =
   | { kind: 'hand'; card: string; hand: readonly string[]; area: Area }
   /** The top card of a pile that shows its cards. */
   | { kind: 'pile'; pile: string; card: string }
-  /** The unknown top card of the encounter deck, dealt face down. */
+  /**
+   * The unknown top card of an encounter deck, the classic one or a scenario one: dealt face down
+   * where it lands or under a card, or discarded.
+   */
   | { kind: 'encounter'; pile: string }
   /**
    * The unknown top card of one of the viewer's own decks: drawn, discarded, or played face down,
-   * or face up from a side deck that shows its top card (the server's landsFaceDown). Also the top
-   * card of a scenario deck that is not an encounter deck, which belongs to nobody: discarded, or
-   * played face up.
+   * or face up from a side deck that shows its top card (the server's landsFaceDown), where it
+   * lands or under a card. Also the top card of a scenario deck that is not an encounter deck,
+   * which belongs to nobody: discarded, or played face up.
    */
   | { kind: 'deck'; pile: string }
   /** A marker (the first player token, the active counter), from where it lies. */
@@ -212,7 +215,7 @@ export function dropAction(
     case 'pile':
       return onPile(drag, target.pile, target.drop);
     case 'card':
-      return onCard(drag, target.card, at, dealTo, rows);
+      return onCard(drag, target.card, dealTo);
     case 'table':
       return place(drag, at, dealTo, rows);
   }
@@ -246,15 +249,10 @@ type CardSource = Exclude<DragSource, { kind: 'marker' }>;
 /**
  * A drop on a card tucks the dragged card into that card's stack. The server
  * appends it to the end of the chain and lays the chain out itself, whatever
- * card of the stack it was dropped on: the drop point is not sent.
+ * card of the stack it was dropped on: the drop point is not sent. `dealTo`
+ * is who an encounter card dealt there goes to (see dealRecipient).
  */
-function onCard(
-  drag: CardSource,
-  card: string,
-  at: Point,
-  dealTo: Area,
-  rows: RowMap,
-): Action | null {
+function onCard(drag: CardSource, card: string, dealTo: Area): Action | null {
   switch (drag.kind) {
     case 'card':
       return { kind: 'attach', card: drag.card, target: card };
@@ -263,22 +261,24 @@ function onCard(
       // Played and tucked in one action: one undo step.
       return { kind: 'play', card: drag.card, target: card };
     case 'deck':
-      // A side or scenario deck's top card is played and tucked as a hand card is: the server
-      // plays the deck's top card, which the client may not know.
-      if (isSideDeckId(drag.pile) || isScenarioDeckId(drag.pile)) {
-        return { kind: 'play', pile: drag.pile, target: card };
-      }
-      // A deck's top card is played face down where it lands, over that card.
-      return place(drag, at, dealTo, rows);
+      // A deck's top card is played and tucked as a hand card is: the server plays the deck's top
+      // card, which the client may not know, and chooses its facing, face down out of a main deck.
+      return { kind: 'play', pile: drag.pile, target: card };
     case 'encounter':
-      // Dealt face down where it lands, over that card (spec 5.5).
-      return place(drag, at, dealTo, rows);
+      // Dealt face down and tucked in one action (spec 5.5). The classic encounter deck is the
+      // default: only a scenario deck names itself.
+      return drag.pile === PILE_ENCOUNTER
+        ? { kind: 'deal', area: dealTo, target: card }
+        : { kind: 'deal', pile: drag.pile, area: dealTo, target: card };
   }
 }
 
-/** Whether the action tucks a card under another: attach, or a play with a target. */
+/** Whether the action tucks a card under another: attach, or a play or a deal with a target. */
 export function tucks(action: Action): boolean {
-  return action.kind === 'attach' || (action.kind === 'play' && action.target !== undefined);
+  if (action.kind === 'attach') {
+    return true;
+  }
+  return (action.kind === 'play' || action.kind === 'deal') && action.target !== undefined;
 }
 
 function reorder(drag: Extract<DragSource, { kind: 'hand' }>, index: number): Action | null {

@@ -825,14 +825,21 @@ func applyPlay(t *Table, a Action) error {
 		t.takeOverIdentity(c)
 	}
 	c.FaceDown = faceDown && !c.Identity
+	t.enterTable(c, target, snap(a.X), snap(a.Y))
+	return nil
+}
+
+// enterTable puts c, which has just left its hand or its pile, on the table:
+// at x, y, or at the end of the stack of target when there is one (see
+// tuckUnder), whose checks must have succeeded first.
+func (t *Table) enterTable(c, target *Card, x, y int) {
 	if target == nil {
-		t.placeOnTable(c, snap(a.X), snap(a.Y))
-		return nil
+		t.placeOnTable(c, x, y)
+		return
 	}
 	c.Zone = ZoneTable
 	c.Pile = ""
 	t.tuckUnder(c, target)
-	return nil
 }
 
 // takeOverIdentity makes c, a version of its owner's identity entering play,
@@ -1332,8 +1339,10 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 // applyDeal deals the recorded encounter card face down, wherever it is in the
 // encounter deck a.Pile names, or the classic one (see applyDraw). A card
 // revealed on the deck is back in it (see coveredFor), so a revealed card can
-// be dealt too. The card goes to the action's position; its area only names
-// the recipient, for the history.
+// be dealt too, though not under itself: back in the deck, it is no table
+// card. The card goes to the action's position or, with a target, to the end
+// of that table card's stack as a play does (see applyPlay). Its area only
+// names the recipient, for the history.
 func applyDeal(t *Table, a Action) error {
 	if !validArea(a.Area) {
 		return invalid("unknown recipient %q", a.Area)
@@ -1351,11 +1360,17 @@ func applyDeal(t *Table, a Action) error {
 	if err := checkInPile(enc, a.Cards); err != nil {
 		return err
 	}
+	var target *Card
+	if a.Target != "" {
+		if target, err = t.tableCard(a.Target); err != nil {
+			return err
+		}
+	}
 
 	c := t.Cards[a.Cards[0]]
 	t.leave(c)
-	t.placeOnTable(c, snap(a.X), snap(a.Y))
 	c.FaceDown = true
+	t.enterTable(c, target, snap(a.X), snap(a.Y))
 	return nil
 }
 

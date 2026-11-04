@@ -1726,6 +1726,28 @@ describe('diffViews', () => {
       ]);
     });
 
+    it('an encounter card dealt under a card enters from the encounter deck, face down', () => {
+      const encounter = (count: number) => seatPile('enc', { kind: 'encounter', owner: -1, count });
+      const prev = view({ cards: [card('v1', { owner: -1 })], piles: [encounter(20)] });
+      const dealt = card('d', { faceDown: true, back: 'encounter', owner: -1, parent: 'v1' });
+      const next = view({ cards: [card('v1', { owner: -1 }), dealt], piles: [encounter(19)] });
+
+      // Tucked under v1 (z 1), it slides in under it, and stays face down.
+      expect(diffViews(prev, next)).toEqual([
+        { kind: 'enter', id: 'd', fromPile: 'enc', tuck: { z: 2 } },
+      ]);
+      // The viewer's own deal, tucked under v1, enters from where it was let go.
+      const ownDrop: OwnDrop = {
+        element: { kind: 'pile', id: 'enc' },
+        card: null,
+        lifted: [],
+        tucks: true,
+      };
+      expect(diffViews(prev, next, ownDrop)).toEqual([
+        { kind: 'enter', id: 'd', fromPile: 'enc', dropped: true, tuck: { z: 2 } },
+      ]);
+    });
+
     it('no more cards fly into a deck than it grew by', () => {
       const prev = view({
         cards: [card('a', { x: 100, faceDown: true }), card('b', { x: 300, faceDown: true })],

@@ -16,6 +16,14 @@ outline and the history line name the stack's main card. A main card carries
 its whole chain and appends it in order; a tucked card appends alone. There
 is no way to insert a card in the middle of a chain.
 
+A card from outside the table joins a stack the same way, in one action
+(one undo step): a hand card or a pile's top card is played under it; the
+top card of a deck dropped on a card is too. A player's main deck plays it
+face down, a side deck or a non-encounter scenario deck as a plain drop
+would. An encounter deck (classic or scenario) deals it face down, tucked,
+to the player a deal at that spot goes to (`dealRecipient`); the history
+line names the stack's main card.
+
 Positions are automatic and the drop point is ignored: each tucked card lies
 down and to the right of the previous one, `attachOffsetX` (10) right and
 `attachOffsetY` (20) below, so every card stays readable. Under a main card

@@ -81,14 +81,25 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	}
 	oneOf := func(values ...string) string { return values[r.IntN(len(values))] }
 	x, y := 10*r.IntN(100), 10*r.IntN(40)
+	// A play takes a hand card, or half the time the top card of the deck.
+	play := func() Action {
+		if r.IntN(2) == 0 {
+			return Action{Kind: ActPlay, Pile: deck}
+		}
+		return Action{Kind: ActPlay, Card: pick(hand)}
+	}
 
 	switch r.IntN(31) {
 	case 0, 1:
 		return Action{Kind: ActDraw, N: 1 + r.IntN(3)}
 	case 2:
-		return Action{Kind: ActPlay, Card: pick(hand), X: x, Y: y}
+		a := play()
+		a.X, a.Y = x, y
+		return a
 	case 3:
-		return Action{Kind: ActPlay, Card: pick(hand), Target: pick(onTable)}
+		a := play()
+		a.Target = pick(onTable)
+		return a
 	case 4:
 		return Action{Kind: ActDiscard, Card: pick(slices.Concat(onTable, hand))}
 	case 5:
@@ -106,7 +117,12 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 	case 9:
 		return Action{Kind: ActReveal, Pile: oneOf("", deck)}
 	case 10:
-		return Action{Kind: ActDeal, Area: area, X: x, Y: y}
+		a := Action{Kind: ActDeal, Area: area, X: x, Y: y}
+		// Half the time the card is dealt under a table card.
+		if r.IntN(2) == 0 {
+			a.Target = pick(onTable)
+		}
+		return a
 	case 11:
 		return Action{Kind: ActDiscardTop, Pile: oneOf(PileEncounter, deck), N: 1 + r.IntN(2)}
 	case 12, 13:

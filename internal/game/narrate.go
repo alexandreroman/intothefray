@@ -269,9 +269,7 @@ func (n narrator) describe(a Action) (logLine, bool) {
 			return n.faceDownPlayEvent(a), true
 		}
 		if a.Target != "" {
-			main := n.stackMain(a)
-			text := join(words("played "), n.name(a.Card), words(" under "), n.name(main))
-			return logLine{text: text, cards: n.visibleCards(a.Card, main)}, true
+			return n.underStackLine(join(words("played "), n.name(a.Card)), a.Card, a.Card), true
 		}
 		return logLine{text: join(words("played "), n.name(a.Card)), cards: n.visibleCards(a.Card)}, true
 	case ActExhaust:
@@ -302,7 +300,7 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		}
 		return logLine{text: text, cards: n.visibleCards(id)}, true
 	case ActDeal:
-		return logLine{text: words("dealt an encounter card face down to " + n.areaName(a.Area))}, true
+		return n.dealEvent(a), true
 	case ActReorderTop:
 		return n.reorderEvent(a)
 	case ActDiscardTop:
@@ -446,17 +444,29 @@ func (n narrator) faceDownPlayEvent(a Action) logLine {
 	if a.Target == "" {
 		return logLine{text: text}
 	}
-	main := n.stackMain(a)
-	text = join(text, words(" under "), n.name(main))
-	return logLine{text: text, cards: n.visibleCards(main)}
+	return n.underStackLine(text, a.Card)
 }
 
-// stackMain returns the main card of the stack a play under a card put
-// a.Card in. The line names it, as the drop hint does, rather than the
-// target or the last card of the chain a.Card is tucked under (see
-// tuckUnder).
-func (n narrator) stackMain(a Action) string {
-	return n.after.mainCard(n.after.Cards[a.Card]).ID
+// dealEvent narrates a deal without naming the card, which lies face down:
+// "dealt an encounter card face down to Bob", and with a target, "… under
+// Rhino".
+func (n narrator) dealEvent(a Action) logLine {
+	text := words("dealt an encounter card face down to " + n.areaName(a.Area))
+	if a.Target == "" {
+		return logLine{text: text}
+	}
+	return n.underStackLine(text, a.Cards[0])
+}
+
+// underStackLine ends text, the line of a play or a deal under a card, with
+// " under Rhino", the main card of the stack card id was tucked into: the
+// line names it, as the drop hint does, rather than the target or the last
+// card of the chain the card is tucked under (see tuckUnder). The line lists
+// cards, then that main card.
+func (n narrator) underStackLine(text phrase, id string, cards ...string) logLine {
+	main := n.after.mainCard(n.after.Cards[id]).ID
+	text = join(text, words(" under "), n.name(main))
+	return logLine{text: text, cards: n.visibleCards(append(cards, main)...)}
 }
 
 func (n narrator) flipEvent(a Action) logLine {

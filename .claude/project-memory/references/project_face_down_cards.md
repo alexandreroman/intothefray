@@ -36,7 +36,9 @@ type: project
   onto a deck it also gets a new id (see [[project_constraints]]).
 - History: "turned Hydra Soldier face down", "turned Hydra Soldier face
   up", "played a card face down from their deck" (with a target: "…
-  under Rhino"); flipping back within one burst removes the line.
+  under Rhino"), "dealt an encounter card face down to Bob" (with a
+  target: "… under Rhino"); flipping back within one burst removes the
+  line.
 
 **Why:** user decision: a hidden deck keeps its cards secret until a
 player chooses to show one. Play is explicit, the card played becomes
