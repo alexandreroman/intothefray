@@ -248,6 +248,8 @@
     background: var(--table-bg);
     /* The fanned cards reach past a narrow screen: they are cut, never scrolled to. */
     overflow: hidden;
+    /* Measured by the column layout's query (at the end): the page's width, without a scrollbar. */
+    container: home / inline-size;
   }
 
   /* Red dots fading out around the fanned cards. */
@@ -282,6 +284,7 @@
     The count of games in progress: a capsule centred on the page, in the middle of main's top
     padding, so that it covers nothing and pushes nothing down. 28px high: 13px text on an 18px
     line, 4px of padding and a 1px border; 22px from the top, it ends 22px over the logo (at 72px).
+    In the column layout (see the queries at the end), 24px clear of both, the logo at 76px.
   */
   .games {
     position: absolute;
@@ -766,15 +769,29 @@
     color: var(--faint);
   }
 
-  /* A phone: 16px gutters, and a smaller fan under the buttons. The top padding still holds the
-     capsule of games in progress, 24px clear of the page's top and of the logo (at 76px). */
-  @media (max-width: 640px) {
+  /*
+    The column layout: the fan wraps under the intro once main's content box is narrower than their
+    flex bases and the column gap, 520 + 64 + 400 = 984px, that is a page under 984 + 2 × 24px of
+    side padding = 1032px. Change this breakpoint along with them. A container query rather than a
+    media query: .home's width leaves out a classic scrollbar, as the wrap does, where the viewport's
+    includes it. The capsule of games in progress gets 24px clear of the page's top and of the logo
+    (at 76px).
+  */
+  @container home (max-width: 1031px) {
     main {
-      padding: 76px 16px 24px;
+      padding-top: 76px;
     }
 
     .games {
       top: 24px;
+    }
+  }
+
+  /* A phone: 16px gutters, and a smaller fan under the buttons. The top padding stays that of the
+     column layout above. */
+  @media (max-width: 640px) {
+    main {
+      padding: 76px 16px 24px;
     }
 
     footer {
