@@ -12,7 +12,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c3c5mtrmj": {
       "id": "c3c5mtrmj",
@@ -25,7 +30,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c3cyzdgvj": {
       "id": "c3cyzdgvj",
@@ -39,7 +49,12 @@
       "zone": "table",
       "x": 420,
       "y": 90,
-      "z": 15
+      "z": 15,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c3r5d8tff": {
       "id": "c3r5d8tff",
@@ -52,7 +67,12 @@
       "zone": "stage",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c3sp2dus2": {
       "id": "c3sp2dus2",
@@ -66,7 +86,13 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "land",
+          "scheme": true
+        }
+      ]
     },
     "c3uv25cmy": {
       "id": "c3uv25cmy",
@@ -80,7 +106,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c46bgpjyw": {
       "id": "c46bgpjyw",
@@ -94,7 +125,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c4jehyayp": {
       "id": "c4jehyayp",
@@ -108,7 +144,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p0"
+      "pile": "aside:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c4p53zsux": {
       "id": "c4p53zsux",
@@ -124,7 +165,12 @@
       "z": 22,
       "status": {
         "locked": 1
-      }
+      },
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c4w8zvvua": {
       "id": "c4w8zvvua",
@@ -138,7 +184,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c56jwxnas": {
       "id": "c56jwxnas",
@@ -152,7 +203,12 @@
       "zone": "table",
       "x": 850,
       "y": 200,
-      "z": 38
+      "z": 38,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c6cqpsgpw": {
       "id": "c6cqpsgpw",
@@ -166,7 +222,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c7sqzvnsj": {
       "id": "c7sqzvnsj",
@@ -180,7 +241,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p0"
+      "pile": "aside:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c84m7ca9z": {
       "id": "c84m7ca9z",
@@ -194,7 +260,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c8gc6sjch": {
       "id": "c8gc6sjch",
@@ -208,7 +279,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c8kbcqhx8": {
       "id": "c8kbcqhx8",
@@ -222,7 +298,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c8kv4m2nz": {
       "id": "c8kv4m2nz",
@@ -235,7 +316,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c96dzjnpd": {
       "id": "c96dzjnpd",
@@ -249,7 +335,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "c9vqye7uf": {
       "id": "c9vqye7uf",
@@ -263,7 +354,13 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p0"
+      "pile": "aside:p0",
+      "shapes": [
+        {
+          "size": "land",
+          "scheme": true
+        }
+      ]
     },
     "cab89hsja": {
       "id": "cab89hsja",
@@ -277,7 +374,12 @@
       "x": 810,
       "y": 210,
       "z": 23,
-      "pile": "disc:p1"
+      "pile": "disc:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cah2z45kq": {
       "id": "cah2z45kq",
@@ -291,7 +393,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cap7vuyk7": {
       "id": "cap7vuyk7",
@@ -305,7 +412,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cawh3tz4h": {
       "id": "cawh3tz4h",
@@ -319,7 +431,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cb2rkv4pt": {
       "id": "cb2rkv4pt",
@@ -333,7 +450,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cb7hf8ysu": {
       "id": "cb7hf8ysu",
@@ -347,7 +469,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cbe6n9gpr": {
       "id": "cbe6n9gpr",
@@ -361,7 +488,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ccqf7amju": {
       "id": "ccqf7amju",
@@ -375,7 +507,12 @@
       "x": 0,
       "y": 30,
       "z": 26,
-      "pile": "encd"
+      "pile": "encd",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cd6ydw3q9": {
       "id": "cd6ydw3q9",
@@ -389,7 +526,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cdfv6c7te": {
       "id": "cdfv6c7te",
@@ -403,7 +545,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cep57uejw": {
       "id": "cep57uejw",
@@ -416,7 +563,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cfnyscqrg": {
       "id": "cfnyscqrg",
@@ -429,7 +581,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cfw47qh7b": {
       "id": "cfw47qh7b",
@@ -443,7 +600,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cg48345fa": {
       "id": "cg48345fa",
@@ -457,7 +619,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "chwcs3svj": {
       "id": "chwcs3svj",
@@ -471,7 +638,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "encd"
+      "pile": "encd",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cjssameux": {
       "id": "cjssameux",
@@ -485,7 +657,12 @@
       "x": 0,
       "y": 30,
       "z": 14,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ckavtt6fr": {
       "id": "ckavtt6fr",
@@ -499,7 +676,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p1"
+      "pile": "aside:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ckesc9e6h": {
       "id": "ckesc9e6h",
@@ -515,7 +697,12 @@
       "z": 34,
       "status": {
         "locked": 1
-      }
+      },
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cknp5txrz": {
       "id": "cknp5txrz",
@@ -529,7 +716,13 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "encd"
+      "pile": "encd",
+      "shapes": [
+        {
+          "size": "land",
+          "scheme": true
+        }
+      ]
     },
     "ckp3dwauq": {
       "id": "ckp3dwauq",
@@ -543,7 +736,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ckuy4pnw6": {
       "id": "ckuy4pnw6",
@@ -557,7 +755,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ckw77waux": {
       "id": "ckw77waux",
@@ -571,7 +774,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ckz954xpm": {
       "id": "ckz954xpm",
@@ -585,7 +793,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cm344h5u3": {
       "id": "cm344h5u3",
@@ -598,7 +811,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cm9n3r42r": {
       "id": "cm9n3r42r",
@@ -612,7 +830,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cmbnjka8c": {
       "id": "cmbnjka8c",
@@ -625,7 +848,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cmvq6tcpc": {
       "id": "cmvq6tcpc",
@@ -639,7 +867,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p1"
+      "pile": "aside:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cmy7fvc4a": {
       "id": "cmy7fvc4a",
@@ -652,7 +885,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cn5ph3gpe": {
       "id": "cn5ph3gpe",
@@ -669,7 +907,17 @@
       "parent": "c56jwxnas",
       "mods": {
         "def": -1
-      }
+      },
+      "shapes": [
+        {
+          "size": "land",
+          "scheme": true
+        },
+        {
+          "size": "land",
+          "scheme": true
+        }
+      ]
     },
     "cn7yy7m26": {
       "id": "cn7yy7m26",
@@ -683,7 +931,12 @@
       "x": 0,
       "y": 30,
       "z": 28,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cp4ukz42e": {
       "id": "cp4ukz42e",
@@ -697,7 +950,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cp5ykazx6": {
       "id": "cp5ykazx6",
@@ -711,7 +969,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p0"
+      "pile": "aside:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cpjmsz9a2": {
       "id": "cpjmsz9a2",
@@ -724,7 +987,12 @@
       "zone": "table",
       "x": 400,
       "y": 70,
-      "z": 27
+      "z": 27,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cqhykf88e": {
       "id": "cqhykf88e",
@@ -738,7 +1006,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cqs3pqqeh": {
       "id": "cqs3pqqeh",
@@ -752,7 +1025,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cqtcrpjrh": {
       "id": "cqtcrpjrh",
@@ -766,7 +1044,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "encd"
+      "pile": "encd",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "crah65s2y": {
       "id": "crah65s2y",
@@ -780,7 +1063,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cs4aw4hse": {
       "id": "cs4aw4hse",
@@ -794,7 +1082,13 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "land",
+          "scheme": true
+        }
+      ]
     },
     "cs7hmhvr6": {
       "id": "cs7hmhvr6",
@@ -807,7 +1101,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "csdbghyga": {
       "id": "csdbghyga",
@@ -821,7 +1120,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "encd"
+      "pile": "encd",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "csm5cnqj5": {
       "id": "csm5cnqj5",
@@ -835,7 +1139,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p0"
+      "pile": "aside:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cspdz9u34": {
       "id": "cspdz9u34",
@@ -849,7 +1158,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cszysvnkv": {
       "id": "cszysvnkv",
@@ -863,7 +1177,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p1"
+      "pile": "aside:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ctgq8syte": {
       "id": "ctgq8syte",
@@ -877,7 +1196,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ctz7dxv7f": {
       "id": "ctz7dxv7f",
@@ -891,7 +1215,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "ctz9r4kc9": {
       "id": "ctz9r4kc9",
@@ -905,7 +1234,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p1"
+      "pile": "aside:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cuqku3y77": {
       "id": "cuqku3y77",
@@ -919,7 +1253,12 @@
       "x": 900,
       "y": 20,
       "z": 21,
-      "parent": "c4p53zsux"
+      "parent": "c4p53zsux",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "curykn9kd": {
       "id": "curykn9kd",
@@ -933,7 +1272,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cuyykvzag": {
       "id": "cuyykvzag",
@@ -947,7 +1291,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cvczayu4v": {
       "id": "cvczayu4v",
@@ -960,7 +1309,12 @@
       "zone": "stage",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cvehswjng": {
       "id": "cvehswjng",
@@ -974,7 +1328,12 @@
       "x": 800,
       "y": 190,
       "z": 24,
-      "pile": "vic"
+      "pile": "vic",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cvmy99et9": {
       "id": "cvmy99et9",
@@ -988,7 +1347,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cvw59s9fd": {
       "id": "cvw59s9fd",
@@ -1002,7 +1366,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p0"
+      "pile": "deck:p0",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cw7rsawdp": {
       "id": "cw7rsawdp",
@@ -1016,7 +1385,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cwkk5mtxa": {
       "id": "cwkk5mtxa",
@@ -1030,7 +1404,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cwm9gavc7": {
       "id": "cwm9gavc7",
@@ -1044,7 +1423,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cwwnhqp2r": {
       "id": "cwwnhqp2r",
@@ -1065,7 +1449,15 @@
       "mods": {
         "atk": -2
       },
-      "identity": true
+      "identity": true,
+      "shapes": [
+        {
+          "size": "std"
+        },
+        {
+          "size": "std"
+        }
+      ]
     },
     "cx2z7zpmx": {
       "id": "cx2z7zpmx",
@@ -1079,7 +1471,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cx3a7hfr7": {
       "id": "cx3a7hfr7",
@@ -1093,7 +1490,13 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "aside:p1"
+      "pile": "aside:p1",
+      "shapes": [
+        {
+          "size": "land",
+          "scheme": true
+        }
+      ]
     },
     "cx7bdntqx": {
       "id": "cx7bdntqx",
@@ -1107,7 +1510,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cx82pepv6": {
       "id": "cx82pepv6",
@@ -1121,7 +1529,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cy8uujnnb": {
       "id": "cy8uujnnb",
@@ -1134,7 +1547,12 @@
       "zone": "hand",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 0,
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cyymparn2": {
       "id": "cyymparn2",
@@ -1148,7 +1566,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "deck:p1"
+      "pile": "deck:p1",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cz2syf95r": {
       "id": "cz2syf95r",
@@ -1162,7 +1585,12 @@
       "x": 0,
       "y": 0,
       "z": 0,
-      "pile": "enc"
+      "pile": "enc",
+      "shapes": [
+        {
+          "size": "std"
+        }
+      ]
     },
     "cz3w3cktw": {
       "id": "cz3w3cktw",
@@ -1182,7 +1610,15 @@
       "mods": {
         "atk": 3
       },
-      "identity": true
+      "identity": true,
+      "shapes": [
+        {
+          "size": "std"
+        },
+        {
+          "size": "std"
+        }
+      ]
     }
   },
   "piles": {

@@ -1,6 +1,6 @@
 ---
 name: "Moving card stacks"
-description: "A stack is a chain; new cards go to its end, offset down-right; the main card moves the whole stack, a tucked card moves alone"
+description: "A stack is a chain; new cards go to its end, offset down-right, the first under a scheme centred on it; the main card moves the whole stack, a tucked card moves alone"
 type: project
 ---
 
@@ -18,7 +18,15 @@ is no way to insert a card in the middle of a chain.
 
 Positions are automatic and the drop point is ignored: each tucked card lies
 down and to the right of the previous one, `attachOffsetX` (10) right and
-`attachOffsetY` (20) below, so every card stays readable. The client does
+`attachOffsetY` (20) below, so every card stays readable. Under a main card
+that shows a scheme face up (main scheme, side scheme or player side
+scheme), the first tucked card is centred on it on both axes, as players lay
+a card on a scheme, but never past the table's top or left edge
+(coordinates stay at 0 or more); the cards after it keep the usual offset
+from the card before them. The server knows each face's size and whether it
+is a scheme from `Card.Shapes`, filled at setup from the catalog, and sizes a
+card as the client draws it (face down: a portrait back). A flip or a stage
+change of a stacked card places its stack again, Zs untouched. The client does
 not predict that spot: a drop lands where it was let go and slides to the
 server's layout. The chain takes fresh Zs from `NextZ` (unique, positive),
 the main card on top and each card beneath the previous one, which brings

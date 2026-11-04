@@ -16,7 +16,8 @@ func sampleTable() *Table {
 				ID: "c1", Code: "01001a", Face: 0, Faces: 2, Back: pack.BackPlayer, Owner: 0,
 				Home: "deck:p0", Zone: ZoneTable, X: 280, Y: 0, Z: 3,
 				Exhausted: true, Tokens: map[string]int{"dmg": 2}, Status: map[string]int{"stunned": 1},
-				Mods: map[string]int{"def": -1},
+				Mods:   map[string]int{"def": -1},
+				Shapes: []FaceShape{{Size: pack.SizeStd}, {Size: pack.SizeLand, Scheme: true}},
 			},
 			"c2": {
 				ID: "c2", Code: "01010", Faces: 1, Back: pack.BackPlayer, Owner: 0,
@@ -97,6 +98,7 @@ func TestCloneIsDeep(t *testing.T) {
 	clone.Cards["c1"].Tokens["dmg"] = 9
 	clone.Cards["c1"].Status["tough"] = 1
 	clone.Cards["c1"].Mods["def"] = 3
+	clone.Cards["c1"].Shapes[0].Scheme = true
 	clone.Cards["c1"].X = 999
 	clone.Piles["deck:p0"].Cards[0] = "zzz"
 	clone.Hands[PlayerArea(0)][0] = "zzz"

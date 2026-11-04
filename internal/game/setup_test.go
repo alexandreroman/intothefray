@@ -466,6 +466,36 @@ func TestSetupSetsAsideEncounterSetCards(t *testing.T) {
 	checkIntegrity(t, table)
 }
 
+func TestNewCardRecordsTheShapeOfEachFace(t *testing.T) {
+	tests := []struct {
+		name string
+		code string
+		want []FaceShape
+	}{
+		{"hero", "01001", []FaceShape{{Size: pack.SizeStd}, {Size: pack.SizeStd}}},
+		{
+			"main scheme", "01097",
+			[]FaceShape{{Size: pack.SizeLand, Scheme: true}, {Size: pack.SizeLand, Scheme: true}},
+		},
+		{"side scheme", "01107", []FaceShape{{Size: pack.SizeLand, Scheme: true}}},
+		// Assemble the Team, a player side scheme on its front, an environment
+		// on its back.
+		{"player side scheme", "40190", []FaceShape{{Size: pack.SizeLand, Scheme: true}, {Size: pack.SizeStd}}},
+	}
+	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c, _, err := b.newCard(tt.code, 0, "deck:p0")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !slices.Equal(c.Shapes, tt.want) {
+				t.Errorf("%s shapes = %+v, want %+v", tt.code, c.Shapes, tt.want)
+			}
+		})
+	}
+}
+
 func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
 
