@@ -60,6 +60,14 @@ describe('PileView', () => {
     expect(count).toBeGreaterThan(rings);
   });
 
+  it('fades its count out of the way of an animation on its opacity alone', () => {
+    const rule = (selector: string) =>
+      new RegExp(`\\n {2}${selector} \\{([^}]*)\\}`).exec(pileSource)?.[1];
+    expect(rule('\\.count\\.hushed')).toContain('opacity: 0;');
+    expect(rule('\\.count')).toContain('transition: opacity 0.12s');
+    expect(pileSource).not.toMatch(/filter:/);
+  });
+
   it('draws the ring of the player who previews it inside itself, so that it follows the pile', () => {
     interaction.previewByOthers(new Map([['enc', 2]]));
     try {

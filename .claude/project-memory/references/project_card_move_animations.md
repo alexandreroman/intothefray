@@ -99,6 +99,8 @@ type: project
   flip turns, the `translate` a move slides and the `scale` a lift or a
   settle plays on; a card never plays two motions on one property. A
   card that comes onto the table exhausted lands tilted.
+- A table pile's count steps aside while an animation plays on the pile,
+  and comes back with the final count (see [[project_pile_count_hush]]).
 
 **Why:** decided with the user: players follow what happened
 at the table without reading the history, and cards feel physical and
