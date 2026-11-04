@@ -4467,7 +4467,7 @@
         }
       ],
       "set": "aoa_basic_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "45171a",
@@ -4496,7 +4496,7 @@
         }
       ],
       "set": "aoa_basic_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4520,7 +4520,7 @@
         }
       ],
       "set": "aoa_basic_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4544,7 +4544,7 @@
         }
       ],
       "set": "aoa_basic_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4568,7 +4568,7 @@
         }
       ],
       "set": "aoa_basic_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4592,7 +4592,7 @@
         }
       ],
       "set": "aoa_basic_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 4
     },
     {

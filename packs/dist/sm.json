@@ -4626,7 +4626,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27182a",
@@ -4670,7 +4670,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27183a",
@@ -4714,7 +4714,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27184a",
@@ -4758,7 +4758,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27185a",
@@ -4802,7 +4802,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27186a",
@@ -4846,7 +4846,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27187a",
@@ -4890,7 +4890,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27188a",
@@ -4934,7 +4934,7 @@
         }
       ],
       "set": "shield_tech",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "27189a",
