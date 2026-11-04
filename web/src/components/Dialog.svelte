@@ -1,11 +1,11 @@
 <!--
   The shell of every dialog of the app, the one modal layer: a backdrop that
-  dims and freezes the page under it, a box titled by its first line, and the
-  focus moved into it and kept there. Escape, or a click on the backdrop,
-  cancels; the click does nothing else. While it is shown, a modal counts as
-  open (see modal.svelte.ts): the table keys, hover and drags stop. A wide box
-  (the card boxes, the shortcuts sheet) draws its own heading and spacing. The
-  box is centred unless `at` places it.
+  dims the page under it, a box titled by its first line, and the focus moved
+  into it and kept there. Escape, or a click on the backdrop, cancels; the
+  click does nothing else. While it is shown, a modal counts as open (see
+  modal.svelte.ts): the page does not scroll, the table keys, hover and drags
+  stop. A wide box (the card boxes, the shortcuts sheet) draws its own heading
+  and spacing. The box is centred unless `at` places it.
 -->
 <script lang="ts">
   import { onDestroy, onMount, type Snippet } from 'svelte';
