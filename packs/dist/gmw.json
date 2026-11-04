@@ -5251,6 +5251,12 @@
       },
       "recommended": [
         "menagerie_medley"
+      ],
+      "areas": [
+        {
+          "key": "collection",
+          "label": "The Collection"
+        }
       ]
     },
     {

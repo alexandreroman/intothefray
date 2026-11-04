@@ -213,6 +213,15 @@ type ScenarioDeck struct {
 	Compact bool `json:"compact,omitempty"`
 }
 
+// ScenarioArea is an out-of-play game area a scenario adds to the table, such
+// as The Collection of Infiltrate the Museum: one shared, public pile of
+// faceup cards, next to the victory display. Players move cards in and out of
+// it by hand, player and encounter cards alike.
+type ScenarioArea struct {
+	Key   string `json:"key"`
+	Label string `json:"label"` // "The Collection"
+}
+
 // Start describes the initial table layout of a scenario.
 type Start struct {
 	Top    map[string]FaceRef `json:"top"`
@@ -241,6 +250,8 @@ type Scenario struct {
 	// MainSchemes lists the main scheme sets the scenario is played with, one
 	// of which the host picks; empty when the scenario has its own main scheme.
 	MainSchemes []string `json:"mainSchemes,omitempty"`
+	// Areas lists the scenario's own out-of-play game areas.
+	Areas []ScenarioArea `json:"areas,omitempty"`
 }
 
 // MainSchemeStage is the key of the stage setup makes of the main scheme of

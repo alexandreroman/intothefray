@@ -1312,7 +1312,7 @@
 
   /**
    * Sends a box action, credited to the card it touches before the box's pile:
-   * an own card of a shared pile (victory display, encounter discard) goes to
+   * an own card of a shared pile (victory display, scenario area, encounter discard) goes to
    * the card's seat, not the selected deck.
    */
   function actInBox(action: Action): number | null {

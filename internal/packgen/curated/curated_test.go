@@ -396,6 +396,32 @@ func TestLoadRejectsBadMainSchemes(t *testing.T) {
 	}
 }
 
+func TestLoadRejectsBadAreas(t *testing.T) {
+	collection := `{"key":"collection","label":"The Collection"}`
+	tests := []struct{ name, content, want string }{
+		{"empty key", `{"id":"x","villainSet":"x","areas":[{"label":"A"}],` + emptyStart + `}`, "area has no key"},
+		{"empty label", `{"id":"x","villainSet":"x","areas":[{"key":"a"}],` + emptyStart + `}`, `area "a" has no label`},
+		{
+			"duplicate key",
+			`{"id":"x","villainSet":"x","areas":[` + collection + `,{"key":"collection","label":"B"}],` +
+				emptyStart + `}`,
+			`duplicate area key "collection"`,
+		},
+		{
+			"duplicate label",
+			`{"id":"x","villainSet":"x","areas":[` + collection + `,{"key":"b","label":"The Collection"}],` +
+				emptyStart + `}`,
+			`duplicate area label "The Collection"`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) { wantScenarioError(t, tt.content, tt.want) })
+	}
+	if err := loadScenario(t, `{"id":"x","villainSet":"x","areas":[`+collection+`],`+emptyStart+`}`); err != nil {
+		t.Fatalf("got error %v, want none for a scenario with an area", err)
+	}
+}
+
 func TestLoadRejectsBadSets(t *testing.T) {
 	tests := []struct{ name, content, want string }{
 		{

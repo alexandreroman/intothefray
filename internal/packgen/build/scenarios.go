@@ -149,6 +149,7 @@ func buildScenarios(
 					Active:        def.Active,
 					Recommended:   ref.Recommended,
 					MainSchemes:   def.MainSchemes,
+					Areas:         def.Areas,
 				})
 			}
 		}

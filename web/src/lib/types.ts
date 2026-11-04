@@ -105,7 +105,12 @@ export type PileKind =
   /** A deck the scenario owns that is not an encounter deck, `sdeck:<key>`. */
   | 'scenarioDeck'
   /** The discard pile of a scenario deck, `sdisc:<key>`. */
-  | 'scenarioDiscard';
+  | 'scenarioDiscard'
+  /**
+   * An out-of-play area of the scenario's own, `area:<key>`: shared and public like the victory
+   * display, named by its label ("The Collection").
+   */
+  | 'scenarioArea';
 
 /**
  * A seat, "p0".."p3": one deck at the table, so a player holding several decks
@@ -154,7 +159,10 @@ export interface PileView {
   y: number;
   count: number;
   cards?: string[]; // bottom to top, public piles only; a topFaceUp side deck lists its top card alone
-  /** The name of a side deck or a scenario deck and of its discard pile: "Invocation". */
+  /**
+   * The name of a side deck or a scenario deck and of its discard pile ("Invocation"), or of a
+   * scenario area ("The Collection").
+   */
   label?: string;
   /** A side deck whose top card everyone sees. */
   topFaceUp?: boolean;

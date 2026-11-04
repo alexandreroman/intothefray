@@ -1156,8 +1156,9 @@ const PILE_NOUNS: Partial<Record<PileView['kind'], string>> = {
 };
 
 /**
- * What the history calls a scenario deck or its discard pile (Game.pileName): "Wrecker's encounter deck"
- * for an encounter deck, "the Experimental Weapons deck" for another; undefined for any other pile.
+ * What the history calls a scenario deck, its discard pile or a scenario area (Game.pileName):
+ * "Wrecker's encounter deck" for an encounter deck, "the Experimental Weapons deck" for another,
+ * "The Collection" for an area; undefined for any other pile.
  */
 function scenarioName(pile: PileView): string | undefined {
   if (!pile.label || pile.owner !== -1) {
@@ -1172,6 +1173,8 @@ function scenarioName(pile: PileView): string | undefined {
       return `the ${pile.label} deck`;
     case 'scenarioDiscard':
       return `the ${pile.label} discard pile`;
+    case 'scenarioArea':
+      return pile.label;
     default:
       return undefined;
   }

@@ -20,7 +20,8 @@ func topCount(n int) string {
 // their seats are "their" piles. The pile of a player who holds several decks
 // adds the deck's hero: "their Spider-Man deck", "Alex's Spider-Man deck". A
 // side pile goes by its label: "their Invocation deck", "Alex's Doctor Strange
-// Invocation discard pile". The client parses these names (narratedName in
+// Invocation discard pile". A scenario area goes by its label alone: "The
+// Collection". The client parses these names (narratedName in
 // web/src/table/animate.ts), and matches the verbs of the lines that name
 // them: a line starting "shuffled ", a line "put … at the bottom of " a pile,
 // and the line of an undo, starting "undid ". Rewording any of them here
@@ -61,6 +62,8 @@ func (g *Game) pileName(who actor, id string) string {
 		return "the " + pile.Label + " deck"
 	case KindScenarioDiscard:
 		return "the " + pile.Label + " discard pile"
+	case KindScenarioArea:
+		return pile.Label
 	default:
 		noun = "pile"
 	}

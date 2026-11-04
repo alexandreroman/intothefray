@@ -273,6 +273,18 @@ describe('scenario pile names', () => {
     const disc = pile('sdisc:x', { kind: 'scenarioDiscard', label: 'Experimental Weapons' });
     expect(narratedName(disc, undefined, view)).toBe('the Experimental Weapons discard pile');
   });
+
+  it('names a scenario area by its label, in a box title and in the history', () => {
+    const view = makeView();
+    const area = pile('area:collection', {
+      kind: 'scenarioArea',
+      label: 'The Collection',
+      count: 0,
+      cards: [],
+    });
+    expect(pileLabel(area, view)).toBe('The Collection');
+    expect(narratedName(area, undefined, view)).toBe('The Collection');
+  });
 });
 
 describe('drop targets of a scenario card', () => {

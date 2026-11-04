@@ -266,6 +266,18 @@ func TestScenarioCopiesDecksSelfContainedAndActive(t *testing.T) {
 	}
 }
 
+func TestScenarioCopiesAreas(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Areas = []pack.ScenarioArea{{Key: "collection", Label: "The Collection"}}
+
+	scenarios, _, _ := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
+
+	if got := scenarios["core"][0].Areas; !reflect.DeepEqual(got, def.Areas) {
+		t.Errorf("got areas %+v, want %+v", got, def.Areas)
+	}
+}
+
 func TestScenarioImageFromCoveredVillain(t *testing.T) {
 	card := func(code, set, kind string) pack.Card {
 		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: kind, Images: []string{"https://x/" + code}}}}

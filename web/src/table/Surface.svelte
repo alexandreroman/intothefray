@@ -24,7 +24,7 @@
 </script>
 
 <script lang="ts">
-  import Icon from '../components/Icon.svelte';
+  import Icon, { type IconName } from '../components/Icon.svelte';
   import type {
     MarkerName,
     PackFace,
@@ -80,6 +80,13 @@
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
     active: 'Active counter: drag to move',
+  };
+
+  /** The icon of each kind of chip. */
+  const CHIP_ICONS: Record<OutOfPlayChip['kind'], IconName> = {
+    victory: 'trophy',
+    scenarioArea: 'showcase',
+    aside: 'hourglass',
   };
 
   /** What a chip says, in its tooltip and to screen readers: "Victory display (1)". */
@@ -142,7 +149,7 @@
             aria-disabled={chip.count === 0}
             onclick={() => openChip(chip)}
           >
-            <Icon name={chip.kind === 'victory' ? 'trophy' : 'hourglass'} />
+            <Icon name={CHIP_ICONS[chip.kind]} />
             <span class="n">{chip.count}</span>
           </button>
         {/each}

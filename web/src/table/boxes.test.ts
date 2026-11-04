@@ -86,6 +86,48 @@ describe('a player with two decks', () => {
   });
 });
 
+describe('a scenario area box', () => {
+  const area = pile('area:collection', {
+    kind: 'scenarioArea',
+    label: 'The Collection',
+    cards: ['mine', 'sams', 'enemy'],
+  });
+
+  /** The two-deck table with The Collection, the discard piles and the encounter piles. */
+  function viewWithArea(): View {
+    const view = makeView();
+    view.table!.cards = [
+      pileCard('mine', 1),
+      pileCard('sams', 2),
+      card('enemy', { owner: -1, zone: 'pile', back: 'encounter' }),
+    ];
+    view.table!.piles = [
+      ...WITH_ENC,
+      pile('disc:p1', { kind: 'discard', owner: 1 }),
+      pile('disc:p2', { kind: 'discard', owner: 2 }),
+      pile('encd', { kind: 'encounterDiscard' }),
+      area,
+    ];
+    return view;
+  }
+
+  it("acts as the victory display does: Discard sends a card to its owner's discard pile", () => {
+    const view = viewWithArea();
+    const own = tileActions(view.table!.cards[0]!, area, contextOf(view));
+    expect(own.map((tile) => tile.id)).toEqual(['play', 'discard', 'bottom', 'shuffle']);
+    expect(own.find((tile) => tile.id === 'discard')?.run()).toEqual({
+      kind: 'discard',
+      card: 'mine',
+    });
+    // Sam's card is shared too: played or discarded, not put into Sam's deck.
+    const sams = tileActions(view.table!.cards[1]!, area, contextOf(view));
+    expect(sams.map((tile) => tile.id)).toEqual(['play', 'discard']);
+    const enemy = tileActions(view.table!.cards[2]!, area, contextOf(view));
+    expect(enemy.map((tile) => tile.id)).toEqual(['play', 'discard', 'bottom', 'shuffle']);
+    expect(pileLabel(area, view)).toBe('The Collection');
+  });
+});
+
 describe('a discard pile box', () => {
   const DISCARDS: PileView[] = [
     pile('disc:p1', { kind: 'discard', owner: 1 }),

@@ -2106,6 +2106,25 @@ describe('diffViews', () => {
       expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'c', toPile: 'vic' }]);
     });
 
+    it('a table card sent to a scenario area flies there, as to the victory display', () => {
+      const area = (cards: string[]) =>
+        seatPile('area:collection', {
+          kind: 'scenarioArea',
+          owner: -1,
+          x: 900,
+          count: cards.length,
+          cards,
+          label: 'The Collection',
+        });
+      const prev = view({
+        cards: [card('c', { code: '01001', x: 300 })],
+        piles: [deck(10), area([])],
+      });
+      const next = view({ cards: [onPile('c')], piles: [deck(10), area(['c'])] });
+
+      expect(diffViews(prev, next)).toEqual([{ kind: 'fly', id: 'c', toPile: 'area:collection' }]);
+    });
+
     it('a card from a public pile to another flies pile to pile', () => {
       const prev = view({ cards: [onPile('c9')], piles: [deck(10), discard(['c9']), victory([])] });
       const next = view({ cards: [onPile('c9')], piles: [deck(10), discard([]), victory(['c9'])] });

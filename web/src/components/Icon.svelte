@@ -15,6 +15,7 @@
     | 'ready-all'
     | 'trophy'
     | 'hourglass'
+    | 'showcase'
     | 'sandbox'
     | 'players'
     | 'link'
@@ -113,6 +114,11 @@
     />
     <path d="M6 3h12M6 21h12" />
     <path d="M7 3C7 7.5 11 8.5 11 12S7 16.5 7 21M17 3c0 4.5-4 5.5-4 9s4 4.5 4 9" />
+  {:else if name === 'showcase'}
+    <!-- A card in a glass case on a stand: a scenario's own out-of-play area, such as The Collection. -->
+    <rect x="4" y="3" width="16" height="14" rx="1.5" />
+    <rect x="9" y="6" width="6" height="8" rx="1" fill="currentColor" fill-opacity=".18" />
+    <path d="M7 17v4M17 17v4M5 21h14" />
   {:else if name === 'sandbox'}
     <!-- A card, and another one fanned out behind it: cards to move freely. -->
     <rect x="4" y="5" width="11" height="15" rx="2" />

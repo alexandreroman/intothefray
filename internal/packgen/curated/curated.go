@@ -59,6 +59,12 @@ type ScenarioDef struct {
 	// MainSchemes lists the main scheme sets the scenario is played with, for
 	// a scenario whose villain set has no main scheme of its own.
 	MainSchemes []string `json:"mainSchemes,omitempty"`
+	// Areas lists the out-of-play game areas the scenario's rules add, each
+	// with a key, unique in the scenario, and the label the table shows:
+	// [{"key": "collection", "label": "The Collection"}]. Setup lays out one
+	// shared, public pile per area, next to the victory display; players move
+	// cards in and out of it by hand.
+	Areas []pack.ScenarioArea `json:"areas,omitempty"`
 }
 
 // SetDef completes a generated set with hand-written setup data.
@@ -214,6 +220,9 @@ func checkScenarioDef(def ScenarioDef) error {
 	if err := checkMainSchemes(def); err != nil {
 		return err
 	}
+	if err := checkAreas(def.Areas); err != nil {
+		return err
+	}
 
 	stages := make(map[string]pack.Pile, len(def.Piles))
 	for _, pile := range def.Piles {
@@ -284,6 +293,28 @@ func checkMainSchemes(def ScenarioDef) error {
 			return fmt.Errorf("duplicate main scheme set %q", code)
 		}
 		listed[code] = true
+	}
+	return nil
+}
+
+// checkAreas rejects the out-of-play areas without a key or a label, and the
+// keys or labels listed twice: the table tells the areas apart by both.
+func checkAreas(areas []pack.ScenarioArea) error {
+	keys := make(map[string]bool, len(areas))
+	labels := make(map[string]bool, len(areas))
+	for _, area := range areas {
+		switch {
+		case area.Key == "":
+			return errors.New("area has no key")
+		case area.Label == "":
+			return fmt.Errorf("area %q has no label", area.Key)
+		case keys[area.Key]:
+			return fmt.Errorf("duplicate area key %q", area.Key)
+		case labels[area.Label]:
+			return fmt.Errorf("duplicate area label %q", area.Label)
+		}
+		keys[area.Key] = true
+		labels[area.Label] = true
 	}
 	return nil
 }

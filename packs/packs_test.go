@@ -677,6 +677,8 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 		// in-play cards and the Setup cards of the sets it requires. The
 		// other cards of those sets lie in the encounter deck.
 		table []string
+		// areas are the scenario's own out-of-play areas, empty at setup.
+		areas []pack.ScenarioArea
 	}{
 		{
 			scenario: "brotherhood_of_badoon",
@@ -693,6 +695,7 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 			expert:   pack.FaceRef{Card: "16071", Face: 0},
 			scheme:   pack.FaceRef{Card: "16073", Face: 0},
 			sets:     []string{"galactic_artifacts"},
+			areas:    []pack.ScenarioArea{{Key: "collection", Label: "The Collection"}},
 		},
 		{
 			// Ship Command waits aside, out of the encounter deck, and its
@@ -772,6 +775,9 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 			if !slices.Equal(scenario.Sets, tt.sets) {
 				t.Errorf("sets = %v, want %v", scenario.Sets, tt.sets)
 			}
+			if !slices.Equal(scenario.Areas, tt.areas) {
+				t.Errorf("areas = %v, want %v", scenario.Areas, tt.areas)
+			}
 		})
 
 		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
@@ -804,6 +810,12 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 				for code, places := range want {
 					if got := placesOf(table, code); !slices.Equal(got, places) {
 						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
+					}
+				}
+				for _, area := range tt.areas {
+					pile := table.Piles["area:"+area.Key]
+					if pile == nil || pile.Label != area.Label || len(pile.Cards) != 0 {
+						t.Errorf("area %s = %+v, want an empty pile labelled %q", area.Key, pile, area.Label)
 					}
 				}
 			})
