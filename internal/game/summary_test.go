@@ -5,12 +5,20 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
 func TestSummary(t *testing.T) {
 	g := twoSlotLobby(t)
 	g.StatsRef = "0123456789abcdef"
-	g.Config = LobbyConfig{Scenario: "rhino", Modulars: []string{"bomb_scare", "masters_of_evil"}}
+	g.Config = LobbyConfig{
+		Scenario:   "rhino",
+		Difficulty: pack.Expert,
+		Standard:   "standard_ii",
+		Expert:     "expert_ii",
+		Modulars:   []string{"bomb_scare", "masters_of_evil"},
+	}
 	// Alex loads his second slot only; Sam loads his single slot.
 	g.Players[0].Decks[1] = &DeckChoice{Hero: "01001a", Name: "Alex's deck", URL: "https://example.com/1"}
 	g.Players[1].Decks[0] = &DeckChoice{Hero: "01040a", Name: "Sam's deck", URL: "https://example.com/2"}
@@ -25,6 +33,10 @@ func TestSummary(t *testing.T) {
 	}
 	if got.Scenario != "rhino" {
 		t.Errorf("Scenario = %q, want rhino", got.Scenario)
+	}
+	if got.Difficulty != pack.Expert || got.Standard != "standard_ii" || got.Expert != "expert_ii" {
+		t.Errorf("Difficulty, Standard, Expert = %q, %q, %q, want expert, standard_ii, expert_ii",
+			got.Difficulty, got.Standard, got.Expert)
 	}
 	if want := []string{"bomb_scare", "masters_of_evil"}; !slices.Equal(got.Modulars, want) {
 		t.Errorf("Modulars = %v, want %v", got.Modulars, want)

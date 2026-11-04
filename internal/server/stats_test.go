@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -70,15 +71,25 @@ func gamesIn(t *testing.T, resp reply) int {
 	return stats.Games
 }
 
-// startGame creates a game hosted by hostName and starts it solo, then
-// returns it with the host's connection.
+// startGame creates a game hosted by hostName and starts it solo on Rhino,
+// then returns it with the host's connection.
 func startGame(t *testing.T, ts *httptest.Server, hostName string) (createGameResponse, *testClient) {
+	t.Helper()
+	return startGameWith(t, ts, hostName, game.DefaultConfig(testCatalog(t), "rhino"))
+}
+
+// startGameWith starts a game like startGame, configured with cfg.
+func startGameWith(
+	t *testing.T, ts *httptest.Server, hostName string, cfg game.LobbyConfig,
+) (createGameResponse, *testClient) {
 	t.Helper()
 
 	created := createGame(t, ts, hostName)
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, hostName)
-	startSolo(t, host)
+	if started := startSoloWith(t, host, cfg); started.View.Phase != game.PhasePlaying {
+		t.Fatalf("view after start = %s, want a game in play", started.raw)
+	}
 	return created, host
 }
 
@@ -183,10 +194,11 @@ func TestStatsListsGamesInPlay(t *testing.T) {
 	want := statsResponse{
 		Games: 1,
 		Playing: []playedGame{{
-			Ref:      storedStatsRef(t, mr, created.ID),
-			Heroes:   []playedHero{{Hero: "Black Panther", AlterEgo: "T'Challa"}},
-			Scenario: "Rhino",
-			Modulars: []string{"Bomb Scare"},
+			Ref:        storedStatsRef(t, mr, created.ID),
+			Heroes:     []playedHero{{Hero: "Black Panther", AlterEgo: "T'Challa"}},
+			Scenario:   "Rhino",
+			Difficulty: pack.Standard,
+			Sets:       []string{"Bomb Scare", "Standard"},
 		}},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -196,6 +208,71 @@ func TestStatsListsGamesInPlay(t *testing.T) {
 		if strings.Contains(string(resp.body), secret) {
 			t.Errorf("body = %s, want no %q in it", resp.body, secret)
 		}
+	}
+}
+
+func TestStatsDifficultyAndSets(t *testing.T) {
+	tests := []struct {
+		name       string
+		difficulty pack.Difficulty
+		standard   string
+		expert     string
+		wantSets   []string
+	}{
+		{
+			name:       "expert with Standard II and Expert II",
+			difficulty: pack.Expert,
+			standard:   "standard_ii",
+			expert:     "expert_ii",
+			wantSets:   []string{"Bomb Scare", "Expert II", "Standard II"},
+		},
+		{
+			name:       "without a Standard or Expert set",
+			difficulty: pack.Standard,
+			wantSets:   []string{"Bomb Scare"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts, _, _ := newStatsServer(t)
+			cfg := game.DefaultConfig(testCatalog(t), "rhino")
+			cfg.Difficulty, cfg.Standard, cfg.Expert = tt.difficulty, tt.standard, tt.expert
+			startGameWith(t, ts, "Alex", cfg)
+
+			resp := getStats(t, ts)
+
+			playing := statsIn(t, resp).Playing
+			if len(playing) != 1 {
+				t.Fatalf("playing = %+v, want one game", playing)
+			}
+			if got := playing[0].Difficulty; got != tt.difficulty {
+				t.Errorf("difficulty = %q, want %q", got, tt.difficulty)
+			}
+			if got := playing[0].Sets; !slices.Equal(got, tt.wantSets) {
+				t.Errorf("sets = %q, want %q", got, tt.wantSets)
+			}
+			assertEntryKeys(t, resp)
+		})
+	}
+}
+
+// assertEntryKeys checks that the first entry of a stats reply has exactly
+// the keys of the API, whatever the game is played with.
+func assertEntryKeys(t *testing.T, resp reply) {
+	t.Helper()
+
+	var body struct {
+		Playing []map[string]json.RawMessage `json:"playing"`
+	}
+	if err := json.Unmarshal(resp.body, &body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body.Playing) == 0 {
+		t.Fatalf("body = %s, want a game", resp.body)
+	}
+	keys := slices.Sorted(maps.Keys(body.Playing[0]))
+	if want := []string{"difficulty", "heroes", "ref", "scenario", "sets"}; !slices.Equal(keys, want) {
+		t.Errorf("entry keys = %q, want %q", keys, want)
 	}
 }
 
@@ -287,27 +364,49 @@ func TestHeroOf(t *testing.T) {
 
 func TestStatsOf(t *testing.T) {
 	s := &Server{deps: Deps{Catalog: testCatalog(t)}}
+	// Seats and sets come in no particular order; cccc and bbbb are played
+	// with the same, in a different order.
 	summaries := []game.Summary{
-		{Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01040a", "01001b"}},
-		{Phase: game.PhaseEnded, Scenario: "rhino", Heroes: []string{"01001a"}},
-		{Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"masters_of_evil", "unknown"}},
-		{Ref: "bbbb", Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a", "99999"}},
-		{Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a"}},
-		{Phase: game.PhaseLobby},
+		{
+			Ref: "cccc", Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a", "01040a"},
+			Difficulty: pack.Expert, Standard: "standard_iii", Expert: "expert_ii",
+			Modulars: []string{"masters_of_evil", "bomb_scare"},
+		},
+		{Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a"}},
+		{Phase: game.PhaseEnded, Ref: "0000", Scenario: "rhino", Heroes: []string{"01001a"}},
+		{
+			Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Heroes: []string{"99999"},
+			Standard: "nope", Modulars: []string{"masters_of_evil", "unknown"},
+		},
+		{
+			Ref: "bbbb", Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01040b", "01001b"},
+			Difficulty: pack.Expert, Standard: "standard_iii", Expert: "expert_ii",
+			Modulars: []string{"bomb_scare", "masters_of_evil"},
+		},
+		{Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"bomb_scare"}},
+		{Phase: game.PhaseLobby, Ref: "0001"},
 	}
 
 	got := s.statsOf(summaries)
 
 	spiderMan := playedHero{Hero: "Spider-Man", AlterEgo: "Peter Parker"}
 	blackPanther := playedHero{Hero: "Black Panther", AlterEgo: "T'Challa"}
+	sameContent := func(ref string) playedGame {
+		return playedGame{
+			Ref: ref, Heroes: []playedHero{blackPanther, spiderMan}, Scenario: "Rhino", Difficulty: pack.Expert,
+			Sets: []string{"Bomb Scare", "Expert II", "Masters of Evil", "Standard III"},
+		}
+	}
 	want := statsResponse{
-		Games: 4, // the games being played only
-		// Sorted by scenario, then heroes, then ref; unknown codes are left out.
+		Games: 5, // the games being played only
+		// Sorted by ref; the games without one come first, by scenario. Heroes
+		// and sets are sorted by name; unknown codes are left out.
 		Playing: []playedGame{
-			{Heroes: []playedHero{}, Scenario: "Klaw", Modulars: []string{"Masters of Evil"}},
-			{Heroes: []playedHero{blackPanther, spiderMan}, Scenario: "Rhino", Modulars: []string{}},
-			{Ref: "aaaa", Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Modulars: []string{}},
-			{Ref: "bbbb", Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Modulars: []string{}},
+			{Heroes: []playedHero{}, Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
+			{Heroes: []playedHero{spiderMan}, Scenario: "Rhino", Sets: []string{}},
+			{Ref: "aaaa", Heroes: []playedHero{}, Scenario: "Klaw", Sets: []string{"Masters of Evil"}},
+			sameContent("bbbb"),
+			sameContent("cccc"),
 		},
 	}
 	if !reflect.DeepEqual(got, want) {

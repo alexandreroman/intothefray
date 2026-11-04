@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/internal/pack"
 )
 
 // createGameRequest is the body of POST /api/games.
@@ -37,15 +38,22 @@ type statsResponse struct {
 	Playing []playedGame `json:"playing"`
 }
 
-// playedGame is what one game in play is played with, by English names.
+// playedGame is what one game in play is played with, by English names. Its
+// lists are sorted alphabetically, so that a game reads the same whatever its
+// seat and set order.
 type playedGame struct {
 	// Ref tells the game apart from one call to the next for its whole life:
 	// it is the random StatsRef of the game, which never leads to it. It is
 	// empty for a game created without one.
-	Ref      string       `json:"ref"`
-	Heroes   []playedHero `json:"heroes"` // seat order
-	Scenario string       `json:"scenario"`
-	Modulars []string     `json:"modulars"`
+	Ref        string          `json:"ref"`
+	Heroes     []playedHero    `json:"heroes"` // by hero name, then alter-ego name
+	Scenario   string          `json:"scenario"`
+	Difficulty pack.Difficulty `json:"difficulty"` // "standard" or "expert", as configured
+	// Sets names the encounter sets the game adds to its scenario, its
+	// Standard, Expert and modular sets, sorted by name, such as
+	// ["Bomb Scare", "Expert II", "Standard III"]. A set the game plays
+	// without, or whose code is unknown to the catalog, is not in the list.
+	Sets []string `json:"sets"`
 }
 
 // playedHero names the identity of a deck in play. AlterEgo is empty for an

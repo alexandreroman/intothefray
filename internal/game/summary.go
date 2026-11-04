@@ -1,16 +1,25 @@
 package game
 
-import "slices"
+import (
+	"slices"
+
+	"github.com/alexandreroman/intothefray/internal/pack"
+)
 
 // Summary is what a game is played with, small enough to be read for every
 // game at once. Besides codes, it holds only the game's StatsRef: nothing that
 // leads to the game or names its players.
 type Summary struct {
 	// Ref is the game's StatsRef, empty for a game created without one.
-	Ref      string   `json:"ref,omitempty"`
-	Phase    Phase    `json:"phase"`
-	Scenario string   `json:"scenario,omitempty"` // LobbyConfig.Scenario
-	Modulars []string `json:"modulars,omitempty"` // LobbyConfig.Modulars codes
+	Ref      string `json:"ref,omitempty"`
+	Phase    Phase  `json:"phase"`
+	Scenario string `json:"scenario,omitempty"` // LobbyConfig.Scenario
+	// Difficulty, Standard and Expert are those of LobbyConfig; a set code is
+	// empty when the game plays without that set.
+	Difficulty pack.Difficulty `json:"difficulty"`
+	Standard   string          `json:"standard,omitempty"`
+	Expert     string          `json:"expert,omitempty"`
+	Modulars   []string        `json:"modulars,omitempty"` // LobbyConfig.Modulars codes
 	// Heroes are the identity codes (DeckChoice.Hero) of the loaded decks, in
 	// seat order.
 	Heroes []string `json:"heroes,omitempty"`
@@ -28,10 +37,13 @@ func (g *Game) Summary() Summary {
 		}
 	}
 	return Summary{
-		Ref:      g.StatsRef,
-		Phase:    g.Phase,
-		Scenario: g.Config.Scenario,
-		Modulars: slices.Clone(g.Config.Modulars),
-		Heroes:   heroes,
+		Ref:        g.StatsRef,
+		Phase:      g.Phase,
+		Scenario:   g.Config.Scenario,
+		Difficulty: g.Config.Difficulty,
+		Standard:   g.Config.Standard,
+		Expert:     g.Config.Expert,
+		Modulars:   slices.Clone(g.Config.Modulars),
+		Heroes:     heroes,
 	}
 }

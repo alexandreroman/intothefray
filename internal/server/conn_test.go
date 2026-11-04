@@ -669,10 +669,15 @@ func drain(t *testing.T, ws *websocket.Conn) (int, error) {
 // configures Rhino and starts the game, then returns the view after the start.
 func startSolo(t *testing.T, host *testClient) received {
 	t.Helper()
+	return startSoloWith(t, host, game.DefaultConfig(testCatalog(t), "rhino"))
+}
 
-	cat := testCatalog(t)
+// startSoloWith starts the game like startSolo, configured with cfg.
+func startSoloWith(t *testing.T, host *testClient, cfg game.LobbyConfig) received {
+	t.Helper()
+
 	host.setDeck(map[string]any{"url": deckLink})
-	host.lobby("configure", map[string]any{"config": game.DefaultConfig(cat, "rhino")})
+	host.lobby("configure", map[string]any{"config": cfg})
 	host.expect("view")
 	host.lobby("start", nil)
 	return host.expect("view")

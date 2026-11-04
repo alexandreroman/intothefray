@@ -67,8 +67,8 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 }
 
 // statsOf names what the games being played are played with, and counts
-// them. The list is sorted by content, so that its order tells nothing of
-// where the games are stored.
+// them. The list is sorted by random ref (see comparePlayedGames), so that its
+// order tells nothing of where the games are stored.
 func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 	playing := []playedGame{}
 	for _, summary := range summaries {
@@ -80,11 +80,16 @@ func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 	return statsResponse{Games: len(playing), Playing: playing}
 }
 
-// playedGameOf names the codes of a summary from the catalog, in English. An
-// unknown scenario gives an empty name; an unknown hero or modular set is left
-// out.
+// playedGameOf names the codes of a summary from the catalog, in English, and
+// sorts its heroes and sets by name. An unknown scenario gives an empty name;
+// an unknown hero or set is left out.
 func (s *Server) playedGameOf(summary game.Summary) playedGame {
-	played := playedGame{Ref: summary.Ref, Heroes: []playedHero{}, Modulars: []string{}}
+	played := playedGame{
+		Ref:        summary.Ref,
+		Heroes:     []playedHero{},
+		Difficulty: summary.Difficulty,
+		Sets:       []string{},
+	}
 	if scenario, ok := s.deps.Catalog.Scenario(summary.Scenario); ok {
 		played.Scenario = scenario.Name
 	}
@@ -95,11 +100,15 @@ func (s *Server) playedGameOf(summary game.Summary) playedGame {
 		}
 		played.Heroes = append(played.Heroes, heroOf(card))
 	}
-	for _, code := range summary.Modulars {
+	codes := append([]string{summary.Standard, summary.Expert}, summary.Modulars...)
+	for _, code := range codes {
+		// The empty code of a set the game plays without is unknown too.
 		if set, ok := s.deps.Catalog.Set(code); ok {
-			played.Modulars = append(played.Modulars, set.Name)
+			played.Sets = append(played.Sets, set.Name)
 		}
 	}
+	slices.SortFunc(played.Heroes, comparePlayedHeroes)
+	slices.Sort(played.Sets)
 	return played
 }
 
@@ -127,14 +136,16 @@ func faceOfType(card pack.Card, faceType string) (pack.Face, bool) {
 	return pack.Face{}, false
 }
 
-// comparePlayedGames orders games by scenario, then heroes, then modular sets,
-// and games played with the same by reference, so the order is always the same.
+// comparePlayedGames orders games by ref. Games without one, which come
+// first, are ordered by scenario, then heroes, then sets, then difficulty, so
+// the order is always the same.
 func comparePlayedGames(a, b playedGame) int {
 	return cmp.Or(
+		strings.Compare(a.Ref, b.Ref),
 		strings.Compare(a.Scenario, b.Scenario),
 		slices.CompareFunc(a.Heroes, b.Heroes, comparePlayedHeroes),
-		slices.Compare(a.Modulars, b.Modulars),
-		strings.Compare(a.Ref, b.Ref),
+		slices.Compare(a.Sets, b.Sets),
+		strings.Compare(string(a.Difficulty), string(b.Difficulty)),
 	)
 }
 
