@@ -16,15 +16,23 @@ type: project
   `https://api.intothefray.xyz`, running the Go server and its own Redis
   (in memory, not exposed). `ALLOWED_ORIGINS` is `https://intothefray.xyz`.
 - DNS: Cloudflare manages `intothefray.xyz`.
-  - The apex points at GitHub Pages DNS-only (grey cloud), so GitHub
-    issues and renews its certificate. Pages enforces HTTPS.
-  - `www` is a CNAME to `alexandreroman.github.io`, DNS-only; GitHub
-    redirects it to the apex.
+  - The apex points at GitHub Pages through the Cloudflare proxy (orange
+    cloud), under the zone's SSL Full (strict) and Always Use HTTPS. Pages
+    enforces HTTPS. Cloudflare checks the Let's Encrypt certificate GitHub
+    holds for `intothefray.xyz`; GitHub renews it while seeing Cloudflare
+    addresses, a known weak spot: a lapsed certificate shows as a 526 on
+    the whole site (fix: grey cloud until GitHub reissues it).
+  - `www` is a CNAME to `alexandreroman.github.io` through the proxy. A
+    Cloudflare redirect rule ("Redirect www to the apex") sends it with a
+    301 to `https://intothefray.xyz`, path and query string kept, at the
+    edge: GitHub holds no certificate for `www`, which Full (strict) would
+    turn into a 526.
   - The TXT record `_github-pages-challenge-alexandreroman` makes
     `intothefray.xyz` a verified domain of the GitHub account, so no
     other account can claim it for Pages.
   - The zone's API token lives in the local `.env` of
-    `intothefray-infra` (Zone Read, DNS Edit, Zone Settings Edit).
+    `intothefray-infra` (Zone Read, DNS Edit, Zone Settings Edit, Single
+    Redirect Edit).
   - `api` points at the VPS through the Cloudflare proxy (orange cloud):
     it hides the VPS address, compresses HTTP responses (the backend sends
     them uncompressed) and carries the WebSockets, which the backend
@@ -61,9 +69,9 @@ type: project
 
 **Why:** a path-routed same-origin API on
 `intothefray.xyz/api` would need a Cloudflare Worker (Origin Rules cannot
-change the origin on the free plan) and the Cloudflare proxy in front of
-GitHub Pages, whose certificate renewals fail behind it; a separate `api`
-subdomain avoids both, and CORS is already supported. One linear CI
+change the origin on the free plan); a separate `api` subdomain avoids it,
+and CORS is already supported. The apex sits behind the proxy by the
+user's choice, the zone's SSL mode applying to it unchanged. One linear CI
 pipeline (image, frontend, backend) keeps the release simple; the
 frontend may be live a few minutes before its backend, which is
 accepted.
