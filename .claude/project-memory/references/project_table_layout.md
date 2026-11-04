@@ -56,10 +56,10 @@ type: project
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles; the deck's name for a scenario deck); the frame's
   tooltip gives that player's hand count.
-- Out-of-play piles (victory display, set-aside) are not drawn on the
-  table: chips on their owner's frame open them (see
+- Out-of-play piles (scenario areas, victory display, set-aside) are not
+  drawn on the table: chips on their owner's frame open them (see
   [[project_action_bars]]); the villain's chips sit on the first villain
-  frame.
+  frame, in that order (see [[project_scenario_areas]]).
 - A portrait table card is 112×157 table units (landscape 157×112, double
   cards 157×224 and 224×157), small enough for much of the play to fit on
   screen at 100 %. The size lives in table units, on the server and the

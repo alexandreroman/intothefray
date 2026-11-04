@@ -60,7 +60,8 @@ type: project
   selects (lifts) it; a tap on the table, Esc, a downward swipe, a drop on
   the table or a dialog lowers it.
 - Tokens come from the submenus, the keys and the token pill.
-- Out-of-play piles (victory display, set-aside) are reached from chips
+- Out-of-play piles (scenario areas, victory display, set-aside) are
+  reached from chips
   (icon and count) at the right of the owner frame's name line; an
   empty chip is dimmed and inert.
 - Spectators get no card menu, stage cards included: the "Change card…"
