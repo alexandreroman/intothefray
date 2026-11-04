@@ -72,6 +72,8 @@ type Server struct {
 	// createBodyTimeout is the read deadline of a create-game request body;
 	// tests shorten it.
 	createBodyTimeout time.Duration
+	// games caches the count of games served by GET /api/stats.
+	games gamesCount
 }
 
 // New builds a Server from its dependencies.
@@ -96,11 +98,13 @@ func New(d Deps) *Server {
 var patternEscaper = strings.NewReplacer(`\`, `\\`, "*", `\*`, "?", `\?`, "[", `\[`, "]", `\]`)
 
 // Handler returns the routes: GET /healthz, GET /api/version,
-// POST /api/games, GET /api/games/{id}/cards and GET /ws/games/{id}.
+// GET /api/stats, POST /api/games, GET /api/games/{id}/cards and
+// GET /ws/games/{id}.
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", handleHealthz)
 	mux.HandleFunc("GET /api/version", handleVersion)
+	mux.HandleFunc("GET /api/stats", s.handleStats)
 	mux.HandleFunc("POST /api/games", s.handleCreateGame)
 	mux.HandleFunc("GET /api/games/{id}/cards", s.handleGameCards)
 	mux.HandleFunc("GET /ws/games/{id}", s.handleGameSocket)

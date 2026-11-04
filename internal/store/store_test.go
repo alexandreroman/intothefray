@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"maps"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -448,5 +449,88 @@ func TestResubscribeSendsResync(t *testing.T) {
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("no event received after the resync")
+	}
+}
+
+func TestCountGames(t *testing.T) {
+	t.Run("no game", func(t *testing.T) {
+		s, _ := newTestStore(t)
+
+		assertGameCount(t, s, 0)
+	})
+
+	t.Run("several games", func(t *testing.T) {
+		s, _ := newTestStore(t)
+		for _, id := range []string{"a", "b", "c"} {
+			if err := s.Create(t.Context(), newGame(id)); err != nil {
+				t.Fatalf("Create %s: %v", id, err)
+			}
+		}
+
+		assertGameCount(t, s, 3)
+	})
+
+	t.Run("online connections are not games", func(t *testing.T) {
+		s, _ := newTestStore(t)
+		ctx := t.Context()
+		if err := s.Create(ctx, newGame("abc")); err != nil {
+			t.Fatalf("Create: %v", err)
+		}
+		conns := []Connection{{Token: "tok", ID: "conn"}}
+		if _, err := s.KeepOnline(ctx, "abc", conns, time.Now(), time.Minute); err != nil {
+			t.Fatalf("KeepOnline: %v", err)
+		}
+
+		assertGameCount(t, s, 1)
+	})
+
+	t.Run("expired games are not counted", func(t *testing.T) {
+		s, mr := newTestStore(t)
+		ctx := t.Context()
+		if err := s.Create(ctx, newGame("old")); err != nil {
+			t.Fatalf("Create old: %v", err)
+		}
+		mr.FastForward(testTTL - time.Minute)
+		if err := s.Create(ctx, newGame("new")); err != nil {
+			t.Fatalf("Create new: %v", err)
+		}
+		mr.FastForward(time.Minute)
+
+		assertGameCount(t, s, 1)
+	})
+
+	t.Run("more games than one scan page", func(t *testing.T) {
+		s, mr := newTestStore(t)
+		const games = 2500
+		for i := range games {
+			if err := mr.Set(gameKey(strconv.Itoa(i)), "{}"); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		assertGameCount(t, s, games)
+	})
+}
+
+func TestCountGamesFailsWhenRedisIsDown(t *testing.T) {
+	s, mr := newTestStore(t)
+	mr.Close()
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+	if _, err := s.CountGames(ctx); err == nil {
+		t.Error("CountGames succeeded without Redis, want an error")
+	}
+}
+
+func assertGameCount(t *testing.T, s *Store, want int64) {
+	t.Helper()
+
+	got, err := s.CountGames(t.Context())
+	if err != nil {
+		t.Fatalf("CountGames: %v", err)
+	}
+	if got != want {
+		t.Errorf("CountGames = %d, want %d", got, want)
 	}
 }

@@ -4,8 +4,10 @@ import Home from './Home.svelte';
 import { createGame } from '../lib/api';
 import { NEWS, type NewsEntry } from '../lib/news';
 import { getPref, getToken } from '../lib/prefs';
+import { fetchGamesInProgress } from '../lib/stats';
 
 vi.mock('../lib/api', () => ({ createGame: vi.fn() }));
+vi.mock('../lib/stats', () => ({ fetchGamesInProgress: vi.fn() }));
 
 // Whether the viewer prefers reduced motion: by default, so that the banner leaves at once (jsdom
 // has no Web Animations); the tests of its motion turn it off.
@@ -21,14 +23,18 @@ vi.mock('svelte/motion', async (importOriginal) => ({
 }));
 
 const createGameMock = vi.mocked(createGame);
+const gamesInProgressMock = vi.mocked(fetchGamesInProgress);
 
 beforeEach(() => {
   window.history.pushState(null, '', '/');
   motion.reduced = true;
+  // The count stays loading unless a test says otherwise.
+  gamesInProgressMock.mockReturnValue(new Promise(() => {}));
 });
 
 afterEach(() => {
   createGameMock.mockReset();
+  gamesInProgressMock.mockReset();
 });
 
 describe('Home', () => {
@@ -119,6 +125,40 @@ describe('Home', () => {
     render(Home);
     await fireEvent.click(screen.getByRole('button', { name: 'About' }));
     expect(window.location.pathname).toBe('/about');
+  });
+
+  describe('games in progress', () => {
+    // Anchored: the feature list also speaks of "any game in progress".
+    const COUNT_LINE = /^\d+ games? in progress$/;
+
+    it.each([
+      [12, '12 games in progress'],
+      [1, '1 game in progress'],
+      [0, '0 games in progress'],
+    ])('shows %i as "%s"', async (games, text) => {
+      gamesInProgressMock.mockResolvedValue(games);
+      render(Home);
+
+      expect(await screen.findByText(text)).toBeTruthy();
+      expect(gamesInProgressMock).toHaveBeenCalledOnce();
+    });
+
+    it('shows nothing while the count loads', () => {
+      render(Home);
+
+      expect(gamesInProgressMock).toHaveBeenCalledOnce();
+      expect(screen.queryByText(COUNT_LINE)).toBeNull();
+    });
+
+    it('shows nothing when the count cannot be read', async () => {
+      gamesInProgressMock.mockRejectedValue(new Error('boom'));
+      render(Home);
+
+      // Lets the failed request settle.
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(screen.queryByText(COUNT_LINE)).toBeNull();
+      expect(screen.queryByRole('alert')).toBeNull();
+    });
   });
 
   describe("what's new", () => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
   import { slide, type TransitionConfig } from 'svelte/transition';
@@ -8,6 +8,7 @@
   import { NewsState } from '../lib/newsState.svelte';
   import { setToken } from '../lib/prefs';
   import { gamePath, go } from '../lib/router.svelte';
+  import { fetchGamesInProgress } from '../lib/stats';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
   import Tooltip from '../components/Tooltip.svelte';
@@ -19,6 +20,20 @@
 
   let starting = $state(false);
   let error = $state('');
+
+  // The count of games in progress, unknown while it loads or when it cannot be read.
+  let gamesInProgress = $state<number>();
+  const gamesInProgressText = $derived(
+    gamesInProgress === 1 ? '1 game in progress' : `${gamesInProgress} games in progress`,
+  );
+
+  onMount(() => {
+    // A count that cannot be read is simply not shown: it is a nicety, not something to report.
+    fetchGamesInProgress().then(
+      (games) => (gamesInProgress = games),
+      () => {},
+    );
+  });
 
   const news = new NewsState();
   const hasUnread = $derived(news.unread.length > 0);
@@ -159,6 +174,9 @@
         </div>
         {#if error}
           <p class="error" role="alert">{error}</p>
+        {/if}
+        {#if gamesInProgress !== undefined}
+          <p class="games">{gamesInProgressText}</p>
         {/if}
       </div>
 
@@ -548,6 +566,12 @@
   .error {
     margin: 0;
     color: var(--accent);
+  }
+
+  .games {
+    margin: 0;
+    font-size: 13px;
+    color: var(--faint);
   }
 
   .features {
