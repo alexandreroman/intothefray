@@ -11,6 +11,7 @@ import {
   pileTargets,
   sourceOf,
   stackOf,
+  tucks,
   type DragSource,
   type DropRect,
 } from './drag';
@@ -245,10 +246,13 @@ describe('dropAction', () => {
       x: 200,
       y: 100,
     });
-    // On a card it is still dealt where it lands; on the encounter discard, its top is discarded.
+    // On a card it is dealt under it, to the end of its stack, which the server lays out: the drop
+    // point is not sent. On the encounter discard, its top is discarded.
     const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
-    expect(dropAction(encounter, onCard, { x: 0, y: 0 }, DEAL_TO)).toMatchObject({
+    expect(dropAction(encounter, onCard, { x: 300, y: 300 }, DEAL_TO)).toEqual({
       kind: 'deal',
+      area: 'p1',
+      target: 'x',
     });
     const discard: DropRect = {
       kind: 'pile',
@@ -261,6 +265,24 @@ describe('dropAction', () => {
       kind: 'discardTop',
       pile: 'enc',
       n: 1,
+    });
+  });
+
+  it('deals the top card of a scenario encounter deck from that deck, under a card or where it lands', () => {
+    const encounter: DragSource = { kind: 'encounter', pile: 'enc:w' };
+    const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
+    expect(dropAction(encounter, onCard, { x: 300, y: 300 }, DEAL_TO)).toEqual({
+      kind: 'deal',
+      pile: 'enc:w',
+      area: 'p1',
+      target: 'x',
+    });
+    expect(dropAction(encounter, TABLE, { x: 204, y: 96 }, DEAL_TO)).toEqual({
+      kind: 'deal',
+      pile: 'enc:w',
+      area: 'p1',
+      x: 200,
+      y: 100,
     });
   });
 
@@ -353,6 +375,21 @@ describe('dropAction', () => {
 });
 
 const AT_ORIGIN = { x: 0, y: 0 };
+
+describe('tucks', () => {
+  it('is true for an attach, and for a play or a deal under a card', () => {
+    expect(tucks({ kind: 'attach', card: 'c', target: 'x' })).toBe(true);
+    expect(tucks({ kind: 'play', pile: 'deck:p0', target: 'x' })).toBe(true);
+    expect(tucks({ kind: 'deal', area: 'p1', target: 'x' })).toBe(true);
+    expect(tucks({ kind: 'deal', pile: 'enc:w', area: 'p1', target: 'x' })).toBe(true);
+  });
+
+  it('is false for a play or a deal where the card lands', () => {
+    expect(tucks({ kind: 'play', pile: 'deck:p0', x: 40, y: 60 })).toBe(false);
+    expect(tucks({ kind: 'deal', area: 'p1', x: 40, y: 60 })).toBe(false);
+    expect(tucks({ kind: 'move', card: 'c', x: 40, y: 60 })).toBe(false);
+  });
+});
 
 describe('isDownward', () => {
   it('is true within 45 degrees of straight down only', () => {
@@ -690,7 +727,7 @@ describe("the top card of the viewer's deck", () => {
     });
   });
 
-  it('is played where it lands on the table, even over a card, face down: a drop is no explicit Play', () => {
+  it('is played where it lands on the table, face down: a drop is no explicit Play', () => {
     const onTable = dropAction(deck, TABLE, { x: 304, y: 296 }, DEAL_TO);
     expect(onTable).toEqual({
       kind: 'play',
@@ -699,15 +736,17 @@ describe("the top card of the viewer's deck", () => {
       y: 300,
     });
     expect(onTable).not.toHaveProperty('faceUp');
+  });
+
+  it('is played under the card it is dropped on, in one action, face down as the server plays it', () => {
     const onCard: DropRect = { kind: 'card', card: 'x', z: 1, rect: rect(0, 0, 1, 1) };
-    const overCard = dropAction(deck, onCard, { x: 40, y: 60 }, DEAL_TO);
-    expect(overCard).toEqual({
+    const underCard = dropAction(deck, onCard, { x: 40, y: 60 }, DEAL_TO);
+    expect(underCard).toEqual({
       kind: 'play',
       pile: 'deck:p0',
-      x: 40,
-      y: 60,
+      target: 'x',
     });
-    expect(overCard).not.toHaveProperty('faceUp');
+    expect(underCard).not.toHaveProperty('faceUp');
   });
 });
 

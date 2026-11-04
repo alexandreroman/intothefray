@@ -51,7 +51,7 @@ const (
 type Action struct {
 	Kind   Kind   `json:"kind"`
 	Card   string `json:"card,omitempty"`
-	Target string `json:"target,omitempty"` // card id (attach, arrow, play under it) or pile id
+	Target string `json:"target,omitempty"` // card id (attach, arrow, play or deal under it) or pile id
 	Pile   string `json:"pile,omitempty"`   // also the deck a play takes the top of, or a toDeck goes to (toDeckID)
 	Area   Area   `json:"area,omitempty"`   // whose hand (handOrder; filled by resolve for a draw), who is dealt to (deal)
 	X      int    `json:"x,omitempty"`
@@ -250,7 +250,7 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 	case ActReveal:
 		return resolveReveal(t, who, a)
 	case ActDeal:
-		return resolveDeal(t, a)
+		return resolveDeal(t, who, a)
 	case ActMarker:
 		if t.marker(a.Name) == nil {
 			return Action{}, invalid("no marker %q on the table", a.Name)
@@ -655,8 +655,9 @@ func resolvePlay(t *Table, who actor, a Action) (Action, error) {
 // resolveDeal records the card to deal, the top card of the encounter deck
 // a.Pile names (the classic one by default), so that a rebuild deals that
 // card (see resolveReveal). A card revealed on the deck is its top card: it
-// lies back on top here (see coveredFor).
-func resolveDeal(t *Table, a Action) (Action, error) {
+// lies back on top here (see coveredFor). A deal may tuck the card under a
+// target card, checked as a play's (see resolvePlay).
+func resolveDeal(t *Table, who actor, a Action) (Action, error) {
 	if a.Area == "" {
 		return a, invalid("a deal needs a recipient")
 	}
@@ -671,7 +672,7 @@ func resolveDeal(t *Table, a Action) (Action, error) {
 		return a, invalid("pile %q is empty", enc.ID)
 	}
 	a.Cards = topCards(enc, 1)
-	return a, nil
+	return a, checkCards(t, who, a.Target)
 }
 
 // resolveReorderTop checks a reorder of the top of one of the actor's piles.

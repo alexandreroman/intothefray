@@ -364,7 +364,7 @@ export type ActionKind =
 export interface Action {
   kind: ActionKind;
   card?: string;
-  target?: string; // card id (attach, arrow, play under it) or pile id
+  target?: string; // card id (attach, arrow, play or deal under it) or pile id
   /**
    * For draw, a side deck, without it the credited seat's deck; for play, the deck whose top card
    * is played; for reveal, the viewer's deck or side deck, without it the encounter deck; for
