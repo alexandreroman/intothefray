@@ -205,6 +205,28 @@ function animationsOf(selector: string): [Keyframe[], KeyframeAnimationOptions][
   });
 }
 
+/** The recorded animations of the elements matching selector that play on their opacity. */
+function fadesOf(selector: string): [Keyframe[], KeyframeAnimationOptions][] {
+  return animationsOf(selector).filter(([keyframes]) =>
+    keyframes.some((keyframe) => keyframe.opacity !== undefined),
+  );
+}
+
+/** A copy flying to an out-of-play pile's chip fades out into it on the last part of its way. */
+function expectFadesIntoChip(): void {
+  const [[, way]] = animationsOf('.fly') as [[Keyframe[], KeyframeAnimationOptions]];
+  const fades = fadesOf('.fly');
+  expect(fades).toHaveLength(1);
+  const [[fade, fadeOptions]] = fades as [[Keyframe[], KeyframeAnimationOptions]];
+  expect(fade).toEqual([{ opacity: 1 }, { opacity: 1, offset: 0.55 }, { opacity: 0 }]);
+  expect(fadeOptions).toMatchObject({
+    duration: way.duration,
+    delay: way.delay,
+    fill: way.fill,
+    easing: 'linear',
+  });
+}
+
 /** The delays of a pile's bounces: its own animations that scale it, not its lift over its neighbours. */
 function bounceDelays(id: string): (number | undefined)[] {
   return animationsOf(`.surface .pile[data-id="${id}"]`)
@@ -608,6 +630,9 @@ describe('Table animations', () => {
       easing: 'ease-in-out',
     });
     expect(animationsOf('.fly')).toHaveLength(2);
+    // Drawn on the table, the pile shows the card land: the copy does not fade.
+    expect(motion.flights).toMatchObject([{ kind: 'toPile', pile: 'disc:p0', fades: false }]);
+    expect(fadesOf('.fly')).toEqual([]);
   });
   it('a card put at the bottom of a deck flies below it, then slips under it', async () => {
     const session = fakeSession();
@@ -1748,7 +1773,7 @@ describe('Table animations', () => {
       expect(animationsOf('.fly [data-side="back"]')).toEqual([]);
     });
 
-    it('a card sent to the victory display flies to its chip', async () => {
+    it('a card sent to the victory display flies to its chip, fading into it', async () => {
       const villain: PileView[] = [
         ...PILES,
         { id: 'enc', kind: 'encounter', owner: -1, x: 0, y: 300, count: 20 },
@@ -1768,8 +1793,9 @@ describe('Table animations', () => {
       await next(makeView([card('v', { owner: -1, zone: 'pile' })], { piles: withVictory(['v']) }));
       await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
       expect(motion.flights).toMatchObject([
-        { kind: 'toPile', pile: 'vic', to: { cx: 920, cy: 290 } },
+        { kind: 'toPile', pile: 'vic', to: { cx: 920, cy: 290 }, fades: true },
       ]);
+      expectFadesIntoChip();
     });
 
     describe('out of a set-aside pile', () => {
@@ -1791,6 +1817,34 @@ describe('Table animations', () => {
         chip.style.width = '40px';
         chip.style.height = '20px';
       }
+
+      it('a card set aside from the table flies to the chip, fading into it', async () => {
+        const { next, container } = await renderTable(
+          makeView([card('s', { owner: 1, x: 400 })], { piles: [samDeck(30), aside([])] }),
+        );
+        placeChip(container);
+
+        await next(
+          makeView([card('s', { owner: 1, zone: 'pile' })], { piles: [samDeck(30), aside(['s'])] }),
+        );
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(motion.flights).toMatchObject([
+          { kind: 'toPile', pile: 'aside:p1', to: { cx: 920, cy: 290 }, fades: true },
+        ]);
+        expectFadesIntoChip();
+      });
+
+      it('a card leaving the chip for its deck does not fade', async () => {
+        const { next, container } = await renderTable(
+          makeView([card('s', { owner: 1, zone: 'pile' })], { piles: [samDeck(30), aside(['s'])] }),
+        );
+        placeChip(container);
+
+        await next(makeView([], { piles: [samDeck(31), aside([])] }));
+        await waitFor(() => expect(container.querySelector('.fly')).not.toBeNull());
+        expect(motion.flights).toMatchObject([{ kind: 'toPile', pile: 'deck:p1', fades: false }]);
+        expect(fadesOf('.fly')).toEqual([]);
+      });
 
       it('a card put on its deck flies from the chip as a portrait card', async () => {
         const { next, container } = await renderTable(

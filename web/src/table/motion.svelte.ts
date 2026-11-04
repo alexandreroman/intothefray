@@ -3,8 +3,9 @@
 // their new place or out of a pile onto the table, copies of cards flying to
 // a pile, out of one into the hand, or between two piles, and copies going
 // into or out of a hand the viewer does not see. An out-of-play pile is not
-// drawn: the chip on its owner's frame stands for it, and a card leaves it at
-// a card's size (measureOrigin). Nothing here holds the table up: the new
+// drawn: the chip on its owner's frame stands for it, a card flying to it
+// fades out into it (CHIP_FADE_FROM), and a card leaves it at a card's size
+// (measureOrigin). Nothing here holds the table up: the new
 // view is drawn at once, in its final state, and the animations only paint
 // over it, never catching the pointer.
 
@@ -89,6 +90,12 @@ const FLY_MS = 420;
 const FLY_STAGGER_MS = 70;
 const FLY_EASING = 'cubic-bezier(.3, .7, .2, 1)';
 /**
+ * A copy flying to an out-of-play pile's chip fades out from this far into its flight, evenly to
+ * its end: as it shrinks into the chip, it vanishes into the pile instead of going all at once
+ * when it lands. Its way eases out, so it is then all but on the chip.
+ */
+const CHIP_FADE_FROM = 0.55;
+/**
  * A landscape copy flying to a portrait pile turns a quarter on its way
  * (quarterFrames); when it turns over, it does so once on the pile, as a
  * card turned over on the table does (FLIP_MS), edge-on half way.
@@ -154,6 +161,8 @@ interface PileFlight extends FlightBase {
    * clockwise on its way, as the pile draws it, then turns over there.
    */
   quarter: boolean;
+  /** It goes to an out-of-play pile's chip: it fades out into it on the last part of its way. */
+  fades: boolean;
 }
 
 /** A copy of a drawn card on its way from its pile to its slot in the hand. */
@@ -207,6 +216,8 @@ const ownGhost = (id: string) => `${OWN_GHOST}[data-id="${CSS.escape(id)}"]`;
  * owner's frame (Surface.svelte). A pile is never both.
  */
 const pilePlace = (id: string) => `${tablePile(id)}, .surface .chip[data-pile="${CSS.escape(id)}"]`;
+/** The chip that stands for an out-of-play pile, on its owner's frame (Surface.svelte). */
+const PILE_CHIP = '.surface .chip[data-pile]';
 const tableMarker = (name: MarkerName) => `.surface .marker[data-marker="${name}"]`;
 /** The marker another player drags, or has just let go of (Presence.svelte). */
 const remoteMarker = (name: MarkerName) => `.presence .marker.ghost[data-marker="${name}"]`;
@@ -340,7 +351,7 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
     const ghost = measure(element, zoom);
     return { ...ghost, w: ghost.w * LIFT_SCALE, h: ghost.h * LIFT_SCALE };
   }
-  if (!element.matches('.surface .chip[data-pile]')) {
+  if (!element.matches(PILE_CHIP)) {
     return measure(element, zoom);
   }
   const chip = measure(element, zoom);
@@ -509,6 +520,13 @@ const FLIGHT_LIFT_FRAMES: Keyframe[] = [
   { scale: '1' },
   { scale: `${LIFT_SCALE}`, offset: FLIGHT_LIFT_AT },
   { scale: '1' },
+];
+
+/** A copy flying to an out-of-play pile's chip fades out into it (CHIP_FADE_FROM). */
+const CHIP_FADE_FRAMES: Keyframe[] = [
+  { opacity: 1 },
+  { opacity: 1, offset: CHIP_FADE_FROM },
+  { opacity: 0 },
 ];
 
 const DRAW_AWAY_FRAMES: Keyframe[] = [
@@ -1001,6 +1019,11 @@ class TableMotion {
         if (!flight.under) {
           const lift = { ...options, easing: 'ease-in-out' };
           animations.push(this.#run(element, FLIGHT_LIFT_FRAMES, lift, null));
+        }
+        // On the opacity of the copy itself: a turning copy's back plays on its own element.
+        if (flight.fades) {
+          const fade = { ...options, easing: 'linear' };
+          animations.push(this.#run(element, CHIP_FADE_FRAMES, fade, null));
         }
         if (flight.turns) {
           turnBack(backFrames(flight.turns, edgeOn), options);
@@ -1626,6 +1649,7 @@ class TableMotion {
       asOnPile: how.asOnPile ?? false,
       turns: how.turns,
       quarter: !under && from.w > from.h && to.h > to.w,
+      fades: pile.matches(PILE_CHIP),
       delay: 0,
     };
   }

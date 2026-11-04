@@ -13,7 +13,10 @@ type: project
   as a portrait table card (112×157 units at the zoom) centred on it,
   so it travels at a card's size, never squashed or turned a quarter
   (`measureOrigin` in `motion.svelte.ts`); a card going to a chip
-  shrinks into the chip's box.
+  shrinks into the chip's box and fades out into it, evenly over the
+  last 45 % of its flight (`CHIP_FADE_FROM` = 0.55, `PileFlight.fades`),
+  for every viewer, single cards and groups alike. A card leaving a chip
+  shows at full opacity all along.
 - A card the viewer cannot see travels as a back: out of a face-down pile
   it leaves on its back and turns to its face where it lands face up; a
   card that lands face down stays a back. A card taken face down off the
