@@ -386,6 +386,21 @@ describe('the inspector, revealing a card from a deck (F-U8)', () => {
     expect(within(sheet()!).getByRole('button', { name: /^Flip/ })).toBeTruthy();
   });
 
+  it('keeps the same sheet as it switches to the revealed card, and opens a new one on another element', async () => {
+    const { rerender } = await revealFrom('enc');
+    const opened = sheet();
+
+    await rerender({ view: revealView([ON_ENCOUNTER]) });
+
+    expect(sheet()).toBe(opened);
+    expect(within(sheet()!).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    await tap(placed('deck:p0'));
+    expect(sheet()).not.toBeNull();
+    expect(sheet()).not.toBe(opened);
+  });
+
   it("stays open on the viewer's deck, then shows the revealed card with its Draw", async () => {
     const { session, rerender } = await revealFrom('deck:p0');
 

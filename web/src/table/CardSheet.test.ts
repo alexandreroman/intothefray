@@ -705,6 +705,32 @@ describe('CardSheet', () => {
         expect(screen.getByRole('dialog')).toBe(dialog);
       });
 
+      it("turns a deck's back over to the card revealed on it, its count and counters switching once edge-on", async () => {
+        const deck: ContextHeader = {
+          ...HEADER,
+          name: 'Encounter deck',
+          label: 'Encounter deck',
+          count: 20,
+        };
+        const { rerender } = renderSheet();
+        await rerender({ header: deck, images: ['encounter-back.png'] });
+        await finishAnimations();
+        animate.mockClear();
+
+        await rerender({ header: TURNED, images: ['rhino-2.png'], counters: [DAMAGE] });
+
+        expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
+        expect(screen.getByText('20', { selector: '.count' })).toBeTruthy();
+        expect(screen.queryByText('Damage')).toBeNull();
+        expect(turns()).toHaveLength(1);
+
+        await finishAnimations();
+
+        expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+        expect(document.querySelector('.inspector .count')).toBeNull();
+        expect(screen.getByText('Damage')).toBeTruthy();
+      });
+
       it('turns over to a landscape face once edge-on', async () => {
         const { rerender } = renderSheet();
 

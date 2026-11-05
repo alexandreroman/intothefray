@@ -20,9 +20,10 @@
   row or an entry that comes or goes after an update slides open or closed;
   a counter's number bumps as it changes; a pressed button sinks. When the
   face the card shows changes (a flip, a stage turned, a card turned face
-  down or up), the card turns over as a table card does, in place: the name
-  and the entries follow its new side once it is edge-on. Another element
-  opens a sheet of its own (Table.svelte keys it), which does not turn.
+  down or up, a deck's back giving way to the card revealed on it), the card
+  turns over as a table card does, in place: the name, the count, the
+  counters and the entries follow its new side once it is edge-on. Another
+  element opens a sheet of its own (Table.svelte keys it), which does not turn.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
 -->
@@ -80,10 +81,16 @@
   /** The perspective of a table card turning over (motion.svelte.ts FLIP_PERSPECTIVE). */
   const TURN_PERSPECTIVE = 'perspective(700px)';
 
-  /** A side of the card: the face it shows, and the name and entries that go with it. */
-  type Side = { images: string[]; landscape: boolean; name: string; entries: ContextEntry[] };
+  /** A side of the card: the face it shows, and the header, counters and entries that go with it. */
+  type Side = {
+    images: string[];
+    landscape: boolean;
+    header: ContextHeader;
+    counters: SheetCounter[];
+    entries: ContextEntry[];
+  };
 
-  const live = $derived<Side>({ images, landscape, name: header.name, entries });
+  const live = $derived<Side>({ images, landscape, header, counters, entries });
   /** The side the card turns away from, shown until it is edge-on; null while it does not turn. */
   let leaving = $state.raw<Side | null>(null);
   const side = $derived(leaving ?? live);
@@ -395,16 +402,16 @@
   <div class="inspector" class:dock={dock.current} bind:this={content}>
     <div class="top">
       <div class="face" class:land={side.landscape} bind:this={faceElement}>
-        <CardFace images={side.images} name={side.name} landscape={side.landscape} />
+        <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
       </div>
       <div class="side">
         <!-- The sheet is named by its whole header, its type, stage or owner included: shown, the
              name alone, which is not read a second time; an eyebrow line would take room. -->
         <div class="nameline" aria-hidden="true">
-          <span class="name">{side.name}</span>
-          {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
+          <span class="name">{side.header.name}</span>
+          {#if side.header.count !== undefined}<span class="count">{side.header.count}</span>{/if}
         </div>
-        {#each counters as counter (`${counter.kind}:${counter.name}`)}
+        {#each side.counters as counter (`${counter.kind}:${counter.name}`)}
           {@render counterRow(counter)}
         {/each}
         {#if dock.current}

@@ -1279,6 +1279,9 @@
   // in place of the context menu, or a card of the raised hand. Its own state, not the context
   // menu's: the sheet is modal, and a modal lets go of the context menu (see below).
   let inspected = $state.raw<TableElement | null>(null);
+  // How many times an inspector has opened: each opening draws a sheet of its own. The switch from
+  // a deck to the card revealed on it is no opening: the same sheet turns the card over in place.
+  let inspectorOpenings = $state(0);
 
   // The inspector of a card in play offers Select, which enters select mode.
   const SELECT_ENTRY: ContextAction = {
@@ -1326,8 +1329,9 @@
 
   $effect(() => () => clearTimeout(awaitingRevealTimer));
 
-  // The view that shows a card revealed on the awaited deck switches the inspector to that card, as
-  // a tap on it would. Declared before the effect below, which runs after it: the switch comes first.
+  // The view that shows a card revealed on the awaited deck switches the inspector to that card, in
+  // the same sheet, which turns the deck over to it (CardSheet.svelte). Declared before the effect
+  // below, which runs after it: the switch comes first.
   $effect(() => {
     const awaited = awaitingReveal;
     if (awaited === null) {
@@ -1399,6 +1403,7 @@
       return;
     }
     inspected = element;
+    inspectorOpenings += 1;
   }
 
   function openHandInspector(id: string): void {
@@ -2502,7 +2507,7 @@
 
   {#if inspected && inspectorHeader && inspectorContent}
     <!-- Created afresh for each opening, as the menu: the focus it gives back is the one before it. -->
-    {#key inspected}
+    {#key inspectorOpenings}
       <CardSheet
         header={inspectorHeader}
         entries={inspectorContent.entries}
