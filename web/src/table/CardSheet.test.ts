@@ -1,0 +1,277 @@
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import CardSheet from './CardSheet.svelte';
+import { MAX_MODIFIER, type ActionItem } from './actions';
+import type { ContextEntry, ContextHeader } from './contextItems';
+import type { SheetCounter } from './inspector';
+
+const HEADER: ContextHeader = {
+  eyebrow: 'Villain · Stage I',
+  name: 'Rhino',
+  color: '#a66bff',
+  label: 'Rhino, Villain, stage I',
+};
+
+function item(id: string, extra: Partial<ActionItem> = {}): ActionItem {
+  return { id, label: id.charAt(0).toUpperCase() + id.slice(1), group: 0, ...extra };
+}
+
+const EXHAUST = item('exhaust', { key: 'E', default: true });
+const FLIP = item('flip', { key: 'F' });
+const DISCARD = item('discard', { key: 'X', group: 2 });
+const TO_HAND = item('hand', { label: 'Hand' });
+const TO_DECK = item('deck', { label: 'Deck', disabled: true, reason: 'The deck is full' });
+
+const ENTRIES: ContextEntry[] = [
+  { kind: 'action', item: EXHAUST },
+  { kind: 'action', item: FLIP },
+  { kind: 'separator' },
+  { kind: 'action', item: DISCARD },
+  {
+    kind: 'submenu',
+    id: 'moveTo',
+    label: 'Move to…',
+    disabled: false,
+    entries: [
+      { kind: 'action', item: TO_HAND },
+      { kind: 'separator' },
+      { kind: 'action', item: TO_DECK },
+    ],
+  },
+];
+
+const DAMAGE: SheetCounter = {
+  kind: 'token',
+  name: 'dmg',
+  label: 'Damage',
+  value: 3,
+  signed: false,
+};
+const STUNNED: SheetCounter = {
+  kind: 'status',
+  name: 'stunned',
+  label: 'Stunned',
+  value: 1,
+  signed: false,
+};
+
+function modifier(value: number): SheetCounter {
+  return { kind: 'modifier', name: 'def', label: 'DEF', value, signed: true };
+}
+
+function renderSheet(
+  props: { entries?: ContextEntry[]; note?: string; counters?: SheetCounter[] } = {},
+) {
+  const onrun = vi.fn();
+  const onstep = vi.fn();
+  const onclose = vi.fn();
+  const result = render(CardSheet, {
+    header: HEADER,
+    entries: props.entries ?? ENTRIES,
+    note: props.note,
+    images: ['rhino.png'],
+    counters: props.counters ?? [],
+    onrun,
+    onstep,
+    onclose,
+  });
+  return { ...result, onrun, onstep, onclose };
+}
+
+describe('CardSheet', () => {
+  it('is a dialog named by its header, with the card face, the eyebrow and the name', () => {
+    renderSheet();
+
+    const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
+    expect(within(sheet).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('rhino.png');
+    expect(within(sheet).getByText('Villain · Stage I')).toBeTruthy();
+    expect(within(sheet).getByText('Rhino', { selector: '.name' })).toBeTruthy();
+  });
+
+  it("shows a pile's count", () => {
+    render(CardSheet, {
+      header: {
+        eyebrow: 'Villain',
+        name: 'Encounter deck',
+        count: 29,
+        color: '#a66bff',
+        label: 'Encounter deck',
+      },
+      entries: ENTRIES,
+      images: [],
+      counters: [],
+      onrun: vi.fn(),
+      onstep: vi.fn(),
+      onclose: vi.fn(),
+    });
+
+    expect(screen.getByText('29')).toBeTruthy();
+  });
+
+  it('runs a main action without closing itself', async () => {
+    const { onrun, onclose } = renderSheet();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Flip' }));
+
+    expect(onrun).toHaveBeenCalledWith(FLIP);
+    expect(onclose).not.toHaveBeenCalled();
+  });
+
+  it('draws the first group as large buttons, the default one marked', () => {
+    renderSheet();
+
+    const exhaust = screen.getByRole('button', { name: 'Exhaust' });
+    expect(exhaust.classList.contains('main')).toBe(true);
+    expect(exhaust.classList.contains('default')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Flip' }).classList.contains('default')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Discard' }).classList.contains('main')).toBe(false);
+  });
+
+  it('runs a row', async () => {
+    const { onrun } = renderSheet();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+
+    expect(onrun).toHaveBeenCalledWith(DISCARD);
+  });
+
+  it('shows no key hints', () => {
+    const { container } = renderSheet();
+
+    expect(container.querySelector('kbd')).toBeNull();
+    expect(screen.queryByText('E')).toBeNull();
+    expect(screen.queryByText('X')).toBeNull();
+  });
+
+  it('opens a submenu in the sheet, with a Back row', async () => {
+    const { onrun } = renderSheet();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+    expect(screen.queryByRole('button', { name: 'Exhaust' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
+    await fireEvent.click(screen.getByRole('button', { name: 'Hand' }));
+    expect(onrun).toHaveBeenCalledWith(TO_HAND);
+
+    await fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+
+    expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Hand' })).toBeNull();
+  });
+
+  it('shows why an entry is disabled, and does not run it', async () => {
+    const { onrun } = renderSheet();
+    await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+    const deck = screen.getByRole('button', { name: 'Deck' });
+    expect(deck.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByText('The deck is full')).toBeTruthy();
+    expect(document.getElementById(deck.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
+      'The deck is full',
+    );
+    await fireEvent.click(deck);
+
+    expect(onrun).not.toHaveBeenCalled();
+  });
+
+  it('shows why a main action is disabled', async () => {
+    const tapped = item('exhaust', { default: true, disabled: true, reason: 'Locked' });
+    const { onrun } = renderSheet({ entries: [{ kind: 'action', item: tapped }] });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Exhaust' }));
+
+    expect(screen.getByText('Locked')).toBeTruthy();
+    expect(onrun).not.toHaveBeenCalled();
+  });
+
+  it('does not open a disabled submenu', async () => {
+    renderSheet({
+      entries: [
+        {
+          kind: 'submenu',
+          id: 'moveTo',
+          label: 'Move to…',
+          disabled: true,
+          reason: 'Not yours',
+          entries: [],
+        },
+      ],
+    });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+    expect(screen.getByText('Not yours')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
+  });
+
+  it('shows only the note when there are no entries', () => {
+    renderSheet({ entries: [], note: 'Belongs to Sam' });
+
+    expect(screen.getByText('Belongs to Sam')).toBeTruthy();
+    expect(screen.queryAllByRole('button')).toEqual([]);
+  });
+
+  it('steps a token down and up', async () => {
+    const { onstep } = renderSheet({ counters: [DAMAGE] });
+
+    expect(screen.getByText('Damage')).toBeTruthy();
+    expect(screen.getByText('3')).toBeTruthy();
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove one damage' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Add one damage' }));
+
+    expect(onstep.mock.calls).toEqual([
+      [DAMAGE, -1],
+      [DAMAGE, 1],
+    ]);
+  });
+
+  it('gives a status a single button, which removes one', async () => {
+    const { onstep } = renderSheet({ entries: [], counters: [STUNNED] });
+
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove stunned' }));
+
+    expect(onstep).toHaveBeenCalledWith(STUNNED, -1);
+  });
+
+  it('shows a modifier with its sign, and stops it at its largest', () => {
+    renderSheet({ counters: [modifier(MAX_MODIFIER)] });
+
+    expect(screen.getByText('+99')).toBeTruthy();
+    expect(
+      (screen.getByRole('button', { name: 'Add one to the DEF modifier' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Remove one from the DEF modifier',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+  });
+
+  it('stops a modifier at its smallest', () => {
+    renderSheet({ counters: [modifier(-MAX_MODIFIER)] });
+
+    expect(screen.getByText('−99')).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Remove one from the DEF modifier',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole('button', { name: 'Add one to the DEF modifier' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+  });
+
+  it('closes on Escape', async () => {
+    const { onclose } = renderSheet();
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(onclose).toHaveBeenCalledOnce();
+  });
+});
