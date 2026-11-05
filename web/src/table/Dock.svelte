@@ -60,6 +60,8 @@
     }
     return heroName ? `${handTitle}, ${heroName}` : handTitle;
   });
+  // The art shows the hero's first image, as the hero selector does.
+  const avatarSrc = $derived(avatar?.[0]);
   const badge = $derived(unread > MAX_UNREAD ? `${MAX_UNREAD}+` : String(unread));
   const historyLabel = $derived(unread > 0 ? `History, ${badge} new` : 'History');
 </script>
@@ -90,8 +92,8 @@
       <span class="drop-label">{DROP_LABEL}</span>
     {:else}
       <span class="avatar" class:empty={!avatar} style:--seat={color} aria-hidden="true">
-        {#if avatar && avatar.length > 0}
-          <CardArt src={avatar[0]} aspect={1} />
+        {#if avatarSrc}
+          <CardArt src={avatarSrc} aspect={1} />
         {/if}
       </span>
       {#if landscape}
