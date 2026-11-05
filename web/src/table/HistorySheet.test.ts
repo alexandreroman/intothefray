@@ -29,13 +29,33 @@ function historyLines(): HTMLElement[] {
 }
 
 describe('unread', () => {
-  it('counts the lines added since the history was last seen', () => {
-    expect(unread(12, 9)).toBe(3);
-    expect(unread(9, 9)).toBe(0);
+  const OPENED = '2026-11-05T10:00:00Z';
+
+  it('counts the lines written after the history was last seen', () => {
+    const log = [
+      line({ at: '2026-11-05T09:59:00Z' }),
+      line({ at: OPENED }),
+      line({ at: '2026-11-05T10:00:05Z' }),
+    ];
+    expect(unread(log, OPENED)).toBe(1);
+    expect(unread(log, '2026-11-05T10:00:05Z')).toBe(0);
   });
 
-  it('is never negative, as when undone lines shorten the log', () => {
-    expect(unread(5, 9)).toBe(0);
+  it('has nothing to count before the history was ever seen', () => {
+    expect(unread([line({ at: OPENED })], null)).toBe(0);
+  });
+
+  it('counts a line written after an undo removed the last line seen', () => {
+    const afterUndo = [line({ at: '2026-11-05T09:59:00Z' }), line({ at: '2026-11-05T10:00:07Z' })];
+    expect(unread(afterUndo, OPENED)).toBe(1);
+  });
+
+  it('compares times, not their spelling: fractions of a second and offsets', () => {
+    const log = [
+      line({ at: '2026-11-05T10:00:00.25Z' }),
+      line({ at: '2026-11-05T11:00:00+01:00' }),
+    ];
+    expect(unread(log, '2026-11-05T10:00:00.1Z')).toBe(1);
   });
 });
 

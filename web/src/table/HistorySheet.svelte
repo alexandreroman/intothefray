@@ -3,9 +3,19 @@
   (SidePanel.svelte), newest first and worded the same, and the Undo button under them.
 -->
 <script module lang="ts">
-  /** The log lines added since the history was last opened, for the dock's badge. */
-  export function unread(logLength: number, seenLength: number): number {
-    return Math.max(0, logLength - seenLength);
+  import type { LogView } from '../lib/types';
+
+  /**
+   * The log lines written since the history was last seen, at seenAt, for the dock's badge; none
+   * before it was ever seen (null). Counted by time rather than by length, as an undo removes lines.
+   */
+  export function unread(log: LogView[], seenAt: string | null): number {
+    if (seenAt === null) {
+      return 0;
+    }
+    // Compared as instants: RFC 3339 times may differ in their fractions of a second or offset.
+    const seen = Date.parse(seenAt);
+    return log.filter((entry) => Date.parse(entry.at) > seen).length;
   }
 </script>
 
@@ -14,7 +24,7 @@
   import Sheet from '../components/Sheet.svelte';
   import { playerColorVar } from '../lib/playerColor';
   import { pointerBlur } from '../lib/releaseFocus';
-  import type { FaceRef, LogPart, LogView } from '../lib/types';
+  import { partsOf, timeOf, type NameOf } from './historyLines';
   import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
   let {
@@ -30,7 +40,7 @@
     onundo: () => void;
     onclose: () => void;
     /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
-    nameOf?: (ref: FaceRef) => string | undefined;
+    nameOf?: NameOf;
   } = $props();
 
   function undo(): void {
@@ -39,51 +49,16 @@
     }
   }
 
-  // The line markup below reproduces SidePanel's, so that both read the same.
-  interface Part {
-    text: string;
-    /** Bracketed details, dimmed. */
-    aside: boolean;
-    /** A card name, in bold. Only the server flags one: no text a player typed can. */
-    card: boolean;
-  }
-
-  /** Splits a piece of a line around its bracketed details. */
-  function splitAsides(text: string, card: boolean): Part[] {
-    const parts: Part[] = [];
-    let start = 0;
-    for (const match of text.matchAll(/\([^()]*\)/g)) {
-      parts.push({ text: text.slice(start, match.index), aside: false, card });
-      parts.push({ text: match[0], aside: true, card });
-      start = match.index + match[0].length;
-    }
-    parts.push({ text: text.slice(start), aside: false, card });
-    return parts.filter((part) => part.text !== '');
-  }
-
-  /** The text of a piece: a card name it refers to is shown in the viewer's language. */
-  function textOf(piece: LogPart): string {
-    if (piece.card !== true || piece.ref === undefined) {
-      return piece.text;
-    }
-    return nameOf?.(piece.ref) ?? piece.text;
-  }
-
-  /** Splits a line into its card names and its bracketed details. */
-  function partsOf(entry: LogView): Part[] {
-    const pieces = entry.parts ?? [{ text: entry.text }];
-    return pieces.flatMap((piece) => splitAsides(textOf(piece), piece.card === true));
-  }
-
-  function timeOf(at: string): string {
-    // hh:mm, local time.
-    return new Date(at).toTimeString().slice(0, 5);
-  }
-
-  // Keyed by their position from the oldest, which does not move when lines are added.
+  // The words come from historyLines.ts and the markup below reproduces SidePanel's, so that both
+  // read the same. Keyed by their position from the oldest, which does not move when lines are added.
   const lines = $derived(
     log
-      .map((entry, index) => ({ key: index, entry, parts: partsOf(entry), time: timeOf(entry.at) }))
+      .map((entry, index) => ({
+        key: index,
+        entry,
+        parts: partsOf(entry, nameOf),
+        time: timeOf(entry.at),
+      }))
       .reverse(),
   );
 </script>

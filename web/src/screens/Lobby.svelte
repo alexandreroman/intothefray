@@ -296,7 +296,10 @@
     width: 100%;
     max-width: var(--content-max);
     margin: 0 auto;
-    padding: 36px var(--content-gutter) 48px;
+    padding-block: 36px 48px;
+    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
+    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
+      max(var(--content-gutter), env(safe-area-inset-right));
     display: flex;
     flex-direction: column;
     gap: 28px;
@@ -477,7 +480,10 @@
   .startbar-inner {
     max-width: var(--content-max);
     margin: 0 auto;
-    padding: 14px var(--content-gutter);
+    /* Its button stays clear of the home indicator, as the bar sticks to the window's bottom. */
+    padding-block: 14px max(14px, env(safe-area-inset-bottom));
+    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
+      max(var(--content-gutter), env(safe-area-inset-right));
     display: flex;
     flex-wrap: wrap;
     align-items: center;

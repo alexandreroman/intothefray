@@ -36,6 +36,30 @@ describe('the page', () => {
   });
 });
 
+describe('the screens around the table', () => {
+  // Read from the disk: Vitest hands a component's styles over empty.
+  function sourceOf(screenName: string): string {
+    return readFileSync(path.join(import.meta.dirname, 'screens', `${screenName}.svelte`), 'utf8');
+  }
+
+  it.each(['Home', 'Lobby', 'Options', 'About', 'Ended'])(
+    '%s keeps its content clear of the notch in landscape',
+    (screenName) => {
+      const source = sourceOf(screenName);
+      expect(source).toContain('env(safe-area-inset-left)');
+      expect(source).toContain('env(safe-area-inset-right)');
+    },
+  );
+
+  // Options and About end on a bottom padding taller than the home indicator.
+  it.each(['Home', 'Lobby', 'Ended'])(
+    '%s keeps its last line, or its start bar, clear of the home indicator',
+    (screenName) => {
+      expect(sourceOf(screenName)).toContain('env(safe-area-inset-bottom)');
+    },
+  );
+});
+
 describe('the web app manifest', () => {
   const manifest = JSON.parse(manifestSource);
 
@@ -47,15 +71,16 @@ describe('the web app manifest', () => {
     expect(manifest.theme_color).toBe('#0d111b');
   });
 
-  it('starts and keeps to the base path, whichever it is: its URLs resolve against the manifest', () => {
-    expect(manifest.start_url).toBe('./');
+  it('opens the page added to the home screen, a game rather than home, and keeps to the base path', () => {
+    // Without a start URL, the app starts at the URL of the page that was added.
+    expect(manifest).not.toHaveProperty('start_url');
     expect(manifest.scope).toBe('./');
   });
 
-  it('offers the logo at 192 and 512 px, for any use and maskable', () => {
+  it('offers the logo at 192 and 512 px, uncropped: it has no room for a maskable safe zone', () => {
     expect(manifest.icons).toEqual([
-      { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+      { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
     ]);
   });
 });

@@ -255,7 +255,10 @@
     width: 100%;
     max-width: var(--content-max);
     margin: 0 auto;
-    padding: 44px var(--content-gutter) 56px;
+    padding-block: 44px 56px;
+    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
+    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
+      max(var(--content-gutter), env(safe-area-inset-right));
     display: flex;
     flex-direction: column;
     animation: rise 0.25s ease-out;
