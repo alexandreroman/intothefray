@@ -973,8 +973,11 @@
     font-size: 13px;
   }
 
+  /* Centred, not stretched: a stretched tag's smaller text would sit at the top of the name's
+     taller line. */
   .menu button {
     display: flex;
+    align-items: center;
     width: 100%;
     border: 0;
     text-align: left;
