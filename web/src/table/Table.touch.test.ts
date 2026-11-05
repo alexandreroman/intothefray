@@ -2,6 +2,7 @@
 // the context menu; Select enters select mode; two fingers zoom the table.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import tableSource from './Table.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
@@ -287,5 +288,53 @@ describe('touch zoom', () => {
     ]);
 
     expect(storedZoom()).toBeNull();
+  });
+});
+
+describe('the inspector, adding tokens, statuses and modifiers (F-U6)', () => {
+  it.each([
+    ['tokens', /^Damage/, { kind: 'token', card: 'two', name: 'dmg', delta: 1 }],
+    ['statuses', /^Confused/, { kind: 'status', card: 'two', name: 'confused', delta: 1 }],
+    ['modifiers', /^\+1 ATK/, { kind: 'modifier', card: 'two', name: 'atk', delta: 1 }],
+  ])('stays open after an entry of the %s submenu runs', async (submenu, entry, action) => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session } = await renderTable();
+    await tap(placed('two'));
+
+    await fireEvent.click(sheet()!.querySelector<HTMLElement>(`[data-submenu="${submenu}"]`)!);
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: entry }));
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(action, 0);
+    expect(sheet()).not.toBeNull();
+  });
+
+  it('stays open after a stepper, and closes after any other entry', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session } = await renderTable();
+    await tap(placed('mine'));
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Remove one/ }));
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(sheet()).not.toBeNull();
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Exhaust/ }));
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
+    expect(sheet()).toBeNull();
+  });
+});
+
+describe('arrows on touch', () => {
+  it('never shows the arrow hint after a tap on a card', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable();
+
+    await tap(placed('two'));
+
+    expect(interaction.arrowFrom).toBeNull();
+    expect(document.querySelector('.arrowhint')).toBeNull();
+  });
+
+  it('has no hint of its own for touch in the table', () => {
+    expect(tableSource).not.toMatch(/ARROW_HINT_TOUCH|Tap the card to point at/);
   });
 });

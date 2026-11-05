@@ -71,7 +71,7 @@
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
   import { setDockMode } from './dockMode';
-  import { DRAG_THRESHOLD, handAreaOf, intersect, sourceOf, type Rect } from './drag';
+  import { DRAG_THRESHOLD, goesToHand, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
@@ -1058,9 +1058,8 @@
 
   // ---- The arrow mode's hint ----
 
-  // A touch screen has no Esc key, and taps rather than clicks.
+  // Arrows are drawn with a mouse: touch mode offers none (spec 3.1).
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
-  const ARROW_HINT_TOUCH = 'Tap the card to point at — tap an empty spot to cancel.';
 
   // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
   // pointer hovers meanwhile; not while a Shift + drag draws it, which shows where it goes.
@@ -1370,15 +1369,32 @@
     inspected = null;
   }
 
+  // The submenus of actionsFor whose entries add to a card's counters: the inspector stays open on
+  // them, and shows the new counter with its steppers.
+  const COUNTER_SUBMENUS: readonly string[] = ['tokens', 'statuses', 'modifiers'];
+
+  /** Whether the item is an entry of the inspector's token, status or modifier submenu. */
+  function addsCounter(item: ActionItem): boolean {
+    return (inspectorContent?.entries ?? []).some(
+      (entry) =>
+        entry.kind === 'submenu' &&
+        COUNTER_SUBMENUS.includes(entry.id) &&
+        entry.entries.some((sub) => sub.kind === 'action' && sub.item === item),
+    );
+  }
+
   /**
-   * A chosen entry runs on the inspector's element, once it is closed, as the menu's does. A hand
-   * card's Play and Discard send what their keys send (keys.ts).
+   * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
+   * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
+   * as for a stepper. A hand card's Play and Discard send what their keys send (keys.ts).
    */
   function runInspectorItem(item: ActionItem): void {
     const element = inspected;
-    inspected = null;
     if (element === null) {
       return;
+    }
+    if (!addsCounter(item)) {
+      inspected = null;
     }
     if (item === SELECT_ENTRY.item) {
       enterSelectMode(element.id);
@@ -1453,30 +1469,27 @@
   const ownEntries = $derived(pickerEntries.filter((entry) => own.includes(entry.seat)));
 
   /**
-   * Whether what is dragged would go to a hand if dropped there, as DragLayer decides (goesToHand):
-   * a card or a deck's top card of the viewer's, every card of a group included. The dock's hand
-   * button is then the drop target.
+   * Whether the dock's hand button is the drop target of the drag, as DragLayer has it
+   * (dockHandTarget): for a hand card, which goes back there, and for what goes to a hand
+   * (goesToHand), every card of a group included.
    */
-  const dragGoesToHand = $derived.by(() => {
+  const dockDropActive = $derived.by(() => {
     const held = interaction.dragging;
     if (!dockMode || !held) {
       return false;
     }
     const from = sourceOf(held.element, view, held.card ?? undefined);
-    if (!from || handAreaOf(from, view) === null) {
+    if (!from) {
       return false;
     }
-    const units =
+    if (from.kind === 'hand') {
+      return true;
+    }
+    const grouped =
       from.kind === 'card' && interaction.group.has(from.card)
         ? groupUnits(interaction.group, cards)
         : [];
-    if (units.length < 2) {
-      return true;
-    }
-    return units.every((id) => {
-      const unit = sourceOf({ kind: 'card', id }, view);
-      return unit !== null && handAreaOf(unit, view) !== null;
-    });
+    return goesToHand(from, grouped.length > 1 ? grouped : [], view);
   });
 
   // The sheets the dock opens: the selected deck's hand, the history.
@@ -2342,7 +2355,7 @@
       color={dockColor}
       canUndo={view.canUndo ?? false}
       unread={historyUnread}
-      dropActive={dragGoesToHand}
+      dropActive={dockDropActive}
       landscape={dockRail}
       showHand={selected !== null}
       onhand={openHandSheet}
@@ -2352,19 +2365,6 @@
     <!-- The safe areas under the dock and over the table, measured (safeBottom, safeTop). -->
     <div class="safe-bottom" aria-hidden="true" bind:clientHeight={safeBottom}></div>
     <div class="safe-top" aria-hidden="true" bind:clientHeight={safeTop}></div>
-  {/if}
-
-  {#if dragGoesToHand && selected !== null}
-    <!--
-      The dock as the hand DragLayer drops on (targetsFor): a hand shown, of one stand-in card, never
-      seen. DragLayer takes a drop on a hand around its cards, 140 px to their sides and from 20 px
-      above them down to the window's bottom (handBand, drag.ts): the stand-in is placed so that this
-      band covers the dock, and no more of the table than the bar at the bottom covers. Its empty id
-      is no card's, but an id all the same: DragLayer measures only the hand cards that have one.
-    -->
-    <div class="hand dockdrop" class:rail={dockRail} data-seat={selected} aria-hidden="true">
-      <div class="hcard" data-id=""></div>
-    </div>
   {/if}
 
   {#if handSheetShown && selected !== null}
@@ -2409,13 +2409,7 @@
   />
 
   {#if arrowHintShown && wrap}
-    <ArrowHint
-      anchor={arrowSource}
-      text={touchMode.current ? ARROW_HINT_TOUCH : ARROW_HINT}
-      bounds={wrap}
-      {zoom}
-      version={view}
-    />
+    <ArrowHint anchor={arrowSource} text={ARROW_HINT} bounds={wrap} {zoom} version={view} />
   {/if}
 
   {#if interaction.contextMenu && contextHeader && contextContent && wrap}
@@ -2917,38 +2911,6 @@
     height: env(safe-area-inset-top);
     visibility: hidden;
     pointer-events: none;
-  }
-
-  /* The dock's drop zone: measured by DragLayer, never seen, never in the way. */
-  .dockdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  /* At the bottom, the stand-in is the dock's bar itself (Dock.svelte). */
-  .dockdrop .hcard {
-    position: fixed;
-    left: calc(8px + env(safe-area-inset-left));
-    right: calc(8px + env(safe-area-inset-right));
-    bottom: calc(8px + env(safe-area-inset-bottom));
-    height: 60px;
-  }
-
-  /*
-    In the rail, a point 140 px left of the rail's right edge and 20 px under the top of its hand
-    button (under the rail's 8 px padding): the band covers the rail from the hand button down, and
-    none of the table.
-  */
-  .dockdrop.rail .hcard {
-    left: calc(env(safe-area-inset-left) + 64px - 140px);
-    right: auto;
-    top: calc(8px + 20px);
-    bottom: auto;
-    width: 0;
-    height: 0;
   }
 
   /* The one deck's hero in the hand sheet's header, ringed with its seat's colour. */

@@ -179,7 +179,7 @@ describe('dock mode', () => {
     expect(document.querySelector('.corner')).not.toBeNull();
   });
 
-  it('draws neither the hand fan nor the corner bar, nor a selector for a single hero (no_fan_no_corner_in_dock)', async () => {
+  it('draws no hand fan, no corner bar, no selector for one hero (no_fan_no_corner_in_dock)', async () => {
     mockScreen(PHONE);
     await renderTable();
 
@@ -339,14 +339,14 @@ describe('the hero selector in dock mode', () => {
 describe('a drop on the dock', () => {
   /**
    * The table fills the window; the cards and piles show where their styles put them, and the dock's
-   * drop zone where its styles put it on that screen, as `zone` gives it.
+   * hand button where its styles put it on that screen, as `button` gives it.
    */
-  function measure(size: TestScreen, zone: DOMRect): void {
+  function measure(size: TestScreen, button: DOMRect): void {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
-      if (this.closest('.dockdrop')) {
-        return zone;
+      if (this.closest('.handbtn')) {
+        return button;
       }
       const style = (this as HTMLElement).style;
       const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
@@ -364,6 +364,10 @@ describe('a drop on the dock', () => {
     });
   }
 
+  // The hand button of the bar at the bottom, 8 px off the window's edges, and of the rail.
+  const BAR_BUTTON = domRect(8, PHONE.height - 68, 220, 60);
+  const RAIL_BUTTON = domRect(8, 8, 48, 72);
+
   /** Drags the card with the mouse from its place to that point, and lets go there. */
   async function dragTo(id: string, x: number, y: number): Promise<void> {
     await fireEvent.pointerDown(placed(id), { clientX: 310, clientY: 310, pointerType: 'mouse' });
@@ -371,38 +375,62 @@ describe('a drop on the dock', () => {
     await fireEvent.pointerMove(window, { clientX: x, clientY: y, buttons: 1 });
   }
 
+  /** Opens the hand sheet and drags that card up out of its carousel to the point, as a finger does. */
+  async function dragOutOfCarousel(id: string, x: number, y: number): Promise<void> {
+    await fireEvent.click(handButton());
+    const carouselCard = document.querySelector<HTMLElement>(
+      `[data-carousel] .hcard[data-id="${id}"]`,
+    )!;
+    const finger = { pointerType: 'touch', pointerId: 7 };
+    await fireEvent.pointerDown(carouselCard, { ...finger, button: 0, clientX: 200, clientY: 600 });
+    await fireEvent.pointerMove(window, { ...finger, clientX: 200, clientY: 500, buttons: 1 });
+    await fireEvent.pointerMove(window, { ...finger, clientX: x, clientY: y, buttons: 1 });
+  }
+
   it('sends a table card to its hand, from the bar at the bottom (drop_on_dock_to_hand)', async () => {
     mockScreen(PHONE);
-    // The stand-in card under the dock's whole bar, 8 px off the window's edges.
-    measure(PHONE, domRect(8, PHONE.height - 68, PHONE.width - 16, 60));
+    measure(PHONE, BAR_BUTTON);
     const { session } = await renderTable();
 
-    // Past the bottom of the table that takes a drop on the hand when none shows: on the hand button.
     await dragTo('mine', 40, PHONE.height - 38);
     expect(handButton().classList).toContain('drop');
     expect(handButton().getAttribute('aria-label')).toBe('Drop here: back to hand');
     await fireEvent.pointerUp(window, { clientX: 40, clientY: PHONE.height - 38 });
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
-    expect(document.querySelector('.dockdrop')).toBeNull();
   });
 
   it('sends a table card to its hand, from the rail', async () => {
     mockScreen(LANDSCAPE_PHONE);
-    // The stand-in card, as placed for the rail: its band covers the rail from the hand button down.
-    measure(LANDSCAPE_PHONE, domRect(-76, 28, 0, 0));
+    measure(LANDSCAPE_PHONE, RAIL_BUTTON);
     const { session } = await renderTable();
 
-    await dragTo('mine', 32, 86);
+    await dragTo('mine', 32, 40);
     expect(handButton().classList).toContain('drop');
-    await fireEvent.pointerUp(window, { clientX: 32, clientY: 86 });
+    await fireEvent.pointerUp(window, { clientX: 32, clientY: 40 });
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
   });
 
+  it('plays a table card dropped on the table beside the hand button, rather than sending it to the hand', async () => {
+    mockScreen(PHONE);
+    measure(PHONE, BAR_BUTTON);
+    const { session } = await renderTable();
+
+    // Over the bottom middle of the table, but right of the hand button.
+    await dragTo('mine', 300, PHONE.height - 100);
+    expect(handButton().classList).toContain('drop');
+    await fireEvent.pointerUp(window, { clientX: 300, clientY: PHONE.height - 100 });
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'move', card: 'mine' }),
+      0,
+    );
+  });
+
   it('is no drop target for a card that stays on the table', async () => {
     mockScreen(PHONE);
-    measure(PHONE, domRect(8, PHONE.height - 68, PHONE.width - 16, 60));
+    measure(PHONE, BAR_BUTTON);
     await renderTable();
 
     await fireEvent.pointerDown(placed('v'), { clientX: 10, clientY: 10, pointerType: 'mouse' });
@@ -410,7 +438,44 @@ describe('a drop on the dock', () => {
 
     expect(interaction.dragging).not.toBeNull();
     expect(handButton().classList).not.toContain('drop');
-    expect(document.querySelector('.dockdrop')).toBeNull();
+  });
+
+  it('takes a card dragged out of the carousel back to the hand, sending nothing (F-R3)', async () => {
+    mockScreen(PHONE);
+    measure(PHONE, BAR_BUTTON);
+    const { session } = await renderTable();
+
+    // h2 is the hand's last card: a reorder would bring it to the front.
+    await dragOutOfCarousel('h2', 120, PHONE.height - 38);
+    expect(handButton().classList).toContain('drop');
+    await fireEvent.pointerUp(window, {
+      pointerType: 'touch',
+      pointerId: 7,
+      clientX: 120,
+      clientY: PHONE.height - 38,
+    });
+
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('plays a card dragged out of the carousel onto the bottom of the table beside the rail (F-R3)', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    measure(LANDSCAPE_PHONE, RAIL_BUTTON);
+    const { session } = await renderTable();
+
+    const at = { x: LANDSCAPE_PHONE.width / 2, y: LANDSCAPE_PHONE.height - 40 };
+    await dragOutOfCarousel('h2', at.x, at.y);
+    await fireEvent.pointerUp(window, {
+      pointerType: 'touch',
+      pointerId: 7,
+      clientX: at.x,
+      clientY: at.y,
+    });
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'play', card: 'h2' }),
+      0,
+    );
   });
 });
 
@@ -574,8 +639,8 @@ describe('small cards and small piles in dock mode', () => {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
-      // The dock's drop zone lies off the screen: a drop on the table stays there.
-      if (this.closest('.dockdrop')) {
+      // The dock's hand button lies off the screen: a drop on the table stays there.
+      if (this.closest('.handbtn')) {
         return domRect(-100, -100, 0, 0);
       }
       const style = (this as HTMLElement).style;
@@ -897,5 +962,59 @@ describe('a card leaving a chip in dock mode', () => {
     const slide = started.find(({ element }) => element.matches('.surface .card[data-id="s"]'));
     // From the chip's middle to the card's, at the card's own drawn size: unscaled.
     expect(slide?.keyframes[0]).toMatchObject({ scale: '1' });
+  });
+});
+
+describe('a riffle in dock mode', () => {
+  let original: typeof Element.prototype.animate;
+  let started: Element[] = [];
+
+  beforeEach(() => {
+    original = Element.prototype.animate;
+    started = [];
+    Element.prototype.animate = function (this: Element) {
+      started.push(this);
+      return {
+        cancel: () => {},
+        finish: () => {},
+        finished: new Promise<void>(() => {}),
+        effect: { setKeyframes: () => {} },
+      } as unknown as Animation;
+    } as typeof Element.prototype.animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = original;
+  });
+
+  /** The copies of the deck's back that riffle into it, after the viewer shuffled it. */
+  async function riffleCopies(): Promise<HTMLElement[]> {
+    const view = makeView();
+    const { session, rerender } = await renderTable(view);
+    const shuffled = line('shuffled their deck', '2026-11-05T20:02:00Z');
+    await rerender({ session, view: { ...view, log: [...view.log, shuffled] } });
+    await tick();
+    const deck = placed('deck:p0', '.pile');
+    return started.filter((element): element is HTMLElement => element.parentElement === deck);
+  }
+
+  it("draws its copies at the pile's drawn size: their art zoomed as the pile's own (F-R3)", async () => {
+    mockScreen(PHONE);
+    const copies = await riffleCopies();
+
+    expect(copies.length).toBeGreaterThan(0);
+    for (const copy of copies) {
+      expect(copy.querySelector<HTMLElement>('.art')!.style.zoom).toBe('var(--scale)');
+    }
+  });
+
+  it('draws its copies unzoomed on a tablet', async () => {
+    mockScreen(TOUCH_TABLET);
+    const copies = await riffleCopies();
+
+    expect(copies.length).toBeGreaterThan(0);
+    for (const copy of copies) {
+      expect(copy.querySelector<HTMLElement>('.art')!.style.zoom).toBe('');
+    }
   });
 });

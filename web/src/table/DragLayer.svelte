@@ -38,6 +38,7 @@
     dropAction,
     dropTarget,
     ENCOUNTER_TOP_ID,
+    goesToHand,
     handAreaOf,
     handBand,
     insertIndex,
@@ -651,7 +652,12 @@
       return [];
     }
     const targets: DropRect[] = [];
-    if (from.kind === 'hand') {
+    if (dock.current) {
+      const button = dockHandTarget(from);
+      if (button) {
+        targets.push(button);
+      }
+    } else if (from.kind === 'hand') {
       // A hand card slots back into its own hand only, among its other cards.
       const hand = root.querySelector<HTMLElement>(`.hand[data-seat="${seatOf(from.area)}"]`);
       const others = cardRects(hand, from.card);
@@ -661,7 +667,7 @@
         index: insertIndex(middles, at.x),
         rect: handBand(others, under(hand, table), window.innerHeight),
       });
-    } else if (goesToHand(from)) {
+    } else if (goesToHand(from, units, view)) {
       // Any hand shown takes it, for its owner's hand; with no hand shown, the bottom of the table.
       const hands = [...root.querySelectorAll<HTMLElement>('.hand')];
       if (hands.length === 0) {
@@ -722,17 +728,16 @@
   }
 
   /**
-   * Whether a drop on the hand takes what is dragged: each card of a group
-   * goes to its owner's hand, which must be one of the viewer's.
+   * In dock mode the only hand on the screen is the dock's hand button (spec 3.4), and none of the
+   * table around it: it takes what goes to a hand, and a hand card dragged out of the carousel back
+   * to the hand, which sends nothing (dropAction). Null for anything else, or with no hand button.
    */
-  function goesToHand(from: DragSource): boolean {
-    if (units.length === 0) {
-      return handAreaOf(from, view) !== null;
+  function dockHandTarget(from: DragSource): DropRect | null {
+    if (from.kind !== 'hand' && !goesToHand(from, units, view)) {
+      return null;
     }
-    return units.every((id) => {
-      const unit = sourceOf({ kind: 'card', id }, view);
-      return unit !== null && handAreaOf(unit, view) !== null;
-    });
+    const button = root?.querySelector('.dock .handbtn')?.getBoundingClientRect();
+    return button ? { kind: 'toHand', rect: button } : null;
   }
 
   /** What a drop at the pointer lands on, and the action it sends, null when nothing. */

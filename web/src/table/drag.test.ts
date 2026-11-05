@@ -3,6 +3,7 @@ import {
   dealRecipient,
   dropAction,
   dropTarget,
+  goesToHand,
   handAreaOf,
   handBand,
   insertIndex,
@@ -613,6 +614,26 @@ describe('handAreaOf', () => {
     expect(handAreaOf({ kind: 'encounter', pile: 'encd' }, view)).toBeNull();
     const spectating = makeView({ cards: [card('mine')], spectator: true });
     expect(handAreaOf(TABLE_CARD, spectating)).toBeNull();
+  });
+});
+
+describe('goesToHand', () => {
+  const view = makeView({
+    cards: [card('mine'), card('also'), card('theirs', { owner: 1 }), card('h1', { zone: 'hand' })],
+  });
+  const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+
+  it('takes a card a hand takes, as handAreaOf has it, when no group is dragged', () => {
+    expect(goesToHand(tableCard('mine'), [], view)).toBe(true);
+    expect(goesToHand(tableCard('theirs'), [], view)).toBe(false);
+    expect(goesToHand({ kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' }, [], view)).toBe(
+      false,
+    );
+  });
+
+  it('takes a group only when every unit goes to a hand', () => {
+    expect(goesToHand(tableCard('mine'), ['mine', 'also'], view)).toBe(true);
+    expect(goesToHand(tableCard('mine'), ['mine', 'theirs'], view)).toBe(false);
   });
 });
 

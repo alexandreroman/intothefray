@@ -67,7 +67,10 @@ export type PileDrop = 'top' | 'discard' | 'pile';
 export type DropRect =
   /** A slot among the hand cards, for a hand card. */
   | { kind: 'hand'; index: number; rect: Rect }
-  /** The hand as a whole, for a table card going back to it. */
+  /**
+   * The hand as a whole, for a table card going back to it. In dock mode it is the dock's hand
+   * button, which also takes a hand card back: a drop there sends nothing.
+   */
   | { kind: 'toHand'; rect: Rect }
   /** The table itself, where it shows. */
   | { kind: 'table'; rect: Rect }
@@ -459,6 +462,22 @@ export function handAreaOf(drag: DragSource, view: View): Area | null {
     return null;
   }
   return areaOf(owner);
+}
+
+/**
+ * Whether a drop on a hand takes what is dragged: `units` are the units of a
+ * group drag (selection.ts, groupUnits), empty when one card or stack is
+ * dragged. Each card of a group goes to its owner's hand, which must be one of
+ * the viewer's (handAreaOf).
+ */
+export function goesToHand(drag: DragSource, units: readonly string[], view: View): boolean {
+  if (units.length === 0) {
+    return handAreaOf(drag, view) !== null;
+  }
+  return units.every((id) => {
+    const unit = sourceOf({ kind: 'card', id }, view);
+    return unit !== null && handAreaOf(unit, view) !== null;
+  });
 }
 
 /** A pile a drag can go onto, and what the drop does there. */

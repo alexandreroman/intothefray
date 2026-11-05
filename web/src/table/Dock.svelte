@@ -2,10 +2,10 @@
   The dock of a small touch screen (dock mode): a bar floating at the bottom of the table, above
   the safe area, with the hand button (the current deck's hero, up to four mini cards of the hand,
   its size and the hero's name), Undo, and the history with a badge of the log lines added since it
-  was last opened. In landscape it stands as a rail down the left edge, its
-  hand button the avatar and the hand size only. A spectator, who has no hand, gets no hand
-  button. During a drag of a card that can go back to a
-  hand, the hand button becomes the drop target. The parent places nothing: the dock floats.
+  was last opened. In landscape it stands as a rail down the left edge, its hand button the avatar
+  and the hand size only. A spectator, who has no hand, gets no hand button. During a drag of a
+  card that can go to a hand, or of a hand card, the hand button is the drop target, the only hand
+  the drag layer knows in dock mode (DragLayer.svelte). The parent places nothing: the dock floats.
 -->
 <script lang="ts">
   import CardArt from '../components/CardArt.svelte';

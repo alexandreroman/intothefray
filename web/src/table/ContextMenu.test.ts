@@ -4,7 +4,6 @@ import Table from './Table.svelte';
 import menuSource from './ContextMenu.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
-import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import {
@@ -1056,19 +1055,6 @@ describe('the arrow mode', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(interaction.hovered).toBeNull();
     expect(arrowHint()?.style.left).toBe('300px');
-  });
-
-  it('speaks of taps and no Esc key in touch mode', async () => {
-    mockScreen({ ...DESKTOP, touch: true });
-    await renderTable();
-    // A tap opens the inspector, which offers what the menu would.
-    await click(placed('mine'), 120, 80, { pointerType: 'touch' });
-    const inspector = screen.getByRole('dialog');
-    await fireEvent.click(within(inspector).getByRole('button', { name: /^Draw an arrow/ }));
-
-    expect(arrowHint()?.textContent).toBe(
-      'Tap the card to point at — tap an empty spot to cancel.',
-    );
   });
 
   it('shows no hint while a Shift + drag draws the arrow', async () => {
