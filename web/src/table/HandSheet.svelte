@@ -91,7 +91,8 @@
   }
 </script>
 
-<Sheet label="Your hand" {onclose}>
+<!-- Not modal: a modal sheet would freeze the table, and no press on a card could become a drag. -->
+<Sheet label="Your hand" modal={false} {onclose}>
   <div class="body" class:landscape>
     <header>
       <b class="title">Your hand · {cards.length}</b>

@@ -179,6 +179,14 @@ describe('HandSheet', () => {
     expect(press.mock.calls[0]![0]).toEqual({ kind: 'hand', id: 'h2' });
   });
 
+  it('starts a hold on a real press of a card, the sheet freezing nothing', async () => {
+    renderSheet();
+
+    await fireEvent.pointerDown(cardItems()[1]!, { pointerId: 3, button: 0 });
+
+    expect(interaction.held?.element).toEqual({ kind: 'hand', id: 'h2' });
+  });
+
   it('stays open on a press alone', () => {
     const { onclose } = renderSheet();
 
