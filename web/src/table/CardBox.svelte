@@ -10,6 +10,7 @@
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import { MediaQuery } from 'svelte/reactivity';
   import Dialog from '../components/Dialog.svelte';
   import { releaseFocus } from '../lib/releaseFocus';
   import { scrollFade } from '../lib/scrollFade';
@@ -41,6 +42,7 @@
   import { interaction, LANDING_MS } from './interaction.svelte';
   import { isLandscape, isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatHero } from './seats';
+  import { TOUCH_MODE_QUERY } from './touch';
 
   let {
     box,
@@ -153,6 +155,19 @@
     const wanted = query.trim().toLowerCase();
     return wanted === '' ? tiles : tiles.filter((t) => t.name.toLowerCase().includes(wanted));
   });
+
+  const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
+
+  /**
+   * In touch mode the box opens with the focus on itself, not in its filter: a focused text field would pop the
+   * on-screen keyboard up over the cards. Focused before the dialog moves the focus in, which then leaves it there.
+   * Only on open: a later switch of mode does not move the focus.
+   */
+  function keepKeyboardDown(filter: HTMLInputElement): void {
+    if (untrack(() => touchMode.current)) {
+      filter.closest<HTMLElement>('[role="dialog"]')?.focus();
+    }
+  }
 
   // ---- The title ----
 
@@ -613,6 +628,7 @@
         autocomplete="off"
         spellcheck="false"
         bind:value={query}
+        {@attach keepKeyboardDown}
       />
     </div>
   {/snippet}
