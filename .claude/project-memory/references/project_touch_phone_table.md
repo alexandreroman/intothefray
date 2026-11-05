@@ -17,12 +17,16 @@ type: project
     as big buttons (default in Fray red), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
     entries left out (`visibleEntries`), and no arrows: arrows are drawn
-    with a mouse or a pen only. Token, status and modifier entries and the
-    steppers keep it open; every other entry closes it. Its opening,
-    closing, drill-down, counters and presses animate (none under reduced
-    motion). A tap on a raised hand card opens it with Play and Discard
-    (`handActions`). "Select" enters select mode: taps toggle table cards
-    in the group, a pill "N selected · Done" ends it.
+    with a mouse or a pen only. Its header shows the card's name only (a
+    pile's kind with its count); the sheet's accessible name also gives
+    the type and owner. Token, status and modifier entries and the
+    steppers keep it open; every other entry closes it. Reveal from a
+    deck's inspector keeps it open and switches it to the revealed card
+    once the table shows it; a refused reveal leaves it on the deck. Its
+    opening, closing, drill-down, counters and presses animate (none under
+    reduced motion). A tap on a raised hand card opens it with Play and
+    Discard (`handActions`). "Select" enters select mode: taps toggle
+    table cards in the group, a pill "N selected · Done" ends it.
   - A press on a table card, pile or marker picks it up after a 300 ms
     hold within 10 px (`gestures.ts` `HOLD_MS`, `HOLD_SLOP`; a 10 ms
     vibration); a quicker move scrolls the table. Hand cards drag at once.
