@@ -1,7 +1,7 @@
 <!--
   The inspector of a table card or pile on a touch screen, in place of its
   context menu (ContextMenu.svelte): a bottom sheet (Sheet.svelte) with the
-  card's face large beside its header and its counters, then the same entries
+  card's face large beside its name and its counters, then the same entries
   as the menu (contextItems.ts). The first group shows as large buttons, the
   default one in Fray red, the others as rows; a submenu opens in the sheet,
   with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
@@ -14,10 +14,17 @@
   scrolling if it must; on its side, the card as large as it allows on the
   left, and everything else in one column on its right, the only part that
   scrolls.
+  Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
+  submenu slides in from the right as the main page leaves to the left, and
+  back the other way, the sheet's height easing between the two; a counter
+  row or an entry that comes or goes after an update slides open or closed;
+  a counter's number bumps as it changes; a pressed button sinks.
 -->
 <script lang="ts">
   import { tick } from 'svelte';
-  import Sheet from '../components/Sheet.svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { fade, fly, slide, type TransitionConfig } from 'svelte/transition';
+  import Sheet, { motionMs } from '../components/Sheet.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
   import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
@@ -55,11 +62,24 @@
 
   const dock = dockMode();
 
+  /** How long a page takes to slide in as the other one leaves, in ms. */
+  const PAGE_MS = 220;
+  /** How long a counter row or an entry takes to slide open or closed, in ms. */
+  const ROW_MS = 200;
+  /** How long a counter's number takes to bump as it changes, in ms. */
+  const BUMP_MS = 160;
+  /** cubicOut, for the animation played by hand. */
+  const CUBIC_OUT = 'cubic-bezier(0.33, 1, 0.68, 1)';
+
   const shown = $derived(visibleEntries(entries));
   const split = $derived(splitEntries(shown));
 
   let openId = $state<string | null>(null);
   let content = $state<HTMLElement>();
+  /** Which way the last page change went: 1 down into a submenu, -1 back to the main page. */
+  let pageStep = $state<1 | -1>(1);
+  /** Two pages are sliding: what passes the sheet's edges is clipped. */
+  let sliding = $state(false);
 
   // Found again in every redraw's entries: a submenu whose row went, or got refused, closes.
   const openSubmenu = $derived(
@@ -69,6 +89,7 @@
   // The row the focus was on goes as the list changes: the focus moves to the Back row, or back to
   // the submenu's row, rather than falling out of the sheet.
   async function openSub(entry: ContextSubmenu): Promise<void> {
+    pageStep = 1;
     openId = entry.id;
     await tick();
     content?.querySelector<HTMLElement>('.back')?.focus();
@@ -83,6 +104,7 @@
 
   async function closeSub(): Promise<void> {
     const id = openId;
+    pageStep = -1;
     openId = null;
     await tick();
     if (id !== null) {
@@ -99,16 +121,64 @@
     return delta === 1 ? `Add one ${name}` : `Remove one ${name}`;
   }
 
-  /** Tells the entries apart in an each block: separators have no id. */
-  function keyOf(entry: ContextEntry, i: number): string {
+  /**
+   * Tells the entries apart in an each block. A separator has no id: it goes by the entry before
+   * it, so that it stays put, rather than sliding out and in again, when an entry above it leaves.
+   */
+  function keyOf(entry: ContextEntry, i: number, list: readonly ContextEntry[]): string {
     switch (entry.kind) {
       case 'action':
         return entry.item.id;
       case 'submenu':
         return `sub:${entry.id}`;
-      case 'separator':
-        return `sep:${i}`;
+      case 'separator': {
+        const before = list[i - 1];
+        return before === undefined ? 'sep:' : `sep:${keyOf(before, i - 1, list)}`;
+      }
     }
+  }
+
+  /** The slide of a row that comes or goes after an update. */
+  function rowSlide(): { duration: number; easing: (t: number) => number } {
+    return { duration: motionMs(ROW_MS), easing: cubicOut };
+  }
+
+  /** A page slides in from the side it is reached from, and out to the other: right for a submenu. */
+  function pageSlide(direction: 'in' | 'out'): Parameters<typeof fly>[1] {
+    const side = direction === 'in' ? pageStep : -pageStep;
+    return { x: `${100 * side}%`, duration: motionMs(PAGE_MS), easing: cubicOut };
+  }
+
+  /**
+   * As a page slides in, the pages ease from the height of the one leaving to its own, rather
+   * than jumping to the taller one's while both are there, and to its own once alone.
+   */
+  function onPageIntro(event: Event): void {
+    const page = event.currentTarget as HTMLElement;
+    const pages = page.parentElement;
+    const leaving = [...(pages?.children ?? [])].find((child) => child !== page);
+    const duration = motionMs(PAGE_MS);
+    if (!pages || !(leaving instanceof HTMLElement) || duration === 0) {
+      return;
+    }
+    sliding = true;
+    pages.animate([{ height: `${leaving.offsetHeight}px` }, { height: `${page.offsetHeight}px` }], {
+      duration,
+      easing: CUBIC_OUT,
+    });
+  }
+
+  /** A page on its way out takes no more taps, and its rows no more focus. */
+  function onPageOutro(event: Event): void {
+    (event.currentTarget as HTMLElement).inert = true;
+  }
+
+  /** A counter's number as it changes: up to 1.15 times its size and back. */
+  function bump(_node: Element): TransitionConfig {
+    return {
+      duration: motionMs(BUMP_MS),
+      css: (t) => `transform: scale(${1 + 0.15 * Math.sin(Math.PI * t)})`,
+    };
   }
 </script>
 
@@ -126,13 +196,15 @@
 {/snippet}
 
 {#snippet counterRow(counter: SheetCounter)}
-  <div class="counter">
+  <div class="counter" transition:slide={rowSlide()}>
     <span class="what"
       ><i class="dot {counter.kind} {counter.name}" class:neg={counter.value < 0}
       ></i>{counter.label}</span
     >
     {#if counter.kind === 'status'}
-      {#if counter.value > 1}<span class="value">×{counter.value}</span>{/if}
+      {#if counter.value > 1}
+        {#key counter.value}<span class="value" in:bump>×{counter.value}</span>{/key}
+      {/if}
       <button
         type="button"
         class="step"
@@ -147,7 +219,10 @@
         disabled={counter.signed && counter.value <= -MAX_MODIFIER}
         onclick={() => onstep(counter, -1)}>−</button
       >
-      <span class="value">{counter.signed ? withSign(counter.value) : counter.value}</span>
+      {#key counter.value}
+        <span class="value" in:bump>{counter.signed ? withSign(counter.value) : counter.value}</span
+        >
+      {/key}
       <button
         type="button"
         class="step"
@@ -165,55 +240,79 @@
     <p class="note">{note}</p>
   {/if}
 
-  {#if openSubmenu}
-    <div class="rows">
-      <button type="button" class="row back btn-ghost" onclick={closeSub}
-        ><span class="label"><span aria-hidden="true">‹ </span>Back</span><span class="where"
-          >{openSubmenu.label}</span
-        ></button
-      >
-      {#each openSubmenu.entries as entry, i (keyOf(entry, i))}
-        {#if entry.kind === 'separator'}
-          {@render separator()}
-        {:else}
-          {@render actionRow(entry, runFromSub)}
-        {/if}
-      {/each}
-    </div>
-  {:else}
-    {#if split.main.length > 0}
-      <div class="main-grid" style:--columns={split.main.length}>
-        {#each split.main as entry (entry.item.id)}
-          <button
-            type="button"
-            class="main"
-            class:default={entry.item.default}
-            onclick={() => onrun(entry.item)}><span class="label">{entry.item.label}</span></button
-          >
-        {/each}
-      </div>
-    {/if}
-    {#if split.rest.length > 0}
-      <div class="rows">
-        {#each split.rest as entry, i (keyOf(entry, i))}
-          {#if entry.kind === 'separator'}
-            {@render separator()}
-          {:else if entry.kind === 'submenu'}
-            <button
-              type="button"
-              class="row btn-ghost"
-              data-submenu={entry.id}
-              onclick={() => openSub(entry)}
-              ><span class="label">{entry.label}</span><span class="opens" aria-hidden="true"
-                >›</span
-              ></button
-            >
+  {#if shown.length > 0}
+    <!-- One page at a time, but two while they slide: the main page and a submenu's, in one cell. -->
+    <div class="pages" class:sliding>
+      {#key openSubmenu?.id}
+        <div
+          class="page"
+          in:fly={pageSlide('in')}
+          out:fly={pageSlide('out')}
+          onintrostart={onPageIntro}
+          onintroend={() => (sliding = false)}
+          onoutrostart={onPageOutro}
+        >
+          {#if openSubmenu}
+            <div class="rows">
+              <button type="button" class="row back btn-ghost" onclick={closeSub}
+                ><span class="label"><span aria-hidden="true">‹ </span>Back</span><span
+                  class="where">{openSubmenu.label}</span
+                ></button
+              >
+              {#each openSubmenu.entries as entry, i (keyOf(entry, i, openSubmenu.entries))}
+                <div class="entry" transition:slide={rowSlide()}>
+                  {#if entry.kind === 'separator'}
+                    {@render separator()}
+                  {:else}
+                    {@render actionRow(entry, runFromSub)}
+                  {/if}
+                </div>
+              {/each}
+            </div>
           {:else}
-            {@render actionRow(entry, onrun)}
+            {#if split.main.length > 0}
+              <div class="main-grid" style:--columns={split.main.length}>
+                {#each split.main as entry (entry.item.id)}
+                  <button
+                    type="button"
+                    class="main"
+                    class:default={entry.item.default}
+                    onclick={() => onrun(entry.item)}
+                    transition:fade={rowSlide()}
+                    ><span class="label">{entry.item.label}</span></button
+                  >
+                {/each}
+              </div>
+            {/if}
+            {#if split.rest.length > 0}
+              <div class="rows">
+                {#each split.rest as entry, i (keyOf(entry, i, split.rest))}
+                  <!-- The slide is on the entry's own block: one inside an if block would not play. -->
+                  <div class="entry" transition:slide={rowSlide()}>
+                    {#if entry.kind === 'separator'}
+                      {@render separator()}
+                    {:else if entry.kind === 'submenu'}
+                      <button
+                        type="button"
+                        class="row btn-ghost"
+                        data-submenu={entry.id}
+                        onclick={() => openSub(entry)}
+                        ><span class="label">{entry.label}</span><span
+                          class="opens"
+                          aria-hidden="true">›</span
+                        ></button
+                      >
+                    {:else}
+                      {@render actionRow(entry, onrun)}
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            {/if}
           {/if}
-        {/each}
-      </div>
-    {/if}
+        </div>
+      {/key}
+    </div>
   {/if}
 {/snippet}
 
@@ -224,13 +323,11 @@
         <CardFace {images} name={header.name} {landscape} />
       </div>
       <div class="side">
-        <!-- The sheet is named by its header, which is not read a second time. -->
-        <div class="title" aria-hidden="true" style:--owner={header.color}>
-          <div class="eyebrow">{header.eyebrow}</div>
-          <div class="nameline">
-            <span class="name">{header.name}</span>
-            {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
-          </div>
+        <!-- The sheet is named by its whole header, its type, stage or owner included: shown, the
+             name alone, which is not read a second time; an eyebrow line would take room. -->
+        <div class="nameline" aria-hidden="true">
+          <span class="name">{header.name}</span>
+          {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
         </div>
         {#each counters as counter (`${counter.kind}:${counter.name}`)}
           {@render counterRow(counter)}
@@ -285,22 +382,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-
-  .title {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  /* A caps label in the owner's colour, as the menu's header has it. */
-  .eyebrow {
-    color: var(--owner);
-    font-stretch: 75%;
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
   }
 
   .nameline {
@@ -476,6 +557,50 @@
     background: var(--accent-hover);
   }
 
+  /* A press reads as taken before the sheet closes: the default button darkens as the primary
+     button's panel does, a row lights up; both sink below, with motion. */
+  .main.default:active {
+    background: var(--accent-deep);
+  }
+
+  .row:active:not(:disabled) {
+    background-color: var(--hover);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .main,
+    .step {
+      transition:
+        background-color 0.12s,
+        transform 0.08s ease-out;
+    }
+
+    .main:active {
+      transform: scale(0.96);
+    }
+
+    .step:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+  }
+
+  /* The pages share one cell: the one leaving and the one coming overlap while they slide. */
+  .pages {
+    display: grid;
+  }
+
+  .pages.sliding {
+    overflow: clip;
+  }
+
+  .page {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+  }
+
   /* The other groups: full-width rows. */
   .rows {
     display: flex;
@@ -524,8 +649,8 @@
 
   /*
     Dock mode upright: the card on top, centred, as wide as the sheet allows
-    while it stays at most 42 % of the screen high; the header (on one line
-    where it fits), the counters and the entries full width under it. The
+    while it stays at most 42 % of the screen high; the name, the counters
+    and the entries full width under it. The
     sheet pads them and scrolls the whole (Sheet.svelte), if it must.
   */
   .inspector.dock {
@@ -544,13 +669,6 @@
   .inspector.dock .side {
     align-self: stretch;
     container-type: inline-size;
-  }
-
-  .inspector.dock .title {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 10px;
   }
 
   /*
@@ -574,10 +692,6 @@
       max-height: var(--sheet-room);
       overflow-y: auto;
       overscroll-behavior: contain;
-    }
-
-    .inspector.dock .title {
-      flex-direction: column;
     }
   }
 
@@ -607,6 +721,10 @@
   .inspector.dock .row {
     min-height: 44px;
     padding: 4px 8px;
+  }
+
+  .inspector.dock .page {
+    gap: 8px;
   }
 
   .inspector.dock .sep {

@@ -10,9 +10,30 @@
   mode (a phone, spec 3.4) it spans the whole width and may take the whole
   height but the top safe area; its content decides its height below that,
   and reads the room it has in --sheet-room.
+  It leaves sliding down as its veil fades out, however its caller removes it
+  (global transitions); as it starts leaving, it lets the page go and gives
+  the focus back, and takes no more taps or keys.
 -->
+<script module lang="ts">
+  import { prefersReducedMotion } from 'svelte/motion';
+
+  /**
+   * How long a motion of the sheet or of what it holds lasts, in ms: no time
+   * under reduced motion, nor where the browser has no Web Animations, which
+   * Svelte's transitions play on (jsdom), so that every change is instant.
+   */
+  export function motionMs(ms: number): number {
+    if (prefersReducedMotion.current || typeof Element.prototype.animate !== 'function') {
+      return 0;
+    }
+    return ms;
+  }
+</script>
+
 <script lang="ts">
   import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { fade, fly } from 'svelte/transition';
   import { lastPressByPointer, openModal } from './modal.svelte';
 
   let {
@@ -38,26 +59,46 @@
   /** How far down the handle must be dragged, in px, for the sheet to close. */
   const CLOSE_DISTANCE = 60;
 
+  /** How long the sheet takes to slide down as it leaves, in ms. */
+  const LEAVE_MS = 240;
+
   let panel: HTMLElement | undefined = $state();
 
   // Counted at once, not in an effect: whoever checks right after the sheet
   // is shown must see it open. Read once: a sheet does not change its kind.
-  if (untrack(() => modal)) {
-    onDestroy(openModal());
-  }
+  const releaseModal = untrack(() => modal) ? openModal() : undefined;
 
-  // The focus goes back where it was, without a focus ring when the sheet was
-  // opened by the pointer, as for a dialog.
   const focusedBefore =
     document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const openedByPointer = lastPressByPointer();
-  onDestroy(() => {
+
+  let leaving = false;
+
+  /**
+   * Lets the page go as the sheet starts sliding down, rather than once it is
+   * gone, so that the table answers at once: the sheet takes no more taps,
+   * the modal count drops, and the focus goes back where it was, without a
+   * focus ring when the sheet was opened by the pointer, as for a dialog.
+   * Once, as it starts leaving or, without an outro, as it is destroyed.
+   */
+  function leave(): void {
+    if (leaving) {
+      return;
+    }
+    leaving = true;
+    // Set by hand: the effects of a leaving sheet are paused, its attributes no longer follow its state.
+    if (panel) {
+      panel.inert = true;
+    }
+    releaseModal?.();
     if (openedByPointer) {
       focusedBefore?.focus({ focusVisible: false });
     } else {
       focusedBefore?.focus();
     }
-  });
+  }
+
+  onDestroy(leave);
 
   onMount(() => {
     // The panel itself takes the focus, not its first button: on a touch
@@ -102,7 +143,7 @@
   }
 
   function onWindowKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' && !leaving) {
       // Prevented, so that a browser in fullscreen keeps it.
       event.preventDefault();
       onclose();
@@ -132,9 +173,11 @@
     }
     const distance = event.clientY - swipe.startY;
     swipe = null;
-    offset = 0;
+    // A closing swipe leaves the sheet where the finger let go: it slides down on from there.
     if (distance >= CLOSE_DISTANCE) {
       onclose();
+    } else {
+      offset = 0;
     }
   }
 
@@ -155,7 +198,12 @@
 />
 
 <!-- The veil is a pointer target only: the keyboard closes the sheet with Escape. -->
-<div class="veil" role="presentation" onclick={onclose}></div>
+<div
+  class="veil"
+  role="presentation"
+  onclick={onclose}
+  out:fade|global={{ duration: motionMs(LEAVE_MS), easing: cubicOut }}
+></div>
 
 <div
   class="sheet"
@@ -168,6 +216,8 @@
   style:transform={offset > 0 ? `translateY(${offset}px)` : undefined}
   bind:this={panel}
   onkeydown={onPanelKeydown}
+  onoutrostart={leave}
+  out:fly|global={{ y: '100%', opacity: 1, duration: motionMs(LEAVE_MS), easing: cubicOut }}
 >
   <div class="grab" aria-hidden="true" onpointerdown={onGrabPointerDown}></div>
   <div class="content">
