@@ -51,6 +51,10 @@ const SMALL_WINDOW: TestScreen = { width: 600, height: 800 };
 // A large phone held sideways (iPhone 16 Pro Max): short, and wide enough for the history column.
 const LARGE_LANDSCAPE_PHONE: TestScreen = { width: 932, height: 430, touch: true };
 const LANDSCAPE_TABLET: TestScreen = { width: 1180, height: 820, touch: true };
+// A phone's sizes with a mouse or a pen: the small screen's layout (the hand fan, the corner bar,
+// the hero selector, the top bar hiding on scroll). A finger there gets the dock (Table.dock.test.ts).
+const PHONE_MOUSE: TestScreen = { ...PHONE, touch: false };
+const LANDSCAPE_PHONE_MOUSE: TestScreen = { ...LANDSCAPE_PHONE, touch: false };
 
 /** Records what the size bindings observe, so that a test can tell them the sizes changed. */
 class FakeResizeObserver {
@@ -394,7 +398,7 @@ describe('Table in the window', () => {
   });
 
   it('draws smaller avatars, closer together, on a small screen', async () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     const view = makeView();
     view.you = { ...view.you, areas: ['p0', 'p1'] };
     view.players = [
@@ -551,7 +555,7 @@ describe('Table zoom fitting the width on a small screen', () => {
   });
 
   it('the % label fits the width, with no key', () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     render(Table, { session: fakeSession(), view: makeWideView() });
     expect(screen.queryByRole('button', { name: 'Back to 100%' })).toBeNull();
     const label = screen.getByRole('button', { name: 'Fit to width' });
@@ -658,7 +662,7 @@ describe('Table zoom fitting the width on a small screen', () => {
   });
 
   it('goes down to 30 % on a phone, 50 % elsewhere', async () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     mockScrollerWidth(390);
     const { unmount } = render(Table, { session: fakeSession(), view: makeWideView() });
     // 330 px over 1612 units is 20 %: the fit stops at the phone's least zoom.
@@ -701,7 +705,7 @@ describe('Table zoom across the small screen breakpoint', () => {
   });
 
   it('switches as a phone turns', async () => {
-    const lists = mockScreen(PHONE);
+    const lists = mockScreen(PHONE_MOUSE);
     const setWidth = mockScrollerWidth(390);
     render(Table, { session: fakeSession(), view: viewWithFarCardAt(900) });
     // 1012 units in 330 px.
@@ -709,11 +713,11 @@ describe('Table zoom across the small screen breakpoint', () => {
 
     // Sideways, 844 px wide: more than 600 px.
     setWidth(844);
-    await resizeTable(lists, LANDSCAPE_PHONE);
+    await resizeTable(lists, LANDSCAPE_PHONE_MOUSE);
     expect(zoomLabel()).toBe('100%');
 
     setWidth(390);
-    await resizeTable(lists, PHONE);
+    await resizeTable(lists, PHONE_MOUSE);
     expect(zoomLabel()).toBe('32%');
   });
 
@@ -782,7 +786,7 @@ describe('Table on a small screen', () => {
   }
 
   it('sizes the hand cards from the window, the resting hand dropping as much of them', () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     render(Table, { session: fakeSession(), view: makeView() });
 
     // A quarter of 390 px, 1.4 times as tall; 136 × 140 / 259 ≈ 74 px down.
@@ -804,7 +808,7 @@ describe('Table on a small screen', () => {
   });
 
   it("shows only the selected deck's hand with two own decks, over the whole width", () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     const view = makeView();
     view.you = { ...view.you, areas: ['p0', 'p1'] };
     view.players[0]!.decks.push({ area: 'p1', heroName: 'Ant-Man', ready: true, handCount: 0 });
@@ -821,19 +825,19 @@ describe('Table on a small screen', () => {
   });
 
   it('keeps the raised hand to half the window held sideways', () => {
-    mockScreen(LANDSCAPE_PHONE);
+    mockScreen(LANDSCAPE_PHONE_MOUSE);
     render(Table, { session: fakeSession(), view: makeView() });
 
     const height = Number.parseFloat(hand().style.getPropertyValue('--card-h'));
     // Its cards and the hand's 26 + 18 px padding.
-    expect(height + 44).toBeLessThanOrEqual(LANDSCAPE_PHONE.height / 2);
+    expect(height + 44).toBeLessThanOrEqual(LANDSCAPE_PHONE_MOUSE.height / 2);
     expect(hand().style.getPropertyValue('--card-w')).toBe('107px');
   });
 
   it('follows the window as it turns', async () => {
-    const lists = mockScreen(PHONE);
+    const lists = mockScreen(PHONE_MOUSE);
     render(Table, { session: fakeSession(), view: makeView() });
-    await resizeTable(lists, LANDSCAPE_PHONE);
+    await resizeTable(lists, LANDSCAPE_PHONE_MOUSE);
     expect(hand().style.getPropertyValue('--card-w')).toBe('107px');
   });
 
@@ -846,7 +850,7 @@ describe('Table on a small screen', () => {
   });
 
   it('gathers Undo and the zoom control in one bar above the resting hand', () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
     const bar = corner(container);
@@ -901,7 +905,7 @@ describe('Table raised hand', () => {
   });
 
   it("follows the preview on a phone, the controls staying above the resting hand's strip", () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     mockScrollerWidth(390);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
@@ -1037,7 +1041,7 @@ describe('Table under a compact top bar', () => {
   }
 
   it('floats the bar over the play area, which keeps room for it while it shows', async () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
     const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
@@ -1066,7 +1070,7 @@ describe('Table under a compact top bar', () => {
     const wide = surfaceHeight();
     unmount();
 
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     render(Table, { session: fakeSession(), view: makeView() });
     expect(surfaceHeight()).toBe(wide - TOP_BAR_HEIGHT);
   });
@@ -1098,7 +1102,7 @@ describe('Table under a compact top bar', () => {
   });
 
   it('unhides the bar when the window widens past the compact screen', async () => {
-    const lists = mockScreen(PHONE);
+    const lists = mockScreen(PHONE_MOUSE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
     await scrollTable(container.querySelector<HTMLElement>('.tablewrap')!, 400);
@@ -1108,7 +1112,7 @@ describe('Table under a compact top bar', () => {
     expect(container.querySelector('header')?.classList).not.toContain('hidden');
 
     // Back on a phone, the bar shows until the table scrolls down again.
-    await resizeTable(lists, PHONE);
+    await resizeTable(lists, PHONE_MOUSE);
     expect(container.querySelector('header')?.classList).not.toContain('hidden');
     expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
   });
@@ -1133,7 +1137,7 @@ describe('Table under a compact top bar', () => {
 
   it('floats the bar over a phone on its side, in the narrow layout', async () => {
     vi.mocked(loadGameCards).mockRejectedValue(new Error('offline'));
-    mockScreen(LANDSCAPE_PHONE);
+    mockScreen(LANDSCAPE_PHONE_MOUSE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
     expect(app.classList).toContain('compact');

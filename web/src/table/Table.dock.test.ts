@@ -1,8 +1,9 @@
-// The table in dock mode (spec 3.4): on a small touch screen, a dock stands in for the hand's fan,
-// the controls at the bottom right and the hero selector; its buttons open the hand and the history
-// in bottom sheets, and its menu button slides the top bar in and out.
+// The table in dock mode (spec 3.4): on a small touch screen, a dock stands in for the hand's fan
+// and the controls at the bottom right, the hero selector floating beside it; its buttons open the
+// hand and the history in bottom sheets, and its menu button slides the top bar in and out.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import tableSource from './Table.svelte?raw';
 import { interaction } from './interaction.svelte';
 import {
   DESKTOP,
@@ -150,14 +151,25 @@ describe('dock mode', () => {
     expect(document.querySelector('.corner')).not.toBeNull();
   });
 
-  it('draws neither the hand fan, the corner bar nor the hero selector (no_fan_no_corner_in_dock)', async () => {
+  it('draws neither the hand fan nor the corner bar, nor a selector for a single hero (no_fan_no_corner_in_dock)', async () => {
     mockScreen(PHONE);
-    await renderTable(makeView({ twoDecks: true }));
+    await renderTable();
 
     expect(document.querySelector('.hands .hand')).toBeNull();
     expect(document.querySelector('.corner')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
-    expect(screen.queryByRole('radiogroup', { name: 'Hand shown' })).toBeNull();
+    expect(screen.queryByRole('radiogroup')).toBeNull();
+  });
+
+  it('has no hand button for a spectator, who has no hand (spectator_no_hand_button)', async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    await renderTable(view);
+
+    expect(dock()!.querySelector('.handbtn')).toBeNull();
+    expect(within(dock()!).getByRole('button', { name: 'Menu' })).toBeTruthy();
+    expect(within(dock()!).getByRole('button', { name: /^History/ })).toBeTruthy();
   });
 
   it('shows the selected deck on the hand button: its size, its hero and up to four cards', async () => {
@@ -222,6 +234,76 @@ describe('dock mode', () => {
 
     expect(dock()!.classList).not.toContain('rail');
     expect(document.querySelector('.app')!.classList).not.toContain('dock-rail');
+  });
+});
+
+describe('the hero selector in dock mode', () => {
+  /**
+   * The view with Sam (p1, Ant-Man) at the table too: Alex's card and piles in the first player's
+   * row, Sam's deck and a card of his in the second.
+   */
+  function withSam(): View {
+    const view = makeView();
+    view.players.push(
+      seated('Sam', 1, [{ area: 'p1', heroName: 'Ant-Man', heroImage: 'ant.png', handCount: 0 }]),
+    );
+    const table = view.table!;
+    table.cards = table.cards.map((c) => (c.id === 'mine' ? { ...c, y: 410 } : c));
+    table.piles = table.piles.map((p) => ({ ...p, y: 410 }));
+    table.cards.push(card('sams', { owner: 1, x: 300, y: 630 }));
+    table.piles.push(pile('deck:p1', { owner: 1, x: 600, y: 630 }));
+    return view;
+  }
+
+  function seatpick(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('.seatpick');
+  }
+
+  it.each([
+    ['upright', PHONE],
+    ['on its side', LANDSCAPE_PHONE],
+  ])(
+    'picks the player shown in "Villain + player", on a phone %s (dock_hero_selector)',
+    async (_name, size) => {
+      localStorage.setItem('itf-view', 'focus');
+      mockScreen(size);
+      await renderTable(withSam());
+
+      const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+      expect(seatpick()!.contains(picker)).toBe(true);
+      expect(seatpick()!.querySelector('.picker')?.classList).toContain('compact');
+      expect(dock()!.contains(picker)).toBe(false);
+      expect(placed('mine')).toBeTruthy();
+
+      await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam · Ant-Man' }));
+
+      expect(document.querySelector('.surface [data-id="mine"]')).toBeNull();
+      expect(placed('sams')).toBeTruthy();
+    },
+  );
+
+  it('switches between own decks in "All" without opening the hand (dock_hero_selector)', async () => {
+    mockScreen(PHONE);
+    await renderTable(makeView({ twoDecks: true }));
+
+    const picker = screen.getByRole('radiogroup', { name: 'Hand shown' });
+    expect(seatpick()!.contains(picker)).toBe(true);
+    await fireEvent.click(within(picker).getByRole('radio', { name: /Ant-Man/ }));
+
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 1, Ant-Man');
+  });
+
+  it('floats above the dock at the bottom left, or right of the rail at the top', () => {
+    // jsdom lays nothing out: the rules themselves are checked.
+    const bar = /\n {2}\.app\.dock-mode \.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(bar).toMatch(
+      /margin: 0 0 var\(--table-bottom\) calc\(8px \+ env\(safe-area-inset-left\)\);/,
+    );
+    const rail = /\n {2}\.app\.dock-rail \.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(rail).toMatch(/align-self: start;/);
+    expect(rail).toMatch(
+      /margin: calc\(var\(--bar-room\) \+ 8px \+ env\(safe-area-inset-top\)\) 0 0 8px;/,
+    );
   });
 });
 

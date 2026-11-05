@@ -21,6 +21,7 @@ function props(overrides: Record<string, unknown> = {}) {
     unread: 0,
     dropActive: false,
     landscape: false,
+    showHand: true,
     onmenu: vi.fn(),
     onhand: vi.fn(),
     onundo: vi.fn(),
@@ -122,6 +123,14 @@ describe('Dock', () => {
     expect(hand.querySelector('.lbl')).toBeNull();
     expect(hand.querySelector('.minis')).toBeNull();
     expect(hand.getAttribute('aria-label')).toBe('Hand · 5, Rocket Raccoon');
+  });
+
+  it('has no hand button without a hand to show, as for a spectator (spectator_no_hand_button)', () => {
+    render(Dock, props({ showHand: false, handCount: 0, minis: [], avatar: null, heroName: '' }));
+    expect(screen.queryByRole('button', { name: /hand/i })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Menu' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: UNDO_TIP })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'History' })).toBeTruthy();
   });
 
   it('lays out as a bar in portrait', () => {

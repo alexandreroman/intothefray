@@ -482,8 +482,9 @@
   const short = new MediaQuery('(max-height: 500px)');
 
   // Dock mode, a phone held either way on a touch screen (spec 3.4): the dock (Dock.svelte) stands in
-  // for the hand's fan, the controls at the bottom right and the hero selector, and its buttons open
-  // the hand and the history in bottom sheets. A mouse or a pen never sees it, at any width.
+  // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the
+  // history in bottom sheets; the hero selector floats beside it. A mouse or a pen never sees it, at
+  // any width.
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
@@ -2250,7 +2251,11 @@
     </div>
   {/if}
 
-  {#if pickerShown && pickerCurrent !== null && !dockMode}
+  <!--
+    In dock mode too, compact, floating above the dock or right of the rail: there it is the only way
+    to pick the player shown in "Villain + player", and to switch decks without opening the hand.
+  -->
+  {#if pickerShown && pickerCurrent !== null}
     <div class="seatpick">
       <HeroPicker
         entries={pickerEntries}
@@ -2318,6 +2323,7 @@
       unread={historyUnread}
       dropActive={dragGoesToHand}
       landscape={dockRail}
+      showHand={selected !== null}
       onmenu={toggleTopBar}
       onhand={openHandSheet}
       onundo={undo}
@@ -2784,6 +2790,21 @@
   */
   .app.compact .seatpick {
     margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
+  }
+
+  /*
+    Dock mode: just above the dock's bar (--table-bottom, its room above the safe area), on its left
+    edge. As the dock, under the top bar and the sheets.
+  */
+  .app.dock-mode .seatpick {
+    z-index: 30;
+    margin: 0 0 var(--table-bottom) calc(8px + env(safe-area-inset-left));
+  }
+
+  /* The rail: at the top of the table right of it, under the top bar while that shows. */
+  .app.dock-rail .seatpick {
+    align-self: start;
+    margin: calc(var(--bar-room) + 8px + env(safe-area-inset-top)) 0 0 8px;
   }
 
   /* As the zoom control: under the veil and the raised hand. */

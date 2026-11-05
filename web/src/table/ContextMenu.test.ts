@@ -1061,8 +1061,10 @@ describe('the arrow mode', () => {
   it('speaks of taps and no Esc key in touch mode', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
+    // A tap opens the inspector, which offers what the menu would.
     await click(placed('mine'), 120, 80, { pointerType: 'touch' });
-    await fireEvent.click(menuItem(contextMenu()!, 'Draw an arrow'));
+    const inspector = screen.getByRole('dialog');
+    await fireEvent.click(within(inspector).getByRole('button', { name: /^Draw an arrow/ }));
 
     expect(arrowHint()?.textContent).toBe(
       'Tap the card to point at — tap an empty spot to cancel.',

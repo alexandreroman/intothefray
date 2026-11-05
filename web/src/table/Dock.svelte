@@ -3,7 +3,8 @@
   the safe area, with the menu button, the hand button (the current deck's hero, up to four mini
   cards of the hand, its size and the hero's name), Undo, and the history with a badge of the log
   lines added since it was last opened. In landscape it stands as a rail down the left edge, its
-  hand button the avatar and the hand size only. During a drag of a card that can go back to a
+  hand button the avatar and the hand size only. A spectator, who has no hand, gets no hand
+  button. During a drag of a card that can go back to a
   hand, the hand button becomes the drop target. The parent places nothing: the dock floats.
 -->
 <script lang="ts">
@@ -23,6 +24,7 @@
     unread,
     dropActive,
     landscape,
+    showHand,
     onmenu,
     onhand,
     onundo,
@@ -43,6 +45,8 @@
     dropActive: boolean;
     /** A small screen in landscape: a rail down the left edge rather than a bar at the bottom. */
     landscape: boolean;
+    /** Whether there is a hand to show: none for a spectator, whose dock has no hand button. */
+    showHand: boolean;
     onmenu: () => void;
     onhand: () => void;
     onundo: () => void;
@@ -80,43 +84,46 @@
     </svg>
   </button>
 
-  <button
-    class="handbtn"
-    class:drop={dropActive}
-    aria-label={handLabel}
-    data-tip={landscape ? handLabel : undefined}
-    onclick={onhand}
-    {@attach pointerBlur}
-  >
-    {#if dropActive && !landscape}
-      <span class="drop-label">{DROP_LABEL}</span>
-    {:else}
-      <span class="avatar" class:empty={!avatar} style:--seat={color} aria-hidden="true">
-        {#if avatarSrc}
-          <CardArt src={avatarSrc} aspect={1} />
-        {/if}
-      </span>
-      {#if landscape}
-        <span class="count" aria-hidden="true">{handCount}</span>
+  {#if showHand}
+    <button
+      class="handbtn"
+      class:drop={dropActive}
+      aria-label={handLabel}
+      data-tip={landscape ? handLabel : undefined}
+      onclick={onhand}
+      {@attach pointerBlur}
+    >
+      {#if dropActive && !landscape}
+        <span class="drop-label">{DROP_LABEL}</span>
       {:else}
-        {#if minis.length > 0}
-          <span class="minis" aria-hidden="true">
-            {#each minis.slice(0, MAX_MINIS) as images, index (index)}
-              <span class="mini"><CardFace {images} /></span>
-            {/each}
-          </span>
-        {/if}
-        <span class="lbl" aria-hidden="true">
-          <b>{handTitle}</b>
-          {#if heroName}
-            <small>{heroName}</small>
+        <span class="avatar" class:empty={!avatar} style:--seat={color} aria-hidden="true">
+          {#if avatarSrc}
+            <CardArt src={avatarSrc} aspect={1} />
           {/if}
         </span>
+        {#if landscape}
+          <span class="count" aria-hidden="true">{handCount}</span>
+        {:else}
+          {#if minis.length > 0}
+            <span class="minis" aria-hidden="true">
+              {#each minis.slice(0, MAX_MINIS) as images, index (index)}
+                <span class="mini"><CardFace {images} /></span>
+              {/each}
+            </span>
+          {/if}
+          <span class="lbl" aria-hidden="true">
+            <b>{handTitle}</b>
+            {#if heroName}
+              <small>{heroName}</small>
+            {/if}
+          </span>
+        {/if}
       {/if}
-    {/if}
-  </button>
+    </button>
+  {/if}
 
-  {#if landscape}
+  <!-- The free room: the rail's height, or the bar's width when no hand button takes it. -->
+  {#if landscape || !showHand}
     <span class="spacer"></span>
   {/if}
 
