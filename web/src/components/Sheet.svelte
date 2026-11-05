@@ -4,16 +4,19 @@
   A tap on the veil, a swipe down on the handle or Escape closes it. Like a
   dialog (Dialog.svelte), it counts as a modal while shown (see
   modal.svelte.ts), keeps the focus inside and gives it back when it closes.
+  A sheet that is not modal (the hand's) leaves the table live, so that a
+  press inside it can start a drag onto the table, and the page unlocked.
   Above 600 px wide, the panel is at most 480 px wide and centred.
 -->
 <script lang="ts">
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
   import { lastPressByPointer, openModal } from './modal.svelte';
 
   let {
     label,
     onclose,
     maxHeight = '92%',
+    modal = true,
     children,
   }: {
     /** The sheet's accessible name. */
@@ -21,6 +24,8 @@
     onclose: () => void;
     /** The panel's height limit, as a CSS length (a percentage of the window's height). */
     maxHeight?: string;
+    /** Whether the sheet freezes the table while shown (modal.svelte.ts). */
+    modal?: boolean;
     children: Snippet;
   } = $props();
 
@@ -30,8 +35,10 @@
   let panel: HTMLElement | undefined = $state();
 
   // Counted at once, not in an effect: whoever checks right after the sheet
-  // is shown must see it open.
-  onDestroy(openModal());
+  // is shown must see it open. Read once: a sheet does not change its kind.
+  if (untrack(() => modal)) {
+    onDestroy(openModal());
+  }
 
   // The focus goes back where it was, without a focus ring when the sheet was
   // opened by the pointer, as for a dialog.
@@ -147,7 +154,7 @@
 <div
   class="sheet"
   role="dialog"
-  aria-modal="true"
+  aria-modal={modal}
   aria-label={label}
   tabindex="-1"
   style:max-height={maxHeight}

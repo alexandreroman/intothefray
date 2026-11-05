@@ -1,12 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
+import { modal } from './modal.svelte';
 import Sheet from './Sheet.svelte';
 
 const content = createRawSnippet(() => ({
   render: () => '<div><button type="button">Play</button></div>',
 }));
 
-function renderSheet(props: { maxHeight?: string } = {}) {
+function renderSheet(props: { maxHeight?: string; modal?: boolean } = {}) {
   const onclose = vi.fn();
   const view = render(Sheet, { label: 'Rhino', onclose, children: content, ...props });
   const sheet = screen.getByRole('dialog', { name: 'Rhino' });
@@ -120,5 +121,24 @@ describe('Sheet', () => {
     const { sheet } = renderSheet({ maxHeight: '62%' });
 
     expect(sheet.style.maxHeight).toBe('62%');
+  });
+
+  describe('when not modal', () => {
+    it('leaves the table live and the page scrollable', () => {
+      const { sheet } = renderSheet({ modal: false });
+
+      expect(modal.open).toBe(false);
+      expect(document.documentElement.classList).not.toContain('scroll-locked');
+      expect(sheet.getAttribute('aria-modal')).toBe('false');
+    });
+
+    it('still closes once on Escape, keeping fullscreen', async () => {
+      const { onclose } = renderSheet({ modal: false });
+
+      const allowed = await fireEvent.keyDown(window, { key: 'Escape' });
+
+      expect(onclose).toHaveBeenCalledOnce();
+      expect(allowed).toBe(false);
+    });
   });
 });
