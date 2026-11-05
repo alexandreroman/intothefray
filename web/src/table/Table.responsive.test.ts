@@ -430,17 +430,18 @@ describe('Table in touch mode', () => {
     }
   }
 
-  it('a tap on a card opens its menu and previews nothing, on a phone', async () => {
+  it('a tap on a card opens its inspector and previews nothing, on a phone', async () => {
     mockScreen(PHONE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
 
     await tap(cardInPlay());
-    expect(container.querySelector('.table-menu.context')).not.toBeNull();
+    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(container.querySelector('.table-menu.context')).toBeNull();
     expect(interaction.previewed).toBeNull();
     expect(peek(container)).toBeNull();
   });
 
-  it('a tap on a token pins its pill and previews nothing', async () => {
+  it("a tap on a token opens its card's inspector, with no pill, and previews nothing", async () => {
     mockScreen(PHONE);
     const view = makeView();
     view.table!.cards = view.table!.cards.map((card) =>
@@ -450,8 +451,10 @@ describe('Table in touch mode', () => {
 
     const token = cardInPlay().querySelector<HTMLElement>('[data-counter="token:dmg"]')!;
     await tap(cardInPlay(), token);
-    expect(interaction.counterPinned).toBe(true);
-    expect(screen.getByRole('group', { name: /^Change / })).toBeTruthy();
+    expect(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Add one damage' }),
+    ).toBeTruthy();
+    expect(screen.queryByRole('group', { name: /^Change / })).toBeNull();
     expect(interaction.previewed).toBeNull();
     expect(peek(container)).toBeNull();
   });

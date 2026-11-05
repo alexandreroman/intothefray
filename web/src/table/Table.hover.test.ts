@@ -69,6 +69,11 @@ function noPreview(): boolean {
   return screen.queryByLabelText('Card preview') === null;
 }
 
+/** The inspector of a table card or pile (touch mode), if open: a bottom sheet in place of the menu. */
+function inspector(): HTMLElement | null {
+  return screen.queryByRole('dialog');
+}
+
 /** The context menu of a table card or pile, if open. */
 function contextMenu(): HTMLElement | null {
   return document.querySelector<HTMLElement>('.table-menu.context');
@@ -228,7 +233,7 @@ describe('hovering the table', () => {
 });
 
 describe('a tap on touch', () => {
-  it("in touch mode, opens a card's menu, which stays once the finger lifts, and previews nothing", async () => {
+  it("in touch mode, opens a card's inspector with its menu's entries, which stays, and previews nothing", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
@@ -236,29 +241,35 @@ describe('a tap on touch', () => {
     await tap(placed('two'));
     await vi.advanceTimersByTimeAsync(1000);
 
-    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'two' });
-    expect(contextMenu()).not.toBeNull();
+    expect(within(inspector()!).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(within(inspector()!).getByRole('button', { name: /^Exhaust/ })).toBeTruthy();
+    expect(contextMenu()).toBeNull();
     expect(interaction.previewed).toBeNull();
     expect(noPreview()).toBe(true);
 
-    // The next card tapped takes the menu, still with no preview.
+    // Once it is closed, the next card tapped opens its own, still with no preview.
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(inspector()).toBeNull();
     await tap(placed('mine'));
-    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
+    expect(within(inspector()!).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
     expect(interaction.previewed).toBeNull();
     expect(noPreview()).toBe(true);
   });
 
-  it('in touch mode, opens the menus of piles and previews nothing', async () => {
+  it('in touch mode, opens the inspectors of piles and previews nothing', async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     await tap(placed('disc:p0'));
-    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'disc:p0' });
+    expect(inspector()).not.toBeNull();
+    expect(contextMenu()).toBeNull();
     expect(interaction.previewed).toBeNull();
     expect(noPreview()).toBe(true);
 
+    await fireEvent.keyDown(window, { key: 'Escape' });
     await tap(placed('deck:p0'));
-    expect(interaction.contextMenu?.element).toEqual({ kind: 'pile', id: 'deck:p0' });
+    expect(inspector()).not.toBeNull();
+    expect(contextMenu()).toBeNull();
     expect(noPreview()).toBe(true);
   });
 
@@ -475,7 +486,7 @@ describe('tokens and statuses', () => {
     expect(contextMenu()).not.toBeNull();
   });
 
-  it('a tap on a token shows the pill, opens no menu, and the pill stays once the finger lifts', async () => {
+  it("a tap on a token opens its card's inspector, shows no pill, and stays once the finger lifts", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
@@ -483,80 +494,75 @@ describe('tokens and statuses', () => {
     await tap(placed('mine'), counter('mine', 'token:dmg'));
     await vi.advanceTimersByTimeAsync(1000);
 
-    expect(pill()?.textContent).toContain('2');
-    expect(interaction.counterPinned).toBe(true);
+    expect(within(inspector()!).getByRole('button', { name: 'Add one damage' })).toBeTruthy();
+    expect(pill()).toBeNull();
+    expect(interaction.counterPinned).toBe(false);
     expect(contextMenu()).toBeNull();
-    // Its card stays hovered with it, touch having no hover to keep it; touch mode previews nothing.
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'mine' });
+    // Touch mode previews nothing.
     expect(interaction.previewed).toBeNull();
     expect(noPreview()).toBe(true);
   });
 
-  it('a tapped pill stays through taps on − and +, and moves to the next token tapped', async () => {
+  it("the inspector stays through taps on its steppers, a status's ✕ included", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
 
-    await tap(pill()!, within(pill()!).getByRole('button', { name: 'Add 1' }));
+    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Remove one damage' }));
     await vi.advanceTimersByTimeAsync(1000);
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'token', card: 'mine', name: 'dmg', delta: 1 },
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'token', card: 'mine', name: 'dmg', delta: -1 },
       0,
     );
-    expect(pill()).not.toBeNull();
+    expect(inspector()).not.toBeNull();
 
-    await tap(placed('mine'), counter('mine', 'status:stunned'));
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(interaction.counter).toEqual({ card: 'mine', kind: 'status', name: 'stunned' });
-    expect(pill()).not.toBeNull();
+    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Remove stunned' }));
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'status', card: 'mine', name: 'stunned', delta: -1 },
+      0,
+    );
+    expect(inspector()).not.toBeNull();
   });
 
-  it('a tapped pill goes with a tap elsewhere, and its card with it', async () => {
+  it("a tap on the card off its tokens opens the same inspector, and closing it lets the card's hover go", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
-    await tap(placed('mine'), counter('mine', 'token:dmg'));
 
-    // On the same card, off the token: the card's menu opens instead.
     await tap(placed('mine'));
+    expect(within(inspector()!).getByRole('button', { name: 'Add one damage' })).toBeTruthy();
     expect(pill()).toBeNull();
-    expect(interaction.contextMenu?.element).toEqual({ kind: 'card', id: 'mine' });
-    await fireEvent.keyDown(window, { key: 'Escape' });
 
-    await tap(placed('mine'), counter('mine', 'token:dmg'));
-    // Outside the table: the card's hover lingers out with the pill.
-    await tap(screen.getByRole('button', { name: 'Zoom in' }));
-    expect(pill()).toBeNull();
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(inspector()).toBeNull();
     await vi.advanceTimersByTimeAsync(LINGER_MS);
     expect(interaction.hovered).toBeNull();
     expect(noPreview()).toBe(true);
   });
 
-  it('a tapped pill goes with its token, and its card lingers out with it', async () => {
+  it("the inspector's row of a token goes with the token, and the inspector stays with its card", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { rerender } = await renderTable(viewWithCounters());
-    vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
 
     await rerender({ view: viewWithCounters({ dmg: 0 }) });
+    expect(inspector()).not.toBeNull();
+    expect(within(inspector()!).queryByRole('button', { name: 'Add one damage' })).toBeNull();
     expect(pill()).toBeNull();
-    await vi.advanceTimersByTimeAsync(LINGER_MS);
-    expect(interaction.hovered).toBeNull();
-    expect(noPreview()).toBe(true);
   });
 
-  it('Escape lets go of a tapped pill', async () => {
+  it('Escape closes the inspector a tap on a token opened', async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     await tap(placed('mine'), counter('mine', 'token:dmg'));
 
     await fireEvent.keyDown(window, { key: 'Escape' });
-    expect(pill()).toBeNull();
+    expect(inspector()).toBeNull();
   });
 
   it('lingers 100 ms after the pointer leaves, and stays while the pointer is on it', async () => {
