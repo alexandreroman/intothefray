@@ -435,3 +435,77 @@ describe('the inspector, revealing a card from a deck (F-U8)', () => {
     expect(sheet()).toBeNull();
   });
 });
+
+describe('the inspector, flipping a card (F-U9)', () => {
+  it('stays open on Flip, on the same sheet, which shows the face the view turns the card to', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session, rerender } = await renderTable();
+    await tap(placed('two'));
+    const opened = sheet();
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Flip/ }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 'two' }, 0);
+    expect(sheet()).toBe(opened);
+
+    await rerender({
+      view: makeView([
+        card('mine'),
+        card('two', { code: '01002', x: 200, face: 1 }),
+        ...OTHERS.slice(1),
+      ]),
+    });
+
+    expect(sheet()).toBe(opened);
+    expect(within(sheet()!).getByRole('img', { name: 'Spider-Man' })).toBeTruthy();
+  });
+
+  it("stays open on a stage card's Flip", async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const session = fakeSession();
+    const view = playingView({
+      players: [seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man' }], true)],
+      table: {
+        cards: [card('v', { code: '01002', owner: -1, back: 'villain' })],
+        piles: [],
+        hands: { p0: [] },
+        stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      },
+    });
+    render(Table, { session, view });
+    await screen.findByRole('img', { name: 'Peter Parker' });
+    await tap(placed('v'));
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Flip/ }));
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'chooseStage', stage: 'villain', card: 'v', face: 1 },
+      0,
+    );
+    expect(sheet()).not.toBeNull();
+  });
+
+  it('closes as a card revealed on a deck goes back into it, turned face down', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const revealed = card('rev', { code: '01002', onPile: 'deck:p0', x: 600 });
+    const { session, rerender } = await renderTable(makeView([revealed, ...OTHERS]));
+    await tap(placed('rev'));
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Flip/ }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 'rev' }, 0);
+    expect(sheet()).not.toBeNull();
+
+    await rerender({ view: makeView([...OTHERS]) });
+    expect(sheet()).toBeNull();
+  });
+
+  it('leaves the mouse menu closing on Flip', async () => {
+    const { session } = await renderTable();
+
+    await fireEvent.click(placed('two'));
+    await fireEvent.click(within(contextMenu()!).getByRole('menuitem', { name: /^Flip/ }));
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 'two' }, 0);
+    expect(contextMenu()).toBeNull();
+    expect(sheet()).toBeNull();
+  });
+});

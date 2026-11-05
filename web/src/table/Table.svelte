@@ -1423,6 +1423,16 @@
     );
   }
 
+  /**
+   * Whether the item is a table card's Flip (actionsFor's `flip`, a stage card's too): the inspector
+   * stays open and turns the card over in it (CardSheet.svelte). A card revealed on a deck that goes
+   * back into it, turned face down, leaves the table: the inspector closes then, as for any card
+   * that goes.
+   */
+  function flipsCard(item: ActionItem, element: TableElement): boolean {
+    return element.kind === 'card' && item.id === 'flip';
+  }
+
   /** Whether the item is a deck's Reveal (actionsFor's `reveal`), run from that deck's inspector. */
   function revealsFrom(item: ActionItem, element: TableElement): boolean {
     return element.kind === 'pile' && item.id === 'reveal';
@@ -1431,8 +1441,9 @@
   /**
    * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
    * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
-   * as for a stepper. A deck's Reveal keeps it open too, and switches it to the revealed card once
-   * the view shows it. A hand card's Play and Discard send what their keys send (keys.ts).
+   * as for a stepper, and for a card's Flip, which it shows turning over. A deck's Reveal keeps it
+   * open too, and switches it to the revealed card once the view shows it. A hand card's Play and
+   * Discard send what their keys send (keys.ts).
    */
   function runInspectorItem(item: ActionItem): void {
     const element = inspected;
@@ -1446,7 +1457,7 @@
       }
       return;
     }
-    if (!addsCounter(item)) {
+    if (!addsCounter(item) && !flipsCard(item, element)) {
       inspected = null;
     }
     if (item === SELECT_ENTRY.item) {

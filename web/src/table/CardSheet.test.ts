@@ -658,5 +658,83 @@ describe('CardSheet', () => {
       expect(rule('.main.default:active')).toContain('background: var(--accent-deep);');
       expect(rule('.row:active:not(:disabled)')).toContain('background-color: var(--hover);');
     });
+
+    describe('turning the card over (F-U9)', () => {
+      const TURNED: ContextHeader = {
+        ...HEADER,
+        name: 'Rhino II',
+        label: 'Rhino II, Villain, stage II',
+      };
+      const STAGE: ActionItem = item('stage', { label: 'Change card…' });
+      const TURNED_ENTRIES: ContextEntry[] = [...ENTRIES, { kind: 'action', item: STAGE }];
+
+      /** The halves of the face's turn: away to edge-on, then back flat with the new side. */
+      function turns(): { element: Element; keyframes: Keyframe[] }[] {
+        return animationsOf(180).filter(({ element }) => element.classList.contains('face'));
+      }
+
+      function faceImage(): HTMLImageElement {
+        return document.querySelector<HTMLImageElement>('.inspector .face img')!;
+      }
+
+      it('turns the face away to edge-on, lifted, then shows the new side, its name and entries', async () => {
+        const { rerender } = renderSheet();
+        const dialog = screen.getByRole('dialog');
+
+        await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
+
+        // Still the old side, its name and entries, as it turns away.
+        expect(faceImage().getAttribute('src')).toBe('rhino.png');
+        expect(screen.getByText('Rhino', { selector: '.name' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Change card…' })).toBeNull();
+        const away = turns()[0]!;
+        expect(away.keyframes[0]?.transform).toContain('rotateY(0deg)');
+        expect(away.keyframes.at(-1)?.transform).toContain('rotateY(90deg)');
+        expect(away.keyframes.at(-1)?.scale).toBe('1.06');
+
+        await finishAnimations();
+
+        expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+        expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
+        const back = turns()[1]!;
+        expect(back.keyframes[0]?.transform).toContain('rotateY(90deg)');
+        expect(back.keyframes.at(-1)?.transform).toContain('rotateY(0deg)');
+        expect(back.keyframes.at(-1)?.scale).toBe('1');
+        // The same sheet all along: it never slides out and in again.
+        expect(screen.getByRole('dialog')).toBe(dialog);
+      });
+
+      it('turns over to a landscape face once edge-on', async () => {
+        const { rerender } = renderSheet();
+
+        await rerender({ images: ['scheme.png'], landscape: true });
+        expect(document.querySelector('.inspector .face')?.classList).not.toContain('land');
+
+        await finishAnimations();
+        expect(document.querySelector('.inspector .face')?.classList).toContain('land');
+      });
+
+      it('changes the face at once under reduced motion', async () => {
+        motion.reduced = true;
+        const { rerender } = renderSheet();
+
+        await rerender({ images: ['rhino-2.png'], header: TURNED });
+
+        expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+        expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+        expect(turns()).toEqual([]);
+      });
+
+      it('does not turn when the face stays the same', async () => {
+        const { rerender } = renderSheet();
+
+        // A new array of the same images, as each redraw gives.
+        await rerender({ images: ['rhino.png'], entries: TURNED_ENTRIES, counters: [DAMAGE] });
+
+        expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
+        expect(turns()).toEqual([]);
+      });
+    });
   });
 });

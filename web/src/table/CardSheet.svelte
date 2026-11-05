@@ -18,17 +18,22 @@
   submenu slides in from the right as the main page leaves to the left, and
   back the other way; a counter
   row or an entry that comes or goes after an update slides open or closed;
-  a counter's number bumps as it changes; a pressed button sinks.
+  a counter's number bumps as it changes; a pressed button sinks. When the
+  face the card shows changes (a flip, a stage turned, a card turned face
+  down or up), the card turns over as a table card does, in place: the name
+  and the entries follow its new side once it is edge-on. Another element
+  opens a sheet of its own (Table.svelte keys it), which does not turn.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
 -->
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { fade, fly, slide, type TransitionConfig } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
+  import { LIFT_SCALE } from './motion.svelte';
   import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
   import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
   import { splitEntries, visibleEntries, type SheetCounter } from './inspector';
@@ -70,8 +75,74 @@
   const ROW_MS = 200;
   /** How long a counter's number takes to bump as it changes, in ms. */
   const BUMP_MS = 160;
+  /** How long the card takes to turn over, edge-on half way: a table card's FLIP_MS (motion.svelte.ts). */
+  const TURN_MS = 360;
+  /** The perspective of a table card turning over (motion.svelte.ts FLIP_PERSPECTIVE). */
+  const TURN_PERSPECTIVE = 'perspective(700px)';
 
-  const shown = $derived(visibleEntries(entries));
+  /** A side of the card: the face it shows, and the name and entries that go with it. */
+  type Side = { images: string[]; landscape: boolean; name: string; entries: ContextEntry[] };
+
+  const live = $derived<Side>({ images, landscape, name: header.name, entries });
+  /** The side the card turns away from, shown until it is edge-on; null while it does not turn. */
+  let leaving = $state.raw<Side | null>(null);
+  const side = $derived(leaving ?? live);
+
+  let faceElement = $state<HTMLElement>();
+  let turn: Animation | undefined;
+  /** The side of the last update, which a new face turns away from. */
+  let lastSide: Side | null = null;
+
+  /** What tells one face from another: a new array of the same images is the same face. */
+  function faceKey(of: Side): string {
+    return `${of.landscape ? 'land' : 'portrait'}|${of.images.join('|')}`;
+  }
+
+  // Before the sheet is drawn again: the old side stays on screen until the turn reaches edge-on.
+  $effect.pre(() => {
+    const now = live;
+    untrack(() => {
+      // While the card turns away, the newest side is the one it shows once edge-on.
+      if (lastSide !== null && leaving === null && faceKey(now) !== faceKey(lastSide)) {
+        turnOver(lastSide);
+      }
+      lastSide = now;
+    });
+  });
+
+  $effect(() => () => turn?.cancel());
+
+  /**
+   * Turns the card over around its vertical axis, as a table card does (motion.svelte.ts #flip):
+   * its old side turns away to edge-on, lifted, then its new side turns back flat and comes down.
+   * Under reduced motion, the face just changes.
+   */
+  function turnOver(from: Side): void {
+    if (motionMs(TURN_MS) === 0 || faceElement === undefined) {
+      return;
+    }
+    const element = faceElement;
+    const flat = { transform: `${TURN_PERSPECTIVE} rotateY(0deg)`, scale: '1' };
+    const edgeOn = { transform: `${TURN_PERSPECTIVE} rotateY(90deg)`, scale: `${LIFT_SCALE}` };
+    const half = TURN_MS / 2;
+
+    turn?.cancel();
+    leaving = from;
+    // Held edge-on until the second half starts: the old side never shows flat again.
+    const away = element.animate([flat, edgeOn], {
+      duration: half,
+      easing: 'ease-in',
+      fill: 'forwards',
+    });
+    turn = away;
+    away.onfinish = () => {
+      leaving = null;
+      turn = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
+      away.cancel();
+    };
+  }
+
+  const shown = $derived(visibleEntries(side.entries));
   const split = $derived(splitEntries(shown));
 
   let openId = $state<string | null>(null);
@@ -323,14 +394,14 @@
 <Sheet label={header.label} dock={dock.current} {onclose}>
   <div class="inspector" class:dock={dock.current} bind:this={content}>
     <div class="top">
-      <div class="face" class:land={landscape}>
-        <CardFace {images} name={header.name} {landscape} />
+      <div class="face" class:land={side.landscape} bind:this={faceElement}>
+        <CardFace images={side.images} name={side.name} landscape={side.landscape} />
       </div>
       <div class="side">
         <!-- The sheet is named by its whole header, its type, stage or owner included: shown, the
              name alone, which is not read a second time; an eyebrow line would take room. -->
         <div class="nameline" aria-hidden="true">
-          <span class="name">{header.name}</span>
+          <span class="name">{side.name}</span>
           {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
         </div>
         {#each counters as counter (`${counter.kind}:${counter.name}`)}
