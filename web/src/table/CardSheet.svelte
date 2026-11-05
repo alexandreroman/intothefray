@@ -4,8 +4,8 @@
   card's face large beside its header and its counters, then the same entries
   as the menu (contextItems.ts). The first group shows as large buttons, the
   default one in Fray red, the others as rows; a submenu opens in the sheet,
-  with a Back row. A disabled entry shows its reason under its label: a finger
-  has no tooltip. No key hints: a touch screen has no keyboard to press them on.
+  with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
+  it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet.
   In dock mode (a phone) the sheet uses the whole screen: the card as large as
   it allows on the left, and everything else in one column on its right, the
@@ -18,7 +18,7 @@
   import { dockMode } from './dockMode';
   import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
   import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
-  import { splitEntries, type SheetCounter } from './inspector';
+  import { splitEntries, visibleEntries, type SheetCounter } from './inspector';
 
   let {
     header,
@@ -49,35 +49,22 @@
     onclose: () => void;
   } = $props();
 
-  const uid = $props.id();
   const dock = dockMode();
 
-  const split = $derived(splitEntries(entries));
+  const shown = $derived(visibleEntries(entries));
+  const split = $derived(splitEntries(shown));
 
   let openId = $state<string | null>(null);
   let content = $state<HTMLElement>();
 
-  // Found again in every redraw's entries: a submenu whose row went, or got disabled, closes.
+  // Found again in every redraw's entries: a submenu whose row went, or got refused, closes.
   const openSubmenu = $derived(
-    entries.find(
-      (entry): entry is ContextSubmenu =>
-        entry.kind === 'submenu' && entry.id === openId && !entry.disabled,
-    ),
+    shown.find((entry): entry is ContextSubmenu => entry.kind === 'submenu' && entry.id === openId),
   );
-
-  /** A disabled item is aria-disabled rather than disabled, so that its reason is read: its taps do nothing. */
-  function run(item: ActionItem): void {
-    if (!item.disabled) {
-      onrun(item);
-    }
-  }
 
   // The row the focus was on goes as the list changes: the focus moves to the Back row, or back to
   // the submenu's row, rather than falling out of the sheet.
   async function openSub(entry: ContextSubmenu): Promise<void> {
-    if (entry.disabled) {
-      return;
-    }
     openId = entry.id;
     await tick();
     content?.querySelector<HTMLElement>('.back')?.focus();
@@ -90,11 +77,6 @@
     if (id !== null) {
       content?.querySelector<HTMLElement>(`[data-submenu="${CSS.escape(id)}"]`)?.focus();
     }
-  }
-
-  /** The id of a disabled entry's reason, which describes it. */
-  function reasonId(where: 'main' | 'menu' | 'submenu', id: string): string {
-    return `${uid}-${where}-${id}-reason`;
   }
 
   /** What a stepper button does, as a screen reader says it: "Add one damage", "Remove one from the DEF modifier". */
@@ -119,23 +101,12 @@
   }
 </script>
 
-<!-- Why an entry is disabled: shown under its label, and read as its description. -->
-{#snippet reasonText(id: string | undefined, reason: string | undefined)}
-  {#if id !== undefined}<span class="reason" {id} aria-hidden="true">{reason}</span>{/if}
-{/snippet}
-
-{#snippet actionRow(entry: ContextAction, where: 'menu' | 'submenu')}
-  {@const item = entry.item}
-  {@const reason = item.disabled ? item.reason : undefined}
-  {@const reasonFor = reason === undefined ? undefined : reasonId(where, item.id)}
+{#snippet actionRow(entry: ContextAction)}
   <button
     type="button"
     class="row btn-ghost"
-    class:default={item.default}
-    aria-disabled={item.disabled}
-    aria-describedby={reasonFor}
-    onclick={() => run(item)}
-    ><span class="label">{item.label}</span>{@render reasonText(reasonFor, reason)}</button
+    class:default={entry.item.default}
+    onclick={() => onrun(entry.item)}><span class="label">{entry.item.label}</span></button
   >
 {/snippet}
 
@@ -194,7 +165,7 @@
         {#if entry.kind === 'separator'}
           {@render separator()}
         {:else}
-          {@render actionRow(entry, 'submenu')}
+          {@render actionRow(entry)}
         {/if}
       {/each}
     </div>
@@ -202,17 +173,11 @@
     {#if split.main.length > 0}
       <div class="main-grid" style:--columns={split.main.length}>
         {#each split.main as entry (entry.item.id)}
-          {@const item = entry.item}
-          {@const reason = item.disabled ? item.reason : undefined}
-          {@const reasonFor = reason === undefined ? undefined : reasonId('main', item.id)}
           <button
             type="button"
             class="main"
-            class:default={item.default}
-            aria-disabled={item.disabled}
-            aria-describedby={reasonFor}
-            onclick={() => run(item)}
-            ><span class="label">{item.label}</span>{@render reasonText(reasonFor, reason)}</button
+            class:default={entry.item.default}
+            onclick={() => onrun(entry.item)}><span class="label">{entry.item.label}</span></button
           >
         {/each}
       </div>
@@ -223,21 +188,17 @@
           {#if entry.kind === 'separator'}
             {@render separator()}
           {:else if entry.kind === 'submenu'}
-            {@const reason = entry.disabled ? entry.reason : undefined}
-            {@const reasonFor = reason === undefined ? undefined : reasonId('menu', entry.id)}
             <button
               type="button"
               class="row btn-ghost"
-              aria-disabled={entry.disabled}
-              aria-describedby={reasonFor}
               data-submenu={entry.id}
               onclick={() => openSub(entry)}
               ><span class="label">{entry.label}</span><span class="opens" aria-hidden="true"
                 >›</span
-              >{@render reasonText(reasonFor, reason)}</button
+              ></button
             >
           {:else}
-            {@render actionRow(entry, 'menu')}
+            {@render actionRow(entry)}
           {/if}
         {/each}
       </div>
@@ -498,7 +459,7 @@
     color: var(--bg);
   }
 
-  .main.default:hover:not([aria-disabled='true']) {
+  .main.default:hover {
     background: var(--accent-hover);
   }
 
@@ -546,28 +507,6 @@
     height: 1px;
     margin: 4px 0;
     background: var(--line-strong);
-  }
-
-  /* Greyed, and its reason on a line of its own below the label. */
-  [aria-disabled='true'] {
-    opacity: 0.45;
-    cursor: default;
-  }
-
-  .reason {
-    flex: 1 0 100%;
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 500;
-    white-space: normal;
-  }
-
-  .main.default .reason {
-    color: inherit;
-  }
-
-  .main .reason {
-    flex: none;
   }
 
   /*

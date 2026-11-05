@@ -180,34 +180,25 @@ describe('CardSheet', () => {
     expect(screen.queryByRole('button', { name: 'Hand' })).toBeNull();
   });
 
-  it('shows why an entry is disabled, and does not run it', async () => {
-    const { onrun } = renderSheet();
+  it('hides a refused entry in a submenu', async () => {
+    renderSheet();
     await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
 
-    const deck = screen.getByRole('button', { name: 'Deck' });
-    expect(deck.getAttribute('aria-disabled')).toBe('true');
-    expect(screen.getByText('The deck is full')).toBeTruthy();
-    expect(document.getElementById(deck.getAttribute('aria-describedby') ?? '')?.textContent).toBe(
-      'The deck is full',
-    );
-    await fireEvent.click(deck);
-
-    expect(onrun).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Hand' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Deck' })).toBeNull();
+    expect(screen.queryByText('The deck is full')).toBeNull();
+    expect(document.querySelector('.sep')).toBeNull();
   });
 
-  it('shows why a main action is disabled', async () => {
+  it('hides a refused main action, row and submenu', () => {
     const tapped = item('exhaust', { default: true, disabled: true, reason: 'Locked' });
-    const { onrun } = renderSheet({ entries: [{ kind: 'action', item: tapped }] });
-
-    await fireEvent.click(screen.getByRole('button', { name: 'Exhaust' }));
-
-    expect(screen.getByText('Locked')).toBeTruthy();
-    expect(onrun).not.toHaveBeenCalled();
-  });
-
-  it('does not open a disabled submenu', async () => {
+    const discard = item('discard', { disabled: true, reason: 'This card has no discard pile' });
     renderSheet({
       entries: [
+        { kind: 'action', item: tapped },
+        { kind: 'action', item: FLIP },
+        { kind: 'separator' },
+        { kind: 'action', item: discard },
         {
           kind: 'submenu',
           id: 'moveTo',
@@ -219,10 +210,58 @@ describe('CardSheet', () => {
       ],
     });
 
+    expect(screen.getByRole('button', { name: 'Flip' }).classList.contains('main')).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Exhaust' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Move to…' })).toBeNull();
+    expect(screen.queryByText('Locked')).toBeNull();
+    expect(document.querySelector('.sep')).toBeNull();
+  });
+
+  it('hides a submenu whose entries are all refused', () => {
+    renderSheet({
+      entries: [
+        { kind: 'action', item: FLIP },
+        {
+          kind: 'submenu',
+          id: 'moveTo',
+          label: 'Move to…',
+          disabled: false,
+          entries: [{ kind: 'action', item: TO_DECK }],
+        },
+      ],
+    });
+
+    expect(screen.queryByRole('button', { name: 'Move to…' })).toBeNull();
+  });
+
+  it('closes an open submenu whose entries all become refused', async () => {
+    const { rerender } = renderSheet();
     await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
 
-    expect(screen.getByText('Not yours')).toBeTruthy();
+    const refusedHand = { ...TO_HAND, disabled: true, reason: 'Full' };
+    await rerender({
+      entries: [
+        { kind: 'action', item: FLIP },
+        {
+          kind: 'submenu',
+          id: 'moveTo',
+          label: 'Move to…',
+          disabled: false,
+          entries: [{ kind: 'action', item: refusedHand }],
+        },
+      ],
+    });
+
     expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Flip' })).toBeTruthy();
+  });
+
+  it('shows the note alone when every entry is refused', () => {
+    renderSheet({ entries: [{ kind: 'action', item: TO_DECK }], note: 'Belongs to Sam' });
+
+    expect(screen.getByText('Belongs to Sam')).toBeTruthy();
+    expect(screen.queryAllByRole('button')).toEqual([]);
   });
 
   it('shows only the note when there are no entries', () => {

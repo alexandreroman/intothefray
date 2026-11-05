@@ -1,7 +1,7 @@
 import type { ActionItem } from './actions';
 import type { ContextAction, ContextEntry, ContextSeparator, ContextSubmenu } from './contextItems';
 import { card } from './fixtures.testing';
-import { countersFor, splitEntries } from './inspector';
+import { countersFor, splitEntries, visibleEntries } from './inspector';
 
 function action(id: string): ContextAction {
   const item: ActionItem = { id, label: id, group: 0 };
@@ -12,6 +12,11 @@ const SEP: ContextSeparator = { kind: 'separator' };
 
 function submenu(id: string): ContextSubmenu {
   return { kind: 'submenu', id, label: id, disabled: false, entries: [action(`${id}-a`)] };
+}
+
+function refused(id: string): ContextAction {
+  const item: ActionItem = { id, label: id, group: 0, disabled: true, reason: 'No' };
+  return { kind: 'action', item };
 }
 
 describe('countersFor', () => {
@@ -104,5 +109,52 @@ describe('splitEntries', () => {
 
   it('has nothing for no entries', () => {
     expect(splitEntries([])).toEqual({ main: [], rest: [] });
+  });
+});
+
+describe('visibleEntries', () => {
+  it('leaves out a refused action and a refused submenu, with the separator before them', () => {
+    const exhaust = action('exhaust');
+    const moveTo: ContextSubmenu = { ...submenu('moveTo'), disabled: true, reason: 'No' };
+
+    expect(visibleEntries([exhaust, SEP, refused('discard'), moveTo])).toEqual([exhaust]);
+  });
+
+  it('never doubles a separator up', () => {
+    const [a, c] = [action('a'), action('c')];
+
+    expect(visibleEntries([a, SEP, refused('b'), SEP, c])).toEqual([a, SEP, c]);
+  });
+
+  it('never leads with a separator', () => {
+    const b = action('b');
+
+    expect(visibleEntries([refused('a'), SEP, b])).toEqual([b]);
+  });
+
+  it('leaves out a submenu whose entries are all refused', () => {
+    const a = action('a');
+    const moveTo: ContextSubmenu = {
+      ...submenu('moveTo'),
+      entries: [refused('hand'), SEP, refused('deck')],
+    };
+
+    expect(visibleEntries([a, SEP, moveTo])).toEqual([a]);
+  });
+
+  it("leaves out a submenu's refused entries and the separators they strand", () => {
+    const hand = action('hand');
+    const moveTo: ContextSubmenu = {
+      ...submenu('moveTo'),
+      entries: [hand, SEP, refused('deck')],
+    };
+
+    expect(visibleEntries([moveTo])).toEqual([{ ...moveTo, entries: [hand] }]);
+  });
+
+  it('keeps every entry when none is refused', () => {
+    const entries: ContextEntry[] = [action('a'), SEP, submenu('s1')];
+
+    expect(visibleEntries(entries)).toEqual(entries);
   });
 });

@@ -1,11 +1,11 @@
 // What the inspector (CardSheet.svelte) shows of a card or a pile on a touch
 // screen, beside the entries of its context menu (contextItems.ts): the
-// counters a card carries, with steppers, and the split of the entries into the
-// large buttons of the first group and the rows of the others. Pure.
+// counters a card carries, with steppers, the entries it shows, and their split
+// into the large buttons of the first group and the rows of the others. Pure.
 
 import type { CardView } from '../lib/types';
 import { counterName, countersOf, MODIFIERS, STATUSES, TOKENS, type CounterKind } from './actions';
-import type { ContextAction, ContextEntry } from './contextItems';
+import type { ContextAction, ContextEntry, ContextSeparator } from './contextItems';
 
 /** A token, status or modifier a card carries, as the inspector shows it with its steppers. */
 export interface SheetCounter {
@@ -57,6 +57,62 @@ function labelOf(kind: CounterKind, name: string): string {
   }
   const spelt = counterName(kind, name);
   return spelt.charAt(0).toUpperCase() + spelt.slice(1);
+}
+
+/**
+ * The entries the inspector shows: a refused (disabled) entry takes room for
+ * nothing on a small screen, so it is left out, rather than greyed with its
+ * reason as the floating menu has it. A submenu goes when it is refused or
+ * none of its entries is left. No separator leads, trails or follows another.
+ */
+export function visibleEntries(entries: ContextEntry[]): ContextEntry[] {
+  const shown: ContextEntry[] = [];
+  for (const entry of entries) {
+    const visible = visibleEntry(entry);
+    if (visible !== undefined) {
+      shown.push(visible);
+    }
+  }
+  return withTidySeparators(shown);
+}
+
+/** The entry as the inspector shows it, or nothing: a submenu keeps only its allowed entries. */
+function visibleEntry(entry: ContextEntry): ContextEntry | undefined {
+  switch (entry.kind) {
+    case 'separator':
+      return entry;
+    case 'action':
+      return entry.item.disabled ? undefined : entry;
+    case 'submenu': {
+      if (entry.disabled) {
+        return undefined;
+      }
+      const allowed = entry.entries.filter((sub) => sub.kind === 'separator' || !sub.item.disabled);
+      const subEntries = withTidySeparators(allowed);
+      return subEntries.length === 0 ? undefined : { ...entry, entries: subEntries };
+    }
+  }
+}
+
+/** The entries without a separator at either end or right after another one. */
+function withTidySeparators<T extends ContextEntry>(entries: T[]): T[] {
+  const tidy: T[] = [];
+  for (const entry of entries) {
+    const previous = tidy.at(-1);
+    if (isSeparator(entry) && (previous === undefined || isSeparator(previous))) {
+      continue;
+    }
+    tidy.push(entry);
+  }
+  const last = tidy.at(-1);
+  if (last !== undefined && isSeparator(last)) {
+    tidy.pop();
+  }
+  return tidy;
+}
+
+function isSeparator(entry: ContextEntry): entry is ContextSeparator {
+  return entry.kind === 'separator';
 }
 
 /**
