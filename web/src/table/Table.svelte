@@ -105,12 +105,14 @@
   } from './layout';
   import {
     lastRow,
+    ROW_HEIGHT,
     rowOfSeat,
     rowPitch,
     saveViewMode,
     shownItems,
     spreadRows,
     storedViewMode,
+    VILLAIN_ROW_HEIGHT,
     type ViewMode,
   } from './rows';
   import { motion } from './motion.svelte';
@@ -566,6 +568,12 @@
   // The scroller's padding under the surface, in px: the gutter, or the dock's room above the safe
   // area, so that the bottom of the table scrolls out from under the dock.
   const bottomPadding = $derived(dockMode && !dockRail ? DOCK_ROOM + safeBottom : SCROLL_PADDING);
+  // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
+  // dock mode no top bar keeps the table clear of it, so the scroller's padding over the surface does.
+  let safeTop = $state(0);
+  // The scroller's padding over the surface, in px: the gutter, the top bar's room and, in dock mode,
+  // the safe area.
+  const topPadding = $derived(SCROLL_PADDING + barStart + (dockMode ? safeTop : 0));
 
   // In dock mode no hand nor control lies over the table: the rows keep clear of the dock alone.
   const rowsBottom = $derived(dockMode ? bottomPadding : Math.max(restingRoom, controlsRoom));
@@ -574,9 +582,7 @@
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
-  const pitch = $derived(
-    rowPitch(visibleHeight - SCROLL_PADDING - barStart - rowsBottom, lastDeckRow),
-  );
+  const pitch = $derived(rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow));
   const shownRow = $derived(
     focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
   );
@@ -587,20 +593,35 @@
   // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
   // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
   let chosenZoom = $state(storedZoom());
-  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
+  // Dock mode is a phone too, held either way: on its side it is wider than PHONE_QUERY.
+  const zoomMin = $derived(phone.current || dockMode ? ZOOM_MIN_SMALL : ZOOM_MIN);
 
   // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
   // fit would make the scrollbar come and go, and the fit with it.
   const SCROLLBAR_ROOM = 12;
 
   // The zoom that fits the content's width into the scroller, as they are now.
-  const contentFit = $derived(
+  const widthFit = $derived(
     fitZoom(
       contentWidth(tableCards, tablePiles, sizeOf),
       scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
       zoomMin,
     ),
   );
+  // How high the rows are drawn, in table units: down to the last shown row's own band, its cards
+  // and the room under them (spreadRows).
+  const rowsHeight = $derived.by(() => {
+    const lastShownRow = shownRow ?? lastDeckRow;
+    const lastRowTop = rowMap.toDisplay(VILLAIN_ROW_HEIGHT + ROW_HEIGHT * (lastShownRow - 1));
+    return (lastRowTop ?? 0) + ROW_HEIGHT;
+  });
+  // The zoom that fits the drawn rows into the play area's height, between its paddings.
+  const heightFit = $derived(
+    fitZoom(rowsHeight, visibleHeight - topPadding - bottomPadding, zoomMin),
+  );
+  // In dock mode the fit brings the content into view both ways, beside the rail or above the dock
+  // (spec 3.4): a phone on its side is wide enough to show a row, but not two rows' height.
+  const contentFit = $derived(dockMode ? Math.min(widthFit, heightFit) : widthFit);
   // The fit holds still while the action menu is open, which any zoom change closes
   // (ContextMenu.svelte), and while a card or a pile is pressed or dragged, which a zoom would move
   // from under the finger: a card another player moves meanwhile changes the content's width.
@@ -614,9 +635,9 @@
     }
   });
   // Until the viewer chooses a zoom: a phone fits the content's width, as a row would not show
-  // across it at 100 %; a wider screen shows 100 % and scrolls. Live: a resize or a turn across
-  // 600 px switches between the two.
-  const defaultZoom = $derived(phone.current ? fittedZoom : 1);
+  // across it at 100 %, and dock mode fits it both ways; a wider screen shows 100 % and scrolls.
+  // Live: a resize or a turn across 600 px switches between them.
+  const defaultZoom = $derived(phone.current || dockMode ? fittedZoom : 1);
   // The surface size follows it, so it is declared before it.
   const zoom = $derived(chosenZoom === null ? defaultZoom : clampZoom(chosenZoom, zoomMin));
 
@@ -624,10 +645,7 @@
   const surface = $derived(
     surfaceSize(tableCards, tablePiles, sizeOf, {
       w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
-      h: Math.max(
-        0,
-        Math.floor((visibleHeight - SCROLL_PADDING - bottomPadding - barStart) / zoom),
-      ),
+      h: Math.max(0, Math.floor((visibleHeight - topPadding - bottomPadding) / zoom)),
     }),
   );
 
@@ -2014,7 +2032,7 @@
     // What lies under the point now, in zoomed px of the surface (past the scroller's padding,
     // which keeps the top bar's room at the top on a small screen): the page is not redrawn
     // before the tick.
-    const paddingTop = SCROLL_PADDING + barStart;
+    const paddingTop = topPadding;
     const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
     const underY = wrap.scrollTop + y - box.top - paddingTop;
 
@@ -2337,8 +2355,9 @@
       onundo={undo}
       onhistory={openHistory}
     />
-    <!-- The safe area under the dock, measured (safeBottom). -->
+    <!-- The safe areas under the dock and over the table, measured (safeBottom, safeTop). -->
     <div class="safe-bottom" aria-hidden="true" bind:clientHeight={safeBottom}></div>
+    <div class="safe-top" aria-hidden="true" bind:clientHeight={safeTop}></div>
   {/if}
 
   {#if dragGoesToHand && selected !== null}
@@ -2867,8 +2886,12 @@
     stroke-width: 2;
   }
 
-  /* Dock mode, the bar at the bottom: the bottom of the table scrolls out from under the dock. */
+  /*
+    Dock mode: the top of the table starts below the notch (safeTop), and, with the bar at the bottom,
+    the bottom of the table scrolls out from under the dock.
+  */
   .app.dock-mode .table {
+    padding-top: calc(var(--content-gutter) + env(safe-area-inset-top));
     padding-bottom: var(--table-bottom);
   }
 
@@ -2884,6 +2907,17 @@
     bottom: 0;
     width: 0;
     height: env(safe-area-inset-bottom);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* The safe area at the top of the screen, likewise. */
+  .safe-top {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: env(safe-area-inset-top);
     visibility: hidden;
     pointer-events: none;
   }

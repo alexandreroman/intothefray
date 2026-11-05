@@ -2,6 +2,7 @@
 // and the controls at the bottom right, the hero selector floating beside it; its buttons open the
 // hand and the history in bottom sheets, and its menu button slides the top bar in and out.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import Table from './Table.svelte';
 import tableSource from './Table.svelte?raw';
 import { interaction } from './interaction.svelte';
@@ -13,6 +14,7 @@ import {
   type TestScreen,
 } from '../lib/screen.testing';
 import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
+import { storedZoom } from './zoom';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { Area, CardView as TableCard, DeckView, LogView, PackFace, View } from '../lib/types';
 import {
@@ -38,6 +40,31 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01002': [{ name: 'Peter Parker' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
 };
+
+/**
+ * Svelte's size bindings (bind:clientHeight) share one ResizeObserver, made on
+ * first use: this one lets a test tell it an element was resized.
+ */
+class ManualResizeObserver {
+  static readonly all: ManualResizeObserver[] = [];
+
+  constructor(private readonly callback: ResizeObserverCallback) {
+    ManualResizeObserver.all.push(this);
+  }
+
+  static resized(target: Element): void {
+    const entries = [{ target } as ResizeObserverEntry];
+    for (const observer of ManualResizeObserver.all) {
+      observer.callback(entries, observer as unknown as ResizeObserver);
+    }
+  }
+
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+globalThis.ResizeObserver = ManualResizeObserver;
 
 /** A mouse on a phone-sized window, and a touch screen as large as a tablet. */
 const NARROW_MOUSE: TestScreen = { width: 390, height: 844 };
@@ -532,5 +559,120 @@ describe('art tiles and small piles in dock mode', () => {
     expect(placed('mine', '.card').classList).not.toContain('tile');
     expect(document.querySelector('.surface .tile')).toBeNull();
     expect(placed('deck:p0', '.pile').classList).not.toContain('small');
+  });
+});
+
+describe('the zoom in dock mode (F-V3)', () => {
+  // The play area's size, in px, as its scroller measures it.
+  let visible = { w: 5000, h: 390 };
+
+  beforeEach(() => {
+    visible = { w: 5000, h: 390 };
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('tablewrap') ? visible.w : 0;
+    });
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('tablewrap') ? visible.h : 0;
+    });
+  });
+
+  function shownZoom(): string {
+    return document.querySelector<HTMLElement>('.app')!.style.getPropertyValue('--z');
+  }
+
+  function scroller(): HTMLElement {
+    return document.querySelector<HTMLElement>('.tablewrap')!;
+  }
+
+  /** One finger touching `target` at (x, y) and lifting there. */
+  function fingerTap(target: Element, x: number, y: number): void {
+    const point = [{ clientX: x, clientY: y }];
+    const start = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperties(start, { touches: { value: point }, changedTouches: { value: point } });
+    target.dispatchEvent(start);
+    const end = new Event('touchend', { bubbles: true, cancelable: true });
+    Object.defineProperties(end, { touches: { value: [] }, changedTouches: { value: point } });
+    target.dispatchEvent(end);
+  }
+
+  async function doubleTap(): Promise<void> {
+    const surface = document.querySelector('.tablewrap .surface')!;
+    fingerTap(surface, 100, 100);
+    fingerTap(surface, 100, 100);
+    await tick();
+  }
+
+  it('fits the drawn rows into the height beside the rail on a phone on its side', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    await renderTable();
+
+    // 390 px less the 24 px gutter above and below the rows: the villain's row drawn 270 high and
+    // the player's row 220, 490 units.
+    expect(shownZoom()).toBe('0.69');
+    expect(storedZoom()).toBeNull();
+  });
+
+  it('fits the width when it is the narrower fit', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    visible = { w: 300, h: 5000 };
+    await renderTable();
+
+    const zoom = Number(shownZoom());
+    expect(zoom).toBeLessThan(1);
+    expect(zoom).toBeGreaterThanOrEqual(0.3);
+  });
+
+  it('never fits below the phone minimum, 30 %', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    visible = { w: 5000, h: 150 };
+    await renderTable();
+
+    expect(shownZoom()).toBe('0.3');
+  });
+
+  it('follows the window live while no zoom was chosen', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    await renderTable();
+    expect(shownZoom()).toBe('0.69');
+
+    // 300 px less the two gutters over the same 490 units.
+    visible = { w: 5000, h: 300 };
+    ManualResizeObserver.resized(scroller());
+    await tick();
+
+    expect(shownZoom()).toBe('0.51');
+  });
+
+  it('double tap toggles between the fit and the readable zoom', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    await renderTable();
+
+    await doubleTap();
+    expect(shownZoom()).toBe('1');
+
+    // Back to the fit, remembered on the zoom's 10 % steps.
+    await doubleTap();
+    expect(storedZoom()).toBe(0.7);
+    expect(shownZoom()).toBe('0.7');
+  });
+
+  it.each([
+    ['a mouse on a phone on its side', { ...LANDSCAPE_PHONE, touch: false }],
+    ['a touch tablet', TOUCH_TABLET],
+    ['a desktop', DESKTOP],
+  ])('keeps 100 %% on %s', async (_name, size) => {
+    mockScreen(size);
+    await renderTable();
+
+    expect(shownZoom()).toBe('1');
+  });
+
+  it('keeps the play area clear of the notch at the top', () => {
+    const rule = /\n {2}\.app\.dock-mode \.table \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(rule).toMatch(
+      /padding-top: calc\(var\(--content-gutter\) \+ env\(safe-area-inset-top\)\);/,
+    );
   });
 });
