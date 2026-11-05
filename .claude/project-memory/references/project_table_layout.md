@@ -86,9 +86,13 @@ type: project
   any zoom. At ≤ 600 px wide or ≤ 500 px tall, the zoom control (with
   the floating Undo when the history panel is hidden, ≤ 900 px wide)
   forms one bar at the bottom right above the resting hand, and hand
-  cards are sized from the window.
+  cards are sized from the window. In dock mode (a small touch screen)
+  the default fits the content in both directions, upright or on its
+  side, and there is no zoom control (pinch, double tap).
 - Touch mode (no hover, coarse pointer) shows no card preview and no
-  keyboard-shortcuts button; bar buttons are 44 px.
+  keyboard-shortcuts button; bar buttons are 44 px; a tap shows the card
+  in the inspector. Dock mode draws cards, piles and owner frames at
+  60 %, positions unchanged (see [[project_touch_phone_table]]).
 
 **Why:** decided with the user: players add cards as they play, so fixed
 things sit on the left and play grows right; one shared surface without

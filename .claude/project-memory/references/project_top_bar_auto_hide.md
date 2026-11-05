@@ -22,6 +22,10 @@ type: project
   floats over the play area, and overlays at its top (the catalog notice,
   the preview) stay clear of it while it shows; larger screens give it its
   own row.
+- In dock mode (a small touch screen) the top bar is always visible,
+  never auto-hides and takes its own room above the table (right of the
+  rail on a phone on its side), below the notch (`autoHide={false}`; see
+  [[project_touch_phone_table]]).
 
 **Why:** decided with the user: a phone gains the bar's room
 for content while scrolling, and the bar is back as soon as it is needed.

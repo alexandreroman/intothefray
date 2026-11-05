@@ -64,7 +64,7 @@
 - [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; a deck takes any card of its owner
 - [Stage change carry-over](references/project_stage_carry_over.md) — villain keeps all but damage, main scheme only acceleration
 - [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); not offered as modulars
-- [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips
+- [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips; touch: inspector sheet
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
 - [Every change of place animates](references/project_card_move_animations.md) — cards travel, turn, tilt; lift 1.06, drag sway ±6°, settle on drop
@@ -99,3 +99,4 @@
 - [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists games being played; Home capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
+- [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold to drag, pinch; phone dock, hand carousel, small cards
