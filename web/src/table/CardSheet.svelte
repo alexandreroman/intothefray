@@ -22,8 +22,11 @@
   face the card shows changes (a flip, a stage turned, a card turned face
   down or up, a deck's back giving way to the card revealed on it), the card
   turns over as a table card does, in place: the name, the count, the
-  counters and the entries follow its new side once it is edge-on. Another
-  element opens a sheet of its own (Table.svelte keys it), which does not turn.
+  counters and the entries follow its new side once it is edge-on. When the
+  new side needs another size, the sheet eases to it first, the old side
+  still shown, then the card turns: the new side is measured beforehand in a
+  hidden copy of the content. Another element opens a sheet of its own
+  (Table.svelte keys it), which does not turn.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
 -->
@@ -80,6 +83,8 @@
   const TURN_MS = 360;
   /** The perspective of a table card turning over (motion.svelte.ts FLIP_PERSPECTIVE). */
   const TURN_PERSPECTIVE = 'perspective(700px)';
+  /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
+  const RESIZE_MS = 200;
 
   /** A side of the card: the face it shows, and the header, counters and entries that go with it. */
   type Side = {
@@ -97,8 +102,14 @@
 
   let faceElement = $state<HTMLElement>();
   let turn: Animation | undefined;
+  /** The ease of the sheet to the new side's size; it holds that size until the turn ends. */
+  let resize: Animation | undefined;
   /** The side of the last update, which a new face turns away from. */
   let lastSide: Side | null = null;
+  /** The hidden copy of the content, drawn with the new side to measure its height. */
+  let measureElement = $state<HTMLElement | null>(null);
+  /** The width the copy is drawn at: the content's, in px; null while nothing is measured. */
+  let measureWidth = $state<number | null>(null);
 
   /** What tells one face from another: a new array of the same images is the same face. */
   function faceKey(of: Side): string {
@@ -111,21 +122,68 @@
     untrack(() => {
       // While the card turns away, the newest side is the one it shows once edge-on.
       if (lastSide !== null && leaving === null && faceKey(now) !== faceKey(lastSide)) {
-        turnOver(lastSide);
+        changeSide(lastSide);
       }
       lastSide = now;
     });
   });
 
-  $effect(() => () => turn?.cancel());
+  // Once the hidden copy is drawn with the new side: measured, then gone.
+  $effect(() => {
+    const copy = measureElement;
+    if (copy) {
+      untrack(() => resizeThenTurn(copy.offsetHeight));
+    }
+  });
+
+  $effect(() => () => {
+    turn?.cancel();
+    resize?.cancel();
+  });
+
+  /**
+   * Shows the card's new side: the old one stays until the card is edge-on, while the hidden copy
+   * measures the new one. Under reduced motion, the face and the rest just change.
+   */
+  function changeSide(from: Side): void {
+    if (motionMs(TURN_MS) === 0 || faceElement === undefined || content === undefined) {
+      return;
+    }
+    turn?.cancel();
+    resize?.cancel();
+    leaving = from;
+    measureWidth = content.offsetWidth;
+  }
+
+  /** Eases the sheet to the new side's height, if it differs, then turns the card over. */
+  function resizeThenTurn(target: number): void {
+    measureWidth = null;
+    if (content === undefined) {
+      return;
+    }
+    const current = content.offsetHeight;
+    if (Math.abs(target - current) < 1) {
+      turnOver();
+      return;
+    }
+    // Held at the new size until the turn ends: the entries sliding in and out as the side changes
+    // do not move the sheet again.
+    const easing = content.animate([{ height: `${current}px` }, { height: `${target}px` }], {
+      duration: RESIZE_MS,
+      easing: 'ease-out',
+      fill: 'forwards',
+    });
+    resize = easing;
+    easing.onfinish = turnOver;
+  }
 
   /**
    * Turns the card over around its vertical axis, as a table card does (motion.svelte.ts #flip):
-   * its old side turns away to edge-on, lifted, then its new side turns back flat and comes down.
-   * Under reduced motion, the face just changes.
+   * its old side (leaving) turns away to edge-on, lifted, then its new side turns back flat and
+   * comes down. The sheet takes its own height back once the turn ends.
    */
-  function turnOver(from: Side): void {
-    if (motionMs(TURN_MS) === 0 || faceElement === undefined) {
+  function turnOver(): void {
+    if (faceElement === undefined) {
       return;
     }
     const element = faceElement;
@@ -133,8 +191,6 @@
     const edgeOn = { transform: `${TURN_PERSPECTIVE} rotateY(90deg)`, scale: `${LIFT_SCALE}` };
     const half = TURN_MS / 2;
 
-    turn?.cancel();
-    leaving = from;
     // Held edge-on until the second half starts: the old side never shows flat again.
     const away = element.animate([flat, edgeOn], {
       duration: half,
@@ -144,8 +200,13 @@
     turn = away;
     away.onfinish = () => {
       leaving = null;
-      turn = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
+      const back = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
+      turn = back;
       away.cancel();
+      back.onfinish = () => {
+        resize?.cancel();
+        resize = undefined;
+      };
     };
   }
 
@@ -310,6 +371,47 @@
   </div>
 {/snippet}
 
+<!-- The main page of the entries: the first group as large buttons, the others as rows. -->
+{#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
+  {#if parts.main.length > 0}
+    <div class="main-grid" style:--columns={parts.main.length}>
+      {#each parts.main as entry (entry.item.id)}
+        <button
+          type="button"
+          class="main"
+          class:default={entry.item.default}
+          onclick={() => onrun(entry.item)}
+          transition:fade={rowSlide()}><span class="label">{entry.item.label}</span></button
+        >
+      {/each}
+    </div>
+  {/if}
+  {#if parts.rest.length > 0}
+    <div class="rows">
+      {#each parts.rest as entry, i (keyOf(entry, i, parts.rest))}
+        <!-- The slide is on the entry's own block: one inside an if block would not play. -->
+        <div class="entry" transition:slide={rowSlide()}>
+          {#if entry.kind === 'separator'}
+            {@render separator()}
+          {:else if entry.kind === 'submenu'}
+            <button
+              type="button"
+              class="row btn-ghost"
+              data-submenu={entry.id}
+              onclick={() => openSub(entry)}
+              ><span class="label">{entry.label}</span><span class="opens" aria-hidden="true"
+                >›</span
+              ></button
+            >
+          {:else}
+            {@render actionRow(entry, onrun)}
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/if}
+{/snippet}
+
 <!-- The note or the entries: under the card, or in its column in dock mode. -->
 {#snippet entriesBlock()}
   {#if note !== undefined}
@@ -352,48 +454,32 @@
               {/each}
             </div>
           {:else}
-            {#if split.main.length > 0}
-              <div class="main-grid" style:--columns={split.main.length}>
-                {#each split.main as entry (entry.item.id)}
-                  <button
-                    type="button"
-                    class="main"
-                    class:default={entry.item.default}
-                    onclick={() => onrun(entry.item)}
-                    transition:fade={rowSlide()}
-                    ><span class="label">{entry.item.label}</span></button
-                  >
-                {/each}
-              </div>
-            {/if}
-            {#if split.rest.length > 0}
-              <div class="rows">
-                {#each split.rest as entry, i (keyOf(entry, i, split.rest))}
-                  <!-- The slide is on the entry's own block: one inside an if block would not play. -->
-                  <div class="entry" transition:slide={rowSlide()}>
-                    {#if entry.kind === 'separator'}
-                      {@render separator()}
-                    {:else if entry.kind === 'submenu'}
-                      <button
-                        type="button"
-                        class="row btn-ghost"
-                        data-submenu={entry.id}
-                        onclick={() => openSub(entry)}
-                        ><span class="label">{entry.label}</span><span
-                          class="opens"
-                          aria-hidden="true">›</span
-                        ></button
-                      >
-                    {:else}
-                      {@render actionRow(entry, onrun)}
-                    {/if}
-                  </div>
-                {/each}
-              </div>
-            {/if}
+            {@render mainPage(split)}
           {/if}
         </div>
       {/key}
+    </div>
+  {/if}
+{/snippet}
+
+<!-- The sheet is named by its whole header, its type, stage or owner included: shown, the name
+     alone, which is not read a second time; an eyebrow line would take room. -->
+{#snippet nameline(of: ContextHeader)}
+  <div class="nameline" aria-hidden="true">
+    <span class="name">{of.name}</span>
+    {#if of.count !== undefined}<span class="count">{of.count}</span>{/if}
+  </div>
+{/snippet}
+
+<!-- The new side's note and main page, laid out as the content lays them, to be measured. -->
+{#snippet measuredEntries()}
+  {@const measured = visibleEntries(live.entries)}
+  {#if note !== undefined}
+    <p class="note">{note}</p>
+  {/if}
+  {#if measured.length > 0}
+    <div class="pages">
+      <div class="page">{@render mainPage(splitEntries(measured))}</div>
     </div>
   {/if}
 {/snippet}
@@ -405,12 +491,7 @@
         <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
       </div>
       <div class="side">
-        <!-- The sheet is named by its whole header, its type, stage or owner included: shown, the
-             name alone, which is not read a second time; an eyebrow line would take room. -->
-        <div class="nameline" aria-hidden="true">
-          <span class="name">{side.header.name}</span>
-          {#if side.header.count !== undefined}<span class="count">{side.header.count}</span>{/if}
-        </div>
+        {@render nameline(side.header)}
         {#each side.counters as counter (`${counter.kind}:${counter.name}`)}
           {@render counterRow(counter)}
         {/each}
@@ -424,6 +505,34 @@
       {@render entriesBlock()}
     {/if}
   </div>
+
+  <!-- Drawn for a moment only, unseen and out of reach, the time to measure the new side. -->
+  {#if measureWidth !== null}
+    <div
+      class="inspector measure"
+      class:dock={dock.current}
+      style:width="{measureWidth}px"
+      aria-hidden="true"
+      inert
+      bind:this={measureElement}
+    >
+      <div class="top">
+        <div class="face" class:land={live.landscape}></div>
+        <div class="side">
+          {@render nameline(live.header)}
+          {#each live.counters as counter (`${counter.kind}:${counter.name}`)}
+            {@render counterRow(counter)}
+          {/each}
+          {#if dock.current}
+            {@render measuredEntries()}
+          {/if}
+        </div>
+      </div>
+      {#if !dock.current}
+        {@render measuredEntries()}
+      {/if}
+    </div>
+  {/if}
 </Sheet>
 
 <style>
@@ -436,6 +545,15 @@
     -webkit-user-select: none;
   }
 
+  /* The hidden copy that measures a new side: laid out as the content, never seen. */
+  .inspector.measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   /* The face beside what the element is and the counters it carries. */
   .top {
     display: flex;
@@ -443,10 +561,16 @@
     align-items: flex-start;
   }
 
-  /* --face-ratio: its width over its height, which dock mode sizes it by. */
+  /*
+    --face-ratio: its width over its height, which dock mode sizes it by. No minimum size from its
+    image: the face keeps the card's ratio whatever the scan's, as the copy that measures a new
+    side, drawn without an image, lays it out.
+  */
   .face {
     --face-ratio: 5 / 7;
     flex: none;
+    min-width: 0;
+    min-height: 0;
     width: 46%;
     aspect-ratio: var(--face-ratio);
     border-radius: var(--card-radius);
@@ -466,9 +590,11 @@
     gap: 8px;
   }
 
+  /* The name centred, with a pile's count beside it: the two centred as one. */
   .nameline {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
   }
 
@@ -478,6 +604,7 @@
     font-size: 20px;
     font-weight: 800;
     line-height: 1.1;
+    text-align: center;
     overflow-wrap: anywhere;
   }
 

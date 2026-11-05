@@ -137,6 +137,12 @@ function side(): HTMLElement {
 }
 
 describe('CardSheet', () => {
+  it('centres the name, with a pile count beside it, and lets a long name wrap', () => {
+    expect(rule('.nameline')).toContain('justify-content: center;');
+    expect(rule('.name')).toContain('text-align: center;');
+    expect(rule('.name')).toContain('overflow-wrap: anywhere;');
+  });
+
   it('is a dialog named by its whole header, showing the card face and the name alone', () => {
     renderSheet();
 
@@ -676,6 +682,64 @@ describe('CardSheet', () => {
       function faceImage(): HTMLImageElement {
         return document.querySelector<HTMLImageElement>('.inspector .face img')!;
       }
+
+      it('eases the sheet to the size of the new side first, then turns the card over', async () => {
+        // jsdom lays nothing out: the old side is 500 px high, the new one, measured aside, 300 px.
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet();
+          const inspector = document.querySelector<HTMLElement>('.inspector')!;
+
+          await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
+          await tick();
+
+          // Measured aside, then gone: the sheet eases to that size, the old side still shown.
+          expect(document.querySelector('.measure')).toBeNull();
+          const resize = animationsOf(200).find(({ element }) => element === inspector);
+          expect(resize?.keyframes[0]?.height).toBe('500px');
+          expect(resize?.keyframes.at(-1)?.height).toBe('300px');
+          expect(turns()).toEqual([]);
+          expect(faceImage().getAttribute('src')).toBe('rhino.png');
+
+          // Only once the resize ends does the card turn over.
+          expect(running).toHaveLength(1);
+          running.shift()?.onfinish?.();
+          await tick();
+          expect(turns()).toHaveLength(1);
+          expect(faceImage().getAttribute('src')).toBe('rhino.png');
+
+          await finishAnimations();
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+        } finally {
+          heights.mockRestore();
+        }
+      });
+
+      it("keeps the face at the card's ratio whatever its scan, as the measured copy draws it", () => {
+        // An image would otherwise make the face as tall as the scan's own ratio, which the copy,
+        // drawn without one, cannot know.
+        expect(rule('.face')).toContain('min-width: 0;');
+        expect(rule('.face')).toContain('min-height: 0;');
+      });
+
+      it('turns at once, with no resize, when the new side keeps the size', async () => {
+        const { rerender } = renderSheet();
+
+        await rerender({ images: ['rhino-2.png'], header: TURNED });
+
+        expect(turns()).toHaveLength(1);
+        expect(
+          animationsOf(200).filter(({ element }) => element.classList.contains('inspector')),
+        ).toEqual([]);
+      });
 
       it('turns the face away to edge-on, lifted, then shows the new side, its name and entries', async () => {
         const { rerender } = renderSheet();
