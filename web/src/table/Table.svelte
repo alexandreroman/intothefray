@@ -511,16 +511,19 @@
   // play area's gutter (--content-gutter), which the top bar's left edge shares.
   const SCROLL_PADDING = 24;
 
-  // On a small screen the top bar floats over the play area, and slides away as the table scrolls
-  // down (TopBar): the table starts below it, and what floats at the top of the play area keeps
-  // clear of it while it shows.
-  // In dock mode the bar does not hide on scroll: it starts hidden, and the dock's menu button slides
-  // it in and out.
-  let barHidden = $derived(dockMode);
-  // The room the bar keeps at the start of the table, and over the top of the play area, in px. In dock
-  // mode the bar floats over the table, which keeps no room for it: the bar shows only when asked for.
-  const barStart = $derived(small.current && !dockMode ? TOP_BAR_HEIGHT : 0);
-  const barRoom = $derived(small.current && !barHidden ? TOP_BAR_HEIGHT : 0);
+  // On a small screen the top bar floats over the play area (TopBar): the table starts below it, and
+  // what floats at the top of the play area keeps clear of it while it shows. Off dock mode it slides
+  // away as the table scrolls down; in dock mode it always shows (spec 3.4).
+  let scrolledAway = $state(false);
+  const barHidden = $derived(scrolledAway && !dockMode);
+  // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
+  // dock mode the top bar sits below it.
+  let safeTop = $state(0);
+  // The top bar's height, in px, with the notch above it in dock mode.
+  const barHeight = $derived(TOP_BAR_HEIGHT + (dockMode ? safeTop : 0));
+  // The room the bar keeps at the start of the table, and over the top of the play area, in px.
+  const barStart = $derived(small.current ? barHeight : 0);
+  const barRoom = $derived(small.current && !barHidden ? barHeight : 0);
 
   // The table's visible size, in px.
   let visibleWidth = $state(0);
@@ -568,12 +571,8 @@
   // The scroller's padding under the surface, in px: the gutter, or the dock's room above the safe
   // area, so that the bottom of the table scrolls out from under the dock.
   const bottomPadding = $derived(dockMode && !dockRail ? DOCK_ROOM + safeBottom : SCROLL_PADDING);
-  // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
-  // dock mode no top bar keeps the table clear of it, so the scroller's padding over the surface does.
-  let safeTop = $state(0);
-  // The scroller's padding over the surface, in px: the gutter, the top bar's room and, in dock mode,
-  // the safe area.
-  const topPadding = $derived(SCROLL_PADDING + barStart + (dockMode ? safeTop : 0));
+  // The scroller's padding over the surface, in px: the gutter and the top bar's room.
+  const topPadding = $derived(SCROLL_PADDING + barStart);
 
   // In dock mode no hand nor control lies over the table: the rows keep clear of the dock alone.
   const rowsBottom = $derived(dockMode ? bottomPadding : Math.max(restingRoom, controlsRoom));
@@ -1494,10 +1493,6 @@
     }
   });
 
-  function toggleTopBar(): void {
-    barHidden = !barHidden;
-  }
-
   function openHandSheet(): void {
     if (selected !== null && !modal.open) {
       handSheetShown = true;
@@ -2155,7 +2150,7 @@
         : undefined}
       scroller={wrap}
       autoHide={!dockMode}
-      bind:hidden={barHidden}
+      bind:hidden={() => barHidden, (hidden) => (scrolledAway = hidden)}
     />
   </div>
 
@@ -2350,7 +2345,6 @@
       dropActive={dragGoesToHand}
       landscape={dockRail}
       showHand={selected !== null}
-      onmenu={toggleTopBar}
       onhand={openHandSheet}
       onundo={undo}
       onhistory={openHistory}
@@ -2833,10 +2827,10 @@
     margin: 0 0 var(--table-bottom) calc(8px + env(safe-area-inset-left));
   }
 
-  /* The rail: at the top of the table right of it, under the top bar while that shows. */
+  /* The rail: at the top of the table right of it, under the top bar (--bar-room, the notch included). */
   .app.dock-rail .seatpick {
     align-self: start;
-    margin: calc(var(--bar-room) + 8px + env(safe-area-inset-top)) 0 0 8px;
+    margin: calc(var(--bar-room) + 8px) 0 0 8px;
   }
 
   /* As the zoom control: under the veil and the raised hand. */
@@ -2887,11 +2881,19 @@
   }
 
   /*
-    Dock mode: the top of the table starts below the notch (safeTop), and, with the bar at the bottom,
-    the bottom of the table scrolls out from under the dock.
+    Dock mode: the top bar always shows, below the notch, its background behind the notch too; the
+    table keeps the room of both at its start (--bar-start). Over the table, as the bar itself
+    (TopBar.svelte, 100): positioned, or the scroller would cover its background.
   */
+  .app.dock-mode .top {
+    position: relative;
+    z-index: 100;
+    padding-top: env(safe-area-inset-top);
+    background: var(--bg);
+  }
+
+  /* With the bar at the bottom, the bottom of the table scrolls out from under the dock. */
   .app.dock-mode .table {
-    padding-top: calc(var(--content-gutter) + env(safe-area-inset-top));
     padding-bottom: var(--table-bottom);
   }
 
@@ -2942,13 +2944,13 @@
 
   /*
     In the rail, a point 140 px left of the rail's right edge and 20 px under the top of its hand
-    button (8 px padding, the 48 px menu button, 6 px between): the band covers the rail from the
-    hand button down, and none of the table.
+    button (under the rail's 8 px padding): the band covers the rail from the hand button down, and
+    none of the table.
   */
   .dockdrop.rail .hcard {
     left: calc(env(safe-area-inset-left) + 64px - 140px);
     right: auto;
-    top: calc(8px + 48px + 6px + 20px);
+    top: calc(8px + 20px);
     bottom: auto;
     width: 0;
     height: 0;

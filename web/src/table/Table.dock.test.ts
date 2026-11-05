@@ -1,6 +1,6 @@
 // The table in dock mode (spec 3.4): on a small touch screen, a dock stands in for the hand's fan
 // and the controls at the bottom right, the hero selector floating beside it; its buttons open the
-// hand and the history in bottom sheets, and its menu button slides the top bar in and out.
+// hand and the history in bottom sheets. The top bar always shows, in its own room above the table.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
@@ -196,7 +196,7 @@ describe('dock mode', () => {
     await renderTable(view);
 
     expect(dock()!.querySelector('.handbtn')).toBeNull();
-    expect(within(dock()!).getByRole('button', { name: 'Menu' })).toBeTruthy();
+    expect(within(dock()!).getByRole('button', { name: /^Undo/ })).toBeTruthy();
     expect(within(dock()!).getByRole('button', { name: /^History/ })).toBeTruthy();
   });
 
@@ -208,27 +208,30 @@ describe('dock mode', () => {
     expect(handButton().querySelectorAll('.mini')).toHaveLength(2);
   });
 
-  it('starts with the top bar hidden, which the menu button slides in and out (menu_toggles_top_bar)', async () => {
-    mockScreen(PHONE);
-    await renderTable();
-    expect(topBar().classList).toContain('hidden');
+  it.each([
+    ['upright', PHONE],
+    ['on its side', LANDSCAPE_PHONE],
+  ])(
+    'shows the top bar at all times, and no menu button, on a phone %s (F-U1)',
+    async (_name, size) => {
+      mockScreen(size);
+      await renderTable();
+      expect(topBar().classList).not.toContain('hidden');
+      expect(within(dock()!).queryByRole('button', { name: 'Menu' })).toBeNull();
 
-    await fireEvent.click(within(dock()!).getByRole('button', { name: 'Menu' }));
-    expect(topBar().classList).not.toContain('hidden');
-
-    // It does not hide by itself as the table scrolls.
-    const scroller = document.querySelector<HTMLElement>('.tablewrap')!;
-    Object.defineProperties(scroller, {
-      scrollHeight: { value: 3000, configurable: true },
-      clientHeight: { value: 600, configurable: true },
-      scrollTop: { value: 400, configurable: true, writable: true },
-    });
-    await fireEvent.scroll(scroller);
-    expect(topBar().classList).not.toContain('hidden');
-
-    await fireEvent.click(within(dock()!).getByRole('button', { name: 'Menu' }));
-    expect(topBar().classList).toContain('hidden');
-  });
+      // It does not hide by itself as the table scrolls down.
+      const scroller = document.querySelector<HTMLElement>('.tablewrap')!;
+      Object.defineProperties(scroller, {
+        scrollHeight: { value: 3000, configurable: true },
+        clientHeight: { value: 600, configurable: true },
+        scrollTop: { value: 400, configurable: true, writable: true },
+      });
+      await fireEvent.scroll(scroller);
+      scroller.scrollTop = 900;
+      await fireEvent.scroll(scroller);
+      expect(topBar().classList).not.toContain('hidden');
+    },
+  );
 
   it('keeps the top bar shown with a mouse on a narrow window', async () => {
     mockScreen(NARROW_MOUSE);
@@ -329,9 +332,7 @@ describe('the hero selector in dock mode', () => {
     );
     const rail = /\n {2}\.app\.dock-rail \.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(rail).toMatch(/align-self: start;/);
-    expect(rail).toMatch(
-      /margin: calc\(var\(--bar-room\) \+ 8px \+ env\(safe-area-inset-top\)\) 0 0 8px;/,
-    );
+    expect(rail).toMatch(/margin: calc\(var\(--bar-room\) \+ 8px\) 0 0 8px;/);
   });
 });
 
@@ -376,7 +377,7 @@ describe('a drop on the dock', () => {
     measure(PHONE, domRect(8, PHONE.height - 68, PHONE.width - 16, 60));
     const { session } = await renderTable();
 
-    // Past the bottom of the table that takes a drop on the hand when none shows: on the menu side.
+    // Past the bottom of the table that takes a drop on the hand when none shows: on the hand button.
     await dragTo('mine', 40, PHONE.height - 38);
     expect(handButton().classList).toContain('drop');
     expect(handButton().getAttribute('aria-label')).toBe('Drop here: back to hand');
@@ -389,7 +390,7 @@ describe('a drop on the dock', () => {
   it('sends a table card to its hand, from the rail', async () => {
     mockScreen(LANDSCAPE_PHONE);
     // The stand-in card, as placed for the rail: its band covers the rail from the hand button down.
-    measure(LANDSCAPE_PHONE, domRect(-76, 82, 0, 0));
+    measure(LANDSCAPE_PHONE, domRect(-76, 28, 0, 0));
     const { session } = await renderTable();
 
     await dragTo('mine', 32, 86);
@@ -508,16 +509,35 @@ describe('the top bar in dock mode', () => {
     return document.querySelector<HTMLElement>('.app')!;
   }
 
-  it('keeps no room at the top of the table, the bar floating over it when shown (F-V2)', async () => {
+  it.each([
+    ['upright', PHONE],
+    ['on its side', LANDSCAPE_PHONE],
+  ])(
+    'keeps its room at the top of the table, the top overlays under it, on a phone %s (F-U1)',
+    async (_name, size) => {
+      mockScreen(size);
+      await renderTable();
+
+      expect(app().style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
+      expect(app().style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+    },
+  );
+
+  it('sits below the notch, its room and the notch both kept at the top of the table (F-U1)', async () => {
+    const NOTCH = 47;
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('safe-top') ? NOTCH : 0;
+    });
     mockScreen(PHONE);
     await renderTable();
-    expect(app().style.getPropertyValue('--bar-start')).toBe('0px');
-    expect(app().style.getPropertyValue('--bar-room')).toBe('0px');
+    ManualResizeObserver.resized(document.querySelector('.safe-top')!);
+    await tick();
 
-    // Shown, it floats over the table: what floats at the top of the play area follows it.
-    await fireEvent.click(within(dock()!).getByRole('button', { name: 'Menu' }));
-    expect(app().style.getPropertyValue('--bar-start')).toBe('0px');
-    expect(app().style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+    expect(app().style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT + NOTCH}px`);
+    expect(app().style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT + NOTCH}px`);
+    // jsdom lays nothing out: the bar's own rule is checked.
+    const bar = /\n {2}\.app\.dock-mode \.top \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(bar).toMatch(/padding-top: env\(safe-area-inset-top\);/);
   });
 
   it('keeps its room at the top with a mouse on a narrow window', async () => {
@@ -608,9 +628,9 @@ describe('the zoom in dock mode (F-V3)', () => {
     mockScreen(LANDSCAPE_PHONE);
     await renderTable();
 
-    // 390 px less the 24 px gutter above and below the rows: the villain's row drawn 270 high and
-    // the player's row 220, 490 units.
-    expect(shownZoom()).toBe('0.69');
+    // 390 px less the top bar's 56 px and the 24 px gutter above and below the rows: the villain's
+    // row drawn 270 high and the player's row 220, 490 units.
+    expect(shownZoom()).toBe('0.58');
     expect(storedZoom()).toBeNull();
   });
 
@@ -635,14 +655,14 @@ describe('the zoom in dock mode (F-V3)', () => {
   it('follows the window live while no zoom was chosen', async () => {
     mockScreen(LANDSCAPE_PHONE);
     await renderTable();
-    expect(shownZoom()).toBe('0.69');
+    expect(shownZoom()).toBe('0.58');
 
-    // 300 px less the two gutters over the same 490 units.
+    // 300 px less the top bar and the two gutters over the same 490 units.
     visible = { w: 5000, h: 300 };
     ManualResizeObserver.resized(scroller());
     await tick();
 
-    expect(shownZoom()).toBe('0.51');
+    expect(shownZoom()).toBe('0.4');
   });
 
   it('double tap toggles between the fit and the readable zoom', async () => {
@@ -654,8 +674,8 @@ describe('the zoom in dock mode (F-V3)', () => {
 
     // Back to the fit, remembered on the zoom's 10 % steps.
     await doubleTap();
-    expect(storedZoom()).toBe(0.7);
-    expect(shownZoom()).toBe('0.7');
+    expect(storedZoom()).toBe(0.6);
+    expect(shownZoom()).toBe('0.6');
   });
 
   it.each([
@@ -667,12 +687,5 @@ describe('the zoom in dock mode (F-V3)', () => {
     await renderTable();
 
     expect(shownZoom()).toBe('1');
-  });
-
-  it('keeps the play area clear of the notch at the top', () => {
-    const rule = /\n {2}\.app\.dock-mode \.table \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(rule).toMatch(
-      /padding-top: calc\(var\(--content-gutter\) \+ env\(safe-area-inset-top\)\);/,
-    );
   });
 });

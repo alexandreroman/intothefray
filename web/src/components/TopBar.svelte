@@ -52,7 +52,7 @@
     scroller?: HTMLElement;
     /**
      * Whether the bar slides away by itself as the page scrolls down, on a small screen. When not,
-     * the screen hides and shows it through `hidden`, as the table's dock does with its menu button.
+     * it never hides by itself (the table in dock mode): it stays as `hidden` says.
      */
     autoHide?: boolean;
     /** Whether the bar is slid out of view, for a screen whose layout follows it. */

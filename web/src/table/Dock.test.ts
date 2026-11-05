@@ -22,7 +22,6 @@ function props(overrides: Record<string, unknown> = {}) {
     dropActive: false,
     landscape: false,
     showHand: true,
-    onmenu: vi.fn(),
     onhand: vi.fn(),
     onundo: vi.fn(),
     onhistory: vi.fn(),
@@ -38,14 +37,18 @@ describe('Dock', () => {
   it('calls back from each of its buttons', async () => {
     const p = props();
     render(Dock, p);
-    await fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
     await fireEvent.click(handButton());
     await fireEvent.click(screen.getByRole('button', { name: UNDO_TIP }));
     await fireEvent.click(screen.getByRole('button', { name: 'History' }));
-    expect(p.onmenu).toHaveBeenCalledOnce();
     expect(p.onhand).toHaveBeenCalledOnce();
     expect(p.onundo).toHaveBeenCalledOnce();
     expect(p.onhistory).toHaveBeenCalledOnce();
+  });
+
+  it('holds the hand button, Undo and History, and no menu button (F-U1)', () => {
+    render(Dock, props());
+    const names = screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'));
+    expect(names).toEqual(['Hand · 5, Rocket Raccoon', UNDO_TIP, 'History']);
   });
 
   it('labels the hand button with the hand size and the hero name, and shows four mini cards', () => {
@@ -128,7 +131,7 @@ describe('Dock', () => {
   it('has no hand button without a hand to show, as for a spectator (spectator_no_hand_button)', () => {
     render(Dock, props({ showHand: false, handCount: 0, minis: [], avatar: null, heroName: '' }));
     expect(screen.queryByRole('button', { name: /hand/i })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Menu' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
     expect(screen.getByRole('button', { name: UNDO_TIP })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'History' })).toBeTruthy();
   });

@@ -1,8 +1,8 @@
 <!--
   The dock of a small touch screen (dock mode): a bar floating at the bottom of the table, above
-  the safe area, with the menu button, the hand button (the current deck's hero, up to four mini
-  cards of the hand, its size and the hero's name), Undo, and the history with a badge of the log
-  lines added since it was last opened. In landscape it stands as a rail down the left edge, its
+  the safe area, with the hand button (the current deck's hero, up to four mini cards of the hand,
+  its size and the hero's name), Undo, and the history with a badge of the log lines added since it
+  was last opened. In landscape it stands as a rail down the left edge, its
   hand button the avatar and the hand size only. A spectator, who has no hand, gets no hand
   button. During a drag of a card that can go back to a
   hand, the hand button becomes the drop target. The parent places nothing: the dock floats.
@@ -25,7 +25,6 @@
     dropActive,
     landscape,
     showHand,
-    onmenu,
     onhand,
     onundo,
     onhistory,
@@ -47,7 +46,6 @@
     landscape: boolean;
     /** Whether there is a hand to show: none for a spectator, whose dock has no hand button. */
     showHand: boolean;
-    onmenu: () => void;
     onhand: () => void;
     onundo: () => void;
     onhistory: () => void;
@@ -71,19 +69,6 @@
 </script>
 
 <nav class="dock" class:rail={landscape} aria-label="Table controls">
-  <button
-    class="ib btn-ghost"
-    aria-label="Menu"
-    data-tip="Menu"
-    onclick={onmenu}
-    {@attach pointerBlur}
-  >
-    <!-- Three bars. -->
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-
   {#if showHand}
     <button
       class="handbtn"
