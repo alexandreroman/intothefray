@@ -94,7 +94,24 @@ function rule(selector: string, indent = 2): string {
   return pattern.exec(sheetSource)?.[1] ?? '';
 }
 
-/** The card's right column, where its header and counters are. */
+/** The block of the sheet's stylesheet under an at-rule, such as '@media (max-height: 500px)'. */
+function block(atRule: string): string {
+  const start = sheetSource.indexOf(`\n  ${atRule} {`);
+  if (start === -1) {
+    return '';
+  }
+  const end = sheetSource.indexOf('\n  }\n', start);
+  return sheetSource.slice(start, end);
+}
+
+/** The declarations of a rule inside a block of the stylesheet (block), at four spaces. */
+function ruleIn(source: string, selector: string): string {
+  const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
+  const pattern = new RegExp(`\\n {4}${escaped} \\{([^}]*)\\}`);
+  return pattern.exec(source)?.[1] ?? '';
+}
+
+/** The card's column, beside it or under it, where its header and counters are. */
 function side(): HTMLElement {
   return document.querySelector<HTMLElement>('.inspector .side')!;
 }
@@ -165,19 +182,44 @@ describe('CardSheet', () => {
   });
 
   it('opens a submenu in the sheet, with a Back row', async () => {
-    const { onrun } = renderSheet();
+    renderSheet();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
 
     expect(screen.queryByRole('button', { name: 'Exhaust' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
-    await fireEvent.click(screen.getByRole('button', { name: 'Hand' }));
-    expect(onrun).toHaveBeenCalledWith(TO_HAND);
+    expect(screen.getByRole('button', { name: 'Hand' })).toBeTruthy();
 
     await fireEvent.click(screen.getByRole('button', { name: /Back/ }));
 
     expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Hand' })).toBeNull();
+  });
+
+  it('goes back to its main page once a submenu entry runs', async () => {
+    const dmg = item('dmg', { label: 'Damage' });
+    const { onrun, onclose } = renderSheet({
+      entries: [
+        { kind: 'action', item: EXHAUST },
+        { kind: 'separator' },
+        {
+          kind: 'submenu',
+          id: 'tokens',
+          label: 'Add a token',
+          disabled: false,
+          entries: [{ kind: 'action', item: dmg }],
+        },
+      ],
+    });
+    await fireEvent.click(screen.getByRole('button', { name: 'Add a token' }));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Damage' }));
+
+    expect(onrun).toHaveBeenCalledExactlyOnceWith(dmg);
+    expect(onclose).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a token' }));
   });
 
   it('hides a refused entry in a submenu', async () => {
@@ -337,7 +379,7 @@ describe('CardSheet', () => {
   });
 
   describe('in dock mode', () => {
-    it('puts every entry in the column right of the card, nothing under it', () => {
+    it('puts every entry in the column with the header and the counters', () => {
       renderSheet({ dock: true, counters: [DAMAGE], note: undefined });
 
       const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
@@ -377,19 +419,39 @@ describe('CardSheet', () => {
       expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
     });
 
-    it('scrolls only the column, and only when it must', () => {
-      const column = rule('.inspector.dock .side');
-      expect(column).toContain('max-height: var(--sheet-room);');
-      expect(column).toContain('overflow-y: auto;');
-      expect(column).toContain('container-type: inline-size;');
+    it('upright, puts the card on top, centred, at most 42 % of the screen high', () => {
+      const top = rule('.inspector.dock .top');
+      expect(top).toContain('flex-direction: column;');
+      expect(top).toContain('align-items: center;');
+      expect(rule('.inspector.dock .face')).toContain(
+        'width: min(100%, calc(42dvh * var(--face-ratio)));',
+      );
+      expect(rule('.face')).toContain('--face-ratio: 5 / 7;');
+      expect(rule('.face')).toContain('aspect-ratio: var(--face-ratio);');
+      expect(rule('.face.land')).toContain('--face-ratio: 7 / 5;');
     });
 
-    it('draws the card about half the sheet wide upright, the whole sheet high on its side', () => {
-      expect(rule('.inspector.dock .face')).toContain('width: 48%;');
-      const side = rule('.inspector.dock .face', 4);
-      expect(side).toContain('height: var(--sheet-room);');
-      expect(side).toContain('width: auto;');
-      expect(sheetSource).toContain('@media (max-height: 500px)');
+    it('upright, lays the header, the counters and the entries full width under the card', () => {
+      const column = rule('.inspector.dock .side');
+      expect(column).toContain('align-self: stretch;');
+      expect(column).toContain('container-type: inline-size;');
+      // The whole sheet scrolls (Sheet.svelte), not the column.
+      expect(column).not.toContain('overflow-y');
+      const title = rule('.inspector.dock .title');
+      expect(title).toContain('flex-direction: row;');
+      expect(title).toContain('flex-wrap: wrap;');
+    });
+
+    it('on its side, keeps the card the whole sheet high beside a column that scrolls', () => {
+      const side = block('@media (max-height: 500px)');
+      expect(ruleIn(side, '.inspector.dock .top')).toContain('flex-direction: row;');
+      const face = ruleIn(side, '.inspector.dock .face');
+      expect(face).toContain('height: var(--sheet-room);');
+      expect(face).toContain('width: auto;');
+      const column = ruleIn(side, '.inspector.dock .side');
+      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('overflow-y: auto;');
+      expect(ruleIn(side, '.inspector.dock .title')).toContain('flex-direction: column;');
     });
 
     it('makes every entry 44 px high, the main ones two per row in a wide column', () => {

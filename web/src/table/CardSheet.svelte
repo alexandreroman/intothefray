@@ -6,10 +6,14 @@
   default one in Fray red, the others as rows; a submenu opens in the sheet,
   with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
   it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
-  A chosen entry runs as the menu's does: the caller closes the sheet.
-  In dock mode (a phone) the sheet uses the whole screen: the card as large as
-  it allows on the left, and everything else in one column on its right, the
-  only part that scrolls.
+  A chosen entry runs as the menu's does: the caller closes the sheet, or keeps
+  it open for a token, status or modifier, which then shows back on the main
+  page with its steppers.
+  In dock mode (a phone) the sheet uses the whole screen. Upright, the card is
+  on top, centred, and everything else full width under it, the whole sheet
+  scrolling if it must; on its side, the card as large as it allows on the
+  left, and everything else in one column on its right, the only part that
+  scrolls.
 -->
 <script lang="ts">
   import { tick } from 'svelte';
@@ -70,6 +74,13 @@
     content?.querySelector<HTMLElement>('.back')?.focus();
   }
 
+  // A submenu entry that leaves the sheet open (a token, a status, a modifier) is done with its
+  // submenu: the main page shows what it added. One that closes the sheet needs nothing more.
+  async function runFromSub(item: ActionItem): Promise<void> {
+    onrun(item);
+    await closeSub();
+  }
+
   async function closeSub(): Promise<void> {
     const id = openId;
     openId = null;
@@ -101,12 +112,12 @@
   }
 </script>
 
-{#snippet actionRow(entry: ContextAction)}
+{#snippet actionRow(entry: ContextAction, run: (item: ActionItem) => void)}
   <button
     type="button"
     class="row btn-ghost"
     class:default={entry.item.default}
-    onclick={() => onrun(entry.item)}><span class="label">{entry.item.label}</span></button
+    onclick={() => run(entry.item)}><span class="label">{entry.item.label}</span></button
   >
 {/snippet}
 
@@ -165,7 +176,7 @@
         {#if entry.kind === 'separator'}
           {@render separator()}
         {:else}
-          {@render actionRow(entry)}
+          {@render actionRow(entry, runFromSub)}
         {/if}
       {/each}
     </div>
@@ -198,7 +209,7 @@
               ></button
             >
           {:else}
-            {@render actionRow(entry)}
+            {@render actionRow(entry, onrun)}
           {/if}
         {/each}
       </div>
@@ -253,16 +264,18 @@
     align-items: flex-start;
   }
 
+  /* --face-ratio: its width over its height, which dock mode sizes it by. */
   .face {
+    --face-ratio: 5 / 7;
     flex: none;
     width: 46%;
-    aspect-ratio: 5 / 7;
+    aspect-ratio: var(--face-ratio);
     border-radius: var(--card-radius);
     box-shadow: 4px 6px 16px #000c;
   }
 
   .face.land {
-    aspect-ratio: 7 / 5;
+    --face-ratio: 7 / 5;
     border-radius: var(--card-radius-land);
   }
 
@@ -510,31 +523,62 @@
   }
 
   /*
-    Dock mode: two columns over the whole sheet, the card on the left and the
-    rest on its right; the sheet pads them (Sheet.svelte). Only the column
-    scrolls, once its content is higher than the room the sheet has.
+    Dock mode upright: the card on top, centred, as wide as the sheet allows
+    while it stays at most 42 % of the screen high; the header (on one line
+    where it fits), the counters and the entries full width under it. The
+    sheet pads them and scrolls the whole (Sheet.svelte), if it must.
   */
   .inspector.dock {
     padding: 0;
   }
 
-  .inspector.dock .face {
-    width: 48%;
+  .inspector.dock .top {
+    flex-direction: column;
+    align-items: center;
   }
 
-  /* A phone on its side: the card is as high as the sheet, as wide as its aspect makes it. */
+  .inspector.dock .face {
+    width: min(100%, calc(42dvh * var(--face-ratio)));
+  }
+
+  .inspector.dock .side {
+    align-self: stretch;
+    container-type: inline-size;
+  }
+
+  .inspector.dock .title {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px;
+  }
+
+  /*
+    A phone on its side: two columns, the card as high as the sheet, as wide as
+    its aspect makes it, on the left, and the rest on its right. Only the
+    column scrolls, once its content is higher than the room the sheet has.
+  */
   @media (max-height: 500px) {
+    .inspector.dock .top {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
     .inspector.dock .face {
       width: auto;
       height: var(--sheet-room);
     }
-  }
 
-  .inspector.dock .side {
-    max-height: var(--sheet-room);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    container-type: inline-size;
+    .inspector.dock .side {
+      align-self: auto;
+      max-height: var(--sheet-room);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .inspector.dock .title {
+      flex-direction: column;
+    }
   }
 
   .inspector.dock .name {
