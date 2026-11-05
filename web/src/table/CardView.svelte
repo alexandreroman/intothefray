@@ -11,7 +11,7 @@
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
-  import { motion } from './motion.svelte';
+  import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 
   let {
     card,
@@ -71,6 +71,8 @@
   const hovered = $derived(!ghost && interaction.isHovered(element));
   // While dragged, the card on the table makes way for its ghost.
   const lifted = $derived(!ghost && interaction.isLifted(card.id));
+  // A finger held it still long enough (touch mode): it lifts in place, ready to be dragged.
+  const armed = $derived(!ghost && interaction.isArmed(element));
   // A drop would tuck the dragged card under this one, or go onto the pile this card is revealed on.
   const dropOn = $derived(ghost ? null : interaction.dropOn);
   const tuckTarget = $derived(dropOn?.kind === 'card' && dropOn.id === card.id);
@@ -111,6 +113,7 @@
   class:land={landscape}
   class:scheme
   class:lifted
+  class:armed
   class:ghost
   class:landed
   class:grab={draggable && !ghost}
@@ -121,6 +124,8 @@
   style:width="{box.w}px"
   style:height="{box.h}px"
   style:z-index={card.z}
+  style:--lift-scale={armed ? LIFT_SCALE : undefined}
+  style:--lift-shade={armed ? LIFT_SHADE : undefined}
   onpointerenter={(event) => interaction.enter(element, event)}
   onpointerleave={() => {
     // Edge-on as it turns, the card slips from under the pointer, which still rests on it.
@@ -229,6 +234,11 @@
     touch-action: none;
   }
 
+  /* In touch mode, a finger swiping over the card scrolls the table: only a hold drags it (spec 3.2). */
+  :global(.app.touch) .card {
+    touch-action: pan-x pan-y;
+  }
+
   /*
     The card's shadow, cast from 2px inside its edge, under its face (see --card-shadow). Its corners are the card's
     radius (CardFace), so it falls from the rounded card. The tabs and tokens that stick out of the card's edge cast
@@ -266,6 +276,17 @@
 
   .card.grab {
     cursor: grab;
+  }
+
+  /* Armed by a hold, held up in place as its ghost will be (--lift-scale, --lift-shade). */
+  .card.armed {
+    scale: var(--lift-scale);
+    transition: scale 0.14s ease-out;
+  }
+
+  .card.armed .shade {
+    translate: var(--lift-shade);
+    transition: translate 0.14s ease-out;
   }
 
   /*

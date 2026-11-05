@@ -7,7 +7,9 @@
   measured on the screen and drag.ts decides what the drop sends. Once
   dropped, it stays drawn where it landed until the server answers. A card
   revealed on a deck is dragged as the table draws it: a side scheme turns
-  from the deck's portrait slot to lie landscape.
+  from the deck's portrait slot to lie landscape. In touch mode, a finger on
+  a table card, a pile or a marker must hold still for HOLD_MS before it
+  drags (spec 3.2): a quick swipe scrolls the table instead.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -52,6 +54,7 @@
     type TableRect,
   } from './drag';
   import { backCaption, isHidden, pileBack } from './face';
+  import { HOLD_MS } from './gestures';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
@@ -224,6 +227,23 @@
     }
   });
 
+  // A touch press waiting for the hold arms once held for HOLD_MS, if what it holds can be dragged:
+  // a spectator's press, or one on an empty pile, stays a tap or a scroll.
+  $effect(() => {
+    const pressed = interaction.held;
+    if (!pressed || !interaction.awaitingHold) {
+      return;
+    }
+    const timer = setTimeout(() => armIfDraggable(pressed), HOLD_MS);
+    return () => clearTimeout(timer);
+  });
+
+  function armIfDraggable(pressed: Held): void {
+    if (sourceOf(pressed.element, view) !== null) {
+      interaction.arm();
+    }
+  }
+
   $effect(() => {
     const refused = lastError?.id;
     if (refused !== undefined) {
@@ -243,6 +263,9 @@
     }
     const at = { x: event.clientX, y: event.clientY };
     if (!pressed.moved) {
+      if (interaction.awaitingHold && !followHold(pressed, event)) {
+        return;
+      }
       if (Math.hypot(at.x - pressed.start.x, at.y - pressed.start.y) < DRAG_THRESHOLD) {
         return;
       }
@@ -270,6 +293,23 @@
     if (source) {
       tellOthers(source, at);
     }
+  }
+
+  /**
+   * Follows a touch press waiting for the hold, and tells whether this move may drag it. Past the
+   * slop before HOLD_MS, the finger scrolls the table: the press is let go, and the browser takes
+   * the finger over (its pointercancel follows). Held long enough, it arms, should the timer be late.
+   */
+  function followHold(pressed: Held, event: PointerEvent): boolean {
+    const phase = interaction.holdPhaseAt(event);
+    if (phase === 'scroll') {
+      interaction.letGo();
+      return false;
+    }
+    if (phase === 'armed') {
+      armIfDraggable(pressed);
+    }
+    return interaction.armed;
   }
 
   /** A finger pushing a hand card down: a swipe that lowers the hand, not a drag of the card. */
@@ -731,7 +771,11 @@
       return;
     }
     if (!pressed.moved) {
-      // A tap or a click, not a drag: its click opens the action menu, or selects a hand card on touch.
+      // Armed, then let go without a move: a hold, which opens nothing. Otherwise a tap or a click,
+      // not a drag: its click opens the action menu, or selects a hand card on touch.
+      if (interaction.armed) {
+        interaction.swallowNextClick();
+      }
       interaction.letGo();
       return;
     }

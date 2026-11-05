@@ -11,7 +11,7 @@
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox, pileBox } from './layout';
-  import { motion } from './motion.svelte';
+  import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 
   let {
     pile,
@@ -58,6 +58,8 @@
   const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
   const element = $derived({ kind: 'pile', id: pile.id } as const);
   const hovered = $derived(interaction.isHovered(element));
+  // A finger held it still long enough (touch mode): it lifts in place, ready to be dragged.
+  const armed = $derived(interaction.isArmed(element));
   // Another player previews the pile: their ring is drawn inside it, as on a card.
   const previewer = $derived(interaction.previewerOf(pile.id));
 
@@ -86,11 +88,14 @@
   class:grab={draggable}
   class:highlighted
   class:hovered
+  class:armed
   class:drop-pile={targeted}
   style:left="{pile.x}px"
   style:top="{pile.y}px"
   style:width="{slot.w}px"
   style:height="{slot.h}px"
+  style:--lift-scale={armed ? LIFT_SCALE : undefined}
+  style:--lift-shade={armed ? LIFT_SHADE : undefined}
   onpointerenter={onEnter}
   onpointerleave={() => interaction.leave(element)}
   onpointerdown={(event) => interaction.press(element, event)}
@@ -136,6 +141,11 @@
     touch-action: none;
   }
 
+  /* In touch mode, a finger swiping over the pile scrolls the table: only a hold drags from it (spec 3.2). */
+  :global(.app.touch) .card {
+    touch-action: pan-x pan-y;
+  }
+
   /*
     The same 45° shadow as a card on the table, cast from 2px inside its edge, under its face (see --card-shadow). A
     pile's slot is always portrait: a landscape top card is turned to fit it, and rounded with the portrait corners.
@@ -155,6 +165,17 @@
 
   .card.inert {
     cursor: default;
+  }
+
+  /* Armed by a hold, held up in place as the card dragged from it will be (--lift-scale, --lift-shade). */
+  .card.armed {
+    scale: var(--lift-scale);
+    transition: scale 0.14s ease-out;
+  }
+
+  .card.armed .shade {
+    translate: var(--lift-shade);
+    transition: translate 0.14s ease-out;
   }
 
   .art {

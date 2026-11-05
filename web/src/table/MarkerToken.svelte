@@ -8,6 +8,7 @@
   import type { MarkerName } from '../lib/types';
   import ActiveCounterArt from './ActiveCounterArt.svelte';
   import FirstPlayerArt from './FirstPlayerArt.svelte';
+  import { interaction } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, FIRST_PLAYER_BOX } from './layout';
 
   let {
@@ -34,6 +35,8 @@
   } = $props();
 
   const box = $derived(name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX);
+  // A finger held it still long enough (touch mode): it is picked up in place, ready to be dragged.
+  const armed = $derived(!ghost && interaction.isArmed({ kind: 'marker', name }));
 </script>
 
 <div
@@ -41,6 +44,7 @@
   data-marker={name}
   class:ghost
   class:lifted
+  class:armed
   class:movable={tip !== undefined}
   role="presentation"
   data-tip={tip}
@@ -68,6 +72,11 @@
     transition: transform 0.12s;
   }
 
+  /* In touch mode, a finger swiping over the marker scrolls the table: only a hold drags it (spec 3.2). */
+  :global(.app.touch) .marker {
+    touch-action: pan-x pan-y;
+  }
+
   .marker.movable {
     cursor: grab;
   }
@@ -80,7 +89,8 @@
     visibility: hidden;
   }
 
-  /* Picked up under the pointer. */
+  /* Picked up under the pointer, or armed by a hold, in place. */
+  .marker.armed,
   .marker.ghost {
     cursor: grabbing;
     transform: scale(1.12) rotate(-6deg);
