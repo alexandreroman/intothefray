@@ -31,8 +31,8 @@ export const NEWS: NewsEntry[] = [
     date: '2026-11-05',
     title: "The Galaxy's Most Wanted scenarios",
     text:
-      'Take on the Brotherhood of Badoon, the Collector twice (Infiltrate the Museum, Escape the Museum), ' +
-      'Nebula and Ronan the Accuser, in Standard or Expert.',
+      'The Guardians are wanted across the galaxy: fight the Brotherhood of Badoon, break into and out of the ' +
+      "Collector's museum, then stop Nebula and Ronan the Accuser.",
     image: { src: galaxysMostWanted, alt: 'The Collector villain card on the table' },
   },
   {
