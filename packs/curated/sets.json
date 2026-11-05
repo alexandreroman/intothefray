@@ -13,7 +13,13 @@
   },
   "standard_pvp": {"unlisted": true},
   "art_museum_heist": {"mainScheme": true},
-  "the_getaway": {"mainScheme": true},
+  "the_getaway": {
+    "mainScheme": true,
+    "inPlay": {
+      "standard": [{"card": "60129", "face": 0}],
+      "expert": [{"card": "60129", "face": 0}]
+    }
+  },
   "protection_racket": {"mainScheme": true},
   "stop_the_presses": {
     "mainScheme": true,
@@ -22,7 +28,13 @@
       "expert": [{"card": "60152", "face": 0}]
     }
   },
-  "the_raft_breakout": {"mainScheme": true},
+  "the_raft_breakout": {
+    "mainScheme": true,
+    "inPlay": {
+      "standard": [{"card": "60143", "face": 0}],
+      "expert": [{"card": "60143", "face": 0}]
+    }
+  },
   "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": "own", "back": "player"}},
   "storm_weather_deck": {"side": {"label": "Weather", "discard": "none", "back": "player"}},
   "daredevil_sense_deck": {"side": {"label": "Sense", "topFaceUp": true, "discard": "none", "back": "player"}},

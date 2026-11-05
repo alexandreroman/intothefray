@@ -281,11 +281,24 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 			}
 		}
 
-		set, _ := catalog.Set("stop_the_presses")
-		daily := []pack.FaceRef{{Card: "60152", Face: 0}}
-		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
-			if got := set.InPlay[difficulty]; !slices.Equal(got, daily) {
-				t.Errorf("stop_the_presses %s in play = %v, want %v", difficulty, got, daily)
+		// The cards a 1A Setup text names explicitly start in play: the Daily
+		// Bugle environment, The Getaway's Out Front attachment (the face of
+		// 60129 that is not Alongside) and The Raft Breakout's Master Key.
+		// Art Museum Heist's Art attachment is drawn at random, so it stays
+		// in the encounter deck.
+		inPlay := map[string][]pack.FaceRef{
+			"art_museum_heist":  nil,
+			"the_getaway":       {{Card: "60129", Face: 0}},
+			"protection_racket": nil,
+			"stop_the_presses":  {{Card: "60152", Face: 0}},
+			"the_raft_breakout": {{Card: "60143", Face: 0}},
+		}
+		for _, code := range mainSchemes {
+			set, _ := catalog.Set(code)
+			for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+				if got := set.InPlay[difficulty]; !slices.Equal(got, inPlay[code]) {
+					t.Errorf("%s %s in play = %v, want %v", code, difficulty, got, inPlay[code])
+				}
 			}
 		}
 	})
