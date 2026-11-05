@@ -4,7 +4,16 @@
 // into the large buttons of the first group and the rows of the others. Pure.
 
 import type { CardView } from '../lib/types';
-import { counterName, countersOf, MODIFIERS, STATUSES, TOKENS, type CounterKind } from './actions';
+import {
+  arrowItem,
+  counterName,
+  countersOf,
+  MODIFIERS,
+  STATUSES,
+  TOKENS,
+  type ActionItem,
+  type CounterKind,
+} from './actions';
 import type { ContextAction, ContextEntry, ContextSeparator } from './contextItems';
 
 /** A token, status or modifier a card carries, as the inspector shows it with its steppers. */
@@ -24,6 +33,9 @@ const MAX_MAIN = 4;
 
 const TOKEN_NAMES = TOKENS.map((token) => token.name);
 const STATUS_NAMES = STATUSES.map((status) => status.name);
+
+/** The id of Draw an arrow, whatever card it is for. */
+const ARROW_ID = arrowItem('').id;
 
 /**
  * The counters the card carries, in the order of its menus: the tokens, the
@@ -62,8 +74,9 @@ function labelOf(kind: CounterKind, name: string): string {
 /**
  * The entries the inspector shows: a refused (disabled) entry takes room for
  * nothing on a small screen, so it is left out, rather than greyed with its
- * reason as the floating menu has it. A submenu goes when it is refused or
- * none of its entries is left. No separator leads, trails or follows another.
+ * reason as the floating menu has it. Draw an arrow is left out too: arrows
+ * are not offered on touch. A submenu goes when it is refused or none of its
+ * entries is left. No separator leads, trails or follows another.
  */
 export function visibleEntries(entries: ContextEntry[]): ContextEntry[] {
   const shown: ContextEntry[] = [];
@@ -82,16 +95,23 @@ function visibleEntry(entry: ContextEntry): ContextEntry | undefined {
     case 'separator':
       return entry;
     case 'action':
-      return entry.item.disabled ? undefined : entry;
+      return isOffered(entry.item) ? entry : undefined;
     case 'submenu': {
       if (entry.disabled) {
         return undefined;
       }
-      const allowed = entry.entries.filter((sub) => sub.kind === 'separator' || !sub.item.disabled);
+      const allowed = entry.entries.filter(
+        (sub) => sub.kind === 'separator' || isOffered(sub.item),
+      );
       const subEntries = withTidySeparators(allowed);
       return subEntries.length === 0 ? undefined : { ...entry, entries: subEntries };
     }
   }
+}
+
+/** Whether the inspector offers the item: it is allowed, and not Draw an arrow. */
+function isOffered(item: ActionItem): boolean {
+  return !item.disabled && item.id !== ARROW_ID;
 }
 
 /** The entries without a separator at either end or right after another one. */

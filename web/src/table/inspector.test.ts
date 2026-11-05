@@ -1,4 +1,4 @@
-import type { ActionItem } from './actions';
+import { arrowItem, type ActionItem } from './actions';
 import type { ContextAction, ContextEntry, ContextSeparator, ContextSubmenu } from './contextItems';
 import { card } from './fixtures.testing';
 import { countersFor, splitEntries, visibleEntries } from './inspector';
@@ -150,6 +150,13 @@ describe('visibleEntries', () => {
     };
 
     expect(visibleEntries([moveTo])).toEqual([{ ...moveTo, entries: [hand] }]);
+  });
+
+  it('leaves out Draw an arrow, with the separator before it: arrows are not offered on touch', () => {
+    const exhaust = action('exhaust');
+    const arrow: ContextAction = { kind: 'action', item: arrowItem('c') };
+
+    expect(visibleEntries([exhaust, SEP, arrow])).toEqual([exhaust]);
   });
 
   it('keeps every entry when none is refused', () => {
