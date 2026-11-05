@@ -124,6 +124,13 @@ function ruleIn(source: string, selector: string): string {
   return pattern.exec(source)?.[1] ?? '';
 }
 
+/** The pages of the entries, as high as given: jsdom lays nothing out. */
+function pagesOf(height: number): HTMLElement {
+  const pages = document.querySelector<HTMLElement>('.inspector .pages')!;
+  Object.defineProperty(pages, 'offsetHeight', { configurable: true, value: height });
+  return pages;
+}
+
 /** The card's column, beside it or under it, where its header and counters are. */
 function side(): HTMLElement {
   return document.querySelector<HTMLElement>('.inspector .side')!;
@@ -235,6 +242,32 @@ describe('CardSheet', () => {
     expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
     expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a token' }));
+  });
+
+  it("holds the main page's height in a submenu, which scrolls in it, and lets it go back on the main page", async () => {
+    renderSheet();
+    const pages = pagesOf(233);
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+    expect(pages.style.height).toBe('233px');
+    expect(pages.classList).toContain('held');
+    expect(rule('.pages.held > .page')).toContain('overflow-y: auto;');
+    expect(rule('.pages')).toContain('flex: none;');
+
+    await fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+    expect(pages.style.height).toBe('');
+    expect(pages.classList).not.toContain('held');
+  });
+
+  it("holds the main page's height when a submenu entry runs and the sheet stays", async () => {
+    renderSheet();
+    const pages = pagesOf(233);
+    await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Hand' }));
+
+    expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+    expect(pages.style.height).toBe('');
   });
 
   it('hides a refused entry in a submenu', async () => {
@@ -546,17 +579,21 @@ describe('CardSheet', () => {
       expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
     });
 
-    it("eases the sheet's height from one page to the other", async () => {
+    it("keeps the main page's height through the slides into a submenu and back", async () => {
       renderSheet();
+      const pages = pagesOf(233);
 
       await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
       await finishAnimations();
+      expect(pages.style.height).toBe('233px');
 
-      const resized = animationsOf(220).find(({ element }) => element.classList.contains('pages'));
-      expect(resized?.keyframes).toEqual([
-        { height: expect.stringMatching(/px$/) },
-        { height: expect.stringMatching(/px$/) },
-      ]);
+      await fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+      // Still sliding back: the size holds until the main page is alone.
+      expect(pages.style.height).toBe('233px');
+      await finishAnimations();
+      expect(pages.style.height).toBe('');
+      // The size never eases: only the pages slide.
+      expect(animate.mock.contexts).not.toContain(pages);
     });
 
     it('switches pages at once under reduced motion', async () => {

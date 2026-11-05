@@ -16,9 +16,11 @@
   scrolls.
   Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
-  back the other way, the sheet's height easing between the two; a counter
+  back the other way; a counter
   row or an entry that comes or goes after an update slides open or closed;
   a counter's number bumps as it changes; a pressed button sinks.
+  The sheet keeps its size through a submenu: its page is as high as the main
+  page was when it opened, scrolling if longer, so the card never moves.
 -->
 <script lang="ts">
   import { tick } from 'svelte';
@@ -68,8 +70,6 @@
   const ROW_MS = 200;
   /** How long a counter's number takes to bump as it changes, in ms. */
   const BUMP_MS = 160;
-  /** cubicOut, for the animation played by hand. */
-  const CUBIC_OUT = 'cubic-bezier(0.33, 1, 0.68, 1)';
 
   const shown = $derived(visibleEntries(entries));
   const split = $derived(splitEntries(shown));
@@ -80,6 +80,13 @@
   let pageStep = $state<1 | -1>(1);
   /** Two pages are sliding: what passes the sheet's edges is clipped. */
   let sliding = $state(false);
+  let pagesElement = $state<HTMLElement>();
+  /**
+   * The height the pages keep from a submenu's opening until the main page is alone again: the
+   * main page's then, so that neither the sheet nor the card moves. Null on the main page, whose
+   * size follows its content.
+   */
+  let heldHeight = $state<number | null>(null);
 
   // Found again in every redraw's entries: a submenu whose row went, or got refused, closes.
   const openSubmenu = $derived(
@@ -89,6 +96,8 @@
   // The row the focus was on goes as the list changes: the focus moves to the Back row, or back to
   // the submenu's row, rather than falling out of the sheet.
   async function openSub(entry: ContextSubmenu): Promise<void> {
+    // Measured before the switch, on the main page; already held while it is still sliding back.
+    heldHeight ??= pagesElement?.offsetHeight ?? null;
     pageStep = 1;
     openId = entry.id;
     await tick();
@@ -149,23 +158,12 @@
     return { x: `${100 * side}%`, duration: motionMs(PAGE_MS), easing: cubicOut };
   }
 
-  /**
-   * As a page slides in, the pages ease from the height of the one leaving to its own, rather
-   * than jumping to the taller one's while both are there, and to its own once alone.
-   */
-  function onPageIntro(event: Event): void {
-    const page = event.currentTarget as HTMLElement;
-    const pages = page.parentElement;
-    const leaving = [...(pages?.children ?? [])].find((child) => child !== page);
-    const duration = motionMs(PAGE_MS);
-    if (!pages || !(leaving instanceof HTMLElement) || duration === 0) {
-      return;
+  /** Once a page has slid in, the main page alone gets its own size back. */
+  function onPageShown(): void {
+    sliding = false;
+    if (openId === null) {
+      heldHeight = null;
     }
-    sliding = true;
-    pages.animate([{ height: `${leaving.offsetHeight}px` }, { height: `${page.offsetHeight}px` }], {
-      duration,
-      easing: CUBIC_OUT,
-    });
   }
 
   /** A page on its way out takes no more taps, and its rows no more focus. */
@@ -242,14 +240,20 @@
 
   {#if shown.length > 0}
     <!-- One page at a time, but two while they slide: the main page and a submenu's, in one cell. -->
-    <div class="pages" class:sliding>
+    <div
+      class="pages"
+      class:sliding
+      class:held={heldHeight !== null}
+      style:height={heldHeight === null ? undefined : `${heldHeight}px`}
+      bind:this={pagesElement}
+    >
       {#key openSubmenu?.id}
         <div
           class="page"
           in:fly={pageSlide('in')}
           out:fly={pageSlide('out')}
-          onintrostart={onPageIntro}
-          onintroend={() => (sliding = false)}
+          onintrostart={() => (sliding = true)}
+          onintroend={onPageShown}
           onoutrostart={onPageOutro}
         >
           {#if openSubmenu}
@@ -584,9 +588,19 @@
     }
   }
 
-  /* The pages share one cell: the one leaving and the one coming overlap while they slide. */
+  /*
+    The pages share one cell: the one leaving and the one coming overlap while they slide. Held at
+    the main page's height, a longer page scrolls in it, a shorter one leaves room at the bottom.
+  */
   .pages {
+    flex: none;
     display: grid;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .pages.held > .page {
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .pages.sliding {
