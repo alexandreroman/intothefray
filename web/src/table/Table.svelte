@@ -79,7 +79,7 @@
   import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
   import HistorySheet, { unread } from './HistorySheet.svelte';
   import { countersFor, type SheetCounter } from './inspector';
-  import { interaction, type PreviewChange } from './interaction.svelte';
+  import { interaction, LANDING_MS, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import {
@@ -1308,6 +1308,46 @@
 
   const inspectorHeader = $derived(inspected ? headerOf(inspected) : null);
 
+  // A Reveal run from a deck's inspector: the inspector stays on the deck and waits for the card
+  // revealed there (spec 3.1), until the server refuses the action of that id or LANDING_MS passes.
+  let awaitingReveal = $state.raw<{ pile: string; action: number } | null>(null);
+  let awaitingRevealTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function awaitReveal(pile: string, action: number): void {
+    awaitingReveal = { pile, action };
+    clearTimeout(awaitingRevealTimer);
+    awaitingRevealTimer = setTimeout(() => (awaitingReveal = null), LANDING_MS);
+  }
+
+  function stopAwaitingReveal(): void {
+    awaitingReveal = null;
+    clearTimeout(awaitingRevealTimer);
+  }
+
+  $effect(() => () => clearTimeout(awaitingRevealTimer));
+
+  // The view that shows a card revealed on the awaited deck switches the inspector to that card, as
+  // a tap on it would. Declared before the effect below, which runs after it: the switch comes first.
+  $effect(() => {
+    const awaited = awaitingReveal;
+    if (awaited === null) {
+      return;
+    }
+    // The viewer closed the inspector, or opened another, while the reveal was on its way.
+    const stillOnDeck = inspected?.kind === 'pile' && inspected.id === awaited.pile;
+    if (!stillOnDeck || session.lastError?.id === awaited.action) {
+      untrack(stopAwaitingReveal);
+      return;
+    }
+    const revealed = cards.find((card) => card.zone === 'table' && card.onPile === awaited.pile);
+    if (revealed) {
+      untrack(() => {
+        stopAwaitingReveal();
+        inspected = { kind: 'card', id: revealed.id };
+      });
+    }
+  });
+
   // A redraw that takes its element away, or leaves it without actions, closes the inspector.
   $effect(() => {
     if (inspected && (inspectorContent === null || !isPresent(inspected))) {
@@ -1383,14 +1423,27 @@
     );
   }
 
+  /** Whether the item is a deck's Reveal (actionsFor's `reveal`), run from that deck's inspector. */
+  function revealsFrom(item: ActionItem, element: TableElement): boolean {
+    return element.kind === 'pile' && item.id === 'reveal';
+  }
+
   /**
    * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
    * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
-   * as for a stepper. A hand card's Play and Discard send what their keys send (keys.ts).
+   * as for a stepper. A deck's Reveal keeps it open too, and switches it to the revealed card once
+   * the view shows it. A hand card's Play and Discard send what their keys send (keys.ts).
    */
   function runInspectorItem(item: ActionItem): void {
     const element = inspected;
     if (element === null) {
+      return;
+    }
+    if (revealsFrom(item, element)) {
+      const action = runItem(item, element);
+      if (action !== null) {
+        awaitReveal(element.id, action);
+      }
       return;
     }
     if (!addsCounter(item)) {
@@ -1571,19 +1624,27 @@
     }
   });
 
-  /** Runs an action item on its element: the hovered one (a key), or the context menu's. */
-  function runItem(item: ActionItem, element: TableElement | null = interaction.hovered): void {
+  /**
+   * Runs an action item on its element: the hovered one (a key), or the context menu's. Returns the
+   * id of the action sent to the server, if one went out (session.act).
+   */
+  function runItem(
+    item: ActionItem,
+    element: TableElement | null = interaction.hovered,
+  ): number | null {
     if (!item.run || item.disabled || !element) {
-      return;
+      return null;
     }
     const result = item.run();
     if ('ask' in result) {
       asking = result.ask;
-    } else if ('local' in result) {
-      runLocal(result, element);
-    } else {
-      send(result, element);
+      return null;
     }
+    if ('local' in result) {
+      runLocal(result, element);
+      return null;
+    }
+    return send(result, element);
   }
 
   function runLocal(local: LocalAction, element: TableElement): void {
@@ -1617,12 +1678,12 @@
     }
   }
 
-  function send(action: Action, target: TableElement | null): void {
+  function send(action: Action, target: TableElement | null): number | null {
     // A new Look or Search opens its box as soon as its view arrives.
     if (action.kind === 'look' || action.kind === 'search') {
       closingView = false;
     }
-    act(action, target);
+    return act(action, target);
   }
 
   // ---- The card boxes ----

@@ -3,7 +3,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import tableSource from './Table.svelte?raw';
-import { interaction } from './interaction.svelte';
+import { interaction, LANDING_MS } from './interaction.svelte';
 import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
@@ -336,5 +336,102 @@ describe('arrows on touch', () => {
 
   it('has no hint of its own for touch in the table', () => {
     expect(tableSource).not.toMatch(/ARROW_HINT_TOUCH|Tap the card to point at/);
+  });
+});
+
+describe('the inspector, revealing a card from a deck (F-U8)', () => {
+  // Rhino with Alex, the viewer's deck and the encounter deck; `revealed` lies on one of them.
+  function revealView(revealed: TableCard[] = []): View {
+    return playingView({
+      players: [seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man' }], true)],
+      table: {
+        cards: [card('v', { code: '01094', owner: -1, back: 'villain' }), ...revealed],
+        piles: [
+          pile('deck:p0', { owner: 0, x: 600 }),
+          pile('enc', { kind: 'encounter', count: 20, x: 900 }),
+        ],
+        hands: { p0: [] },
+        stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      },
+    });
+  }
+
+  const ON_ENCOUNTER = card('enc-rev', {
+    code: '01002',
+    owner: -1,
+    back: 'encounter',
+    onPile: 'enc',
+    x: 900,
+  });
+  const ON_OWN_DECK = card('own-rev', { code: '01002', onPile: 'deck:p0', x: 600 });
+
+  async function revealFrom(pileId: string) {
+    mockScreen({ ...DESKTOP, touch: true });
+    const rendered = await renderTable(revealView());
+    await tap(placed(pileId));
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Reveal/ }));
+    return rendered;
+  }
+
+  it('stays open on the encounter deck, then shows the card revealed there', async () => {
+    const { session, rerender } = await revealFrom('enc');
+
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(session.act.mock.calls[0]![0]).toEqual({ kind: 'reveal' });
+    expect(sheet()).not.toBeNull();
+
+    await rerender({ view: revealView([ON_ENCOUNTER]) });
+
+    expect(within(sheet()!).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(within(sheet()!).getByRole('button', { name: /^Flip/ })).toBeTruthy();
+  });
+
+  it("stays open on the viewer's deck, then shows the revealed card with its Draw", async () => {
+    const { session, rerender } = await revealFrom('deck:p0');
+
+    expect(session.act.mock.calls[0]![0]).toEqual({ kind: 'reveal', pile: 'deck:p0' });
+    expect(sheet()).not.toBeNull();
+
+    await rerender({ view: revealView([ON_OWN_DECK]) });
+
+    expect(within(sheet()!).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(within(sheet()!).getByRole('button', { name: /^Draw/ })).toBeTruthy();
+    expect(within(sheet()!).queryByRole('button', { name: /^Reveal/ })).toBeNull();
+  });
+
+  it('stays on the deck when the server refuses the reveal', async () => {
+    const { session, rerender } = await revealFrom('enc');
+
+    session.lastError = { id: 1, code: 'invalid', message: 'Nothing to reveal.' };
+    // A later view shows a card revealed there all the same: it is not the answer to this reveal.
+    await rerender({ view: revealView([ON_ENCOUNTER]) });
+
+    expect(sheet()).not.toBeNull();
+    expect(within(sheet()!).queryByRole('img', { name: 'Peter Parker' })).toBeNull();
+  });
+
+  it('stays on the deck when nothing is revealed within the landing time', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { rerender } = await renderTable(revealView());
+    await tap(placed('enc'));
+    vi.useFakeTimers();
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Reveal/ }));
+
+    vi.advanceTimersByTime(LANDING_MS);
+    await rerender({ view: revealView([ON_ENCOUNTER]) });
+
+    expect(sheet()).not.toBeNull();
+    expect(within(sheet()!).queryByRole('img', { name: 'Peter Parker' })).toBeNull();
+  });
+
+  it('leaves the mouse menu closing on Reveal', async () => {
+    const { session } = await renderTable(revealView());
+
+    await fireEvent.click(placed('enc'));
+    await fireEvent.click(within(contextMenu()!).getByRole('menuitem', { name: /^Reveal/ }));
+
+    expect(session.act.mock.calls[0]![0]).toEqual({ kind: 'reveal' });
+    expect(contextMenu()).toBeNull();
+    expect(sheet()).toBeNull();
   });
 });
