@@ -45,6 +45,7 @@
     counterName,
     countersOf,
     deckCount,
+    handActions,
     isLocked,
     type ActionItem,
     type CountQuestion,
@@ -56,20 +57,23 @@
   import AskCount from './AskCount.svelte';
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
+  import CardSheet from './CardSheet.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import {
     cardHeader,
     contextItems,
     pileHeader,
+    type ContextAction,
     type ContextEntry,
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
   import { DRAG_THRESHOLD, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
-  import { backCaption, isHidden } from './face';
+  import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
   import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
+  import { countersFor, type SheetCounter } from './inspector';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
@@ -134,7 +138,9 @@
   } from './focus';
   import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
   import Surface, { type OwnerBox } from './Surface.svelte';
+  import { backUrl } from './theme';
   import { TOUCH_MODE_QUERY } from './touch';
+  import { touchZoom } from './touchZoom';
   import ZoomControl from './ZoomControl.svelte';
   import {
     clampZoom,
@@ -1016,10 +1022,11 @@
   // ---- The token pill ----
 
   // Found again by names at every view, so the pill follows its token through
-  // redraws; it goes with the token (zero) or the card (off the table).
+  // redraws; it goes with the token (zero) or the card (off the table). Touch mode has no pill:
+  // a tap on a token opens its card's inspector, which has the steppers.
   const counterShown = $derived.by(() => {
     const target = interaction.counter;
-    if (!target || view.you.role !== 'player' || interaction.dragging) {
+    if (!target || view.you.role !== 'player' || interaction.dragging || touchMode.current) {
       return null;
     }
     const card = cardsById.get(target.card);
@@ -1091,16 +1098,17 @@
     return open ? contextContentOf(open.element) : null;
   });
 
-  /** The header of the menu: what the card or pile is, whose it is; none once it is gone. */
-  const contextHeader = $derived.by((): ContextHeader | null => {
-    const element = interaction.contextMenu?.element;
+  /** The header of a menu or an inspector: what the card or pile is, whose it is; none once it is gone. */
+  function headerOf(element: TableElement | undefined): ContextHeader | null {
     if (element?.kind === 'pile') {
       const pile = byId(piles).get(element.id);
       return pile ? pileHeader(pile, view) : null;
     }
     const card = element ? cardsById.get(element.id) : undefined;
     return card ? cardHeader(card, faceOf(card), view) : null;
-  });
+  }
+
+  const contextHeader = $derived(headerOf(interaction.contextMenu?.element));
 
   // A redraw that leaves its element without actions (an emptied pile, a card gone) closes it.
   $effect(() => {
@@ -1128,6 +1136,11 @@
    * shows its back clears the preview).
    */
   function openContextMenu(element: TableElement, at: Point): void {
+    // A touch screen has the inspector instead, a bottom sheet the finger reaches.
+    if (touchMode.current) {
+      openInspector(element);
+      return;
+    }
     if (contextContentOf(element) === null) {
       return;
     }
@@ -1143,16 +1156,25 @@
    * band or an arrow never gets here (interaction.swallowNextClick). Alt +
    * click pings the spot, and Ctrl + click is macOS's right click, which
    * onTableContextMenu handles. A token or a status has its − / + pill
-   * instead, which hovering it shows, or tapping it on touch.
+   * instead, which hovering it shows. In touch mode, a tap opens the
+   * inspector, a token's too, or in select mode toggles the card in the group.
    */
   function onTableClick(event: MouseEvent): void {
     if (event.altKey || event.ctrlKey || interaction.isLongTouchClick(event)) {
       return;
     }
-    if (event.target instanceof Element && event.target.closest('.surface [data-counter]')) {
+    const onCounter =
+      event.target instanceof Element && event.target.closest('.surface [data-counter]') !== null;
+    if (onCounter && !touchMode.current) {
       return;
     }
     const element = contextElementOf(event.target);
+    if (element && selecting) {
+      if (element.kind === 'card') {
+        toggleSelected(element.id);
+      }
+      return;
+    }
     if (element && !interaction.closedByPress(element)) {
       openContextMenu(element, { x: event.clientX, y: event.clientY });
     }
@@ -1194,6 +1216,167 @@
     const element = interaction.contextMenu?.element ?? null;
     interaction.closeContextMenu();
     runItem(item, element);
+  }
+
+  // ---- The inspector (touch mode) ----
+
+  // The element whose inspector (CardSheet.svelte) is open: a table card or pile, which a tap opens
+  // in place of the context menu, or a card of the raised hand. Its own state, not the context
+  // menu's: the sheet is modal, and a modal lets go of the context menu (see below).
+  let inspected = $state.raw<TableElement | null>(null);
+
+  // The inspector of a card in play offers Select, which enters select mode.
+  const SELECT_ENTRY: ContextAction = {
+    kind: 'action',
+    item: { id: 'select', label: 'Select', group: 0 },
+  };
+
+  /** What the inspector lists: the context menu's entries, Select for a card in play, or a hand card's actions. */
+  function inspectorContentOf(element: TableElement): ContextContent | null {
+    if (element.kind === 'hand') {
+      const entries = contextItems(element, handActions(element.id, view, sizeOf));
+      return entries.length > 0 ? { entries } : null;
+    }
+    const content = contextContentOf(element);
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    if (content === null || content.entries.length === 0 || !card || !isFree(card)) {
+      return content;
+    }
+    return { entries: [...content.entries, { kind: 'separator' }, SELECT_ENTRY] };
+  }
+
+  // From the current view, as the context menu's: a redraw updates the entries and the counters.
+  const inspectorContent = $derived.by((): ContextContent | null => {
+    void catalog;
+    return inspected ? inspectorContentOf(inspected) : null;
+  });
+
+  const inspectorHeader = $derived(inspected ? headerOf(inspected) : null);
+
+  // A redraw that takes its element away, or leaves it without actions, closes the inspector.
+  $effect(() => {
+    if (inspected && (inspectorContent === null || !isPresent(inspected))) {
+      untrack(() => (inspected = null));
+    }
+  });
+
+  /** A back's image, as CardBack draws it; none when the theme draws the back itself. */
+  function backImages(back: TableCard['back']): string[] {
+    const url = backUrl(back);
+    return url ? [url] : [];
+  }
+
+  /** The face the inspector shows: the card's, its back when it lies face down, a pile's top face or back. */
+  function inspectorImages(element: TableElement): string[] {
+    if (element.kind === 'pile') {
+      const pile = byId(piles).get(element.id);
+      if (!pile) {
+        return [];
+      }
+      const top = topOf(pile);
+      if (top && !isHidden(top)) {
+        return faceOf(top)?.images ?? [];
+      }
+      return backImages(top?.back ?? pileBack(pile));
+    }
+    const card = cardsById.get(element.id);
+    if (!card) {
+      return [];
+    }
+    return isHidden(card) ? backImages(card.back) : (faceOf(card)?.images ?? []);
+  }
+
+  /** Whether the inspected card lies landscape: a face-down card or a pile shows a portrait back or top. */
+  function inspectorLandscape(element: TableElement): boolean {
+    const card = element.kind === 'pile' ? undefined : cardsById.get(element.id);
+    return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
+  }
+
+  /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile or a hand card. */
+  function inspectorCounters(element: TableElement): SheetCounter[] {
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    return card ? countersFor(card) : [];
+  }
+
+  /** Opens the element's inspector, unless it has nothing to show. */
+  function openInspector(element: TableElement): void {
+    if (modal.open || interaction.dragging !== null || inspectorContentOf(element) === null) {
+      return;
+    }
+    inspected = element;
+  }
+
+  function openHandInspector(id: string): void {
+    openInspector({ kind: 'hand', id });
+  }
+
+  function closeInspector(): void {
+    inspected = null;
+  }
+
+  /**
+   * A chosen entry runs on the inspector's element, once it is closed, as the menu's does. A hand
+   * card's Play and Discard send what their keys send (keys.ts).
+   */
+  function runInspectorItem(item: ActionItem): void {
+    const element = inspected;
+    inspected = null;
+    if (element === null) {
+      return;
+    }
+    if (item === SELECT_ENTRY.item) {
+      enterSelectMode(element.id);
+      return;
+    }
+    if (element.kind === 'hand') {
+      const result = item.run?.();
+      if (result && 'kind' in result) {
+        send(result, targetOfKey(result));
+      }
+      return;
+    }
+    runItem(item, element);
+  }
+
+  /** A stepper of the inspector: sends what the token pill's − / + sends (stepCounter). */
+  function stepInspected(counter: SheetCounter, delta: -1 | 1): void {
+    if (inspected?.kind === 'card') {
+      act(
+        { kind: counter.kind, card: inspected.id, name: counter.name, delta },
+        { kind: 'card', id: inspected.id },
+      );
+    }
+  }
+
+  // ---- Select mode (touch mode) ----
+
+  // Touch has no rubber band nor Shift: in select mode, each tap on a table card adds it to the group
+  // or takes it out. Done or Escape leaves it; the group stays, to drag or act on.
+  let selectMode = $state(false);
+  const selecting = $derived(selectMode && touchMode.current);
+
+  /** Enters select mode, the card whose inspector offered it selected. */
+  function enterSelectMode(id: string): void {
+    selectMode = true;
+    const card = cardsById.get(id);
+    if (card && isFree(card) && !interaction.group.has(id)) {
+      interaction.setGroup(new Set([...interaction.group, id]));
+    }
+  }
+
+  function leaveSelectMode(): void {
+    selectMode = false;
+  }
+
+  /** A tap in select mode: the card joins the group, or leaves it. Only a free card can be in it. */
+  function toggleSelected(id: string): void {
+    const card = cardsById.get(id);
+    if (!card || !isFree(card)) {
+      return;
+    }
+    const ids = [...interaction.group];
+    const toggled = ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id];
+    interaction.setGroup(new Set(toggled));
   }
 
   /** The "How many cards?" question being asked, if any. */
@@ -1426,6 +1609,16 @@
     if (target.closest('.surface .chip')) {
       return;
     }
+    // In select mode a tap toggles a card in the group (onTableClick), and nothing else: the press
+    // reaches neither the element, whose press would let go of the group (DragLayer), nor an empty
+    // spot's handling, which would clear it. A press on a selected card goes on: a hold drags the group.
+    if (selecting) {
+      const id = tableCardOf(target);
+      if (id === undefined || !interaction.group.has(id)) {
+        event.stopPropagation();
+        return;
+      }
+    }
     // Alt + click pings the spot (spec 5.8); spectators cannot ping.
     if (event.altKey && event.button === 0 && presenceLayer?.ping(event)) {
       event.preventDefault();
@@ -1579,6 +1772,12 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
+    // Escape leaves select mode and keeps the group, which the table's Escape would clear.
+    if (selecting && event.key === 'Escape' && !modal.open) {
+      event.preventDefault();
+      leaveSelectMode();
+      return;
+    }
     handleKey(event, {
       view,
       items: hoveredItems,
@@ -1680,6 +1879,23 @@
   // small trackpad moves add up instead of rounding away.
   let wheelTarget: number | null = null;
 
+  // What a double tap does not zoom on: an element of the table, which a tap acts on.
+  const NOT_EMPTY = '.card, .marker, [data-counter], .chip, button';
+
+  // Touch mode: two fingers pinch-zoom the table and pan it, and a double tap on an empty spot
+  // toggles the fit zoom and the readable one (touchZoom.ts). The zoom they choose is remembered,
+  // as the buttons' is.
+  const fingerZoom = touchZoom({
+    enabled: () => touchMode.current,
+    zoom: () => zoom,
+    fit: () => defaultZoom,
+    setZoom: (wanted, x, y) => {
+      wheelTarget = null;
+      void setZoom(wanted, x, y);
+    },
+    isEmptySpot: (target) => target instanceof Element && target.closest(NOT_EMPTY) === null,
+  });
+
   function zoomWithButtons(wanted: number): void {
     wheelTarget = null;
     void setZoom(wanted);
@@ -1762,6 +1978,7 @@
     oncontextmenu={onTableContextMenu}
     onwheel={onWheel}
     onscroll={measureFocus}
+    {@attach fingerZoom}
   >
     <div class="table">
       <Surface
@@ -1911,6 +2128,7 @@
         inset={handsRoom}
         restPlace={restPlaces[i]}
         hidden={handRaised && seat !== handSeat}
+        onopen={touchMode.current ? openHandInspector : undefined}
         bind:open={handsOpen[i]}
       />
     {/each}
@@ -1956,6 +2174,31 @@
         onclose={() => interaction.closeContextMenu()}
       />
     {/key}
+  {/if}
+
+  {#if inspected && inspectorHeader && inspectorContent}
+    <!-- Created afresh for each opening, as the menu: the focus it gives back is the one before it. -->
+    {#key inspected}
+      <CardSheet
+        header={inspectorHeader}
+        entries={inspectorContent.entries}
+        note={inspectorContent.note}
+        images={inspectorImages(inspected)}
+        landscape={inspectorLandscape(inspected)}
+        counters={inspectorCounters(inspected)}
+        onrun={runInspectorItem}
+        onstep={stepInspected}
+        onclose={closeInspector}
+      />
+    {/key}
+  {/if}
+
+  {#if selecting}
+    <div class="notice selectbar" role="group" aria-label="Select mode">
+      <span>{interaction.group.size} selected</span>
+      <span aria-hidden="true">·</span>
+      <button class="btn-ghost done" onclick={leaveSelectMode}>Done</button>
+    </div>
   {/if}
 
   {#if counterShown}
@@ -2259,6 +2502,22 @@
     border: 1px solid var(--accent);
     border-radius: 999px;
     font-size: 13px;
+  }
+
+  /* The select mode's pill (touch mode): a notice with its Done button, a finger's size. */
+  .selectbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 0 16px;
+  }
+
+  .selectbar .done {
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: var(--accent);
+    font-weight: 600;
   }
 
   /*
