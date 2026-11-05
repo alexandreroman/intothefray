@@ -98,16 +98,22 @@ async function renderTable() {
   return { session };
 }
 
-async function press(element: Element, x: number, y: number, pointerType = 'touch') {
-  await fireEvent.pointerDown(element, { clientX: x, clientY: y, pointerType });
+async function press(element: Element, x: number, y: number, pointerType = 'touch', pointerId = 1) {
+  await fireEvent.pointerDown(element, { clientX: x, clientY: y, pointerType, pointerId });
 }
 
-async function moveTo(x: number, y: number, pointerType = 'touch') {
-  await fireEvent.pointerMove(window, { clientX: x, clientY: y, buttons: 1, pointerType });
+async function moveTo(x: number, y: number, pointerType = 'touch', pointerId = 1) {
+  await fireEvent.pointerMove(window, {
+    clientX: x,
+    clientY: y,
+    buttons: 1,
+    pointerType,
+    pointerId,
+  });
 }
 
-async function release(x: number, y: number, pointerType = 'touch') {
-  await fireEvent.pointerUp(window, { clientX: x, clientY: y, pointerType });
+async function release(x: number, y: number, pointerType = 'touch', pointerId = 1) {
+  await fireEvent.pointerUp(window, { clientX: x, clientY: y, pointerType, pointerId });
 }
 
 /** Lets that much time go by with the finger where it is. */
@@ -226,7 +232,7 @@ describe('a touch press on a table card, in touch mode', () => {
   it('is cleared by a pointercancel, armed or not', async () => {
     await renderTable();
     await press(placed('mine'), 50, 400);
-    await fireEvent.pointerCancel(window, { clientX: 50, clientY: 400 });
+    await fireEvent.pointerCancel(window, { clientX: 50, clientY: 400, pointerId: 1 });
     expect(interaction.held).toBeNull();
     await wait(300);
     expect(interaction.armed).toBe(false);
@@ -234,7 +240,7 @@ describe('a touch press on a table card, in touch mode', () => {
     await press(placed('mine'), 50, 400);
     await wait(300);
     expect(interaction.armed).toBe(true);
-    await fireEvent.pointerCancel(window, { clientX: 50, clientY: 400 });
+    await fireEvent.pointerCancel(window, { clientX: 50, clientY: 400, pointerId: 1 });
     expect(interaction.held).toBeNull();
     expect(interaction.armed).toBe(false);
     expect(placed('mine').classList).not.toContain('armed');
@@ -276,6 +282,143 @@ describe('a touch press on a table card, in touch mode', () => {
     await moveTo(500, 600);
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['h2']);
     expect(interaction.armed).toBe(false);
+  });
+
+  it('adds its scroll guard at the press, and stops the scroll only once armed', async () => {
+    await renderTable();
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    await press(placed('mine'), 50, 400);
+    const touchmoves = () => add.mock.calls.filter(([type]) => type === 'touchmove');
+    expect(touchmoves()).toEqual([['touchmove', expect.any(Function), { passive: false }]]);
+
+    await wait(300);
+    expect(interaction.armed).toBe(true);
+    expect(touchmoves()).toHaveLength(1);
+
+    await release(50, 400);
+    const guard = touchmoves()[0]![1];
+    expect(remove).toHaveBeenCalledWith('touchmove', guard);
+  });
+
+  it('removes its scroll guard when the finger scrolls the table instead', async () => {
+    await renderTable();
+    const remove = vi.spyOn(window, 'removeEventListener');
+    await press(placed('mine'), 50, 400);
+    await moveTo(50, 470);
+    expect(interaction.held).toBeNull();
+    expect(remove.mock.calls.some(([type]) => type === 'touchmove')).toBe(true);
+  });
+
+  it('no longer shows its pile card armed once the drag starts', async () => {
+    await renderTable();
+    await press(placed('enc'), 60, 100);
+    await wait(300);
+    expect(placed('enc').classList).toContain('armed');
+
+    await moveTo(60, 160);
+    expect(interaction.dragging).not.toBeNull();
+    expect(interaction.isArmed({ kind: 'pile', id: 'enc' })).toBe(false);
+    expect(placed('enc').classList).not.toContain('armed');
+  });
+});
+
+describe('a pinch, in touch mode', () => {
+  beforeEach(() => {
+    mockScreen(TOUCH_TABLET);
+  });
+
+  it('lets go of a press waiting for the hold, which then never arms', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400, 'touch', 1);
+    await press(placed('v'), 340, 100, 'touch', 2);
+    expect(interaction.held).toBeNull();
+
+    await wait(300);
+    expect(interaction.armed).toBe(false);
+    expect(placed('mine').classList).not.toContain('armed');
+  });
+
+  it('gives the press to no second finger, on a card or on a marker', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400, 'touch', 1);
+    await press(marker(), 900, 400, 'touch', 2);
+    expect(interaction.held).toBeNull();
+    await wait(300);
+    expect(interaction.armed).toBe(false);
+    expect(marker().classList).not.toContain('armed');
+  });
+
+  it('is over once the fingers lift: the next press holds again', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400, 'touch', 1);
+    await press(placed('v'), 340, 100, 'touch', 2);
+    await release(340, 100, 'touch', 2);
+    await release(50, 400, 'touch', 1);
+
+    await press(placed('mine'), 50, 400, 'touch', 3);
+    await wait(300);
+    expect(interaction.armed).toBe(true);
+  });
+
+  it('cancels a hand card press not yet dragged', async () => {
+    await renderTable();
+    await press(handCard('h2'), 500, 760, 'touch', 1);
+    await press(placed('mine'), 50, 400, 'touch', 2);
+    expect(interaction.held).toBeNull();
+    await moveTo(500, 600, 'touch', 1);
+    expect(ghosts()).toEqual([]);
+  });
+});
+
+describe('a touch press on a hand card in the carousel', () => {
+  beforeEach(() => {
+    mockScreen(TOUCH_TABLET);
+  });
+
+  /** Marks the hand as a carousel, as HandSheet.svelte does. */
+  function asCarousel(): void {
+    const hand = document.querySelector<HTMLElement>('.hand');
+    if (!hand) {
+      throw new Error('no hand');
+    }
+    hand.dataset.carousel = '';
+  }
+
+  it('lets a sideways move scroll the carousel: no drag', async () => {
+    const { session } = await renderTable();
+    asCarousel();
+    await press(handCard('h2'), 500, 760);
+    await moveTo(540, 755);
+    expect(ghosts()).toEqual([]);
+    expect(interaction.held).toBeNull();
+    expect(interaction.dragging).toBeNull();
+
+    await release(560, 755);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('drags the card on a mostly upward move', async () => {
+    await renderTable();
+    asCarousel();
+    await press(handCard('h2'), 500, 760);
+    await moveTo(510, 720);
+    expect(interaction.dragging?.element).toEqual({ kind: 'hand', id: 'h2' });
+  });
+
+  it('keeps the sideways reorder drag of the fan, which is no carousel', async () => {
+    await renderTable();
+    await press(handCard('h2'), 500, 760);
+    await moveTo(540, 755);
+    expect(interaction.dragging?.element).toEqual({ kind: 'hand', id: 'h2' });
+  });
+
+  it('keeps the sideways drag of a mouse in a carousel', async () => {
+    await renderTable();
+    asCarousel();
+    await press(handCard('h2'), 500, 760, 'mouse');
+    await moveTo(540, 755, 'mouse');
+    expect(interaction.dragging?.element).toEqual({ kind: 'hand', id: 'h2' });
   });
 });
 

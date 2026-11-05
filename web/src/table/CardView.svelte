@@ -240,6 +240,18 @@
   }
 
   /*
+    A hold lifts it in place (.armed) only in touch mode, where it eases up and back down, let go without a move
+    or not. A ghost takes its own transition.
+  */
+  :global(.app.touch) .card:not(.ghost) {
+    transition: scale 0.14s ease-out;
+  }
+
+  :global(.app.touch) .card:not(.ghost) .shade {
+    transition: translate 0.14s ease-out;
+  }
+
+  /*
     The card's shadow, cast from 2px inside its edge, under its face (see --card-shadow). Its corners are the card's
     radius (CardFace), so it falls from the rounded card. The tabs and tokens that stick out of the card's edge cast
     their own.
@@ -281,12 +293,10 @@
   /* Armed by a hold, held up in place as its ghost will be (--lift-scale, --lift-shade). */
   .card.armed {
     scale: var(--lift-scale);
-    transition: scale 0.14s ease-out;
   }
 
   .card.armed .shade {
     translate: var(--lift-shade);
-    transition: translate 0.14s ease-out;
   }
 
   /*

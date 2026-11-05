@@ -156,6 +156,8 @@ describe('HandSheet', () => {
     const root = carousel();
     expect(root.classList.contains('hand')).toBe(true);
     expect(root.dataset.seat).toBe('1');
+    // A carousel: a finger moving sideways on a card scrolls it, and only an upward move drags.
+    expect(root.dataset.carousel).toBeDefined();
     expect(cardItems().map((item) => item.dataset.id)).toEqual(['h1', 'h2', 'h3']);
     for (const item of cardItems()) {
       expect(item.classList.contains('hcard')).toBe(true);

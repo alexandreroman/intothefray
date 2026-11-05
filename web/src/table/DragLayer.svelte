@@ -276,6 +276,11 @@
         interaction.swallowNextClick();
         return;
       }
+      if (isCarouselScroll(pressed, event, at)) {
+        // Not a drag: the browser scrolls the carousel under the finger (its pointercancel follows).
+        interaction.letGo();
+        return;
+      }
       const from = sourceOf(pressed.element, view);
       if (!from) {
         // Not draggable, or a spectator: the press stays a press.
@@ -319,6 +324,25 @@
       event.pointerType === 'touch' &&
       isDownward(pressed.start, at)
     );
+  }
+
+  /**
+   * A finger moving a card of the hand sheet's carousel other than mostly upwards: it scrolls the
+   * carousel, as it may already have before the browser took the finger over. Only an upward move
+   * drags the card out to the table; the fan has no carousel, and drags its cards sideways.
+   */
+  function isCarouselScroll(pressed: Held, event: PointerEvent, at: Point): boolean {
+    return (
+      pressed.element.kind === 'hand' &&
+      event.pointerType === 'touch' &&
+      interaction.inCarousel &&
+      !isUpward(pressed.start, at)
+    );
+  }
+
+  /** Whether the move from `from` to `to` goes mostly up. */
+  function isUpward(from: Point, to: Point): boolean {
+    return from.y - to.y > Math.abs(to.x - from.x);
   }
 
   function start(from: DragSource, pressedAt: Point): void {
@@ -990,7 +1014,15 @@
   });
 </script>
 
-<svelte:window onpointermove={onMove} onpointerup={onUp} onpointercancel={onCancel} />
+<!-- The capture phase counts the fingers down before any press they begin, whatever stops the event later. -->
+<svelte:window
+  onpointerdowncapture={(event) => interaction.fingerDown(event)}
+  onpointerupcapture={(event) => interaction.fingerUp(event)}
+  onpointercancelcapture={(event) => interaction.fingerUp(event)}
+  onpointermove={onMove}
+  onpointerup={onUp}
+  onpointercancel={onCancel}
+/>
 
 <!--
   The ghosts repeat what is dragged, for the eyes only, held up off the table (--lift-scale,

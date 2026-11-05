@@ -146,6 +146,15 @@
     touch-action: pan-x pan-y;
   }
 
+  /* A hold lifts it in place (.armed) only in touch mode: it eases up, and back down when let go, moved or not. */
+  :global(.app.touch) .card {
+    transition: scale 0.14s ease-out;
+  }
+
+  :global(.app.touch) .card .shade {
+    transition: translate 0.14s ease-out;
+  }
+
   /*
     The same 45° shadow as a card on the table, cast from 2px inside its edge, under its face (see --card-shadow). A
     pile's slot is always portrait: a landscape top card is turned to fit it, and rounded with the portrait corners.
@@ -170,12 +179,10 @@
   /* Armed by a hold, held up in place as the card dragged from it will be (--lift-scale, --lift-shade). */
   .card.armed {
     scale: var(--lift-scale);
-    transition: scale 0.14s ease-out;
   }
 
   .card.armed .shade {
     translate: var(--lift-shade);
-    transition: translate 0.14s ease-out;
   }
 
   .art {

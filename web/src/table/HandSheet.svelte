@@ -4,11 +4,13 @@
   size, the others smaller and dimmed; Play, Discard and More… act on it.
 
   The carousel scrolls sideways only (touch-action: pan-x), so a finger moving
-  up or down on a card is a press the drag layer turns into a drag of that
-  card, as on the fan: the carousel is marked up like Hand.svelte (.hand with
-  the seat, .hcard with its id, .fan holding the face), where DragLayer.svelte
-  measures the card and its slots. The sheet closes once the drag starts, and
-  the card goes on to the table under the finger.
+  up on a card is a press the drag layer turns into a drag of that card, as on
+  the fan: the carousel is marked up like Hand.svelte (.hand with the seat,
+  .hcard with its id, .fan holding the face), where DragLayer.svelte measures
+  the card and its slots. Its data-carousel tells the drag layer that a finger
+  moving sideways scrolls it rather than drags the card, as the fan's would.
+  The sheet closes once the drag starts, and the card goes on to the table
+  under the finger.
 -->
 <script lang="ts">
   import { untrack, type Snippet } from 'svelte';
@@ -105,6 +107,7 @@
       <ul
         class="hand"
         aria-label="Cards in hand"
+        data-carousel
         data-seat={seat}
         data-area={area}
         bind:this={carousel}
