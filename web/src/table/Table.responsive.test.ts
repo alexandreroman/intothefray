@@ -55,6 +55,7 @@ const LANDSCAPE_TABLET: TestScreen = { width: 1180, height: 820, touch: true };
 // the hero selector, the top bar hiding on scroll). A finger there gets the dock (Table.dock.test.ts).
 const PHONE_MOUSE: TestScreen = { ...PHONE, touch: false };
 const LANDSCAPE_PHONE_MOUSE: TestScreen = { ...LANDSCAPE_PHONE, touch: false };
+const LARGE_LANDSCAPE_PHONE_MOUSE: TestScreen = { ...LARGE_LANDSCAPE_PHONE, touch: false };
 
 /** Records what the size bindings observe, so that a test can tell them the sizes changed. */
 class FakeResizeObserver {
@@ -1118,7 +1119,7 @@ describe('Table under a compact top bar', () => {
   });
 
   it('zooms around the pointer past the room the bar keeps at the top', async () => {
-    mockScreen(PHONE);
+    mockScreen(PHONE_MOUSE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const wrap = container.querySelector<HTMLElement>('.tablewrap')!;
     vi.spyOn(wrap, 'getBoundingClientRect').mockReturnValue(
@@ -1155,7 +1156,7 @@ describe('Table under a compact top bar', () => {
   });
 
   it('floats the bar over the play area only of a large phone on its side, beside the history', () => {
-    mockScreen(LARGE_LANDSCAPE_PHONE);
+    mockScreen(LARGE_LANDSCAPE_PHONE_MOUSE);
     const { container } = render(Table, { session: fakeSession(), view: makeView() });
     const app = container.querySelector<HTMLElement>('.app')!;
     expect(app.classList).toContain('compact');

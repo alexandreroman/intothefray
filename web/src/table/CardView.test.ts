@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
+import { flushSync } from 'svelte';
 import CardView from './CardView.svelte';
+import { DOCK_MODE_KEY } from './dockMode';
 import { interaction } from './interaction.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox } from './layout';
@@ -372,5 +374,136 @@ describe('a press on a card', () => {
 
     expect(interaction.held?.element).toEqual({ kind: 'card', id: 'c1' });
     expect(document.activeElement).toBe(field);
+  });
+});
+
+describe('CardView in dock mode (art tiles)', () => {
+  /** Renders the card as the table does in dock mode, or out of it. */
+  function renderCard(
+    props: { card: TableCard; face: PackFace | null; ghost?: boolean },
+    dock = true,
+  ) {
+    return render(CardView, { props, context: new Map([[DOCK_MODE_KEY, { current: dock }]]) });
+  }
+
+  function tile(container: HTMLElement): HTMLElement | null {
+    return container.querySelector<HTMLElement>('.tile');
+  }
+
+  it.each([
+    ['hero', 'Spider-Man'],
+    ['ally', 'Black Cat'],
+    ['upgrade', 'Web-Shooter'],
+    ['treachery', 'Hard to Keep Down'],
+  ])('draws a face-up %s as its art and its name, in the same footprint', (type, name) => {
+    const { container } = renderCard({ card: tableCard(), face: face({ type, name }) });
+
+    const el = cardElement(container);
+    expect(el.classList.contains('tile')).toBe(true);
+    const art = tile(container)!;
+    expect(art.querySelector('.art img')?.getAttribute('src')).toBe('spidey.png');
+    expect(art.querySelector('.name')?.textContent).toBe(name);
+    // The image names the card, as the full face does.
+    expect(screen.getByRole('img', { name }).closest('.art')).toBeTruthy();
+    const portrait = cardBox('std', {});
+    expect(el.style.width).toBe(`${portrait.w}px`);
+    expect(el.style.height).toBe(`${portrait.h}px`);
+  });
+
+  it('zooms onto the art window of the face type', () => {
+    const hero = renderCard({ card: tableCard(), face: face({ type: 'hero' }) });
+    const heroTop = hero.container.querySelector<HTMLElement>('.art img')!.style.top;
+    hero.unmount();
+
+    const event = renderCard({ card: tableCard(), face: face({ type: 'event' }) });
+    const eventTop = event.container.querySelector<HTMLElement>('.art img')!.style.top;
+    expect(eventTop).not.toBe(heroTop);
+  });
+
+  it('keeps the tokens, statuses, modifiers and the exhausted tilt on a tile', () => {
+    const { container } = renderCard({
+      card: tableCard({
+        exhausted: true,
+        tokens: { dmg: 2 },
+        status: { stunned: 1 },
+        mods: { atk: 1 },
+      }),
+      face: face(),
+    });
+
+    const el = cardElement(container);
+    expect(tile(container)).not.toBeNull();
+    expect(el.classList.contains('exhausted')).toBe(true);
+    expect(el.querySelector('.tok.dmg')?.textContent).toBe('2');
+    expect(el.querySelector('.st.stunned')).not.toBeNull();
+    expect(el.querySelector('.st.mod')?.textContent).toBe('+1 ATK');
+  });
+
+  it('draws the ghost of a tile as a tile', () => {
+    const { container } = renderCard({ card: tableCard(), face: face(), ghost: true });
+
+    expect(tile(container)).not.toBeNull();
+  });
+
+  it('draws a scheme whole', () => {
+    const { container } = renderCard({
+      card: tableCard(),
+      face: face({ type: 'side_scheme', size: 'land', name: 'Bomb Scare' }),
+    });
+
+    expect(tile(container)).toBeNull();
+    expect(cardElement(container).classList.contains('tile')).toBe(false);
+    expect(screen.getByRole('img', { name: 'Bomb Scare' }).classList.contains('land')).toBe(true);
+  });
+
+  it('draws a portrait scheme whole', () => {
+    const { container } = renderCard({ card: tableCard(), face: face({ type: 'main_scheme' }) });
+
+    expect(tile(container)).toBeNull();
+  });
+
+  it('keeps the back of a face-down card', () => {
+    const { container } = renderCard({ card: tableCard({ faceDown: true }), face: face() });
+
+    expect(tile(container)).toBeNull();
+    expect(screen.getByRole('img', { name: 'Player card back' })).toBeTruthy();
+  });
+
+  it('draws a double face whole', () => {
+    const { container } = renderCard({ card: tableCard(), face: face({ size: 'dstd' }) });
+
+    expect(tile(container)).toBeNull();
+  });
+
+  it('keeps the placeholder of an unknown face', () => {
+    const { container } = renderCard({ card: tableCard(), face: null });
+
+    expect(tile(container)).toBeNull();
+  });
+
+  it('tries the next image when the first fails', () => {
+    const { container } = renderCard({
+      card: tableCard(),
+      face: face({ images: ['fr.png', 'en.png'] }),
+    });
+
+    const img = container.querySelector<HTMLImageElement>('.art img')!;
+    img.dispatchEvent(new Event('error'));
+    flushSync();
+
+    expect(container.querySelector('.art img')?.getAttribute('src')).toBe('en.png');
+  });
+
+  it('draws the full face out of dock mode', () => {
+    const { container } = renderCard({ card: tableCard(), face: face() }, false);
+
+    expect(tile(container)).toBeNull();
+    expect(screen.getByRole('img', { name: 'Spider-Man' }).getAttribute('src')).toBe('spidey.png');
+  });
+
+  it('draws the full face outside any table', () => {
+    const { container } = render(CardView, { card: tableCard(), face: face() });
+
+    expect(tile(container)).toBeNull();
   });
 });

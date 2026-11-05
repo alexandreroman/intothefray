@@ -70,6 +70,7 @@
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
+  import { setDockMode } from './dockMode';
   import { DRAG_THRESHOLD, handAreaOf, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
@@ -488,6 +489,12 @@
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
+  // The cards and piles below read it too: art tiles and small piles (spec 3.6).
+  setDockMode({
+    get current() {
+      return dockMode;
+    },
+  });
 
   // The window's size, in px: a small screen's hand cards follow it.
   let windowWidth = $state(window.innerWidth);
@@ -508,8 +515,9 @@
   // In dock mode the bar does not hide on scroll: it starts hidden, and the dock's menu button slides
   // it in and out.
   let barHidden = $derived(dockMode);
-  // The room the bar keeps at the start of the table, and over the top of the play area, in px.
-  const barStart = $derived(small.current ? TOP_BAR_HEIGHT : 0);
+  // The room the bar keeps at the start of the table, and over the top of the play area, in px. In dock
+  // mode the bar floats over the table, which keeps no room for it: the bar shows only when asked for.
+  const barStart = $derived(small.current && !dockMode ? TOP_BAR_HEIGHT : 0);
   const barRoom = $derived(small.current && !barHidden ? TOP_BAR_HEIGHT : 0);
 
   // The table's visible size, in px.
@@ -2657,6 +2665,11 @@
   .table :global(.card.drop-pile)::before {
     outline: 3px dashed var(--sel);
     outline-offset: 3px;
+  }
+
+  /* A pile drawn at 60 % of its slot in dock mode (PileView): its rings go round the pile as drawn. */
+  .table :global(.card.pile.small)::before {
+    inset: 20%;
   }
 
   /*

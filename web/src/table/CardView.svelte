@@ -3,11 +3,13 @@
   table units, with its tokens, statuses and stat modifiers.
 -->
 <script lang="ts">
+  import { artWindowFor } from '../lib/cardArt';
   import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard } from '../lib/types';
   import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
+  import { dockMode } from './dockMode';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
@@ -46,6 +48,15 @@
   const landscape = $derived(!box.rotated && box.w > box.h);
   // A hidden card has no face: it is not known to be a scheme.
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
+  // In dock mode (spec 3.6), a face-up portrait card other than a scheme is drawn as an art tile: its
+  // illustration and its name, in the same footprint. Landscape and double faces show whole.
+  const dock = dockMode();
+  const artWindow = $derived.by(() => {
+    if (!dock.current || hidden || face?.size !== 'std' || box.rotated) {
+      return undefined;
+    }
+    return artWindowFor(face.type) ?? undefined;
+  });
   const hasToken = (k: TokenName) => (card.tokens?.[k] ?? 0) > 0;
   const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
   const threatTokens = $derived(THREAT_TOKENS.filter(hasToken));
@@ -112,6 +123,7 @@
   class:hovered
   class:land={landscape}
   class:scheme
+  class:tile={artWindow !== undefined}
   class:lifted
   class:armed
   class:ghost
@@ -144,6 +156,7 @@
       name={face?.name ?? ''}
       {landscape}
       rotated={box.rotated}
+      {artWindow}
     />
   {/if}
 

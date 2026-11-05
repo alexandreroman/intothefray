@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
+import { DOCK_MODE_KEY } from './dockMode';
 import { interaction } from './interaction.svelte';
 import PileView from './PileView.svelte';
 import pileSource from './PileView.svelte?raw';
 import tableSource from './Table.svelte?raw';
-import type { CardView as TableCard, PackFace } from '../lib/types';
+import type { CardView as TableCard, PackFace, PileView as TablePile } from '../lib/types';
 import { card, pile } from './fixtures.testing';
 
 const ENCOUNTER_BACK = 'https://img.intothefray.xyz/assets/back-encounter.avif';
@@ -155,5 +156,52 @@ describe('PileView', () => {
       interaction.reset();
       button.remove();
     }
+  });
+});
+
+describe('PileView in dock mode (small piles)', () => {
+  function renderPile(props: { pile: TablePile }, dock = true) {
+    return render(PileView, { props, context: new Map([[DOCK_MODE_KEY, { current: dock }]]) });
+  }
+
+  it('is drawn small in its slot, which keeps its full size and its count', () => {
+    const { container } = renderPile({
+      pile: pile('enc', { kind: 'encounter', x: 120, y: 20, count: 12 }),
+    });
+
+    const el = pileElement(container);
+    expect(el.classList.contains('small')).toBe(true);
+    expect(el.style.width).toBe('112px');
+    expect(el.style.height).toBe('157px');
+    expect(el.querySelector('.count')?.textContent).toBe('12');
+  });
+
+  it('scales what it draws to 60 %, centred, and keeps its count readable', () => {
+    const rule = (selector: string) =>
+      new RegExp(`\\n {2}${selector} \\{([^}]*)\\}`).exec(pileSource)?.[1];
+    const drawn = /\n {2}(\.card\.small > \.shade,[^{]*)\{([^}]*)\}/.exec(pileSource);
+    expect(drawn?.[1]).toContain('.card.small > .art');
+    expect(drawn?.[1]).toContain('.card.small > .slot');
+    expect(drawn?.[2]).toContain('scale: 0.6;');
+    expect(rule('\\.card\\.small \\.count')).toMatch(
+      /font-size: max\(9px, 9px \/ var\(--z, 1\)\);/,
+    );
+    // The table's rings go round the pile as drawn.
+    expect(tableSource).toMatch(/\.table :global\(\.card\.pile\.small\)::before \{\s*inset: 20%;/);
+  });
+
+  it('is drawn full size out of dock mode', () => {
+    const { container } = renderPile(
+      { pile: pile('enc', { kind: 'encounter', count: 12 }) },
+      false,
+    );
+
+    expect(pileElement(container).classList.contains('small')).toBe(false);
+  });
+
+  it('is drawn full size outside any table', () => {
+    const { container } = render(PileView, { pile: pile('enc', { kind: 'encounter', count: 12 }) });
+
+    expect(pileElement(container).classList.contains('small')).toBe(false);
   });
 });

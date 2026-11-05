@@ -3,13 +3,19 @@
   the card name once none is left. Rounds the corners with the card's radius.
   The CDN images are stored in the card's own orientation, so a landscape card
   only turns when a portrait slot draws it (rotated).
+  Given an art window, a portrait card is drawn as an art tile instead: its
+  illustration filling the card, its name on a strip along the bottom.
 -->
 <script lang="ts">
+  import CardArt from '../components/CardArt.svelte';
+  import { CARD_ASPECT, type ArtWindow } from '../lib/cardArt';
+
   let {
     images,
     name = '',
     landscape = false,
     rotated = false,
+    artWindow,
   }: {
     images: string[];
     name?: string;
@@ -17,6 +23,8 @@
     landscape?: boolean;
     /** A landscape image turned a quarter to fit a portrait slot. */
     rotated?: boolean;
+    /** Where the art lies on this portrait face: draws the card as an art tile. */
+    artWindow?: ArtWindow;
   } = $props();
 
   // Failures are counted per images array, so a new array starts again from its first URL.
@@ -35,6 +43,12 @@
 {:else if rotated}
   <span class="land-in-portrait">
     <img src={url} alt={name} onerror={tryNext} />
+  </span>
+{:else if artWindow}
+  <span class="tile">
+    <CardArt src={url} alt={name} aspect={CARD_ASPECT} {artWindow} onerror={tryNext} />
+    <!-- The image already names the card to screen readers. -->
+    <span class="name" aria-hidden="true">{name}</span>
   </span>
 {:else}
   <img class:land={landscape} src={url} alt={name} onerror={tryNext} />
@@ -96,5 +110,32 @@
     height: 71.43%;
     transform: translate(-50%, -50%) rotate(-90deg);
     border-radius: 0;
+  }
+
+  /* The art tile: the illustration clipped to the card's rounded corners (a radius, not a clip-path). */
+  .tile {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: var(--card-radius);
+    background: var(--bg);
+  }
+
+  /* A thin strip along the bottom, under the tokens and tabs the card draws over it. */
+  .name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 3px 6px 4px;
+    background: #000000b8;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>

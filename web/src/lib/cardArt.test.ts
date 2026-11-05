@@ -1,6 +1,14 @@
-import { render, screen } from '@testing-library/svelte';
-import CardArt from '../components/CardArt.svelte';
-import { ART_BOTTOM, ART_LEFT, ART_RIGHT, ART_TOP, artFrame, CARD_ASPECT } from './cardArt';
+import {
+  ART_BOTTOM,
+  ART_LEFT,
+  ART_RIGHT,
+  ART_TOP,
+  artFrame,
+  artWindowFor,
+  CARD_ASPECT,
+  CHARACTER_ART,
+  type ArtWindow,
+} from './cardArt';
 
 type Frame = ReturnType<typeof artFrame>;
 
@@ -58,24 +66,96 @@ describe('artFrame', () => {
   });
 });
 
-describe('CardArt', () => {
-  it('shows the card image named, lazily, zoomed and moved onto its art', () => {
-    render(CardArt, { src: 'hero.jpg', alt: 'Spider-Man', aspect: 1, loading: 'lazy' });
+// Every portrait face type of the packs, by the layout of its art.
+const CHARACTERS = ['hero', 'alter_ego', 'ally', 'villain', 'minion', 'leader'];
+const OTHERS = [
+  'upgrade',
+  'support',
+  'event',
+  'resource',
+  'attachment',
+  'treachery',
+  'obligation',
+  'environment',
+  'evidence_means',
+  'evidence_motive',
+  'evidence_opportunity',
+];
+const SCHEMES = ['main_scheme', 'side_scheme', 'player_side_scheme'];
 
-    const image = screen.getByRole<HTMLImageElement>('img', { name: 'Spider-Man' });
-    const frame = artFrame(1);
-    expect(image.getAttribute('src')).toBe('hero.jpg');
-    expect(image.getAttribute('loading')).toBe('lazy');
-    expect(parseFloat(image.style.width)).toBeCloseTo(frame.width * 100, 1);
-    expect(parseFloat(image.style.height)).toBeCloseTo(frame.height * 100, 1);
-    expect(parseFloat(image.style.left)).toBeCloseTo(frame.left * 100, 1);
-    expect(parseFloat(image.style.top)).toBeCloseTo(frame.top * 100, 1);
+// A table card's box: 112 × 157 table units.
+const TILE_ASPECT = 112 / 157;
+
+describe('artWindowFor', () => {
+  it.each(CHARACTERS)("gives a %s the character's window", (type) => {
+    expect(artWindowFor(type)).toEqual({
+      left: ART_LEFT,
+      right: ART_RIGHT,
+      top: ART_TOP,
+      bottom: ART_BOTTOM,
+    });
   });
 
-  it('is decorative without a name', () => {
-    const { container } = render(CardArt, { src: 'villain.jpg', aspect: 4 / 3 });
+  it.each(OTHERS)('gives a %s a window of its own inside the card', (type) => {
+    const art = artWindowFor(type);
 
-    expect(screen.queryByRole('img')).toBeNull();
-    expect(container.querySelector('img')?.getAttribute('alt')).toBe('');
+    expect(art).not.toBeNull();
+    expect(art).not.toEqual(CHARACTER_ART);
+    expect(art!.left).toBeGreaterThan(0);
+    expect(art!.right).toBeLessThan(1);
+    expect(art!.top).toBeGreaterThan(0);
+    // The text box fills the bottom half of every card.
+    expect(art!.bottom).toBeLessThanOrEqual(0.55);
+    expect(art!.right - art!.left).toBeGreaterThan(0.3);
+    expect(art!.bottom - art!.top).toBeGreaterThan(0.3);
+  });
+
+  it('keeps the art of an upgrade right of its title, which runs up the left edge', () => {
+    expect(artWindowFor('upgrade')!.left).toBeGreaterThan(0.1);
+  });
+
+  it('keeps the art of an encounter card under its title, across the top', () => {
+    for (const type of ['treachery', 'obligation', 'environment', 'evidence_means']) {
+      expect(artWindowFor(type)!.top).toBeGreaterThan(0.1);
+    }
+  });
+
+  it.each(SCHEMES)('gives a %s none: it is drawn whole', (type) => {
+    expect(artWindowFor(type)).toBeNull();
+  });
+
+  it('gives an unknown type none', () => {
+    expect(artWindowFor('mystery')).toBeNull();
+    expect(artWindowFor('')).toBeNull();
+  });
+});
+
+describe('artFrame with a window', () => {
+  const WINDOWS: [string, ArtWindow][] = OTHERS.map((type) => [type, artWindowFor(type)!]);
+
+  it.each(WINDOWS)('shows only the art of a %s in a table card', (_type, art) => {
+    const part = shown(artFrame(TILE_ASPECT, art));
+
+    expect(part.left).toBeGreaterThanOrEqual(art.left - 1e-9);
+    expect(part.right).toBeLessThanOrEqual(art.right + 1e-9);
+    expect(part.top).toBeGreaterThanOrEqual(art.top - 1e-9);
+    expect(part.bottom).toBeLessThanOrEqual(art.bottom + 1e-9);
+  });
+
+  it.each(WINDOWS)(
+    'fills a table card with the full height of the art of a %s, centred',
+    (_type, art) => {
+      const frame = artFrame(TILE_ASPECT, art);
+      const part = shown(frame);
+
+      expect(part.top).toBeCloseTo(art.top);
+      expect(part.bottom).toBeCloseTo(art.bottom);
+      expect((part.left + part.right) / 2).toBeCloseTo((art.left + art.right) / 2);
+      expect((frame.width * TILE_ASPECT) / frame.height).toBeCloseTo(CARD_ASPECT);
+    },
+  );
+
+  it("uses the character's window when given none", () => {
+    expect(artFrame(1)).toEqual(artFrame(1, CHARACTER_ART));
   });
 });

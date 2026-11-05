@@ -8,6 +8,7 @@
   import type { PackFace, CardView as TableCard, PileView } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
+  import { dockMode } from './dockMode';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox, pileBox } from './layout';
@@ -29,6 +30,9 @@
   } = $props();
 
   const slot = $derived(pileBox(pile));
+  // In dock mode (spec 3.6) the pile is drawn smaller, in the middle of its slot, which stays its hit
+  // and drop area.
+  const dock = dockMode();
 
   // While a card taken from it is dragged or waits for the server, the pile counts it out; so it does
   // with the cards still flying to it.
@@ -90,6 +94,7 @@
   class:hovered
   class:armed
   class:drop-pile={targeted}
+  class:small={dock.current}
   style:left="{pile.x}px"
   style:top="{pile.y}px"
   style:width="{slot.w}px"
@@ -222,5 +227,23 @@
 
   .count.hushed {
     opacity: 0;
+  }
+
+  /*
+    Dock mode: the pile is drawn at 60 % of its slot, centred in it; the slot itself, which takes the
+    presses and the drops, keeps its size. The count sits on the pile's bottom edge as drawn, and keeps
+    9 screen px of text however far the table zooms out (--z), as the name lines do (Surface).
+  */
+  .card.small > .shade,
+  .card.small > .art,
+  .card.small > .slot,
+  .card.small > .rring {
+    scale: 0.6;
+  }
+
+  .card.small .count {
+    bottom: calc(20% - 0.8em);
+    font-size: max(9px, 9px / var(--z, 1));
+    padding: 0 0.67em;
   }
 </style>

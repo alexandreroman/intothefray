@@ -12,6 +12,7 @@ import {
   PHONE,
   type TestScreen,
 } from '../lib/screen.testing';
+import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { Area, CardView as TableCard, DeckView, LogView, PackFace, View } from '../lib/types';
 import {
@@ -472,5 +473,64 @@ describe('the history sheet', () => {
     await rerender({ view: makeView() });
 
     expect(historyButton().getAttribute('aria-label')).toBe('History, 2 new');
+  });
+});
+
+describe('the top bar in dock mode', () => {
+  function app(): HTMLElement {
+    return document.querySelector<HTMLElement>('.app')!;
+  }
+
+  it('keeps no room at the top of the table, the bar floating over it when shown (F-V2)', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+    expect(app().style.getPropertyValue('--bar-start')).toBe('0px');
+    expect(app().style.getPropertyValue('--bar-room')).toBe('0px');
+
+    // Shown, it floats over the table: what floats at the top of the play area follows it.
+    await fireEvent.click(within(dock()!).getByRole('button', { name: 'Menu' }));
+    expect(app().style.getPropertyValue('--bar-start')).toBe('0px');
+    expect(app().style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
+  });
+
+  it('keeps its room at the top with a mouse on a narrow window', async () => {
+    mockScreen(NARROW_MOUSE);
+    await renderTable();
+
+    expect(app().style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT}px`);
+  });
+});
+
+describe('art tiles and small piles in dock mode', () => {
+  beforeEach(() => {
+    vi.mocked(knownCard).mockImplementation(
+      infoFrom({
+        ...FACES,
+        '01001': [{ name: 'Spider-Man', type: 'hero' }],
+        '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+      }),
+    );
+  });
+
+  it('draws the cards in play as art tiles and the piles small', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+
+    expect(placed('mine', '.card').classList).toContain('tile');
+    expect(placed('v', '.card').querySelector('.tile .name')?.textContent).toBe('Rhino');
+    expect(placed('deck:p0', '.pile').classList).toContain('small');
+  });
+
+  it.each([
+    ['a mouse on a narrow window', NARROW_MOUSE],
+    ['a touch tablet', TOUCH_TABLET],
+    ['a desktop', DESKTOP],
+  ])('draws full cards and piles on %s', async (_name, size) => {
+    mockScreen(size);
+    await renderTable();
+
+    expect(placed('mine', '.card').classList).not.toContain('tile');
+    expect(document.querySelector('.surface .tile')).toBeNull();
+    expect(placed('deck:p0', '.pile').classList).not.toContain('small');
   });
 });
