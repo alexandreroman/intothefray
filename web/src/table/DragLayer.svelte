@@ -53,6 +53,8 @@
     type Rect,
     type TableRect,
   } from './drag';
+  import { dockMode } from './dockMode';
+  import { dockCardBox } from './dockPiles';
   import { backCaption, isHidden, pileBack } from './face';
   import { HOLD_MS } from './gestures';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
@@ -127,6 +129,9 @@
   let handSize: { w: number; h: number } = { w: HAND_CARD.w, h: HAND_CARD.h };
   /** The sway of the ghosts: they lean with the pointer's horizontal speed (sway.ts). */
   const sway = new Sway();
+  // In dock mode (spec 3.6) the table draws its cards smaller, and so this layer draws the ghosts
+  // (CardView): the grab, the corner and the drop follow the drawn box.
+  const dock = dockMode();
   /** The frame that steps the sway next, 0 when it rests. */
   let swayFrame = 0;
   /**
@@ -458,7 +463,7 @@
     if (from.kind === 'card') {
       const card = cardsById.get(from.card);
       const surface = surfaceRect(root);
-      const corner = card && surface ? onScreen(card, surface) : null;
+      const corner = card && surface ? drawnCorner(card, surface) : null;
       if (card && corner) {
         const slot = slotOf(card);
         const held = {
@@ -499,6 +504,20 @@
   }
 
   /**
+   * Where a table card's top-left corner shows on the screen. In dock mode a card revealed on a pile
+   * lies on the pile as drawn (Surface), which may stand elsewhere in its smaller frame.
+   */
+  function drawnCorner(card: TableCard, surface: Rect): Point | null {
+    const pile = dock.current && card.onPile ? placedRect(tablePile(card.onPile)) : undefined;
+    return pile ? { x: pile.left, y: pile.top } : onScreen(card, surface);
+  }
+
+  /** The box a card is drawn at on the table: smaller in dock mode (spec 3.6). */
+  function drawn(box: Box): Box {
+    return dock.current ? dockCardBox(box) : box;
+  }
+
+  /**
    * Where a hold on a deck's portrait slot holds the landscape card it shows,
    * as fractions of each box. The slot shows the card turned a quarter
    * counter-clockwise (CardFace): the card's top edge is the slot's left
@@ -510,7 +529,7 @@
 
   /** The box a table card has where it lies: a card revealed on a deck, the deck's portrait slot. */
   function slotOf(card: TableCard): Box {
-    return cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile });
+    return drawn(cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile }));
   }
 
   /**
@@ -530,7 +549,7 @@
     return { w, h: w * ratio };
   }
 
-  /** The box of the dragged card on the table, in table units. */
+  /** The box of the dragged card on the table, in table units, as its ghost is drawn. */
   function boxOf(from: DragSource): Box {
     if (from.kind === 'marker') {
       return {
@@ -538,6 +557,11 @@
         rotated: false,
       };
     }
+    return drawn(cardBoxOf(from));
+  }
+
+  /** The box of the dragged card at full size, in table units. */
+  function cardBoxOf(from: Exclude<DragSource, { kind: 'marker' }>): Box {
     if (from.kind === 'encounter' || from.kind === 'deck') {
       const shown = from.kind === 'deck' ? shownDeckTop(from.pile) : undefined;
       return shown ? cardBox(sizeOf(shown), {}) : cardBox('std', { faceDown: true });

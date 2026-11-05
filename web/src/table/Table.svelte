@@ -491,7 +491,7 @@
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
-  // The cards and piles below read it too: art tiles and small piles (spec 3.6).
+  // The cards and piles below read it too: small cards and small piles (spec 3.6).
   setDockMode({
     get current() {
       return dockMode;
@@ -2678,11 +2678,6 @@
   .table :global(.card.drop-pile)::before {
     outline: 3px dashed var(--sel);
     outline-offset: 3px;
-  }
-
-  /* A pile drawn at 60 % of its slot in dock mode (PileView): its rings go round the pile as drawn. */
-  .table :global(.card.pile.small)::before {
-    inset: 20%;
   }
 
   /*

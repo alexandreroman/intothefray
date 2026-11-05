@@ -25,6 +25,7 @@ import {
 } from '../lib/types';
 import { playerColorToken } from '../lib/playerColor';
 import type { Anim, Tuck, Turn } from './animate';
+import { DOCK_SCALE } from './dockPiles';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
 import { EXHAUST_DEGREES, PORTRAIT_CARD } from './layout';
@@ -356,7 +357,8 @@ function measure(element: HTMLElement, zoom: number): Measured {
  * an out-of-play pile, a card on the chip that stands for the pile. The chip
  * is wider than tall and smaller than a card, but a card leaves it as a card:
  * it travels at a card's size, from the chip's middle, and a portrait card
- * does not count as landscape for the quarter turn (PileFlight.quarter).
+ * does not count as landscape for the quarter turn (PileFlight.quarter). In
+ * dock mode it is the size the table draws its cards at (spec 3.6).
  */
 function measureOrigin(element: HTMLElement, zoom: number): Measured {
   if (element.matches(OWN_GHOST)) {
@@ -368,7 +370,13 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
     return measure(element, zoom);
   }
   const chip = measure(element, zoom);
-  return { cx: chip.cx, cy: chip.cy, w: PORTRAIT_CARD.w * zoom, h: PORTRAIT_CARD.h * zoom };
+  const scale = element.closest('.dock-mode') ? DOCK_SCALE : 1;
+  return {
+    cx: chip.cx,
+    cy: chip.cy,
+    w: PORTRAIT_CARD.w * scale * zoom,
+    h: PORTRAIT_CARD.h * scale * zoom,
+  };
 }
 
 /** A deck's hidden top card the viewer dragged landed as an unknown card, not under its id. */

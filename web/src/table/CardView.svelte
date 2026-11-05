@@ -3,13 +3,13 @@
   table units, with its tokens, statuses and stat modifiers.
 -->
 <script lang="ts">
-  import { artWindowFor } from '../lib/cardArt';
   import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard } from '../lib/types';
   import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
+  import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
@@ -46,17 +46,13 @@
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
+  // In dock mode (spec 3.6) the card is drawn whole at a smaller scale, about its top-left corner,
+  // which stays where it lies. The element is the drawn box: it takes the presses and the drops, the
+  // rings go round it, it tilts about its middle and the flights measure it.
+  const dock = dockMode();
+  const drawn = $derived(dock.current ? dockCardBox(box) : box);
   // A hidden card has no face: it is not known to be a scheme.
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
-  // In dock mode (spec 3.6), a face-up portrait card other than a scheme is drawn as an art tile: its
-  // illustration and its name, in the same footprint. Landscape and double faces show whole.
-  const dock = dockMode();
-  const artWindow = $derived.by(() => {
-    if (!dock.current || hidden || face?.size !== 'std' || box.rotated) {
-      return undefined;
-    }
-    return artWindowFor(face.type) ?? undefined;
-  });
   const hasToken = (k: TokenName) => (card.tokens?.[k] ?? 0) > 0;
   const cornerTokens = $derived(CORNER_TOKENS.filter(hasToken));
   const threatTokens = $derived(THREAT_TOKENS.filter(hasToken));
@@ -65,14 +61,14 @@
   const statuses = $derived(STATUSES.filter(({ name }) => (card.status?.[name] ?? 0) > 0));
 
   /**
-   * What a status tab reads: "Tough", or "Tough ×2" for several. The count of Retaliate is its
-   * value, which always shows: "Retaliate 1".
+   * The number a status tab shows after its label: none for one, "×2" for several ("Tough ×2").
+   * The count of Retaliate is its value, which always shows: "Retaliate 1".
    */
-  function statusText(name: string, label: string, count: number): string {
+  function statusCount(name: string, count: number): string | null {
     if (name === 'retaliate') {
-      return `${label} ${count}`;
+      return `${count}`;
     }
-    return count > 1 ? `${label} ×${count}` : label;
+    return count > 1 ? `×${count}` : null;
   }
 
   // A modifier is signed: only 0 hides it.
@@ -123,7 +119,7 @@
   class:hovered
   class:land={landscape}
   class:scheme
-  class:tile={artWindow !== undefined}
+  class:scaled={dock.current}
   class:lifted
   class:armed
   class:ghost
@@ -133,9 +129,10 @@
   class:drop-pile={pileTarget}
   style:left="{card.x}px"
   style:top="{card.y}px"
-  style:width="{box.w}px"
-  style:height="{box.h}px"
+  style:width="{drawn.w}px"
+  style:height="{drawn.h}px"
   style:z-index={card.z}
+  style:--scale={dock.current ? DOCK_SCALE : undefined}
   style:--lift-scale={armed ? LIFT_SCALE : undefined}
   style:--lift-shade={armed ? LIFT_SHADE : undefined}
   onpointerenter={(event) => interaction.enter(element, event)}
@@ -156,7 +153,6 @@
       name={face?.name ?? ''}
       {landscape}
       rotated={box.rotated}
-      {artWindow}
     />
   {/if}
 
@@ -190,7 +186,7 @@
   {#if statuses.length > 0}
     <div class="statuses">
       {#each statuses as { name: k, label } (k)}
-        {@const n = card.status?.[k] ?? 0}
+        {@const count = statusCount(k, card.status?.[k] ?? 0)}
         {@const target = { card: card.id, kind: 'status', name: k } as const}
         <span
           class="st {k}"
@@ -203,7 +199,8 @@
               ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
                 d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
               /></svg
-            >{/if}{statusText(k, label, n)}</span
+            >{/if}{#if count === null}{label}{:else}{label}
+            <span class="n">{count}</span>{/if}</span
         >
       {/each}
     </div>
@@ -222,7 +219,7 @@
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
           onpointerleave={() => interaction.leaveCounter(target)}
-          >{withSign(n)} {name.toUpperCase()}</span
+          ><span class="n">{withSign(n)}</span> {name.toUpperCase()}</span
         >
       {/each}
     </div>
@@ -678,6 +675,37 @@
   }
 
   /* The small lock before the Locked label. */
+  /*
+    Dock mode (spec 3.6): the element is the card's drawn box, a fraction (--scale) of its footprint,
+    and what it draws is zoomed by the same scale, so that its face, its back, its shade, its tokens
+    and its tabs shrink alike, their offsets from its edges too; the percentages still fill the box.
+    The numbers keep 11 screen px however far the table zooms out (--z), as the name lines do
+    (Surface): --num-min is that size in the zoomed units of the tokens and the tabs. A token grows
+    with its number, so that it still holds it.
+  */
+  .card.scaled {
+    --num-min: calc(11px / var(--scale) / var(--z, 1));
+  }
+
+  .card.scaled > :global(*) {
+    zoom: var(--scale);
+  }
+
+  .card.scaled .tok {
+    width: max(21px, 1.6em);
+    height: max(21px, 1.6em);
+    font-size: max(10.5px, var(--num-min));
+  }
+
+  .card.scaled .tok.acc .chevrons {
+    width: max(6px, 0.57em);
+    height: max(6px, 0.57em);
+  }
+
+  .card.scaled .st .n {
+    font-size: max(1em, var(--num-min));
+  }
+
   .st .lock {
     width: 6px;
     height: 6px;

@@ -9,7 +9,7 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
-  import { DOCK_PILE_SCALE, dockPileBox } from './dockPiles';
+  import { DOCK_SCALE, dockPileBox } from './dockPiles';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox, pileBox, type OwnerFrame } from './layout';
@@ -106,7 +106,7 @@
   style:top="{drawn.y}px"
   style:width="{drawn.w}px"
   style:height="{drawn.h}px"
-  style:--scale={scaled ? DOCK_PILE_SCALE : undefined}
+  style:--scale={scaled ? DOCK_SCALE : undefined}
   style:--lift-scale={armed ? LIFT_SCALE : undefined}
   style:--lift-shade={armed ? LIFT_SHADE : undefined}
   onpointerenter={onEnter}

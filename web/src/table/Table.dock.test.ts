@@ -548,7 +548,7 @@ describe('the top bar in dock mode', () => {
   });
 });
 
-describe('art tiles and small piles in dock mode', () => {
+describe('small cards and small piles in dock mode', () => {
   beforeEach(() => {
     vi.mocked(knownCard).mockImplementation(
       infoFrom({
@@ -559,26 +559,176 @@ describe('art tiles and small piles in dock mode', () => {
     );
   });
 
-  it('draws the cards in play as art tiles and the piles small', async () => {
+  /** The element's box, in table units, as its style places it. */
+  function boxOf(el: HTMLElement): { x: number; y: number; w: number; h: number } {
+    return {
+      x: Number.parseFloat(el.style.left),
+      y: Number.parseFloat(el.style.top),
+      w: Number.parseFloat(el.style.width),
+      h: Number.parseFloat(el.style.height),
+    };
+  }
+
+  /** Every element on the table measures where its style puts it, the table filling the window. */
+  function measure(size: TestScreen): void {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      // The dock's drop zone lies off the screen: a drop on the table stays there.
+      if (this.closest('.dockdrop')) {
+        return domRect(-100, -100, 0, 0);
+      }
+      const style = (this as HTMLElement).style;
+      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
+      if (!inSurface) {
+        return domRect(0, 0, size.width, size.height);
+      }
+      return domRect(
+        Number.parseFloat(style.left) || 0,
+        Number.parseFloat(style.top) || 0,
+        Number.parseFloat(style.width) || 0,
+        Number.parseFloat(style.height) || 0,
+      );
+    });
+  }
+
+  function ghost(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('.draglayer .card.ghost');
+  }
+
+  /** The table's zoom, as the app hands it to the surface and the drag layer. */
+  function zoom(): number {
+    return Number(document.querySelector<HTMLElement>('.app')!.style.getPropertyValue('--z'));
+  }
+
+  it('draws the cards in play whole at 60 %, where they lie, and the piles small', async () => {
     mockScreen(PHONE);
     await renderTable();
 
-    expect(placed('mine', '.card').classList).toContain('tile');
-    expect(placed('v', '.card').querySelector('.tile .name')?.textContent).toBe('Rhino');
+    const mine = placed('mine', '.card');
+    expect(mine.classList).toContain('scaled');
+    const box = boxOf(mine);
+    expect(box.x).toBe(300);
+    expect(box.w).toBeCloseTo(67.2, 6);
+    expect(box.h).toBeCloseTo(94.2, 6);
+    expect(placed('v', '.card').querySelector('img')?.getAttribute('alt')).toBe('Rhino');
+    // No art tile: neither a tile nor the illustration cut out of a face.
+    expect(document.querySelector('.surface .tile, .surface .card:not(.pile) .art')).toBeNull();
     expect(placed('deck:p0', '.pile').classList).toContain('scaled');
+  });
+
+  it('draws a card revealed on a small pile where the pile is drawn', async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.table!.cards.push(card('top', { onPile: 'deck:p0', x: 600, y: 0, faceDown: true }));
+    await renderTable(view);
+
+    const pileBox = boxOf(placed('deck:p0', '.pile'));
+    const top = boxOf(placed('top', '.card'));
+    expect(top.x).toBeCloseTo(pileBox.x, 6);
+    expect(top.y).toBeCloseTo(pileBox.y, 6);
+    expect(top.w).toBeCloseTo(pileBox.w, 6);
+    expect(top.h).toBeCloseTo(pileBox.h, 6);
+  });
+
+  it('drags a ghost at 60 %, held where it was pressed, and drops the card at its top-left', async () => {
+    mockScreen(PHONE);
+    measure(PHONE);
+    const { session } = await renderTable();
+    const z = zoom();
+    // Pressed in the middle of the card as drawn.
+    const at = boxOf(placed('mine'));
+    const pressed = { x: (at.x + 33.6) * z, y: (at.y + 47.1) * z };
+    await fireEvent.pointerDown(placed('mine'), {
+      clientX: pressed.x,
+      clientY: pressed.y,
+      pointerType: 'mouse',
+    });
+    await fireEvent.pointerMove(window, {
+      clientX: pressed.x - 40,
+      clientY: pressed.y,
+      buttons: 1,
+    });
+    await fireEvent.pointerMove(window, {
+      clientX: pressed.x - 80,
+      clientY: pressed.y,
+      buttons: 1,
+    });
+
+    const drawn = boxOf(ghost()!);
+    expect(drawn.w).toBeCloseTo(67.2, 6);
+    expect(drawn.h).toBeCloseTo(94.2, 6);
+    // Still held by its middle: the ghost moved with the pointer, 80 px to the left.
+    expect(drawn.x).toBeCloseTo(at.x - 80 / z, 4);
+    expect(drawn.y).toBeCloseTo(at.y, 4);
+
+    await fireEvent.pointerUp(window, { clientX: pressed.x - 80, clientY: pressed.y });
+    const [action] = vi.mocked(session.act).mock.calls.at(-1)!;
+    expect(action).toMatchObject({ kind: 'move', card: 'mine' });
+    // Its top-left corner as drawn, snapped to the grid: a full-size box would put it 22 units left.
+    expect(action.x).toBe(Math.round(drawn.x / 10) * 10);
+    // Not moved up or down, past the snap of the drawn corner and the rows' mapping to the table.
+    expect(Math.abs(action.y! - 300)).toBeLessThanOrEqual(10);
+  });
+
+  it("holds a deck's top card by the middle of its 60 % ghost", async () => {
+    mockScreen(PHONE);
+    measure(PHONE);
+    await renderTable();
+    const z = zoom();
+    const deck = boxOf(placed('deck:p0', '.pile'));
+    const pressed = { x: (deck.x + deck.w / 2) * z, y: (deck.y + deck.h / 2) * z };
+    await fireEvent.pointerDown(placed('deck:p0', '.pile'), {
+      clientX: pressed.x,
+      clientY: pressed.y,
+      pointerType: 'mouse',
+    });
+    const to = { x: 150, y: 400 };
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y, buttons: 1 });
+
+    const drawn = boxOf(ghost()!);
+    expect(drawn.w).toBeCloseTo(67.2, 6);
+    expect(drawn.h).toBeCloseTo(94.2, 6);
+    expect(drawn.x + drawn.w / 2).toBeCloseTo(to.x / z, 4);
+    expect(drawn.y + drawn.h / 2).toBeCloseTo(to.y / z, 4);
   });
 
   it.each([
     ['a mouse on a narrow window', NARROW_MOUSE],
     ['a touch tablet', TOUCH_TABLET],
     ['a desktop', DESKTOP],
-  ])('draws full cards and piles on %s', async (_name, size) => {
+  ])('draws full cards, piles and ghosts on %s', async (_name, size) => {
     mockScreen(size);
+    measure(size);
     await renderTable();
 
-    expect(placed('mine', '.card').classList).not.toContain('tile');
-    expect(document.querySelector('.surface .tile')).toBeNull();
+    const mine = placed('mine', '.card');
+    expect(mine.classList).not.toContain('scaled');
+    expect(mine.style.left).toBe('300px');
+    expect(mine.style.width).toBe('112px');
+    expect(mine.style.height).toBe('157px');
     expect(placed('deck:p0', '.pile').classList).not.toContain('scaled');
+
+    const z = zoom();
+    const pressed = { x: 310 * z, y: (Number.parseFloat(mine.style.top) + 10) * z };
+    await fireEvent.pointerDown(mine, {
+      clientX: pressed.x,
+      clientY: pressed.y,
+      pointerType: 'mouse',
+    });
+    await fireEvent.pointerMove(window, {
+      clientX: pressed.x + 40,
+      clientY: pressed.y,
+      buttons: 1,
+    });
+    await fireEvent.pointerMove(window, {
+      clientX: pressed.x + 80,
+      clientY: pressed.y,
+      buttons: 1,
+    });
+    expect(ghost()!.style.width).toBe('112px');
+    expect(ghost()!.style.height).toBe('157px');
   });
 });
 
@@ -687,5 +837,65 @@ describe('the zoom in dock mode (F-V3)', () => {
     await renderTable();
 
     expect(shownZoom()).toBe('1');
+  });
+});
+
+describe('a card leaving a chip in dock mode', () => {
+  let original: typeof Element.prototype.animate;
+  let started: { element: Element; keyframes: Keyframe[] }[] = [];
+
+  beforeEach(() => {
+    original = Element.prototype.animate;
+    started = [];
+    Element.prototype.animate = function (this: Element, keyframes: Keyframe[]) {
+      started.push({ element: this, keyframes });
+      return {
+        cancel: () => {},
+        finish: () => {},
+        finished: new Promise<void>(() => {}),
+        effect: { setKeyframes: () => {} },
+      } as unknown as Animation;
+    } as typeof Element.prototype.animate;
+    // jsdom lays nothing out: every element measures where its style puts it.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return domRect(
+        Number.parseFloat(this.style.left) || 0,
+        Number.parseFloat(this.style.top) || 0,
+        Number.parseFloat(this.style.width) || 0,
+        Number.parseFloat(this.style.height) || 0,
+      );
+    });
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = original;
+  });
+
+  function withAside(aside: string[], cards: TableCard[]): View {
+    const view = makeView();
+    view.table!.cards.push(...cards);
+    view.table!.piles.push(
+      pile('aside:p0', { kind: 'aside', owner: 0, count: aside.length, cards: aside }),
+    );
+    return view;
+  }
+
+  it('slides onto the table from the chip at the size the table draws it', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(
+      withAside(['s'], [card('s', { zone: 'pile' })]),
+    );
+    const chip = document.querySelector<HTMLElement>('.surface .chip[data-pile="aside:p0"]')!;
+    Object.assign(chip.style, { left: '200px', top: '100px', width: '40px', height: '20px' });
+
+    await rerender({ session, view: withAside([], [card('s', { x: 400, y: 300 })]) });
+    await tick();
+    await tick();
+
+    const slide = started.find(({ element }) => element.matches('.surface .card[data-id="s"]'));
+    // From the chip's middle to the card's, at the card's own drawn size: unscaled.
+    expect(slide?.keyframes[0]).toMatchObject({ scale: '1' });
   });
 });

@@ -35,7 +35,8 @@
   import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
   import { dockMode } from './dockMode';
-  import { dockFrameBox, pileFrame } from './dockPiles';
+  import { dockFrameBox, dockPileBox, pileFrame } from './dockPiles';
+  import { pileBox } from './layout';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -80,9 +81,24 @@
   } = $props();
 
   // In dock mode (spec 3.6) each owner frame and its piles are drawn smaller, about the frame's
-  // top-left corner (PileView); the name line and the chips stay where they are, at full size.
+  // top-left corner (PileView); the name line and the chips stay where they are, at full size. The
+  // cards are drawn smaller too, each about its own top-left corner (CardView).
   const dock = dockMode();
   const frames = $derived(owners.map((owner) => owner.frame));
+
+  /**
+   * The card where the surface draws it: in dock mode, a card revealed on a pile of a frame lies on
+   * the pile as drawn, its top-left corner on the pile's, as it does at full size.
+   */
+  function drawnCard(card: TableCard): TableCard {
+    const pile = dock.current && card.onPile ? piles.find((p) => p.id === card.onPile) : undefined;
+    const frame = pile ? pileFrame(pile, frames) : undefined;
+    if (!pile || !frame) {
+      return card;
+    }
+    const drawn = dockPileBox({ x: pile.x, y: pile.y, ...pileBox(pile) }, frame);
+    return { ...card, x: drawn.x, y: drawn.y };
+  }
 
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
@@ -177,7 +193,7 @@
   {/each}
   {#each cards as card (card.id)}
     <CardView
-      {card}
+      card={drawnCard(card)}
       face={faceOf(card)}
       caption={captionOf(card)}
       draggable={canDrag({ kind: 'card', id: card.id })}
