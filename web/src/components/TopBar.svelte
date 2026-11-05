@@ -28,6 +28,7 @@
     onviewmode,
     readyAll,
     scroller,
+    autoHide = true,
     hidden = $bindable(false),
   }: {
     spectators?: number;
@@ -49,6 +50,11 @@
     readyAll?: { disabled: boolean; run: () => void };
     /** What scrolls under the bar, when not the window: on a small screen, the bar hides as it scrolls down. */
     scroller?: HTMLElement;
+    /**
+     * Whether the bar slides away by itself as the page scrolls down, on a small screen. When not,
+     * the screen hides and shows it through `hidden`, as the table's dock does with its menu button.
+     */
+    autoHide?: boolean;
     /** Whether the bar is slid out of view, for a screen whose layout follows it. */
     hidden?: boolean;
   } = $props();
@@ -68,14 +74,17 @@
   // behind does not count, or the bar would never hide again after a use.
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   let focusWithin = $state(false);
-  const autoHide = new ScrollAutoHide({
+  const scrollHide = new ScrollAutoHide({
     source: () => scroller ?? window,
-    enabled: () => small.current,
+    enabled: () => autoHide && small.current,
     pinned: () => focusWithin || confirmingEnd,
   });
 
+  // Left to the screen, the bar is not told what the scroll decides.
   $effect(() => {
-    hidden = autoHide.hidden;
+    if (autoHide) {
+      hidden = scrollHide.hidden;
+    }
   });
 
   function focusEntered(event: FocusEvent): void {
@@ -83,8 +92,12 @@
       return;
     }
     // Brought back by a keyboard focus, the bar keeps the page where the reader left it.
-    autoHide.keepPlace();
+    scrollHide.keepPlace();
     focusWithin = true;
+    // Hidden by the screen, a tab into it brings it back all the same.
+    if (!autoHide) {
+      hidden = false;
+    }
   }
 
   // As :focus-within: focus leaving for another of the bar's controls stays within.

@@ -1,0 +1,394 @@
+// The table in dock mode (spec 3.4): on a small touch screen, a dock stands in for the hand's fan,
+// the controls at the bottom right and the hero selector; its buttons open the hand and the history
+// in bottom sheets, and its menu button slides the top bar in and out.
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import Table from './Table.svelte';
+import { interaction } from './interaction.svelte';
+import {
+  DESKTOP,
+  LANDSCAPE_PHONE,
+  mockScreen,
+  PHONE,
+  type TestScreen,
+} from '../lib/screen.testing';
+import { knownCard, loadGameCards } from '../lib/catalog';
+import type { Area, CardView as TableCard, DeckView, LogView, PackFace, View } from '../lib/types';
+import {
+  card,
+  domRect,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+} from './fixtures.testing';
+
+vi.mock('../lib/catalog', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/catalog')>()),
+  knownCard: vi.fn(),
+  loadGameCards: vi.fn(),
+}));
+
+// The catalog of the fixture: code -> faces.
+const FACES: Record<string, Partial<PackFace>[]> = {
+  '01001': [{ name: 'Spider-Man' }],
+  '01002': [{ name: 'Peter Parker' }],
+  '01094': [{ name: 'Rhino', stage: 'I' }],
+};
+
+/** A mouse on a phone-sized window, and a touch screen as large as a tablet. */
+const NARROW_MOUSE: TestScreen = { width: 390, height: 844 };
+const TOUCH_TABLET: TestScreen = { width: 1024, height: 768, touch: true };
+
+function line(text: string, at: string): LogView {
+  return { who: 'Alex', color: 0, text, at };
+}
+
+const LOG: LogView[] = [
+  line('drew a card', '2026-11-05T20:00:00Z'),
+  line('played', '2026-11-05T20:01:00Z'),
+];
+
+/**
+ * Rhino with Alex (p0, the viewer, Spider-Man), a card of Alex's on the table and two in hand.
+ * With `twoDecks`, Alex also plays Ant-Man (p1), whose hand holds one card.
+ */
+function makeView({
+  twoDecks = false,
+  log = LOG,
+}: { twoDecks?: boolean; log?: LogView[] } = {}): View {
+  const cards: TableCard[] = [
+    card('mine', { x: 300, y: 300 }),
+    card('v', { code: '01094', owner: -1, back: 'villain' }),
+    card('h1', { zone: 'hand' }),
+    card('h2', { code: '01002', zone: 'hand' }),
+    card('a1', { owner: 1, zone: 'hand' }),
+  ];
+  const decks: (Partial<DeckView> & { area: Area })[] = [
+    { area: 'p0', heroName: 'Spider-Man', heroImage: 'spidey.png', handCount: 2 },
+  ];
+  if (twoDecks) {
+    decks.push({ area: 'p1', heroName: 'Ant-Man', heroImage: 'ant.png', handCount: 1 });
+  }
+  return playingView({
+    you: {
+      role: 'player',
+      name: 'Alex',
+      color: 0,
+      host: true,
+      areas: twoDecks ? ['p0', 'p1'] : ['p0'],
+    },
+    players: [seated('Alex', 0, decks, true)],
+    table: {
+      cards,
+      piles: [
+        pile('deck:p0', { owner: 0, x: 600 }),
+        pile('discard:p0', { kind: 'discard', owner: 0, x: 800 }),
+      ],
+      hands: twoDecks ? { p0: ['h1', 'h2'], p1: ['a1'] } : { p0: ['h1', 'h2'] },
+      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+    },
+    log,
+  });
+}
+
+async function renderTable(view = makeView()) {
+  const session = fakeSession();
+  const result = render(Table, { session, view });
+  // The catalog loads asynchronously: wait for the faces to show.
+  await screen.findByRole('img', { name: 'Rhino' });
+  return { session, ...result };
+}
+
+function dock(): HTMLElement | null {
+  return screen.queryByRole('navigation', { name: 'Table controls' });
+}
+
+function handButton(): HTMLElement {
+  return dock()!.querySelector<HTMLElement>('.handbtn')!;
+}
+
+function topBar(): HTMLElement {
+  return document.querySelector<HTMLElement>('.top header')!;
+}
+
+beforeEach(() => {
+  vi.mocked(loadGameCards).mockResolvedValue();
+  vi.mocked(knownCard).mockImplementation(infoFrom(FACES));
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.mocked(loadGameCards).mockReset();
+  vi.mocked(knownCard).mockReset();
+  interaction.reset();
+});
+
+describe('dock mode', () => {
+  it('shows the dock on a small touch screen (dock_mode_only_small_touch)', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+
+    expect(dock()).not.toBeNull();
+    expect(document.querySelector('.app')!.classList).toContain('dock-mode');
+  });
+
+  it.each([
+    ['a mouse on a narrow window', NARROW_MOUSE],
+    ['a touch tablet', TOUCH_TABLET],
+    ['a touch desktop', { ...DESKTOP, touch: true }],
+    ['a desktop', DESKTOP],
+  ])('keeps the hand fan and no dock on %s (dock_mode_only_small_touch)', async (_name, size) => {
+    mockScreen(size);
+    await renderTable();
+
+    expect(dock()).toBeNull();
+    expect(document.querySelector('.app')!.classList).not.toContain('dock-mode');
+    expect(screen.getByRole('list', { name: 'Your hand' })).toBeTruthy();
+    expect(document.querySelector('.corner')).not.toBeNull();
+  });
+
+  it('draws neither the hand fan, the corner bar nor the hero selector (no_fan_no_corner_in_dock)', async () => {
+    mockScreen(PHONE);
+    await renderTable(makeView({ twoDecks: true }));
+
+    expect(document.querySelector('.hands .hand')).toBeNull();
+    expect(document.querySelector('.corner')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Hand shown' })).toBeNull();
+  });
+
+  it('shows the selected deck on the hand button: its size, its hero and up to four cards', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 2, Spider-Man');
+    expect(handButton().querySelectorAll('.mini')).toHaveLength(2);
+  });
+
+  it('starts with the top bar hidden, which the menu button slides in and out (menu_toggles_top_bar)', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+    expect(topBar().classList).toContain('hidden');
+
+    await fireEvent.click(within(dock()!).getByRole('button', { name: 'Menu' }));
+    expect(topBar().classList).not.toContain('hidden');
+
+    // It does not hide by itself as the table scrolls.
+    const scroller = document.querySelector<HTMLElement>('.tablewrap')!;
+    Object.defineProperties(scroller, {
+      scrollHeight: { value: 3000, configurable: true },
+      clientHeight: { value: 600, configurable: true },
+      scrollTop: { value: 400, configurable: true, writable: true },
+    });
+    await fireEvent.scroll(scroller);
+    expect(topBar().classList).not.toContain('hidden');
+
+    await fireEvent.click(within(dock()!).getByRole('button', { name: 'Menu' }));
+    expect(topBar().classList).toContain('hidden');
+  });
+
+  it('keeps the top bar shown with a mouse on a narrow window', async () => {
+    mockScreen(NARROW_MOUSE);
+    await renderTable();
+
+    expect(topBar().classList).not.toContain('hidden');
+  });
+
+  it('runs Undo from the dock', async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    view.canUndo = true;
+    const { session } = await renderTable(view);
+
+    await fireEvent.click(within(dock()!).getByRole('button', { name: /^Undo/ }));
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'undo' }, 0);
+  });
+
+  it('is a rail down the left edge on a phone on its side (landscape_rail)', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    await renderTable();
+
+    expect(dock()!.classList).toContain('rail');
+    expect(document.querySelector('.app')!.classList).toContain('dock-rail');
+  });
+
+  it('is a bar at the bottom on a phone held upright', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+
+    expect(dock()!.classList).not.toContain('rail');
+    expect(document.querySelector('.app')!.classList).not.toContain('dock-rail');
+  });
+});
+
+describe('a drop on the dock', () => {
+  /**
+   * The table fills the window; the cards and piles show where their styles put them, and the dock's
+   * drop zone where its styles put it on that screen, as `zone` gives it.
+   */
+  function measure(size: TestScreen, zone: DOMRect): void {
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      if (this.closest('.dockdrop')) {
+        return zone;
+      }
+      const style = (this as HTMLElement).style;
+      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
+      if (!inSurface) {
+        return domRect(0, 0, size.width, size.height);
+      }
+      const left = Number.parseFloat(style.left) || 0;
+      const top = Number.parseFloat(style.top) || 0;
+      return domRect(
+        left,
+        top,
+        Number.parseFloat(style.width) || 0,
+        Number.parseFloat(style.height) || 0,
+      );
+    });
+  }
+
+  /** Drags the card with the mouse from its place to that point, and lets go there. */
+  async function dragTo(id: string, x: number, y: number): Promise<void> {
+    await fireEvent.pointerDown(placed(id), { clientX: 310, clientY: 310, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: x, clientY: y - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: x, clientY: y, buttons: 1 });
+  }
+
+  it('sends a table card to its hand, from the bar at the bottom (drop_on_dock_to_hand)', async () => {
+    mockScreen(PHONE);
+    // The stand-in card under the dock's whole bar, 8 px off the window's edges.
+    measure(PHONE, domRect(8, PHONE.height - 68, PHONE.width - 16, 60));
+    const { session } = await renderTable();
+
+    // Past the bottom of the table that takes a drop on the hand when none shows: on the menu side.
+    await dragTo('mine', 40, PHONE.height - 38);
+    expect(handButton().classList).toContain('drop');
+    expect(handButton().getAttribute('aria-label')).toBe('Drop here: back to hand');
+    await fireEvent.pointerUp(window, { clientX: 40, clientY: PHONE.height - 38 });
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
+    expect(document.querySelector('.dockdrop')).toBeNull();
+  });
+
+  it('sends a table card to its hand, from the rail', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    // The stand-in card, as placed for the rail: its band covers the rail from the hand button down.
+    measure(LANDSCAPE_PHONE, domRect(-76, 82, 0, 0));
+    const { session } = await renderTable();
+
+    await dragTo('mine', 32, 86);
+    expect(handButton().classList).toContain('drop');
+    await fireEvent.pointerUp(window, { clientX: 32, clientY: 86 });
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'mine' }, 0);
+  });
+
+  it('is no drop target for a card that stays on the table', async () => {
+    mockScreen(PHONE);
+    measure(PHONE, domRect(8, PHONE.height - 68, PHONE.width - 16, 60));
+    await renderTable();
+
+    await fireEvent.pointerDown(placed('v'), { clientX: 10, clientY: 10, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: 100, clientY: 400, buttons: 1 });
+
+    expect(interaction.dragging).not.toBeNull();
+    expect(handButton().classList).not.toContain('drop');
+    expect(document.querySelector('.dockdrop')).toBeNull();
+  });
+});
+
+describe('the hand sheet', () => {
+  function handSheet(): HTMLElement | null {
+    return screen.queryByRole('dialog', { name: 'Your hand' });
+  }
+
+  it('opens from the hand button with the selected deck’s hand, Play and Discard sending their actions', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable();
+
+    await fireEvent.click(handButton());
+    const sheet = handSheet()!;
+    expect(sheet).not.toBeNull();
+    expect(within(sheet).getAllByRole('listitem')).toHaveLength(2);
+    // One deck: its hero's avatar alone, no selector.
+    expect(within(sheet).queryByRole('radiogroup')).toBeNull();
+    expect(sheet.querySelector('.deck-avatar')).not.toBeNull();
+
+    await fireEvent.click(within(sheet).getByRole('button', { name: 'Play' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'play', card: 'h1' }),
+      0,
+    );
+
+    session.act.mockClear();
+    await fireEvent.click(within(sheet).getByRole('button', { name: 'Discard' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h1' }, 0);
+  });
+
+  it('opens the inspector of the centred card with More…', async () => {
+    mockScreen(PHONE);
+    await renderTable();
+    await fireEvent.click(handButton());
+
+    await fireEvent.click(within(handSheet()!).getByRole('button', { name: 'More…' }));
+
+    expect(handSheet()).toBeNull();
+    const inspector = screen.getByRole('dialog');
+    expect(within(inspector).getByRole('button', { name: /^Play/ })).toBeTruthy();
+  });
+
+  it('switches deck with the hero selector in its header, with two own decks', async () => {
+    mockScreen(PHONE);
+    await renderTable(makeView({ twoDecks: true }));
+    await fireEvent.click(handButton());
+
+    const picker = within(handSheet()!).getByRole('radiogroup', { name: 'Hand shown' });
+    await fireEvent.click(within(picker).getByRole('radio', { name: /Ant-Man/ }));
+
+    expect(within(handSheet()!).getAllByRole('listitem')).toHaveLength(1);
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 1, Ant-Man');
+  });
+});
+
+describe('the history sheet', () => {
+  function historyButton(): HTMLElement {
+    return within(dock()!).getByRole('button', { name: /^History/ });
+  }
+
+  it('counts the lines written since it was opened, none at first (history_unread_resets_on_open)', async () => {
+    mockScreen(PHONE);
+    const { rerender } = await renderTable();
+    expect(historyButton().getAttribute('aria-label')).toBe('History');
+
+    const newer = [
+      ...LOG,
+      line('discarded', '2026-11-05T20:02:00Z'),
+      line('drew', '2026-11-05T20:03:00Z'),
+    ];
+    await rerender({ view: makeView({ log: newer }) });
+    expect(historyButton().getAttribute('aria-label')).toBe('History, 2 new');
+
+    await fireEvent.click(historyButton());
+    const sheet = screen.getByRole('dialog', { name: 'History' });
+    expect(within(sheet).getAllByRole('listitem')).toHaveLength(4);
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'History' })).toBeNull();
+    expect(historyButton().getAttribute('aria-label')).toBe('History');
+  });
+
+  it('counts every line of a game that starts with an empty history', async () => {
+    mockScreen(PHONE);
+    const { rerender } = await renderTable(makeView({ log: [] }));
+
+    await rerender({ view: makeView() });
+
+    expect(historyButton().getAttribute('aria-label')).toBe('History, 2 new');
+  });
+});

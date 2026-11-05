@@ -9,6 +9,7 @@
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import CardArt from '../components/CardArt.svelte';
   import Icon from '../components/Icon.svelte';
   import { modal } from '../components/modal.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
@@ -59,6 +60,7 @@
   import CardBox from './CardBox.svelte';
   import CardSheet from './CardSheet.svelte';
   import ContextMenu from './ContextMenu.svelte';
+  import Dock from './Dock.svelte';
   import {
     cardHeader,
     contextItems,
@@ -68,11 +70,13 @@
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
-  import { DRAG_THRESHOLD, intersect, sourceOf, type Rect } from './drag';
+  import { DRAG_THRESHOLD, handAreaOf, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
+  import HandSheet from './HandSheet.svelte';
   import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
+  import HistorySheet, { unread } from './HistorySheet.svelte';
   import { countersFor, type SheetCounter } from './inspector';
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
@@ -124,7 +128,7 @@
     seatPlayer,
   } from './seats';
   import { tableCard, tablePile } from './screen';
-  import { cardsInBand, isFree } from './selection';
+  import { cardsInBand, groupUnits, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -474,6 +478,15 @@
   const phone = new MediaQuery(PHONE_QUERY);
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
+  // The short case of a small screen (SMALL_SCREEN_QUERY): a phone on its side.
+  const short = new MediaQuery('(max-height: 500px)');
+
+  // Dock mode, a phone held either way on a touch screen (spec 3.4): the dock (Dock.svelte) stands in
+  // for the hand's fan, the controls at the bottom right and the hero selector, and its buttons open
+  // the hand and the history in bottom sheets. A mouse or a pen never sees it, at any width.
+  const dockMode = $derived(touchMode.current && small.current);
+  // On a phone on its side, the dock is a rail down the left edge, the table right of it.
+  const dockRail = $derived(dockMode && short.current);
 
   // The window's size, in px: a small screen's hand cards follow it.
   let windowWidth = $state(window.innerWidth);
@@ -491,7 +504,9 @@
   // On a small screen the top bar floats over the play area, and slides away as the table scrolls
   // down (TopBar): the table starts below it, and what floats at the top of the play area keeps
   // clear of it while it shows.
-  let barHidden = $state(false);
+  // In dock mode the bar does not hide on scroll: it starts hidden, and the dock's menu button slides
+  // it in and out.
+  let barHidden = $derived(dockMode);
   // The room the bar keeps at the start of the table, and over the top of the play area, in px.
   const barStart = $derived(small.current ? TOP_BAR_HEIGHT : 0);
   const barRoom = $derived(small.current && !barHidden ? TOP_BAR_HEIGHT : 0);
@@ -532,7 +547,19 @@
   const controlsRoom = $derived(
     (small.current && own.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM) + cornerHeight,
   );
-  const rowsBottom = $derived(Math.max(restingRoom, controlsRoom));
+
+  // The dock's bar at the bottom of the table in dock mode, 8 px off the window's edge and the safe
+  // area under it (Dock.svelte), and 8 px over it. The rail leaves the bottom free.
+  const DOCK_ROOM = 8 + 60 + 8;
+  // The safe area at the bottom of the screen, in px (the home indicator), measured: the dock sits
+  // above it.
+  let safeBottom = $state(0);
+  // The scroller's padding under the surface, in px: the gutter, or the dock's room above the safe
+  // area, so that the bottom of the table scrolls out from under the dock.
+  const bottomPadding = $derived(dockMode && !dockRail ? DOCK_ROOM + safeBottom : SCROLL_PADDING);
+
+  // In dock mode no hand nor control lies over the table: the rows keep clear of the dock alone.
+  const rowsBottom = $derived(dockMode ? bottomPadding : Math.max(restingRoom, controlsRoom));
   // Numbers, so that the row map, which the layers re-measure on, changes only with them.
   const lastDeckRow = $derived(lastRow(piles));
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
@@ -588,7 +615,10 @@
   const surface = $derived(
     surfaceSize(tableCards, tablePiles, sizeOf, {
       w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
-      h: Math.max(0, Math.floor((visibleHeight - 2 * SCROLL_PADDING - barStart) / zoom)),
+      h: Math.max(
+        0,
+        Math.floor((visibleHeight - SCROLL_PADDING - bottomPadding - barStart) / zoom),
+      ),
     }),
   );
 
@@ -1329,13 +1359,18 @@
       return;
     }
     if (element.kind === 'hand') {
-      const result = item.run?.();
-      if (result && 'kind' in result) {
-        send(result, targetOfKey(result));
-      }
+      runHandItem(item);
       return;
     }
     runItem(item, element);
+  }
+
+  /** Runs one of a hand card's actions (handActions): sends what its key sends (keys.ts). */
+  function runHandItem(item: ActionItem): void {
+    const result = item.run?.();
+    if (result && 'kind' in result) {
+      send(result, targetOfKey(result));
+    }
   }
 
   /** A stepper of the inspector: sends what the token pill's − / + sends (stepCounter). */
@@ -1377,6 +1412,111 @@
     const ids = [...interaction.group];
     const toggled = ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id];
     interaction.setGroup(new Set(toggled));
+  }
+
+  // ---- The dock (dock mode) ----
+
+  // The selected deck, which the dock's hand button shows and opens; none for a spectator.
+  const dockDeck = $derived(selected === null ? undefined : seatDeck(view, selected));
+  const dockHand = $derived(selected === null ? [] : handOf(selected));
+  const dockColor = $derived(
+    playerColorVar(selected === null ? view.you.color : (seatColor(view, selected) ?? 0)),
+  );
+
+  // The viewer's own decks, which the hand sheet's hero selector switches between.
+  const ownEntries = $derived(pickerEntries.filter((entry) => own.includes(entry.seat)));
+
+  /**
+   * Whether what is dragged would go to a hand if dropped there, as DragLayer decides (goesToHand):
+   * a card or a deck's top card of the viewer's, every card of a group included. The dock's hand
+   * button is then the drop target.
+   */
+  const dragGoesToHand = $derived.by(() => {
+    const held = interaction.dragging;
+    if (!dockMode || !held) {
+      return false;
+    }
+    const from = sourceOf(held.element, view, held.card ?? undefined);
+    if (!from || handAreaOf(from, view) === null) {
+      return false;
+    }
+    const units =
+      from.kind === 'card' && interaction.group.has(from.card)
+        ? groupUnits(interaction.group, cards)
+        : [];
+    if (units.length < 2) {
+      return true;
+    }
+    return units.every((id) => {
+      const unit = sourceOf({ kind: 'card', id }, view);
+      return unit !== null && handAreaOf(unit, view) !== null;
+    });
+  });
+
+  // The sheets the dock opens: the selected deck's hand, the history.
+  let handSheetShown = $state(false);
+  let historyShown = $state(false);
+
+  // Out of dock mode (a phone turned into a tablet's size), the dock's sheets go with it.
+  $effect.pre(() => {
+    if (!dockMode) {
+      untrack(() => {
+        handSheetShown = false;
+        historyShown = false;
+      });
+    }
+  });
+
+  function toggleTopBar(): void {
+    barHidden = !barHidden;
+  }
+
+  function openHandSheet(): void {
+    if (selected !== null && !modal.open) {
+      handSheetShown = true;
+    }
+  }
+
+  function closeHandSheet(): void {
+    handSheetShown = false;
+  }
+
+  /** Play or Discard on a card of the hand sheet: what the inspector's entry sends (handActions). */
+  function runHandAction(id: string, action: 'play' | 'discard'): void {
+    const item = handActions(id, view, sizeOf).find((candidate) => candidate.id === action);
+    if (item && !item.disabled) {
+      runHandItem(item);
+    }
+  }
+
+  /** More… on a card of the hand sheet: its inspector, in place of the sheet. */
+  function inspectHandCard(id: string): void {
+    handSheetShown = false;
+    openHandInspector(id);
+  }
+
+  // The time of the last log line the viewer has seen: the newest one when the table opened, then
+  // the newest one each time the history sheet opens or closes. The dock's badge counts the lines
+  // written since. A table opened on an empty history has seen none of them: the epoch.
+  const NOTHING_SEEN = new Date(0).toISOString();
+  let seenAt = $state(untrack(() => view.log.at(-1)?.at ?? NOTHING_SEEN));
+  const historyUnread = $derived(historyShown ? 0 : unread(view.log, seenAt));
+
+  function markHistorySeen(): void {
+    seenAt = view.log.at(-1)?.at ?? NOTHING_SEEN;
+  }
+
+  function openHistory(): void {
+    if (modal.open) {
+      return;
+    }
+    markHistorySeen();
+    historyShown = true;
+  }
+
+  function closeHistory(): void {
+    markHistorySeen();
+    historyShown = false;
   }
 
   /** The "How many cards?" question being asked, if any. */
@@ -1932,6 +2072,28 @@
   bind:innerHeight={windowHeight}
 />
 
+<!--
+  The hand sheet's header: the hero selector to switch between the viewer's decks, or the one deck's
+  hero alone.
+-->
+{#snippet deckPicker()}
+  {#if ownEntries.length > 1 && selected !== null}
+    <HeroPicker
+      entries={ownEntries}
+      current={selected}
+      label="Hand shown"
+      compact
+      onpick={selectSeat}
+    />
+  {:else if dockDeck}
+    <span class="deck-avatar" style:--seat={dockColor} aria-hidden="true">
+      {#if dockDeck.heroImage}
+        <CardArt src={dockDeck.heroImage} aspect={1} />
+      {/if}
+    </span>
+  {/if}
+{/snippet}
+
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
 <div
   class="app"
@@ -1941,6 +2103,8 @@
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
+  class:dock-mode={dockMode}
+  class:dock-rail={dockRail}
   style:--z={zoom}
   style:--you={playerColorVar(view.you.color)}
   style:--edge="{TABLE_EDGE}px"
@@ -1949,6 +2113,7 @@
   style:--content-gutter="{SCROLL_PADDING}px"
   style:--bar-start="{barStart}px"
   style:--bar-room="{barRoom}px"
+  style:--table-bottom={dockMode ? `${bottomPadding}px` : undefined}
   bind:this={app}
 >
   <div class="top">
@@ -1962,6 +2127,7 @@
         ? { disabled: !canReadyAll, run: () => act({ kind: 'readyAll' }) }
         : undefined}
       scroller={wrap}
+      autoHide={!dockMode}
       bind:hidden={barHidden}
     />
   </div>
@@ -2010,7 +2176,7 @@
     {view}
     presence={session.presence}
     send={(fields) => session.sendPresence(fields)}
-    away={modal.open || handRaised}
+    away={modal.open || handRaised || handSheetShown}
     root={app}
     {zoom}
     {faceOf}
@@ -2037,52 +2203,54 @@
   <!--
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
     Undo floats there, left of the zoom control. On a small screen, both share one bar above the
-    resting hand.
+    resting hand. In dock mode the dock has Undo, and fingers zoom.
   -->
-  <div
-    class="corner"
-    class:floatbar={small.current}
-    bind:this={cornerBox}
-    bind:clientHeight={cornerHeight}
-    bind:offsetWidth={cornerWidth}
-  >
-    {#if narrow.current}
-      <div class="undo floatbar">
-        <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
-        <button
-          class="btn-ghost"
-          aria-label={UNDO_TIP}
-          data-tip={view.canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
-          aria-disabled={!view.canUndo}
-          onclick={() => {
-            if (view.canUndo) {
-              undo();
-            }
-          }}
-          {@attach pointerBlur}
-        >
-          <Icon name="undo" />
-        </button>
-      </div>
-      {#if small.current}
-        <span class="floatbar-sep" aria-hidden="true"></span>
+  {#if !dockMode}
+    <div
+      class="corner"
+      class:floatbar={small.current}
+      bind:this={cornerBox}
+      bind:clientHeight={cornerHeight}
+      bind:offsetWidth={cornerWidth}
+    >
+      {#if narrow.current}
+        <div class="undo floatbar">
+          <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+          <button
+            class="btn-ghost"
+            aria-label={UNDO_TIP}
+            data-tip={view.canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
+            aria-disabled={!view.canUndo}
+            onclick={() => {
+              if (view.canUndo) {
+                undo();
+              }
+            }}
+            {@attach pointerBlur}
+          >
+            <Icon name="undo" />
+          </button>
+        </div>
+        {#if small.current}
+          <span class="floatbar-sep" aria-hidden="true"></span>
+        {/if}
       {/if}
-    {/if}
-    <!--
+      <!--
       Touch mode has no keyboard: no shortcuts button. The % label goes back to a phone's fit,
       or to 100 % on a wider screen.
     -->
-    <ZoomControl
-      {zoom}
-      onzoom={zoomWithButtons}
-      onfit={phone.current ? fitToWidth : undefined}
-      onkeys={touchMode.current ? undefined : toggleKeySheet}
-      keysShown={keySheetShown}
-      bind:keysButton
-    />
-  </div>
+      <ZoomControl
+        {zoom}
+        onzoom={zoomWithButtons}
+        onfit={phone.current ? fitToWidth : undefined}
+        onkeys={touchMode.current ? undefined : toggleKeySheet}
+        keysShown={keySheetShown}
+        bind:keysButton
+      />
+    </div>
+  {/if}
 
-  {#if pickerShown && pickerCurrent !== null}
+  {#if pickerShown && pickerCurrent !== null && !dockMode}
     <div class="seatpick">
       <HeroPicker
         entries={pickerEntries}
@@ -2105,34 +2273,97 @@
     />
   {/if}
 
-  <!-- The hands, clipped to the table's column: their backdrop reaches its edges and no further. -->
-  <div class="hands">
-    <!--
+  <!--
+    The hands, clipped to the table's column: their backdrop reaches its edges and no further. In
+    dock mode, the dock's hand button opens the hand in a sheet instead.
+  -->
+  {#if !dockMode}
+    <div class="hands">
+      <!--
       Keyed by place, not by seat: a single hand stays the same one as Q or the selector shows
       another deck's, so a hand pinned up by a tap stays up to read that one too.
     -->
-    {#each handSeats as seat, i (i)}
-      {@const cardSize = raisedCardOf(seat)}
-      <Hand
-        cards={handOf(seat)}
-        {faceOf}
-        {captionOf}
-        {cardSize}
-        restCardSize={baseHandCard}
-        restDrop={handRestDrop(baseHandCard, baseHandDrop, cardSize)}
-        {seat}
-        color={playerColorVar(seatColor(view, seat) ?? 0)}
-        label={handLabel(seat)}
-        active={seat === handSeat}
-        onactivate={() => selectSeat(seat)}
-        inset={handsRoom}
-        restPlace={restPlaces[i]}
-        hidden={handRaised && seat !== handSeat}
-        onopen={touchMode.current ? openHandInspector : undefined}
-        bind:open={handsOpen[i]}
-      />
-    {/each}
-  </div>
+      {#each handSeats as seat, i (i)}
+        {@const cardSize = raisedCardOf(seat)}
+        <Hand
+          cards={handOf(seat)}
+          {faceOf}
+          {captionOf}
+          {cardSize}
+          restCardSize={baseHandCard}
+          restDrop={handRestDrop(baseHandCard, baseHandDrop, cardSize)}
+          {seat}
+          color={playerColorVar(seatColor(view, seat) ?? 0)}
+          label={handLabel(seat)}
+          active={seat === handSeat}
+          onactivate={() => selectSeat(seat)}
+          inset={handsRoom}
+          restPlace={restPlaces[i]}
+          hidden={handRaised && seat !== handSeat}
+          onopen={touchMode.current ? openHandInspector : undefined}
+          bind:open={handsOpen[i]}
+        />
+      {/each}
+    </div>
+  {/if}
+
+  {#if dockMode}
+    <Dock
+      handCount={dockHand.length}
+      minis={dockHand.slice(0, 4).map((card) => faceOf(card)?.images ?? [])}
+      avatar={dockDeck?.heroImage ? [dockDeck.heroImage] : null}
+      heroName={dockDeck?.heroName ?? ''}
+      color={dockColor}
+      canUndo={view.canUndo ?? false}
+      unread={historyUnread}
+      dropActive={dragGoesToHand}
+      landscape={dockRail}
+      onmenu={toggleTopBar}
+      onhand={openHandSheet}
+      onundo={undo}
+      onhistory={openHistory}
+    />
+    <!-- The safe area under the dock, measured (safeBottom). -->
+    <div class="safe-bottom" aria-hidden="true" bind:clientHeight={safeBottom}></div>
+  {/if}
+
+  {#if dragGoesToHand && selected !== null}
+    <!--
+      The dock as the hand DragLayer drops on (targetsFor): a hand shown, of one stand-in card, never
+      seen. DragLayer takes a drop on a hand around its cards, 140 px to their sides and from 20 px
+      above them down to the window's bottom (handBand, drag.ts): the stand-in is placed so that this
+      band covers the dock, and no more of the table than the bar at the bottom covers. Its empty id
+      is no card's, but an id all the same: DragLayer measures only the hand cards that have one.
+    -->
+    <div class="hand dockdrop" class:rail={dockRail} data-seat={selected} aria-hidden="true">
+      <div class="hcard" data-id=""></div>
+    </div>
+  {/if}
+
+  {#if handSheetShown && selected !== null}
+    <HandSheet
+      cards={dockHand}
+      {faceOf}
+      seat={selected}
+      area={areaOf(selected)}
+      landscape={dockRail}
+      picker={deckPicker}
+      onplay={(id) => runHandAction(id, 'play')}
+      ondiscard={(id) => runHandAction(id, 'discard')}
+      onmore={inspectHandCard}
+      onclose={closeHandSheet}
+    />
+  {/if}
+
+  {#if historyShown}
+    <HistorySheet
+      log={view.log}
+      canUndo={view.canUndo ?? false}
+      onundo={undo}
+      onclose={closeHistory}
+      nameOf={historyName}
+    />
+  {/if}
 
   <Flights {faceOf} {captionOf} />
 
@@ -2600,6 +2831,71 @@
     width: 18px;
     height: 18px;
     stroke-width: 2;
+  }
+
+  /* Dock mode, the bar at the bottom: the bottom of the table scrolls out from under the dock. */
+  .app.dock-mode .table {
+    padding-bottom: var(--table-bottom);
+  }
+
+  /* The rail: the table, and all that floats over it, keep right of the rail and the notch. */
+  .app.dock-rail {
+    padding-left: calc(64px + env(safe-area-inset-left));
+  }
+
+  /* The safe area at the bottom of the screen, as tall as it is: measured, never seen. */
+  .safe-bottom {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: env(safe-area-inset-bottom);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* The dock's drop zone: measured by DragLayer, never seen, never in the way. */
+  .dockdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* At the bottom, the stand-in is the dock's bar itself (Dock.svelte). */
+  .dockdrop .hcard {
+    position: fixed;
+    left: calc(8px + env(safe-area-inset-left));
+    right: calc(8px + env(safe-area-inset-right));
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    height: 60px;
+  }
+
+  /*
+    In the rail, a point 140 px left of the rail's right edge and 20 px under the top of its hand
+    button (8 px padding, the 48 px menu button, 6 px between): the band covers the rail from the
+    hand button down, and none of the table.
+  */
+  .dockdrop.rail .hcard {
+    left: calc(env(safe-area-inset-left) + 64px - 140px);
+    right: auto;
+    top: calc(8px + 48px + 6px + 20px);
+    bottom: auto;
+    width: 0;
+    height: 0;
+  }
+
+  /* The one deck's hero in the hand sheet's header, ringed with its seat's colour. */
+  .deck-avatar {
+    flex: none;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--seat);
+    box-shadow: 0 0 0 3px var(--seat);
   }
 
   @media (max-width: 900px) {

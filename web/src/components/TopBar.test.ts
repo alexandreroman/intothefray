@@ -527,6 +527,34 @@ describe('TopBar on scroll', () => {
     expect(header(container).classList).not.toContain('hidden');
   });
 
+  it('leaves hiding to the page when it does not hide by itself', async () => {
+    mockScreen(PHONE);
+    const { container, rerender } = render(TopBar, { autoHide: false, hidden: true });
+    expect(header(container).classList).toContain('hidden');
+
+    // A scroll up does not bring it back.
+    await scrollWindowTo(300);
+    await scrollWindowTo(100);
+    expect(header(container).classList).toContain('hidden');
+
+    // Shown by the page, a scroll down does not hide it.
+    await rerender({ hidden: false });
+    await scrollWindowTo(600);
+    await scrollWindowTo(900);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
+  it('comes back for keyboard focus when it does not hide by itself', async () => {
+    mockScreen(PHONE);
+    focusBy('keyboard');
+    const { container } = render(TopBar, { autoHide: false, hidden: true });
+
+    screen.getByRole('link', { name: 'Into the Fray: home' }).focus();
+    await tick();
+
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
   it.each([
     ['a tablet', TABLET],
     ['a desktop', DESKTOP],
