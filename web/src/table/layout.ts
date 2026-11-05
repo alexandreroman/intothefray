@@ -216,7 +216,7 @@ const HOME_KINDS: readonly PileKind[] = [
 ];
 
 /** The label a pile frames itself by: a scenario deck and its discard pile have a frame of their own. */
-function frameLabel(pile: PileView): string | undefined {
+export function frameLabel(pile: PileView): string | undefined {
   return pile.owner === -1 && pile.label ? pile.label : undefined;
 }
 

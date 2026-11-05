@@ -565,7 +565,7 @@ describe('art tiles and small piles in dock mode', () => {
 
     expect(placed('mine', '.card').classList).toContain('tile');
     expect(placed('v', '.card').querySelector('.tile .name')?.textContent).toBe('Rhino');
-    expect(placed('deck:p0', '.pile').classList).toContain('small');
+    expect(placed('deck:p0', '.pile').classList).toContain('scaled');
   });
 
   it.each([
@@ -578,7 +578,7 @@ describe('art tiles and small piles in dock mode', () => {
 
     expect(placed('mine', '.card').classList).not.toContain('tile');
     expect(document.querySelector('.surface .tile')).toBeNull();
-    expect(placed('deck:p0', '.pile').classList).not.toContain('small');
+    expect(placed('deck:p0', '.pile').classList).not.toContain('scaled');
   });
 });
 

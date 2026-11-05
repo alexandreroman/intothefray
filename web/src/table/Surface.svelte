@@ -34,6 +34,8 @@
   } from '../lib/types';
   import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
+  import { dockMode } from './dockMode';
+  import { dockFrameBox, pileFrame } from './dockPiles';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -77,6 +79,11 @@
     canDrag?: (element: TableElement) => boolean;
   } = $props();
 
+  // In dock mode (spec 3.6) each owner frame and its piles are drawn smaller, about the frame's
+  // top-left corner (PileView); the name line and the chips stay where they are, at full size.
+  const dock = dockMode();
+  const frames = $derived(owners.map((owner) => owner.frame));
+
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
     active: 'Active counter: drag to move',
@@ -106,16 +113,18 @@
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
 <div class="surface table-dots" style:width="{width}px" style:height="{height}px">
   {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
+    {@const drawn = dock.current ? dockFrameBox(owner.frame) : owner.frame}
     <div
       class="ownerbox"
       data-owner={owner.frame.owner}
       data-tip={owner.tip}
       style:--owner={owner.color}
       style:--chips={owner.outOfPlay.length}
-      style:left="{owner.frame.x}px"
-      style:top="{owner.frame.y}px"
-      style:width="{owner.frame.w}px"
-      style:height="{owner.frame.h}px"
+      style:--name-room={dock.current ? `${owner.frame.w}px` : undefined}
+      style:left="{drawn.x}px"
+      style:top="{drawn.y}px"
+      style:width="{drawn.w}px"
+      style:height="{drawn.h}px"
     >
       <span class="owner" use:overflowTip>{owner.name}</span>
       {#if owner.tip}
@@ -158,7 +167,13 @@
   {/each}
   {#each piles as pile (pile.id)}
     {@const top = topOf(pile)}
-    <PileView {pile} {top} face={faceOf(top)} draggable={canDrag({ kind: 'pile', id: pile.id })} />
+    <PileView
+      {pile}
+      {top}
+      face={faceOf(top)}
+      draggable={canDrag({ kind: 'pile', id: pile.id })}
+      frame={pileFrame(pile, frames)}
+    />
   {/each}
   {#each cards as card (card.id)}
     <CardView
@@ -223,12 +238,17 @@
     The owner's name, in the room above the frame, clear of it and of the chips at its right: its
     line, 14 units high, lies from 26 to 12 units above the frame, centred on the chips (in --lu,
     as all of the name line). The offset runs from inside the frame's 2-unit border, hence the 2px.
+    In dock mode the frame is drawn smaller but the name line is not: the name keeps the room of the
+    frame at full size (--name-room), as the chips do.
   */
   .owner {
     position: absolute;
     left: 4px;
     bottom: calc(100% + 2px + 12 * var(--lu));
-    max-width: max(calc(100% - 8 * var(--lu) - var(--chips) * var(--chip-room)), var(--name-min));
+    max-width: max(
+      calc(var(--name-room, 100%) - 8 * var(--lu) - var(--chips) * var(--chip-room)),
+      var(--name-min)
+    );
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

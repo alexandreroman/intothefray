@@ -9,9 +9,10 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
+  import { DOCK_PILE_SCALE, dockPileBox } from './dockPiles';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
-  import { cardBox, pileBox } from './layout';
+  import { cardBox, pileBox, type OwnerFrame } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 
   let {
@@ -19,6 +20,7 @@
     top,
     face = null,
     draggable = false,
+    frame,
   }: {
     pile: PileView;
     /** The top card, for a pile that lists its cards. */
@@ -27,12 +29,17 @@
     face?: PackFace | null;
     /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a menu. */
     draggable?: boolean;
+    /** The owner frame the pile lies in, which dock mode draws it smaller about; none for any other pile. */
+    frame?: OwnerFrame;
   } = $props();
 
-  const slot = $derived(pileBox(pile));
-  // In dock mode (spec 3.6) the pile is drawn smaller, in the middle of its slot, which stays its hit
-  // and drop area.
+  // In dock mode (spec 3.6) a pile in an owner frame is drawn smaller, scaled about the frame's
+  // top-left corner as the frame is (Surface). The element is the drawn box: it takes the presses and
+  // the drops, and the flights measure it.
   const dock = dockMode();
+  const scaled = $derived(dock.current && frame !== undefined);
+  const slot = $derived({ x: pile.x, y: pile.y, ...pileBox(pile) });
+  const drawn = $derived(scaled && frame ? dockPileBox(slot, frame) : slot);
 
   // While a card taken from it is dragged or waits for the server, the pile counts it out; so it does
   // with the cards still flying to it.
@@ -94,11 +101,12 @@
   class:hovered
   class:armed
   class:drop-pile={targeted}
-  class:small={dock.current}
-  style:left="{pile.x}px"
-  style:top="{pile.y}px"
-  style:width="{slot.w}px"
-  style:height="{slot.h}px"
+  class:scaled
+  style:left="{drawn.x}px"
+  style:top="{drawn.y}px"
+  style:width="{drawn.w}px"
+  style:height="{drawn.h}px"
+  style:--scale={scaled ? DOCK_PILE_SCALE : undefined}
   style:--lift-scale={armed ? LIFT_SCALE : undefined}
   style:--lift-shade={armed ? LIFT_SHADE : undefined}
   onpointerenter={onEnter}
@@ -230,19 +238,19 @@
   }
 
   /*
-    Dock mode: the pile is drawn at 60 % of its slot, centred in it; the slot itself, which takes the
-    presses and the drops, keeps its size. The count sits on the pile's bottom edge as drawn, and keeps
-    9 screen px of text however far the table zooms out (--z), as the name lines do (Surface).
+    Dock mode: the element is the pile's drawn box. What it draws is zoomed by the same scale, so
+    that the back's label and caption, the borders and the corners shrink with it; the percentages
+    still fill the box. The count keeps 9 screen px of text however far the table zooms out (--z), as
+    the name lines do (Surface).
   */
-  .card.small > .shade,
-  .card.small > .art,
-  .card.small > .slot,
-  .card.small > .rring {
-    scale: 0.6;
+  .card.scaled > .shade,
+  .card.scaled > .art,
+  .card.scaled > .slot {
+    zoom: var(--scale);
   }
 
-  .card.small .count {
-    bottom: calc(20% - 0.8em);
+  .card.scaled .count {
+    bottom: -0.8em;
     font-size: max(9px, 9px / var(--z, 1));
     padding: 0 0.67em;
   }

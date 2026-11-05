@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { DOCK_MODE_KEY } from './dockMode';
 import { interaction } from './interaction.svelte';
+import type { OwnerFrame } from './layout';
 import PileView from './PileView.svelte';
 import pileSource from './PileView.svelte?raw';
 import tableSource from './Table.svelte?raw';
@@ -159,49 +160,73 @@ describe('PileView', () => {
   });
 });
 
-describe('PileView in dock mode (small piles)', () => {
-  function renderPile(props: { pile: TablePile }, dock = true) {
+describe('PileView in dock mode (small piles, spec 3.6)', () => {
+  // The frame the villain's piles lie in, with the discard pile at 130, 70.
+  const frame = { owner: -1, x: -10, y: 58, w: 262, h: 182 };
+  const discard = pile('enc', { kind: 'encounterDiscard', x: 130, y: 70, count: 12 });
+
+  function renderPile(props: { pile: TablePile; frame?: OwnerFrame }, dock = true) {
     return render(PileView, { props, context: new Map([[DOCK_MODE_KEY, { current: dock }]]) });
   }
 
-  it('is drawn small in its slot, which keeps its full size and its count', () => {
-    const { container } = renderPile({
-      pile: pile('enc', { kind: 'encounter', x: 120, y: 20, count: 12 }),
-    });
+  it('is drawn at 60 % about its frame top-left corner, as its hit and drop area, with its count', () => {
+    const { container } = renderPile({ pile: discard, frame });
 
     const el = pileElement(container);
-    expect(el.classList.contains('small')).toBe(true);
-    expect(el.style.width).toBe('112px');
-    expect(el.style.height).toBe('157px');
+    const [left, top, width, height] = [
+      el.style.left,
+      el.style.top,
+      el.style.width,
+      el.style.height,
+    ].map(Number.parseFloat);
+    // -10 + 140 × 0.6, 58 + 12 × 0.6, 112 × 0.6, 157 × 0.6.
+    expect(left).toBeCloseTo(74, 6);
+    expect(top).toBeCloseTo(65.2, 6);
+    expect(width).toBeCloseTo(67.2, 6);
+    expect(height).toBeCloseTo(94.2, 6);
+    expect(el.classList.contains('scaled')).toBe(true);
+    expect(el.style.getPropertyValue('--scale')).toBe('0.6');
     expect(el.querySelector('.count')?.textContent).toBe('12');
   });
 
-  it('scales what it draws to 60 %, centred, and keeps its count readable', () => {
+  it('zooms what it draws by its scale, so that its back and face shrink alike', () => {
     const rule = (selector: string) =>
       new RegExp(`\\n {2}${selector} \\{([^}]*)\\}`).exec(pileSource)?.[1];
-    const drawn = /\n {2}(\.card\.small > \.shade,[^{]*)\{([^}]*)\}/.exec(pileSource);
-    expect(drawn?.[1]).toContain('.card.small > .art');
-    expect(drawn?.[1]).toContain('.card.small > .slot');
-    expect(drawn?.[2]).toContain('scale: 0.6;');
-    expect(rule('\\.card\\.small \\.count')).toMatch(
+    const inner = /\n {2}(\.card\.scaled > \.shade,[^{]*)\{([^}]*)\}/.exec(pileSource);
+    expect(inner?.[1]).toContain('.card.scaled > .art');
+    expect(inner?.[1]).toContain('.card.scaled > .slot');
+    expect(inner?.[2]).toContain('zoom: var(--scale);');
+    expect(rule('\\.card\\.scaled \\.count')).toMatch(
       /font-size: max\(9px, 9px \/ var\(--z, 1\)\);/,
     );
-    // The table's rings go round the pile as drawn.
-    expect(tableSource).toMatch(/\.table :global\(\.card\.pile\.small\)::before \{\s*inset: 20%;/);
+    // Nothing is drawn smaller inside the element: the table's rings go round it as it is.
+    expect(pileSource).not.toMatch(/scale: 0\.6;/);
+    expect(pileSource).not.toMatch(/class:small/);
   });
 
-  it('is drawn full size out of dock mode', () => {
-    const { container } = renderPile(
-      { pile: pile('enc', { kind: 'encounter', count: 12 }) },
-      false,
-    );
+  it('is drawn full size in its slot without a frame', () => {
+    const { container } = renderPile({ pile: discard });
 
-    expect(pileElement(container).classList.contains('small')).toBe(false);
+    const el = pileElement(container);
+    expect(el.classList.contains('scaled')).toBe(false);
+    expect(el.style.left).toBe('130px');
+    expect(el.style.width).toBe('112px');
+  });
+
+  it('is drawn full size in its slot out of dock mode', () => {
+    const { container } = renderPile({ pile: discard, frame }, false);
+
+    const el = pileElement(container);
+    expect(el.classList.contains('scaled')).toBe(false);
+    expect(el.style.left).toBe('130px');
+    expect(el.style.top).toBe('70px');
+    expect(el.style.width).toBe('112px');
+    expect(el.style.height).toBe('157px');
   });
 
   it('is drawn full size outside any table', () => {
-    const { container } = render(PileView, { pile: pile('enc', { kind: 'encounter', count: 12 }) });
+    const { container } = render(PileView, { pile: discard, frame });
 
-    expect(pileElement(container).classList.contains('small')).toBe(false);
+    expect(pileElement(container).classList.contains('scaled')).toBe(false);
   });
 });
