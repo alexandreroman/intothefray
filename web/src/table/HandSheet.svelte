@@ -11,12 +11,18 @@
   moving sideways scrolls it rather than drags the card, as the fan's would.
   The sheet closes once the drag starts, and the card goes on to the table
   under the finger.
+
+  The sheet uses the whole screen (Sheet.svelte's dock mode). Upright, a
+  one-line header, the card as large as fits, and the actions under it. On
+  its side, the carousel on the left with cards as high as the sheet, and the
+  header and the stacked actions in a column on its right.
 -->
 <script lang="ts">
   import { untrack, type Snippet } from 'svelte';
   import Sheet from '../components/Sheet.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardFace from './CardFace.svelte';
+  import { dockMode } from './dockMode';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
 
@@ -50,6 +56,8 @@
     onmore: (id: string) => void;
     onclose: () => void;
   } = $props();
+
+  const dock = dockMode();
 
   let carousel: HTMLElement | undefined = $state();
 
@@ -94,50 +102,52 @@
 </script>
 
 <!-- Not modal: a modal sheet would freeze the table, and no press on a card could become a drag. -->
-<Sheet label="Your hand" modal={false} {onclose}>
+<Sheet label="Your hand" modal={false} dock={dock.current} {onclose}>
   <div class="body" class:landscape>
     <header>
-      <b class="title">Your hand · {cards.length}</b>
       {@render picker?.()}
+      <b class="title">Your hand · {cards.length}</b>
     </header>
 
     {#if cards.length === 0}
       <p class="empty">No cards in hand</p>
     {:else}
-      <ul
-        class="hand"
-        aria-label="Cards in hand"
-        data-carousel
-        data-seat={seat}
-        data-area={area}
-        bind:this={carousel}
-        onscroll={findCentred}
-      >
-        {#each cards as card (card.id)}
-          {@const face = faceOf(card)}
-          <li
-            class="hcard"
-            class:dim={card !== current}
-            data-id={card.id}
-            aria-current={card === current ? 'true' : undefined}
-            onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
-          >
-            <div class="fan">
-              <!-- A landscape card is turned a quarter to fit the portrait slot. -->
-              <CardFace
-                images={face?.images ?? []}
-                name={face?.name ?? ''}
-                rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
-              />
-            </div>
-          </li>
-        {/each}
-      </ul>
+      <div class="stage">
+        <ul
+          class="hand"
+          aria-label="Cards in hand"
+          data-carousel
+          data-seat={seat}
+          data-area={area}
+          bind:this={carousel}
+          onscroll={findCentred}
+        >
+          {#each cards as card (card.id)}
+            {@const face = faceOf(card)}
+            <li
+              class="hcard"
+              class:dim={card !== current}
+              data-id={card.id}
+              aria-current={card === current ? 'true' : undefined}
+              onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
+            >
+              <div class="fan">
+                <!-- A landscape card is turned a quarter to fit the portrait slot. -->
+                <CardFace
+                  images={face?.images ?? []}
+                  name={face?.name ?? ''}
+                  rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+                />
+              </div>
+            </li>
+          {/each}
+        </ul>
 
-      <div class="dots" aria-hidden="true">
-        {#each cards as card (card.id)}
-          <i class:on={card === current}></i>
-        {/each}
+        <div class="dots" aria-hidden="true">
+          {#each cards as card (card.id)}
+            <i class:on={card === current}></i>
+          {/each}
+        </div>
       </div>
 
       <div class="actions">
@@ -151,35 +161,65 @@
 </Sheet>
 
 <style>
+  /*
+    Upright: the header, the carousel, the actions and the hint, one under the
+    other. A card is as high as the sheet's room (Sheet.svelte's --sheet-room)
+    less the rest of the sheet (--chrome), and at most 80 % of its width.
+  */
   .body {
-    /*
-      A card's width: 64 % of the sheet's in portrait. In landscape, the card is 70 % of the
-      sheet's tallest height (92 % of the window's, Sheet.svelte), and as wide as that makes it.
-    */
-    --card-w: 64%;
-    --gap: 12px;
+    --chrome: 156px;
+    --card-h: calc(var(--sheet-room, 85dvh) - var(--chrome));
+    --card-w: min(80%, calc(var(--card-h) * 185 / 259));
+    --gap: 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'stage'
+      'actions'
+      'hint';
   }
 
+  /* On its side: the carousel on the left, as high as the sheet; the rest in a column on its right. */
   .body.landscape {
-    --card-w: calc(0.7 * 92dvh * 185 / 259);
+    --chrome: 32px;
+    --card-w: calc(var(--card-h) * 185 / 259);
+    grid-template-columns: minmax(0, 1fr) 180px;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      'stage head'
+      'stage .'
+      'stage actions';
+    column-gap: 12px;
   }
 
   header {
+    grid-area: head;
     display: flex;
     align-items: center;
     gap: 10px;
-    min-height: 44px;
-    padding: 0 14px 6px;
+    min-height: 40px;
+    padding-bottom: 4px;
+    white-space: nowrap;
   }
 
   .title {
     flex: 1;
-    font-size: 17px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 16px;
     font-weight: 800;
+    text-overflow: ellipsis;
+  }
+
+  .stage {
+    grid-area: stage;
+    min-width: 0;
   }
 
   .empty {
-    margin: 24px 14px 36px;
+    grid-area: stage;
+    margin: 24px 0 36px;
     color: var(--muted);
     text-align: center;
   }
@@ -241,7 +281,7 @@
     display: flex;
     justify-content: center;
     gap: 6px;
-    margin: 10px 0 4px;
+    margin: 8px 0 4px;
   }
 
   .dots i {
@@ -258,15 +298,20 @@
   }
 
   .actions {
+    grid-area: actions;
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     gap: 8px;
     margin-top: 8px;
-    padding: 0 14px;
+  }
+
+  .body.landscape .actions {
+    grid-template-columns: 1fr;
+    margin-top: 0;
   }
 
   .actions button {
-    min-height: 52px;
+    min-height: 48px;
     border: 0;
     border-radius: 14px;
     background: var(--panel-2);
@@ -285,10 +330,16 @@
   }
 
   .hint {
-    margin: 8px 14px 0;
+    grid-area: hint;
+    margin: 8px 0 0;
     color: var(--muted);
     font-size: 12.5px;
     text-align: center;
+  }
+
+  /* No room for it beside the carousel: the actions say what a card can do. */
+  .body.landscape .hint {
+    display: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import HistorySheet, { unread } from './HistorySheet.svelte';
+import sheetSource from './HistorySheet.svelte?raw';
+import { DOCK_MODE_KEY } from './dockMode';
 import type { LogView } from '../lib/types';
 
 /** An RFC 3339 time that reads hh:mm in the local time zone. */
@@ -17,11 +19,21 @@ const LOG: LogView[] = [
   line({ who: 'Sam', color: 1, text: 'undid “drew 1 card”', at: at(14, 3) }),
 ];
 
-function renderSheet(props: Partial<{ log: LogView[]; canUndo: boolean }> = {}) {
+function renderSheet(props: Partial<{ log: LogView[]; canUndo: boolean; dock: boolean }> = {}) {
+  const { dock = false, ...rest } = props;
   const onundo = vi.fn();
   const onclose = vi.fn();
-  render(HistorySheet, { log: LOG, canUndo: true, onundo, onclose, ...props });
+  render(HistorySheet, {
+    props: { log: LOG, canUndo: true, onundo, onclose, ...rest },
+    context: new Map([[DOCK_MODE_KEY, { current: dock }]]),
+  });
   return { onundo, onclose };
+}
+
+/** The declarations of a rule of the sheet's stylesheet. */
+function rule(selector: string): string {
+  const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+  return pattern.exec(sheetSource)?.[1] ?? '';
 }
 
 function historyLines(): HTMLElement[] {
@@ -131,5 +143,30 @@ describe('HistorySheet', () => {
     expect(button.dataset.tip).toBe('Nothing of yours to undo');
     await fireEvent.click(button);
     expect(onundo).not.toHaveBeenCalled();
+  });
+
+  it('is at most 62 % of the window high outside dock mode', () => {
+    renderSheet();
+
+    expect(screen.getByRole('dialog', { name: 'History' }).style.maxHeight).toBe('62%');
+  });
+
+  describe('in dock mode', () => {
+    it('may take the whole height', () => {
+      renderSheet({ dock: true });
+
+      const sheet = screen.getByRole('dialog', { name: 'History' });
+      expect(sheet.classList).toContain('dock');
+      expect(sheet.style.maxHeight).toBe('');
+    });
+
+    it('draws compact 40 px lines, Undo pinned at the bottom', () => {
+      renderSheet({ dock: true });
+
+      expect(document.querySelector('.history')?.classList).toContain('dock');
+      expect(rule('.history.dock .e')).toContain('min-height: 40px;');
+      expect(rule('.undo')).toContain('position: sticky;');
+      expect(rule('.undo')).toContain('bottom: 0;');
+    });
   });
 });

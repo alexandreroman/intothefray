@@ -7,11 +7,14 @@
   reordered by dragging, with a live preview. The stage choice
   and the out-of-play piles list their cards by card number, the other piles
   top first. The box follows the view: cards that leave the pile leave the box.
+  In dock mode (a phone) the box fills the screen: a one-line header, as many
+  columns of tiles as fit, and the footer buttons side by side.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import Dialog from '../components/Dialog.svelte';
+  import { overflowTip } from '../lib/overflowTip';
   import { releaseFocus } from '../lib/releaseFocus';
   import { scrollFade } from '../lib/scrollFade';
   import type {
@@ -38,6 +41,7 @@
   import CardFace from './CardFace.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import { tileEntries, type ContextHeader } from './contextItems';
+  import { dockMode } from './dockMode';
   import { DRAG_THRESHOLD } from './drag';
   import { interaction, LANDING_MS } from './interaction.svelte';
   import { isLandscape, isOutOfPlay } from './layout';
@@ -79,6 +83,8 @@
   // Never wider than the window: the box keeps inside it, its grid scrolls.
   const BOX_WIDTH = 'min(1200px, 100%)';
   const SLIDE_MS = 180;
+
+  const dock = dockMode();
 
   interface Tile {
     /** The card id for a pile, "<card id>:<face>" for the stage choice. */
@@ -335,11 +341,16 @@
 
   /**
    * Two rows of 5:7 tiles, from the grid's width only (never from what it
-   * shows), so that every box opens at the same size; the rest scrolls.
+   * shows), so that every box opens at the same size; the rest scrolls. In
+   * dock mode the box fills the screen, and the grid all the room left in it.
    */
   let gridHeight = $state<number | null>(null);
 
   function sizeGrid(element: HTMLElement): void {
+    if (dock.current) {
+      gridHeight = null;
+      return;
+    }
     const style = getComputedStyle(element);
     const gap = parseFloat(style.columnGap);
     const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
@@ -613,10 +624,16 @@
 />
 
 <!-- Five columns of tiles about 220 px wide on a large screen, fewer on a smaller one. -->
-<Dialog title={fullTitle} wide width={BOX_WIDTH} oncancel={() => onclose(false)}>
+<Dialog
+  title={fullTitle}
+  wide
+  fill={dock.current}
+  width={dock.current ? undefined : BOX_WIDTH}
+  oncancel={() => onclose(false)}
+>
   {#snippet heading(id: string)}
-    <div class="mhead">
-      <b {id}
+    <div class="mhead" class:dock={dock.current}>
+      <b {id} use:overflowTip
         >{title.main}
         {#if title.aside}<span class="aside">{title.aside}</span>{/if}</b
       >
@@ -635,6 +652,7 @@
 
   <ul
     class="mgrid"
+    class:dock={dock.current}
     aria-label="Cards"
     bind:this={grid}
     class:dragging={drag?.lifted}
@@ -700,18 +718,27 @@
     {/each}
   </ul>
 
-  <div class="mfoot">
+  <!-- On a phone, the long labels shorten; each button keeps its full name. -->
+  <div class="mfoot" class:dock={dock.current}>
     {#if shuffleChoice}
-      <button type="button" onclick={() => onclose(false)}>Close without shuffling</button>
+      <button
+        type="button"
+        aria-label={dock.current ? 'Close without shuffling' : undefined}
+        onclick={() => onclose(false)}
+        >{dock.current ? "Don't shuffle" : 'Close without shuffling'}</button
+      >
       <button type="button" class="btn-primary compact" onclick={() => onclose(true)}
         >Shuffle & close</button
       >
     {:else}
       {#if shuffleInPile}
         {@const pile = shuffleInPile}
-        <button type="button" onclick={() => shuffleIn(pile)}>
-          Shuffle into the encounter deck
-        </button>
+        <button
+          type="button"
+          aria-label={dock.current ? 'Shuffle into the encounter deck' : undefined}
+          onclick={() => shuffleIn(pile)}
+          >{dock.current ? 'Shuffle in' : 'Shuffle into the encounter deck'}</button
+        >
       {/if}
       <!-- Close is the box's main action; a shuffle in stays secondary. -->
       <button type="button" class="btn-primary compact" onclick={() => onclose(false)}>Close</button
@@ -956,6 +983,59 @@
   .mfoot button:not(.btn-primary) {
     height: 40px;
     padding: 0 20px;
+  }
+
+  /*
+    Dock mode: the box fills the screen (Dialog.svelte). The header holds one
+    line, the title cut short before the filter; the grid takes the room left,
+    with as many columns of 104 px tiles at least as fit; the footer buttons
+    stand side by side, Close on the right.
+  */
+  .mhead.dock {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .mhead.dock b {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 16 px text: iOS zooms the page into a smaller field it focuses. */
+  .mhead.dock .filter {
+    flex: 1 1 0;
+    min-width: 110px;
+    width: auto;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 16px;
+  }
+
+  .mgrid.dock {
+    --min-tile: 104px;
+    flex: 1;
+    min-height: 0;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .mfoot.dock {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .mfoot.dock button {
+    flex: 0 1 50%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 12px;
   }
 
   /* The dragged card, the tile's size, its card contained as in the tile. */

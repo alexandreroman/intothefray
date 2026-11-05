@@ -1,6 +1,7 @@
 <!--
   The history in a bottom sheet, for the dock (dock mode): the same lines as the side column
-  (SidePanel.svelte), newest first and worded the same, and the Undo button under them.
+  (SidePanel.svelte), newest first and worded the same, and the Undo button under them. In dock
+  mode it may take the whole height, its lines compact.
 -->
 <script module lang="ts">
   import type { LogView } from '../lib/types';
@@ -24,6 +25,7 @@
   import Sheet from '../components/Sheet.svelte';
   import { playerColorVar } from '../lib/playerColor';
   import { pointerBlur } from '../lib/releaseFocus';
+  import { dockMode } from './dockMode';
   import { partsOf, timeOf, type NameOf } from './historyLines';
   import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
@@ -42,6 +44,8 @@
     /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
     nameOf?: NameOf;
   } = $props();
+
+  const dock = dockMode();
 
   function undo(): void {
     if (canUndo) {
@@ -63,36 +67,38 @@
   );
 </script>
 
-<Sheet label="History" {onclose} maxHeight="62%">
-  <h2 id="history-sheet-title">History</h2>
+<Sheet label="History" {onclose} maxHeight="62%" dock={dock.current}>
+  <div class="history" class:dock={dock.current}>
+    <h2 id="history-sheet-title">History</h2>
 
-  <ul class="log" aria-labelledby="history-sheet-title">
-    {#each lines as { key, entry, parts, time } (key)}
-      <li class="e" class:undone={entry.undone}>
-        <time class="t">{time}</time>
-        <!-- The line break between the name and the text renders as one space. -->
-        <span class="txt">
-          <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
-          {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}
-                >{part.text}</b
-              >{:else if part.aside}<span class="aside">{part.text}</span
-              >{:else}{part.text}{/if}{/each}
-        </span>
-      </li>
-    {/each}
-  </ul>
+    <ul class="log" aria-labelledby="history-sheet-title">
+      {#each lines as { key, entry, parts, time } (key)}
+        <li class="e" class:undone={entry.undone}>
+          <time class="t">{time}</time>
+          <!-- The line break between the name and the text renders as one space. -->
+          <span class="txt">
+            <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
+            {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}
+                  >{part.text}</b
+                >{:else if part.aside}<span class="aside">{part.text}</span
+                >{:else}{part.text}{/if}{/each}
+          </span>
+        </li>
+      {/each}
+    </ul>
 
-  <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
-  <div class="undo">
-    <button
-      aria-disabled={!canUndo}
-      data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
-      onclick={undo}
-      {@attach pointerBlur}
-    >
-      <Icon name="undo" />
-      {UNDO_TIP}
-    </button>
+    <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+    <div class="undo">
+      <button
+        aria-disabled={!canUndo}
+        data-tip={canUndo ? undefined : NOTHING_TO_UNDO}
+        onclick={undo}
+        {@attach pointerBlur}
+      >
+        <Icon name="undo" />
+        {UNDO_TIP}
+      </button>
+    </div>
   </div>
 </Sheet>
 
@@ -181,5 +187,20 @@
     width: 16px;
     height: 16px;
     stroke-width: 2;
+  }
+
+  /* Dock mode: the sheet pads its content (Sheet.svelte); compact lines of 40 px. */
+  .history.dock h2 {
+    padding: 4px 6px 4px;
+  }
+
+  /* 11 px above and below a line of 18 px: 40 px, the time on the text's baseline. */
+  .history.dock .e {
+    min-height: 40px;
+    padding: 11px 6px;
+  }
+
+  .history.dock .undo {
+    padding: 8px 0 0;
   }
 </style>

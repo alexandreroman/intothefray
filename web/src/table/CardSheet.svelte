@@ -7,11 +7,15 @@
   with a Back row. A disabled entry shows its reason under its label: a finger
   has no tooltip. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet.
+  In dock mode (a phone) the sheet uses the whole screen: the card as large as
+  it allows on the left, and everything else in one column on its right, the
+  only part that scrolls.
 -->
 <script lang="ts">
   import { tick } from 'svelte';
   import Sheet from '../components/Sheet.svelte';
   import CardFace from './CardFace.svelte';
+  import { dockMode } from './dockMode';
   import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
   import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
   import { splitEntries, type SheetCounter } from './inspector';
@@ -46,6 +50,7 @@
   } = $props();
 
   const uid = $props.id();
+  const dock = dockMode();
 
   const split = $derived(splitEntries(entries));
 
@@ -172,8 +177,76 @@
   </div>
 {/snippet}
 
-<Sheet label={header.label} {onclose}>
-  <div class="inspector" bind:this={content}>
+<!-- The note or the entries: under the card, or in its column in dock mode. -->
+{#snippet entriesBlock()}
+  {#if note !== undefined}
+    <p class="note">{note}</p>
+  {/if}
+
+  {#if openSubmenu}
+    <div class="rows">
+      <button type="button" class="row back btn-ghost" onclick={closeSub}
+        ><span class="label"><span aria-hidden="true">‹ </span>Back</span><span class="where"
+          >{openSubmenu.label}</span
+        ></button
+      >
+      {#each openSubmenu.entries as entry, i (keyOf(entry, i))}
+        {#if entry.kind === 'separator'}
+          {@render separator()}
+        {:else}
+          {@render actionRow(entry, 'submenu')}
+        {/if}
+      {/each}
+    </div>
+  {:else}
+    {#if split.main.length > 0}
+      <div class="main-grid" style:--columns={split.main.length}>
+        {#each split.main as entry (entry.item.id)}
+          {@const item = entry.item}
+          {@const reason = item.disabled ? item.reason : undefined}
+          {@const reasonFor = reason === undefined ? undefined : reasonId('main', item.id)}
+          <button
+            type="button"
+            class="main"
+            class:default={item.default}
+            aria-disabled={item.disabled}
+            aria-describedby={reasonFor}
+            onclick={() => run(item)}
+            ><span class="label">{item.label}</span>{@render reasonText(reasonFor, reason)}</button
+          >
+        {/each}
+      </div>
+    {/if}
+    {#if split.rest.length > 0}
+      <div class="rows">
+        {#each split.rest as entry, i (keyOf(entry, i))}
+          {#if entry.kind === 'separator'}
+            {@render separator()}
+          {:else if entry.kind === 'submenu'}
+            {@const reason = entry.disabled ? entry.reason : undefined}
+            {@const reasonFor = reason === undefined ? undefined : reasonId('menu', entry.id)}
+            <button
+              type="button"
+              class="row btn-ghost"
+              aria-disabled={entry.disabled}
+              aria-describedby={reasonFor}
+              data-submenu={entry.id}
+              onclick={() => openSub(entry)}
+              ><span class="label">{entry.label}</span><span class="opens" aria-hidden="true"
+                >›</span
+              >{@render reasonText(reasonFor, reason)}</button
+            >
+          {:else}
+            {@render actionRow(entry, 'menu')}
+          {/if}
+        {/each}
+      </div>
+    {/if}
+  {/if}
+{/snippet}
+
+<Sheet label={header.label} dock={dock.current} {onclose}>
+  <div class="inspector" class:dock={dock.current} bind:this={content}>
     <div class="top">
       <div class="face" class:land={landscape}>
         <CardFace {images} name={header.name} {landscape} />
@@ -190,75 +263,14 @@
         {#each counters as counter (`${counter.kind}:${counter.name}`)}
           {@render counterRow(counter)}
         {/each}
+        {#if dock.current}
+          {@render entriesBlock()}
+        {/if}
       </div>
     </div>
 
-    {#if note !== undefined}
-      <p class="note">{note}</p>
-    {/if}
-
-    {#if openSubmenu}
-      <div class="rows">
-        <button type="button" class="row back btn-ghost" onclick={closeSub}
-          ><span class="label"><span aria-hidden="true">‹ </span>Back</span><span class="where"
-            >{openSubmenu.label}</span
-          ></button
-        >
-        {#each openSubmenu.entries as entry, i (keyOf(entry, i))}
-          {#if entry.kind === 'separator'}
-            {@render separator()}
-          {:else}
-            {@render actionRow(entry, 'submenu')}
-          {/if}
-        {/each}
-      </div>
-    {:else}
-      {#if split.main.length > 0}
-        <div class="main-grid" style:--columns={split.main.length}>
-          {#each split.main as entry (entry.item.id)}
-            {@const item = entry.item}
-            {@const reason = item.disabled ? item.reason : undefined}
-            {@const reasonFor = reason === undefined ? undefined : reasonId('main', item.id)}
-            <button
-              type="button"
-              class="main"
-              class:default={item.default}
-              aria-disabled={item.disabled}
-              aria-describedby={reasonFor}
-              onclick={() => run(item)}
-              ><span class="label">{item.label}</span>{@render reasonText(
-                reasonFor,
-                reason,
-              )}</button
-            >
-          {/each}
-        </div>
-      {/if}
-      {#if split.rest.length > 0}
-        <div class="rows">
-          {#each split.rest as entry, i (keyOf(entry, i))}
-            {#if entry.kind === 'separator'}
-              {@render separator()}
-            {:else if entry.kind === 'submenu'}
-              {@const reason = entry.disabled ? entry.reason : undefined}
-              {@const reasonFor = reason === undefined ? undefined : reasonId('menu', entry.id)}
-              <button
-                type="button"
-                class="row btn-ghost"
-                aria-disabled={entry.disabled}
-                aria-describedby={reasonFor}
-                data-submenu={entry.id}
-                onclick={() => openSub(entry)}
-                ><span class="label">{entry.label}</span><span class="opens" aria-hidden="true"
-                  >›</span
-                >{@render reasonText(reasonFor, reason)}</button
-              >
-            {:else}
-              {@render actionRow(entry, 'menu')}
-            {/if}
-          {/each}
-        </div>
-      {/if}
+    {#if !dock.current}
+      {@render entriesBlock()}
     {/if}
   </div>
 </Sheet>
@@ -556,5 +568,65 @@
 
   .main .reason {
     flex: none;
+  }
+
+  /*
+    Dock mode: two columns over the whole sheet, the card on the left and the
+    rest on its right; the sheet pads them (Sheet.svelte). Only the column
+    scrolls, once its content is higher than the room the sheet has.
+  */
+  .inspector.dock {
+    padding: 0;
+  }
+
+  .inspector.dock .face {
+    width: 48%;
+  }
+
+  /* A phone on its side: the card is as high as the sheet, as wide as its aspect makes it. */
+  @media (max-height: 500px) {
+    .inspector.dock .face {
+      width: auto;
+      height: var(--sheet-room);
+    }
+  }
+
+  .inspector.dock .side {
+    max-height: var(--sheet-room);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    container-type: inline-size;
+  }
+
+  .inspector.dock .name {
+    font-size: 18px;
+  }
+
+  /* The main group: one button per row in a narrow column, two in a wide one. */
+  .inspector.dock .main-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  @container (min-width: 260px) {
+    .inspector.dock .main-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .inspector.dock .main {
+    min-height: 44px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .inspector.dock .row {
+    min-height: 44px;
+    padding: 4px 8px;
+  }
+
+  .inspector.dock .sep {
+    margin: 2px 0;
   }
 </style>

@@ -6,7 +6,10 @@
   modal.svelte.ts), keeps the focus inside and gives it back when it closes.
   A sheet that is not modal (the hand's) leaves the table live, so that a
   press inside it can start a drag onto the table, and the page unlocked.
-  Above 600 px wide, the panel is at most 480 px wide and centred.
+  Above 600 px wide, the panel is at most 480 px wide and centred. In dock
+  mode (a phone, spec 3.4) it spans the whole width and may take the whole
+  height but the top safe area; its content decides its height below that,
+  and reads the room it has in --sheet-room.
 -->
 <script lang="ts">
   import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
@@ -17,6 +20,7 @@
     onclose,
     maxHeight = '92%',
     modal = true,
+    dock = false,
     children,
   }: {
     /** The sheet's accessible name. */
@@ -26,6 +30,8 @@
     maxHeight?: string;
     /** Whether the sheet freezes the table while shown (modal.svelte.ts). */
     modal?: boolean;
+    /** A phone's sheet (dock mode): the whole screen is its room; maxHeight does not apply. */
+    dock?: boolean;
     children: Snippet;
   } = $props();
 
@@ -153,11 +159,12 @@
 
 <div
   class="sheet"
+  class:dock
   role="dialog"
   aria-modal={modal}
   aria-label={label}
   tabindex="-1"
-  style:max-height={maxHeight}
+  style:max-height={dock ? undefined : maxHeight}
   style:transform={offset > 0 ? `translateY(${offset}px)` : undefined}
   bind:this={panel}
   onkeydown={onPanelKeydown}
@@ -205,6 +212,21 @@
       max-width: 480px;
       margin-inline: auto;
     }
+  }
+
+  /*
+    A phone's sheet: the whole width, and up to the whole height under the top
+    safe area. --sheet-room is the height its content may take: the panel's
+    less the handle (28 px) and the bottom padding.
+  */
+  .sheet.dock {
+    --sheet-max: calc(100dvh - env(safe-area-inset-top));
+    --sheet-room: calc(var(--sheet-max) - 40px - env(safe-area-inset-bottom));
+    max-width: none;
+    max-height: var(--sheet-max);
+    margin-inline: 0;
+    padding: 0 calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom))
+      calc(12px + env(safe-area-inset-left));
   }
 
   /*

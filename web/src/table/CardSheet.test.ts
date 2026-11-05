@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import CardSheet from './CardSheet.svelte';
+import sheetSource from './CardSheet.svelte?raw';
+import { DOCK_MODE_KEY } from './dockMode';
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter } from './inspector';
@@ -59,22 +61,42 @@ function modifier(value: number): SheetCounter {
 }
 
 function renderSheet(
-  props: { entries?: ContextEntry[]; note?: string; counters?: SheetCounter[] } = {},
+  props: {
+    entries?: ContextEntry[];
+    note?: string;
+    counters?: SheetCounter[];
+    dock?: boolean;
+  } = {},
 ) {
   const onrun = vi.fn();
   const onstep = vi.fn();
   const onclose = vi.fn();
   const result = render(CardSheet, {
-    header: HEADER,
-    entries: props.entries ?? ENTRIES,
-    note: props.note,
-    images: ['rhino.png'],
-    counters: props.counters ?? [],
-    onrun,
-    onstep,
-    onclose,
+    props: {
+      header: HEADER,
+      entries: props.entries ?? ENTRIES,
+      note: props.note,
+      images: ['rhino.png'],
+      counters: props.counters ?? [],
+      onrun,
+      onstep,
+      onclose,
+    },
+    context: new Map([[DOCK_MODE_KEY, { current: props.dock ?? false }]]),
   });
   return { ...result, onrun, onstep, onclose };
+}
+
+/** The declarations of a rule of the sheet's stylesheet, at the given indent. */
+function rule(selector: string, indent = 2): string {
+  const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
+  const pattern = new RegExp(`\\n {${indent}}${escaped} \\{([^}]*)\\}`);
+  return pattern.exec(sheetSource)?.[1] ?? '';
+}
+
+/** The card's right column, where its header and counters are. */
+function side(): HTMLElement {
+  return document.querySelector<HTMLElement>('.inspector .side')!;
 }
 
 describe('CardSheet', () => {
@@ -273,5 +295,74 @@ describe('CardSheet', () => {
     await fireEvent.keyDown(window, { key: 'Escape' });
 
     expect(onclose).toHaveBeenCalledOnce();
+  });
+
+  describe('in dock mode', () => {
+    it('puts every entry in the column right of the card, nothing under it', () => {
+      renderSheet({ dock: true, counters: [DAMAGE], note: undefined });
+
+      const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
+      expect(sheet.classList).toContain('dock');
+      expect(document.querySelector('.inspector')?.classList).toContain('dock');
+      const column = side();
+      expect(within(column).getByText('Rhino', { selector: '.name' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Add one damage' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Discard' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: /Move to/ })).toBeTruthy();
+      // The face and its column are all the sheet holds.
+      expect(document.querySelector('.inspector')?.children).toHaveLength(1);
+    });
+
+    it('shows a note in the column too', () => {
+      renderSheet({ dock: true, entries: [], note: 'Not your card' });
+
+      expect(within(side()).getByText('Not your card')).toBeTruthy();
+    });
+
+    it('drills a submenu down in place, in the column, with a Back row', async () => {
+      renderSheet({ dock: true });
+
+      await fireEvent.click(screen.getByRole('button', { name: /Move to/ }));
+
+      const column = side();
+      expect(within(column).getByRole('button', { name: /Back/ })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Hand' })).toBeTruthy();
+      expect(within(column).queryByRole('button', { name: 'Exhaust' })).toBeNull();
+    });
+
+    it('leaves the entries under the card outside dock mode', () => {
+      renderSheet({ dock: false });
+
+      expect(within(side()).queryByRole('button', { name: 'Exhaust' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+    });
+
+    it('scrolls only the column, and only when it must', () => {
+      const column = rule('.inspector.dock .side');
+      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('overflow-y: auto;');
+      expect(column).toContain('container-type: inline-size;');
+    });
+
+    it('draws the card about half the sheet wide upright, the whole sheet high on its side', () => {
+      expect(rule('.inspector.dock .face')).toContain('width: 48%;');
+      const side = rule('.inspector.dock .face', 4);
+      expect(side).toContain('height: var(--sheet-room);');
+      expect(side).toContain('width: auto;');
+      expect(sheetSource).toContain('@media (max-height: 500px)');
+    });
+
+    it('makes every entry 44 px high, the main ones two per row in a wide column', () => {
+      expect(rule('.inspector.dock .main')).toContain('min-height: 44px;');
+      expect(rule('.inspector.dock .row')).toContain('min-height: 44px;');
+      expect(rule('.inspector.dock .main-grid')).toContain(
+        'grid-template-columns: minmax(0, 1fr);',
+      );
+      expect(rule('.inspector.dock .main-grid', 4)).toContain(
+        'grid-template-columns: repeat(2, minmax(0, 1fr));',
+      );
+      expect(sheetSource).toMatch(/@container \(min-width: \d+px\)/);
+    });
   });
 });

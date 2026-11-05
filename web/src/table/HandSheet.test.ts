@@ -3,6 +3,7 @@ import { createRawSnippet, flushSync } from 'svelte';
 import HandSheet from './HandSheet.svelte';
 import sheetSource from './HandSheet.svelte?raw';
 import { interaction } from './interaction.svelte';
+import { DOCK_MODE_KEY } from './dockMode';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
 const NAMES: Record<string, string> = {
@@ -22,7 +23,9 @@ function faceOf(card: TableCard): PackFace | null {
 
 const CARDS = [handCard('h1', '01003'), handCard('h2', '01005'), handCard('h3', '01088')];
 
-function renderSheet(props: { cards?: TableCard[]; withPicker?: boolean } = {}) {
+function renderSheet(
+  props: { cards?: TableCard[]; withPicker?: boolean; landscape?: boolean } = {},
+) {
   const handlers = {
     onplay: vi.fn(),
     ondiscard: vi.fn(),
@@ -33,13 +36,17 @@ function renderSheet(props: { cards?: TableCard[]; withPicker?: boolean } = {}) 
     render: () => '<button type="button">Spider-Man</button>',
   }));
   const view = render(HandSheet, {
-    cards: props.cards ?? CARDS,
-    faceOf,
-    seat: 1,
-    area: 'p1',
-    landscape: false,
-    picker: props.withPicker ? picker : undefined,
-    ...handlers,
+    props: {
+      cards: props.cards ?? CARDS,
+      faceOf,
+      seat: 1,
+      area: 'p1',
+      landscape: props.landscape ?? false,
+      picker: props.withPicker ? picker : undefined,
+      ...handlers,
+    },
+    // The hand sheet opens from the dock only.
+    context: new Map([[DOCK_MODE_KEY, { current: true }]]),
   });
   return { ...handlers, view };
 }
@@ -219,5 +226,48 @@ describe('HandSheet', () => {
     flushSync();
 
     expect(onclose).toHaveBeenCalledOnce();
+  });
+
+  describe('the screen used to the full', () => {
+    it('is a dock sheet', () => {
+      renderSheet();
+
+      expect(screen.getByRole('dialog', { name: 'Your hand' }).classList).toContain('dock');
+    });
+
+    it('has a one-line header, the hero first', () => {
+      renderSheet({ withPicker: true });
+
+      const header = screen.getByText('Your hand · 3').closest('header')!;
+      expect(header.firstElementChild?.textContent).toBe('Spider-Man');
+      expect(rule('header')).toContain('white-space: nowrap;');
+    });
+
+    it('sizes the card so that the actions fit under it, upright', () => {
+      const body = rule('.body');
+      expect(body).toContain('--card-h: calc(var(--sheet-room, 85dvh) - var(--chrome));');
+      expect(body).toContain('--card-w: min(80%, calc(var(--card-h) * 185 / 259));');
+      expect(rule('.actions button')).toContain('min-height: 48px;');
+    });
+
+    it('holds the carousel and its dots together', () => {
+      renderSheet();
+
+      const stage = carousel().parentElement!;
+      expect(stage.classList).toContain('stage');
+      expect(stage.querySelector('.dots')).toBeTruthy();
+    });
+
+    it('on its side, puts the header and the stacked actions right of a full-height carousel', () => {
+      renderSheet({ landscape: true });
+
+      expect(document.querySelector('.body')?.classList).toContain('landscape');
+      const side = rule('.body.landscape');
+      expect(side).toContain(
+        "grid-template-areas:\n      'stage head'\n      'stage .'\n      'stage actions';",
+      );
+      expect(side).toContain('--card-w: calc(var(--card-h) * 185 / 259);');
+      expect(rule('.body.landscape .actions')).toContain('grid-template-columns: 1fr;');
+    });
   });
 });

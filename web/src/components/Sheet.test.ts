@@ -2,12 +2,19 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import { modal } from './modal.svelte';
 import Sheet from './Sheet.svelte';
+import sheetSource from './Sheet.svelte?raw';
 
 const content = createRawSnippet(() => ({
   render: () => '<div><button type="button">Play</button></div>',
 }));
 
-function renderSheet(props: { maxHeight?: string; modal?: boolean } = {}) {
+/** The declarations of a rule of the sheet's stylesheet. */
+function rule(selector: string): string {
+  const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+  return pattern.exec(sheetSource)?.[1] ?? '';
+}
+
+function renderSheet(props: { maxHeight?: string; modal?: boolean; dock?: boolean } = {}) {
   const onclose = vi.fn();
   const view = render(Sheet, { label: 'Rhino', onclose, children: content, ...props });
   const sheet = screen.getByRole('dialog', { name: 'Rhino' });
@@ -121,6 +128,36 @@ describe('Sheet', () => {
     const { sheet } = renderSheet({ maxHeight: '62%' });
 
     expect(sheet.style.maxHeight).toBe('62%');
+  });
+
+  describe('in dock mode', () => {
+    it('takes the whole width, up to the whole height under the top safe area', () => {
+      const { sheet } = renderSheet({ dock: true, maxHeight: '62%' });
+
+      expect(sheet.classList).toContain('dock');
+      // Its content decides its height under that limit: no limit of its own.
+      expect(sheet.style.maxHeight).toBe('');
+      const dock = rule('.sheet.dock');
+      expect(dock).toContain('--sheet-max: calc(100dvh - env(safe-area-inset-top));');
+      expect(dock).toContain('max-height: var(--sheet-max);');
+      expect(dock).toContain('max-width: none;');
+    });
+
+    it('pads its content 12 px, the safe areas kept', () => {
+      const dock = rule('.sheet.dock');
+
+      expect(dock).toMatch(/padding:\s*0 calc\(12px \+ env\(safe-area-inset-right\)\)/);
+      expect(dock).toContain('calc(12px + env(safe-area-inset-bottom))');
+      expect(dock).toContain('calc(12px + env(safe-area-inset-left))');
+      // The room its content has, for the inspector's card and the hand's carousel.
+      expect(dock).toContain('--sheet-room:');
+    });
+
+    it('is not a dock sheet outside dock mode', () => {
+      const { sheet } = renderSheet();
+
+      expect(sheet.classList).not.toContain('dock');
+    });
   });
 
   describe('when not modal', () => {
