@@ -137,10 +137,33 @@ function side(): HTMLElement {
 }
 
 describe('CardSheet', () => {
-  it('centres the name, with a pile count beside it, and lets a long name wrap', () => {
+  it('centres the name, with a pile count beside it, and room around them', () => {
     expect(rule('.nameline')).toContain('justify-content: center;');
+    // Room above and below the name, and on its sides, so that a long name never meets an edge.
+    expect(rule('.nameline')).toContain('padding: 10px 12px;');
     expect(rule('.name')).toContain('text-align: center;');
-    expect(rule('.name')).toContain('overflow-wrap: anywhere;');
+  });
+
+  it('cuts a long name on one line with an ellipsis, the count kept whole beside it', () => {
+    const name = rule('.name');
+    expect(name).toContain('min-width: 0;');
+    expect(name).toContain('overflow: hidden;');
+    expect(name).toContain('text-overflow: ellipsis;');
+    expect(name).toContain('white-space: nowrap;');
+    expect(name).not.toContain('overflow-wrap');
+    expect(rule('.count')).toContain('flex: none;');
+  });
+
+  it('shows a cut name whole in a tooltip (overflowTip)', async () => {
+    renderSheet();
+    const name = document.querySelector<HTMLElement>('.inspector .name')!;
+    // jsdom lays nothing out: the name is wider than its box.
+    Object.defineProperty(name, 'scrollWidth', { configurable: true, value: 300 });
+    Object.defineProperty(name, 'clientWidth', { configurable: true, value: 120 });
+
+    await fireEvent.pointerOver(name);
+
+    expect(name.dataset.tip).toBe('Rhino');
   });
 
   it('is a dialog named by its whole header, showing the card face and the name alone', () => {

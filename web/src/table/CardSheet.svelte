@@ -35,6 +35,7 @@
   import { cubicOut } from 'svelte/easing';
   import { fade, fly, slide, type TransitionConfig } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
+  import { overflowTip } from '../lib/overflowTip';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
   import { LIFT_SCALE } from './motion.svelte';
@@ -466,7 +467,7 @@
      alone, which is not read a second time; an eyebrow line would take room. -->
 {#snippet nameline(of: ContextHeader)}
   <div class="nameline" aria-hidden="true">
-    <span class="name">{of.name}</span>
+    <span class="name" use:overflowTip>{of.name}</span>
     {#if of.count !== undefined}<span class="count">{of.count}</span>{/if}
   </div>
 {/snippet}
@@ -590,22 +591,30 @@
     gap: 8px;
   }
 
-  /* The name centred, with a pile's count beside it: the two centred as one. */
+  /*
+    The name centred, with a pile's count beside it: the two centred as one, with room above and
+    below, and on their sides, so that a long name never meets the sheet's edges. The copy that
+    measures a new side draws the same line.
+  */
   .nameline {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    padding: 10px 12px;
   }
 
+  /* One line: a long name is cut with an ellipsis (overflowTip shows it whole), never the count. */
   .name {
     min-width: 0;
+    overflow: hidden;
     color: var(--text);
     font-size: 20px;
     font-weight: 800;
     line-height: 1.1;
     text-align: center;
-    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* A pile's count: a small pill, its digits lined up as they change. */
