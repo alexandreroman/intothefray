@@ -65,5 +65,21 @@
   },
   "the_market": {"unlisted": true},
   "challenge": {"unlisted": true},
-  "badoon_headhunter": {"unlisted": true}
+  "badoon_headhunter": {"unlisted": true},
+  "mts_campaign": {"unlisted": true},
+  "shield_tech": {"unlisted": true},
+  "bad_publicity": {"unlisted": true},
+  "community_service": {"unlisted": true},
+  "snitches_get_stitches": {"unlisted": true},
+  "mut_gen_campaign": {"unlisted": true},
+  "brawler": {"unlisted": true},
+  "commander": {"unlisted": true},
+  "defender": {"unlisted": true},
+  "peacekeeper": {"unlisted": true},
+  "next_evol_campaign": {"unlisted": true},
+  "age_of_apocalypse": {"unlisted": true},
+  "aoa_mission": {"unlisted": true},
+  "aoa_basic_campaign": {"unlisted": true},
+  "aoa_campaign": {"unlisted": true},
+  "overseer": {"unlisted": true}
 }

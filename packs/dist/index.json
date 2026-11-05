@@ -1734,17 +1734,6 @@
       }
     },
     {
-      "code": "mts_campaign",
-      "name": "The Mad Titan's Shadow Campaign",
-      "pack": "mts",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Campagne L'Ombre du Titan Fou"
-        }
-      }
-    },
-    {
       "code": "beasty_boys",
       "name": "Beasty Boys",
       "pack": "hood",
@@ -1851,17 +1840,6 @@
       }
     },
     {
-      "code": "bad_publicity",
-      "name": "Bad Publicity",
-      "pack": "sm",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Diffamation"
-        }
-      }
-    },
-    {
       "code": "city_in_chaos",
       "name": "City in Chaos",
       "pack": "sm",
@@ -1869,17 +1847,6 @@
       "localized": {
         "fr": {
           "name": "Chaos dans la Ville"
-        }
-      }
-    },
-    {
-      "code": "community_service",
-      "name": "Community Service",
-      "pack": "sm",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Intérêt Général"
         }
       }
     },
@@ -1939,17 +1906,6 @@
       }
     },
     {
-      "code": "shield_tech",
-      "name": "Shield Tech",
-      "pack": "sm",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Techno du SHIELD"
-        }
-      }
-    },
-    {
       "code": "sinister_assault",
       "name": "Sinister Assault",
       "pack": "sm",
@@ -1957,17 +1913,6 @@
       "localized": {
         "fr": {
           "name": "Assaut Sinistre"
-        }
-      }
-    },
-    {
-      "code": "snitches_get_stitches",
-      "name": "Snitches get Stitches",
-      "pack": "sm",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Mort au Mouchard"
         }
       }
     },
@@ -2039,17 +1984,6 @@
       "kind": "modular"
     },
     {
-      "code": "brawler",
-      "name": "Brawler",
-      "pack": "mut_gen",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Bagarreur"
-        }
-      }
-    },
-    {
       "code": "brotherhood",
       "name": "Brotherhood",
       "pack": "mut_gen",
@@ -2057,28 +1991,6 @@
       "localized": {
         "fr": {
           "name": "Confrérie"
-        }
-      }
-    },
-    {
-      "code": "commander",
-      "name": "Commander",
-      "pack": "mut_gen",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Commandeur"
-        }
-      }
-    },
-    {
-      "code": "defender",
-      "name": "Defender",
-      "pack": "mut_gen",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Défenseur"
         }
       }
     },
@@ -2094,32 +2006,10 @@
       }
     },
     {
-      "code": "mut_gen_campaign",
-      "name": "Mutant Genesis Campaign",
-      "pack": "mut_gen",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Campagne La Genèse des Mutants"
-        }
-      }
-    },
-    {
       "code": "mystique",
       "name": "Mystique",
       "pack": "mut_gen",
       "kind": "modular"
-    },
-    {
-      "code": "peacekeeper",
-      "name": "Peacekeeper",
-      "pack": "mut_gen",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Pacificateur"
-        }
-      }
     },
     {
       "code": "sentinels",
@@ -2303,17 +2193,6 @@
       }
     },
     {
-      "code": "next_evol_campaign",
-      "name": "Next Evolution Campaign",
-      "pack": "next_evol",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Campagne Next Evolution"
-        }
-      }
-    },
-    {
       "code": "super_strength",
       "name": "Super Strength",
       "pack": "next_evol",
@@ -2339,40 +2218,6 @@
       "code": "dreadpool",
       "name": "Dreadpool",
       "pack": "deadpool",
-      "kind": "modular"
-    },
-    {
-      "code": "age_of_apocalypse",
-      "name": "Age of Apocalypse",
-      "pack": "aoa",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Ère d'Apocalypse"
-        }
-      }
-    },
-    {
-      "code": "aoa_basic_campaign",
-      "name": "Campaign",
-      "pack": "aoa",
-      "kind": "modular"
-    },
-    {
-      "code": "aoa_campaign",
-      "name": "Campaign",
-      "pack": "aoa",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Campagne"
-        }
-      }
-    },
-    {
-      "code": "aoa_mission",
-      "name": "Mission",
-      "pack": "aoa",
       "kind": "modular"
     },
     {
@@ -2450,17 +2295,6 @@
       "localized": {
         "fr": {
           "name": "Infinis"
-        }
-      }
-    },
-    {
-      "code": "overseer",
-      "name": "Overseer",
-      "pack": "aoa",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Hiérarque"
         }
       }
     },

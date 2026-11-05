@@ -5055,7 +5055,8 @@
       "cards": [
         "45164",
         "45165"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "aoa_basic_campaign",
@@ -5068,7 +5069,8 @@
         "45174",
         "45175",
         "45176"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "aoa_campaign",
@@ -5077,7 +5079,8 @@
       "cards": [
         "45177",
         "45178"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "aoa_mission",
@@ -5089,7 +5092,8 @@
         "45168",
         "45169",
         "45170"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "apocalypse",
@@ -5332,7 +5336,8 @@
         "45181",
         "45182",
         "45183"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "prelates",

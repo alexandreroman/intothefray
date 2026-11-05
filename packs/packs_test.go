@@ -1154,6 +1154,30 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 				}
 			}
 		}
+
+		// Campaign mode is out of scope, so the sets only a campaign uses are
+		// unlisted: their cards carry the campaign faction, or the rulebook
+		// reserves them for the campaign (Age of Apocalypse cards 164–183).
+		campaignOnly := []string{
+			"mts_campaign",
+			"shield_tech", "bad_publicity", "community_service", "snitches_get_stitches",
+			"brawler", "commander", "defender", "peacekeeper", "mut_gen_campaign",
+			"next_evol_campaign",
+			"age_of_apocalypse", "aoa_mission", "aoa_basic_campaign", "aoa_campaign", "overseer",
+		}
+		for _, code := range campaignOnly {
+			if set, ok := catalog.Set(code); !ok || !set.Unlisted {
+				t.Errorf("set %s = %+v, want unlisted", code, set)
+			}
+		}
+		// Genuine modular sets that look like campaign sets stay in the lobby:
+		// Civil War's Defenders, MojoMania's Longshot, and the Prelates on the
+		// back of the Overseers.
+		for _, code := range []string{"defenders", "longshot", "prelates"} {
+			if !slices.ContainsFunc(catalog.Index().Sets, func(ref pack.SetRef) bool { return ref.Code == code }) {
+				t.Errorf("modular set %s is not in the index", code)
+			}
+		}
 	})
 
 	t.Run("set-aside cards resolve", func(t *testing.T) {

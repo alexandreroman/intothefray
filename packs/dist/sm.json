@@ -4996,7 +4996,8 @@
       "cards": [
         "27174",
         "27175"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "city_in_chaos",
@@ -5019,7 +5020,8 @@
         "27178",
         "27179",
         "27180"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "down_to_earth",
@@ -5160,7 +5162,8 @@
         "27187",
         "27188",
         "27189"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "sinister_assault",
@@ -5207,7 +5210,8 @@
       "kind": "modular",
       "cards": [
         "27181"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "spider_man_morales",
