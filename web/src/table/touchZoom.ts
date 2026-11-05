@@ -77,7 +77,10 @@ export function touchZoom(options: TouchZoomOptions): Attachment<HTMLElement> {
         press = pointAt(event.touches, 0);
         return;
       }
-      // A second finger: a pinch, and none of these touches is a tap.
+      // A second finger: a pinch, and none of these touches is a tap. With `touch-action: pan-x pan-y` the browser
+      // starts a native two-finger pan before the first touchmove, which then can no longer be prevented; the
+      // touchstart still can, and stops that pan before it begins.
+      event.preventDefault();
       press = null;
       lastTap = null;
       const fingers = twoFingers(event.touches);

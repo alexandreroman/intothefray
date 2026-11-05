@@ -91,6 +91,19 @@ describe('touchZoom pinch', () => {
     expect(move.defaultPrevented).toBe(true);
   });
 
+  it('prevents the touchstart of a second finger, so no native pan starts before the pinch', () => {
+    const { scroller } = attach(options());
+
+    const first = touch(scroller, 'touchstart', [{ x: 100, y: 100 }]);
+    const second = touch(scroller, 'touchstart', [
+      { x: 100, y: 100 },
+      { x: 200, y: 100 },
+    ]);
+
+    expect(first.defaultPrevented).toBe(false);
+    expect(second.defaultPrevented).toBe(true);
+  });
+
   it('pans the scroller with the midpoint of the fingers', () => {
     const { scroller } = attach(options());
     scroller.scrollLeft = 300;
@@ -218,7 +231,7 @@ describe('touchZoom', () => {
     const opts = options({ enabled: () => false });
     const { scroller } = attach(opts);
 
-    touch(scroller, 'touchstart', [
+    const start = touch(scroller, 'touchstart', [
       { x: 100, y: 100 },
       { x: 200, y: 100 },
     ]);
@@ -232,6 +245,7 @@ describe('touchZoom', () => {
     scroller.dispatchEvent(gesture);
 
     expect(opts.setZoom).not.toHaveBeenCalled();
+    expect(start.defaultPrevented).toBe(false);
     expect(move.defaultPrevented).toBe(false);
     expect(gesture.defaultPrevented).toBe(false);
   });
