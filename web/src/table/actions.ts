@@ -7,8 +7,9 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { stackOf } from './drag';
-import { isOutOfPlay } from './layout';
+import { freeSlot, isOutOfPlay } from './layout';
 import {
+  areaOf,
   asideId,
   deckId,
   discardId,
@@ -22,7 +23,16 @@ import {
   seatPlayer,
 } from './seats';
 import { groupUnits, MAX_COUNT } from './selection';
-import type { Action, CardView, PileKind, PileView, Stage, TableView, View } from '../lib/types';
+import type {
+  Action,
+  CardView,
+  PileKind,
+  PileView,
+  Size,
+  Stage,
+  TableView,
+  View,
+} from '../lib/types';
 
 /**
  * What the actions are for: a table card, a pile or a card of the viewer's
@@ -86,8 +96,8 @@ export interface ActionItem {
 
 /**
  * The key of each card and pile action, as its menu entry shows it and the
- * keys sheet lists it (KeysSheet.svelte); the arrow and a hand card's keys
- * (keys.ts) have no menu entry. Several actions share a key, each on its own
+ * keys sheet lists it (KeysSheet.svelte); the arrow (keys.ts) has no menu
+ * entry, nor do a hand card's actions (handActions), which have no menu. Several actions share a key, each on its own
  * kind of element: W draws a revealed card or from a deck, X discards a card,
  * a hand card or a deck's top card, and with Shift, Draw X and Discard X.
  */
@@ -220,7 +230,7 @@ interface Context {
 /**
  * Returns the actions the viewer (view.you) may take on el, or the text to
  * show instead when the element belongs to someone else. Hand cards (their
- * keys are handled by keys.ts), empty piles and elements no longer on the
+ * actions are handActions'), empty piles and elements no longer on the
  * table get nothing, nor does a viewer of an unknown token. Spectators only
  * look: see spectatorActions. On a card of the selected group, Discard and
  * Move to take the whole group (spec 2).
@@ -833,6 +843,56 @@ function toPile(card: CardView, target: string): Action {
 
 function hasPile(table: TableView, id: string): boolean {
   return table.piles.some((p) => p.id === id);
+}
+
+// ---- Hand cards ----
+
+// Groups of a hand card, in inspector order: Play, then Discard.
+const GROUP_PLAY = 0;
+const GROUP_DISCARD = 1;
+
+/**
+ * The actions on a card of one of the viewer's own hands, as its keys run
+ * them (keys.ts) and the touch inspector lists them: Play, to the first free
+ * slot of its deck's row (freeSlot), and Discard, disabled for a side deck's
+ * card without a discard pile. Nothing for any other card, nor for a
+ * spectator. The desktop has no hand card menu: actionsFor gives them none.
+ */
+export function handActions(
+  id: string,
+  view: View,
+  sizeOf: (card: CardView) => Size,
+): ActionItem[] {
+  const table = view.table;
+  const card = table?.cards.find((c) => c.id === id);
+  const seat = ownSeats(view).find((s) => table?.hands?.[areaOf(s)]?.includes(id));
+  if (!table || !card || seat === undefined) {
+    return [];
+  }
+
+  const play: ActionItem = {
+    id: 'play',
+    label: 'Play',
+    key: KEYS.play,
+    default: true,
+    group: GROUP_PLAY,
+    run: () => {
+      const { x, y } = freeSlot(card, table, seat, sizeOf);
+      return { kind: 'play', card: id, x, y };
+    },
+  };
+  const discard: ActionItem = {
+    id: 'discard',
+    label: 'Discard',
+    key: KEYS.discard,
+    altKeys: ['Backspace'],
+    group: GROUP_DISCARD,
+    run: () => ({ kind: 'discard', card: id }),
+  };
+  if (discardPileOf(card, table.piles) === null) {
+    return [play, { ...discard, disabled: true, reason: 'This card has no discard pile' }];
+  }
+  return [play, discard];
 }
 
 // ---- Piles ----

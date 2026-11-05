@@ -1,15 +1,15 @@
 // The table's keyboard shortcuts (spec 5.10). One keydown listener on the
 // window acts on the element under the pointer, or on the one whose context
 // menu is open, with the items its menu lists; the arrow, which is no item of
-// that list, and the hand cards, which have no menu, get their own keys here.
+// that list, gets its own key here, and the hand cards, which have no menu, the
+// items of handActions.
 
 import { modal } from '../components/modal.svelte';
 import { isTyping, releaseFocus } from '../lib/releaseFocus';
 import type { Action, CardView, Size, View } from '../lib/types';
-import { countersOf, discardPileOf, KEYS, type ActionItem, type CounterKind } from './actions';
+import { countersOf, handActions, KEYS, type ActionItem, type CounterKind } from './actions';
 import { interaction } from './interaction.svelte';
-import { freeSlot } from './layout';
-import { areaOf, ownSeats } from './seats';
+import { ownSeats } from './seats';
 import { ZOOM_STEP } from './zoom';
 
 // Shift + these arrows step through the heroes of the hero selector, or in "All" the viewer's decks.
@@ -243,36 +243,16 @@ function removeOne(adds: CounterAction, table: KeyTable): boolean {
 
 /**
  * P plays a card of the hand to the first free slot of its deck's row, X or
- * Backspace discards it, as they discard a card in play.
+ * Backspace discards it, as they discard a card in play: the items of
+ * handActions, which the touch inspector lists too.
  */
 function handKey(key: string, id: string, table: KeyTable): boolean {
-  switch (key) {
-    case KEYS.play.toLowerCase(): {
-      const seat = handSeatOf(id, table.view);
-      const card = table.view.table?.cards.find((c) => c.id === id);
-      if (seat === undefined || !table.view.table || !card) {
-        return false;
-      }
-      const { x, y } = freeSlot(card, table.view.table, seat, table.sizeOf);
-      table.act({ kind: 'play', card: id, x, y });
-      return true;
-    }
-    case KEYS.discard.toLowerCase():
-    case 'backspace': {
-      // A side deck's card without a discard pile has nowhere to be discarded to.
-      const card = table.view.table?.cards.find((c) => c.id === id);
-      if (!card || discardPileOf(card, table.view.table?.piles ?? []) === null) {
-        return false;
-      }
-      table.act({ kind: 'discard', card: id });
-      return true;
-    }
-    default:
-      return false;
+  const item = findItem(handActions(id, table.view, table.sizeOf), key, false);
+  // Both items send an action: neither asks a question nor opens a box.
+  const action = item?.run?.();
+  if (!action || !('kind' in action)) {
+    return false;
   }
-}
-
-/** The own seat whose hand holds the card, if any. */
-function handSeatOf(id: string, view: View): number | undefined {
-  return ownSeats(view).find((seat) => view.table?.hands?.[areaOf(seat)]?.includes(id));
+  table.act(action);
+  return true;
 }
