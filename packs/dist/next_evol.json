@@ -5362,7 +5362,7 @@
         }
       ],
       "set": "next_evol_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 4
     },
     {
@@ -5386,7 +5386,7 @@
         }
       ],
       "set": "next_evol_campaign",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5811,7 +5811,8 @@
         "40201",
         "40202",
         "40203"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "on_the_run",

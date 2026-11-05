@@ -768,10 +768,12 @@ func applyToPile(t *Table, a Action) error {
 }
 
 // isPlainTargetPile reports whether id is a pile cards can be sent to by hand:
-// the victory display or a set-aside pile. No deck or discard pile is one, so
-// a side deck card never lands in a regular deck or discard pile this way.
+// the victory display, a scenario area or a set-aside pile. No deck or discard
+// pile is one, so a side deck card never lands in a regular deck or discard
+// pile this way.
 func isPlainTargetPile(id string) bool {
-	return id == PileVictory || id == PileScenarioAside || strings.HasPrefix(id, asidePrefix)
+	return id == PileVictory || id == PileScenarioAside ||
+		strings.HasPrefix(id, scenarioAreaPrefix) || strings.HasPrefix(id, asidePrefix)
 }
 
 // landsFaceDown reports whether a card dropped out of pile lands face down: a

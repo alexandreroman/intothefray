@@ -614,7 +614,17 @@ function moveMenu(units: readonly CardView[], context: Context): ActionItem[] {
     }
   }
 
+  // The scenario's own areas come first and take any card, as the victory display does:
+  // "The Collection".
   const outOfPlay: ActionItem[] = [];
+  for (const area of context.table.piles.filter((pile) => pile.kind === 'scenarioArea')) {
+    outOfPlay.push({
+      id: area.id,
+      label: pileName(area),
+      group: 0,
+      run: () => actionOver(units, (unit) => toPile(unit, area.id)),
+    });
+  }
   if (hasPile(context.table, PILE_VICTORY)) {
     outOfPlay.push({
       id: 'victory',
@@ -801,6 +811,8 @@ export function pileName(pile: PileView): string {
       return `${sideLabel(pile)} discard`;
     case 'victory':
       return 'Victory display';
+    case 'scenarioArea':
+      return pile.label ?? 'Scenario area';
     case 'aside':
       return 'Set-aside cards';
   }
@@ -893,6 +905,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       return own ? [search, shuffleBackItem(pile)] : [search];
     }
     case 'victory':
+    case 'scenarioArea':
     case 'aside':
       // Not drawn on the table: the chips on their owner's frame open their box.
       return [];

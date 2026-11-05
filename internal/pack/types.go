@@ -213,6 +213,15 @@ type ScenarioDeck struct {
 	Compact bool `json:"compact,omitempty"`
 }
 
+// ScenarioArea is an out-of-play game area a scenario adds to the table, such
+// as The Collection of Infiltrate the Museum: one shared, public pile of
+// faceup cards, next to the victory display. Players move cards in and out of
+// it by hand, player and encounter cards alike.
+type ScenarioArea struct {
+	Key   string `json:"key"`
+	Label string `json:"label"` // "The Collection"
+}
+
 // Start describes the initial table layout of a scenario.
 type Start struct {
 	Top    map[string]FaceRef `json:"top"`
@@ -241,6 +250,8 @@ type Scenario struct {
 	// MainSchemes lists the main scheme sets the scenario is played with, one
 	// of which the host picks; empty when the scenario has its own main scheme.
 	MainSchemes []string `json:"mainSchemes,omitempty"`
+	// Areas lists the scenario's own out-of-play game areas.
+	Areas []ScenarioArea `json:"areas,omitempty"`
 }
 
 // MainSchemeStage is the key of the stage setup makes of the main scheme of
@@ -285,8 +296,11 @@ type ScenarioRef struct {
 	SelfContained bool `json:"selfContained,omitempty"`
 	// MainSchemes lists the main scheme sets the scenario is played with.
 	MainSchemes []string `json:"mainSchemes,omitempty"`
-	// Sets lists the encounter sets the scenario's rules add to the villain
-	// set, which the lobby does not offer as modular sets.
+	// Sets lists the encounter sets that come with the scenario besides its
+	// villain set, which the lobby does not offer as modular sets: the sets its
+	// rules add to the villain set (Scenario.Sets), then those with a card it
+	// sets aside (Scenario.SetAside), such as the Ship Command set Escape the
+	// Museum sets aside whole.
 	Sets []string `json:"sets,omitempty"`
 	// Localized holds the overrides of the entry per language code, e.g. "fr".
 	Localized map[string]Localized `json:"localized,omitempty"`

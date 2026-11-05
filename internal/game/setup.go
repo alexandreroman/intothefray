@@ -42,8 +42,9 @@ import (
 // first player's identity, inPlayGap past it, centred on its height
 // (firstPlayerSpot); a single seat has no token.
 // Things sit rowContentY below the top of their row, leaving room for the
-// client's owner label above the piles. Out-of-play piles (victory display, set-aside cards) keep
-// a position for the model, on the first villain pile, but the client never draws them.
+// client's owner label above the piles. Out-of-play piles (victory display, scenario areas,
+// set-aside cards) keep a position for the model, on the first villain pile, but the client never
+// draws them.
 //
 // The villain's row is taller so that it reads apart from the players' rows:
 // about 1.2 portrait card heights (193 units, keeping the rows on the 10-unit
@@ -406,6 +407,12 @@ func (b *tableBuilder) setupScenario(cfg LobbyConfig) (pack.Scenario, error) {
 	apart := map[string]bool{}
 	b.apart = apart
 	b.selfContained = scenario.SelfContained
+
+	// The scenario's own out-of-play areas lie with the victory display.
+	for _, area := range scenario.Areas {
+		pile := b.table.addPile(scenarioAreaID(area.Key), KindScenarioArea, NoOwner, outOfPlayX, rowY(villainRow))
+		pile.Label = area.Label
+	}
 
 	classic := !slices.ContainsFunc(scenario.Decks, func(d pack.ScenarioDeck) bool { return d.Encounter })
 	// The encounter sets the scenario requires join the classic encounter

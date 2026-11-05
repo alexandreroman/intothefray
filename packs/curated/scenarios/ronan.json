@@ -1,0 +1,75 @@
+{
+  "id": "ronan",
+  "villainSet": "ronan",
+  "sets": [
+    "power_stone",
+    "ship_command"
+  ],
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "16103",
+        "16104",
+        "16105"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "16106",
+        "16107"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "16103",
+          "face": 0
+        },
+        "scheme": {
+          "card": "16106",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "16108",
+          "face": 0
+        },
+        {
+          "card": "16109",
+          "face": 0,
+          "with": "villain"
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "16104",
+          "face": 0
+        },
+        "scheme": {
+          "card": "16106",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "16108",
+          "face": 0
+        },
+        {
+          "card": "16109",
+          "face": 0,
+          "with": "villain"
+        }
+      ]
+    }
+  }
+}

@@ -15,6 +15,7 @@
     | 'ready-all'
     | 'trophy'
     | 'hourglass'
+    | 'star'
     | 'sandbox'
     | 'players'
     | 'link'
@@ -113,6 +114,13 @@
     />
     <path d="M6 3h12M6 21h12" />
     <path d="M7 3C7 7.5 11 8.5 11 12S7 16.5 7 21M17 3c0 4.5-4 5.5-4 9s4 4.5 4 9" />
+  {:else if name === 'star'}
+    <!-- A five-pointed star: a scenario's own out-of-play area, such as The Collection. -->
+    <path
+      d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"
+      fill="currentColor"
+      fill-opacity=".18"
+    />
   {:else if name === 'sandbox'}
     <!-- A card, and another one fanned out behind it: cards to move freely. -->
     <rect x="4" y="5" width="11" height="15" rx="2" />

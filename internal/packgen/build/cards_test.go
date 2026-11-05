@@ -216,6 +216,31 @@ func TestBackRules(t *testing.T) {
 			marvelcdb.Card{TypeCode: "event", SetType: "campaign", FactionCode: "justice"},
 			pack.BackPlayer,
 		},
+		{
+			"campaign event in a modular set",
+			marvelcdb.Card{TypeCode: "event", SetType: "modular", FactionCode: "campaign"},
+			pack.BackPlayer,
+		},
+		{
+			"campaign upgrade in a modular set",
+			marvelcdb.Card{TypeCode: "upgrade", SetType: "modular", FactionCode: "campaign"},
+			pack.BackPlayer,
+		},
+		{
+			"campaign environment in a modular set",
+			marvelcdb.Card{TypeCode: "environment", SetType: "modular", FactionCode: "campaign"},
+			pack.BackEncounter,
+		},
+		{
+			"campaign obligation in a modular set",
+			marvelcdb.Card{TypeCode: "obligation", SetType: "modular", FactionCode: "campaign"},
+			pack.BackEncounter,
+		},
+		{
+			"encounter support in a modular set",
+			marvelcdb.Card{TypeCode: "support", SetType: "modular", FactionCode: "encounter"},
+			pack.BackEncounter,
+		},
 		{"hero event", marvelcdb.Card{TypeCode: "event", SetType: "hero"}, pack.BackPlayer},
 	}
 	for _, tt := range tests {

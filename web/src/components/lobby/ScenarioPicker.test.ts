@@ -712,6 +712,58 @@ describe('ScenarioPicker required sets', () => {
   });
 });
 
+describe('ScenarioPicker set-aside sets', () => {
+  // Escape the Museum sets the Ship Command set aside whole: the index lists it with the
+  // scenario's sets, and picking it as a modular set would put its cards in the game twice.
+  const gmw: Index = {
+    ...index,
+    scenarios: [
+      ...index.scenarios,
+      {
+        id: 'escape_the_museum',
+        name: 'Escape the Museum',
+        pack: 'core',
+        image: '',
+        supported: true,
+        recommended: ['bomb_scare'],
+        sets: ['galactic_artifacts', 'ship_command'],
+      },
+    ],
+    sets: [
+      ...index.sets,
+      { code: 'galactic_artifacts', name: 'Galactic Artifacts', pack: 'core', kind: 'modular' },
+      { code: 'ship_command', name: 'Ship Command', pack: 'core', kind: 'modular' },
+    ],
+  };
+
+  async function menuLabels(config: LobbyConfig): Promise<string[]> {
+    render(ScenarioPicker, {
+      view: viewOf(config),
+      index: gmw,
+      onconfigure: vi.fn(),
+      room: windowRoom,
+    });
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+    return within(screen.getByRole('group', { name: 'Core Set' }))
+      .getAllByRole('button')
+      .map((button) => (button.textContent ?? '').replace(/\s+/g, ' ').trim());
+  }
+
+  it('does not offer a set the scenario sets aside', async () => {
+    expect(await menuLabels({ ...rhino, scenario: 'escape_the_museum', modulars: [] })).toEqual([
+      'Bomb Scare ★ recommended',
+    ]);
+  });
+
+  it('offers it for another scenario', async () => {
+    expect(await menuLabels({ ...rhino, modulars: [] })).toEqual([
+      'Bomb Scare ★ recommended',
+      'Galactic Artifacts',
+      'Ship Command',
+    ]);
+  });
+});
+
 describe('ScenarioPicker main scheme sets', () => {
   // An Underling is played with one of its main scheme sets; Civil War's scheme set belongs to no
   // scenario of this index.

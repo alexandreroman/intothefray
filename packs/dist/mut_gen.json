@@ -4752,7 +4752,7 @@
         }
       ],
       "set": "brawler",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4776,7 +4776,7 @@
         }
       ],
       "set": "brawler",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4800,7 +4800,7 @@
         }
       ],
       "set": "brawler",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4824,7 +4824,7 @@
         }
       ],
       "set": "brawler",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4848,7 +4848,7 @@
         }
       ],
       "set": "brawler",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4871,7 +4871,7 @@
         }
       ],
       "set": "commander",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4894,7 +4894,7 @@
         }
       ],
       "set": "commander",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4918,7 +4918,7 @@
         }
       ],
       "set": "commander",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4942,7 +4942,7 @@
         }
       ],
       "set": "commander",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4965,7 +4965,7 @@
         }
       ],
       "set": "commander",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4989,7 +4989,7 @@
         }
       ],
       "set": "defender",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5013,7 +5013,7 @@
         }
       ],
       "set": "defender",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5037,7 +5037,7 @@
         }
       ],
       "set": "defender",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5061,7 +5061,7 @@
         }
       ],
       "set": "defender",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5085,7 +5085,7 @@
         }
       ],
       "set": "defender",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5109,7 +5109,7 @@
         }
       ],
       "set": "peacekeeper",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5132,7 +5132,7 @@
         }
       ],
       "set": "peacekeeper",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5156,7 +5156,7 @@
         }
       ],
       "set": "peacekeeper",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5180,7 +5180,7 @@
         }
       ],
       "set": "peacekeeper",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -5204,7 +5204,7 @@
         }
       ],
       "set": "peacekeeper",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     }
   ],
@@ -5233,7 +5233,8 @@
         "32178",
         "32179",
         "32180"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "brotherhood",
@@ -5288,7 +5289,8 @@
         "32183",
         "32184",
         "32185"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "defender",
@@ -5300,7 +5302,8 @@
         "32188",
         "32189",
         "32190"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "future_past",
@@ -5395,7 +5398,8 @@
         "32173",
         "32174",
         "32175"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "mystique",
@@ -5418,7 +5422,8 @@
         "32193",
         "32194",
         "32195"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "project_wideawake",

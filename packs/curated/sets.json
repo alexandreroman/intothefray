@@ -13,7 +13,13 @@
   },
   "standard_pvp": {"unlisted": true},
   "art_museum_heist": {"mainScheme": true},
-  "the_getaway": {"mainScheme": true},
+  "the_getaway": {
+    "mainScheme": true,
+    "inPlay": {
+      "standard": [{"card": "60129", "face": 0}],
+      "expert": [{"card": "60129", "face": 0}]
+    }
+  },
   "protection_racket": {"mainScheme": true},
   "stop_the_presses": {
     "mainScheme": true,
@@ -22,7 +28,13 @@
       "expert": [{"card": "60152", "face": 0}]
     }
   },
-  "the_raft_breakout": {"mainScheme": true},
+  "the_raft_breakout": {
+    "mainScheme": true,
+    "inPlay": {
+      "standard": [{"card": "60143", "face": 0}],
+      "expert": [{"card": "60143", "face": 0}]
+    }
+  },
   "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": "own", "back": "player"}},
   "storm_weather_deck": {"side": {"label": "Weather", "discard": "none", "back": "player"}},
   "daredevil_sense_deck": {"side": {"label": "Sense", "topFaceUp": true, "discard": "none", "back": "player"}},
@@ -38,5 +50,36 @@
   "dreadpool": {"setAside": ["44038", "44039", "44040", "44041", "44042"]},
   "hydra_camp": {"unlisted": true},
   "expcamp": {"unlisted": true},
-  "exper_weapon": {"unlisted": true}
+  "exper_weapon": {"unlisted": true},
+  "ship_command": {
+    "inPlay": {
+      "standard": [{"card": "16142", "face": 0}],
+      "expert": [{"card": "16142", "face": 0}]
+    }
+  },
+  "power_stone": {
+    "inPlay": {
+      "standard": [{"card": "16149", "face": 0}],
+      "expert": [{"card": "16149", "face": 0}]
+    }
+  },
+  "the_market": {"unlisted": true},
+  "challenge": {"unlisted": true},
+  "badoon_headhunter": {"unlisted": true},
+  "mts_campaign": {"unlisted": true},
+  "shield_tech": {"unlisted": true},
+  "bad_publicity": {"unlisted": true},
+  "community_service": {"unlisted": true},
+  "snitches_get_stitches": {"unlisted": true},
+  "mut_gen_campaign": {"unlisted": true},
+  "brawler": {"unlisted": true},
+  "commander": {"unlisted": true},
+  "defender": {"unlisted": true},
+  "peacekeeper": {"unlisted": true},
+  "next_evol_campaign": {"unlisted": true},
+  "age_of_apocalypse": {"unlisted": true},
+  "aoa_mission": {"unlisted": true},
+  "aoa_basic_campaign": {"unlisted": true},
+  "aoa_campaign": {"unlisted": true},
+  "overseer": {"unlisted": true}
 }

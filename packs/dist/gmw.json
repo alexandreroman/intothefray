@@ -3750,7 +3750,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3774,7 +3774,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3798,7 +3798,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3822,7 +3822,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3846,7 +3846,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3870,7 +3870,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3894,7 +3894,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3918,7 +3918,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3942,7 +3942,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3966,7 +3966,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3990,7 +3990,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4014,7 +4014,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4038,7 +4038,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4062,7 +4062,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4086,7 +4086,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4110,7 +4110,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4134,7 +4134,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4158,7 +4158,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4182,7 +4182,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4206,7 +4206,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4230,7 +4230,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4254,7 +4254,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4278,7 +4278,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4302,7 +4302,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4326,7 +4326,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4350,7 +4350,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4374,7 +4374,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4398,7 +4398,7 @@
         }
       ],
       "set": "the_market",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -4797,7 +4797,8 @@
         "16185",
         "16186",
         "16187"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "band_of_badoon",
@@ -4840,7 +4841,8 @@
         "16180",
         "16181",
         "16182"
-      ]
+      ],
+      "unlisted": true
     },
     {
       "code": "escape_the_museum",
@@ -4968,7 +4970,21 @@
       "kind": "modular",
       "cards": [
         "16149"
-      ]
+      ],
+      "inPlay": {
+        "expert": [
+          {
+            "card": "16149",
+            "face": 0
+          }
+        ],
+        "standard": [
+          {
+            "card": "16149",
+            "face": 0
+          }
+        ]
+      }
     },
     {
       "code": "rocket",
@@ -5033,7 +5049,21 @@
         "16146",
         "16147",
         "16148"
-      ]
+      ],
+      "inPlay": {
+        "expert": [
+          {
+            "card": "16142",
+            "face": 0
+          }
+        ],
+        "standard": [
+          {
+            "card": "16142",
+            "face": 0
+          }
+        ]
+      }
     },
     {
       "code": "space_pirates",
@@ -5079,7 +5109,8 @@
         "16175",
         "16176",
         "16177"
-      ]
+      ],
+      "unlisted": true
     }
   ],
   "heroes": [
@@ -5094,6 +5125,367 @@
       "set": "rocket",
       "obligation": "16053",
       "nemesis": "rocket_nemesis"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "brotherhood_of_badoon",
+      "name": "Brotherhood Of Badoon",
+      "pack": "gmw",
+      "villainSet": "brotherhood_of_badoon",
+      "sets": [
+        "ship_command"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "16058",
+            "16059",
+            "16060"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "16061",
+            "16062"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "16061",
+              "face": 0
+            },
+            "villain": {
+              "card": "16059",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16063",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "16061",
+              "face": 0
+            },
+            "villain": {
+              "card": "16058",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16063",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "band_of_badoon"
+      ]
+    },
+    {
+      "id": "infiltrate_the_museum",
+      "name": "Infiltrate the Museum",
+      "pack": "gmw",
+      "villainSet": "infiltrate_the_museum",
+      "sets": [
+        "galactic_artifacts"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "16070",
+            "16071",
+            "16072"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "16073"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "16073",
+              "face": 0
+            },
+            "villain": {
+              "card": "16071",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "16073",
+              "face": 0
+            },
+            "villain": {
+              "card": "16070",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "menagerie_medley"
+      ],
+      "areas": [
+        {
+          "key": "collection",
+          "label": "The Collection"
+        }
+      ]
+    },
+    {
+      "id": "escape_the_museum",
+      "name": "Escape the Museum",
+      "pack": "gmw",
+      "villainSet": "escape_the_museum",
+      "sets": [
+        "galactic_artifacts"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "16080",
+            "16081"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "16082",
+            "16083",
+            "16084"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "16082",
+              "face": 0
+            },
+            "villain": {
+              "card": "16081",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16085",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "16082",
+              "face": 0
+            },
+            "villain": {
+              "card": "16080",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16085",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "setAside": [
+        "16142",
+        "16143",
+        "16144",
+        "16145",
+        "16146",
+        "16147",
+        "16148"
+      ],
+      "recommended": [
+        "menagerie_medley"
+      ]
+    },
+    {
+      "id": "nebula",
+      "name": "Nebula",
+      "pack": "gmw",
+      "villainSet": "nebula",
+      "sets": [
+        "power_stone",
+        "ship_command"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "16088",
+            "16089",
+            "16090"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "16091",
+            "16092"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "16091",
+              "face": 0
+            },
+            "villain": {
+              "card": "16089",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16093",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "16091",
+              "face": 0
+            },
+            "villain": {
+              "card": "16088",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16093",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "space_pirates"
+      ]
+    },
+    {
+      "id": "ronan",
+      "name": "Ronan the Accuser",
+      "pack": "gmw",
+      "villainSet": "ronan",
+      "sets": [
+        "power_stone",
+        "ship_command"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "16103",
+            "16104",
+            "16105"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "16106",
+            "16107"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "16106",
+              "face": 0
+            },
+            "villain": {
+              "card": "16104",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16108",
+              "face": 0
+            },
+            {
+              "card": "16109",
+              "face": 0,
+              "with": "villain"
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "16106",
+              "face": 0
+            },
+            "villain": {
+              "card": "16103",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "16108",
+              "face": 0
+            },
+            {
+              "card": "16109",
+              "face": 0,
+              "with": "villain"
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "kree_militant"
+      ]
     }
   ]
 }

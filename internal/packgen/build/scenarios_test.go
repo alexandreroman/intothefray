@@ -2,6 +2,7 @@ package build
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -266,6 +267,18 @@ func TestScenarioCopiesDecksSelfContainedAndActive(t *testing.T) {
 	}
 }
 
+func TestScenarioCopiesAreas(t *testing.T) {
+	f := newScenarioFixture(t)
+	def := rhinoDef()
+	def.Areas = []pack.ScenarioArea{{Key: "collection", Label: "The Collection"}}
+
+	scenarios, _, _ := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
+
+	if got := scenarios["core"][0].Areas; !reflect.DeepEqual(got, def.Areas) {
+		t.Errorf("got areas %+v, want %+v", got, def.Areas)
+	}
+}
+
 func TestScenarioImageFromCoveredVillain(t *testing.T) {
 	card := func(code, set, kind string) pack.Card {
 		return pack.Card{Code: code, Set: set, Faces: []pack.Face{{Type: kind, Images: []string{"https://x/" + code}}}}
@@ -401,6 +414,46 @@ func TestScenarioCopiesSetsAndDropsThemFromRecommended(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got[0].Sets, []string{"bomb_scare"}) || len(got[0].Recommended) != 0 {
 		t.Errorf("got scenario sets %v, recommended %v; want [bomb_scare] and none", got[0].Sets, got[0].Recommended)
+	}
+}
+
+func TestScenarioRefListsTheSetsOfSetAsideCards(t *testing.T) {
+	f := newScenarioFixture(t)
+	tests := []struct {
+		name     string
+		sets     []string
+		setAside []string
+		want     []string
+	}{
+		// The Break-In! is of Rhino's own villain set.
+		{"villain set card", nil, []string{"01097"}, nil},
+		{"set aside whole", nil, []string{"01097", "01109", "01110"}, []string{"bomb_scare"}},
+		{"also required", []string{"bomb_scare"}, []string{"01109"}, []string{"bomb_scare"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			def := rhinoDef()
+			def.Sets = tt.sets
+			def.SetAside = tt.setAside
+
+			scenarios, refs, problems := buildScenarios([]curated.ScenarioDef{def}, nil, f.cards, f.sets, f.cb)
+
+			if len(problems) != 0 {
+				t.Fatalf("got problems %+v, want none", problems)
+			}
+			ref := findRef(t, refs, "rhino")
+			if !reflect.DeepEqual(ref.Sets, tt.want) {
+				t.Errorf("got ref sets %v, want %v", ref.Sets, tt.want)
+			}
+			// A set that comes with the scenario is not a modular set to recommend.
+			if slices.ContainsFunc(tt.want, func(code string) bool { return slices.Contains(ref.Recommended, code) }) {
+				t.Errorf("got recommended %v, want none of %v", ref.Recommended, tt.want)
+			}
+			// The scenario's own sets stay the ones its rules require.
+			if got := scenarios["core"][0].Sets; !reflect.DeepEqual(got, tt.sets) {
+				t.Errorf("got scenario sets %v, want %v", got, tt.sets)
+			}
+		})
 	}
 }
 

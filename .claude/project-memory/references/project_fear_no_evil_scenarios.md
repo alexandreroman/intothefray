@@ -25,9 +25,12 @@ type: project
   set-aside pile, where each player takes one; its other cards in the
   encounter deck. Typhoid Mary starts
   with Disturbed Psyche and Establish Trust in play, Stop The Presses! with
-  the Daily Bugle. Players do the rest by hand: the Underling's stage,
-  Typhoid Mary's random side, the Protection Racket schemes per player, the
-  attachments and searches the 1A Setup texts name.
+  the Daily Bugle, The Getaway with Out Front (60129 face 0) and The Raft
+  Breakout with Master Key (60143) in the villain row (set-level `inPlay`);
+  players attach them by hand. Players do the rest by hand: the Underling's
+  stage, Typhoid Mary's random side, the Protection Racket schemes per
+  player, Art Museum Heist's random Art attachment, The Getaway's speed
+  counters and the searches the 1A Setup texts name.
 
 **Why:** user decision: the Underling is the villain players identify
 with, and the scheme set is the scenario; stage choice and the scenarios'

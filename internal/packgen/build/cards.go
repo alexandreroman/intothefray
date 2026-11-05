@@ -340,12 +340,17 @@ func sizeOf(typeCode string) pack.Size {
 // backOf picks the back from the card type, then from the set type, then from
 // the faction. The faction alone is not enough: campaign sets mix encounter
 // and player cards, but an encounter faction always has an encounter back.
+// A player card of the campaign faction has a player back even in a set the
+// sources call modular, as The Market's events and upgrades do.
 func backOf(entry marvelcdb.Card) pack.Back {
 	switch entry.TypeCode {
 	case pack.FaceTypeVillain, pack.FaceTypeMainScheme, pack.FaceTypeLeader:
 		return pack.BackVillain
 	case pack.FaceTypeObligation:
 		return pack.BackEncounter
+	}
+	if entry.FactionCode == "campaign" && isPlayerCardType(entry.TypeCode) {
+		return pack.BackPlayer
 	}
 	switch entry.SetType {
 	case pack.SetKindVillain, pack.SetKindModular, pack.SetKindStandard, pack.SetKindExpert, pack.SetKindNemesis:
@@ -355,6 +360,18 @@ func backOf(entry marvelcdb.Card) pack.Back {
 		return pack.BackEncounter
 	}
 	return pack.BackPlayer
+}
+
+// isPlayerCardType reports whether cards of this marvelcdb type go in a
+// player's deck or play area: allies, events, resources, supports and
+// upgrades.
+func isPlayerCardType(typeCode string) bool {
+	switch typeCode {
+	case "ally", "event", "resource", "support", "upgrade":
+		return true
+	default:
+		return false
+	}
 }
 
 // aliasesOf lists the codes that resolve to the card: its face codes and its

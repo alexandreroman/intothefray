@@ -56,6 +56,9 @@
 - [French name sources](references/project_french_name_sources.md) — curated > mc4db FR > fr.marvelcdb > cgbuilder; cgbuilder non-fatal
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin, Underlings as villains; scenario = main scheme set
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
+- [Galaxy's Most Wanted scenarios](references/project_galaxys_most_wanted_scenarios.md) — five scenarios curated; Milano, Power Stone placed
+- [Scenario out-of-play areas](references/project_scenario_areas.md) — curated `areas` (The Collection): public pile, star chip before victory
+- [Campaign player card backs](references/project_campaign_card_backs.md) — faction campaign + player card type gets the player back
 - [Rise of Red Skull scenarios](references/project_red_skull_scenarios.md) — five villains curated; weapons and side-scheme decks; searches manual
 - [Scenario decks and several villains](references/project_scenario_decks.md) — deck cards out of the classic deck; several villains
 - [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; a deck takes any card of its owner

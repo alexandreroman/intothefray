@@ -30,5 +30,6 @@ begins.
 **How to apply:** never add an automatic opening draw or automatic threat;
 the Draw… and token actions cover them, and the cards' `startingThreat`
 data is informational. A curated scenario starts its scheme on face 0 and
-lists only environments and side schemes in `start.inPlay`;
-`packs/packs_test.go` checks both. See [[project_scenario_decks]].
+lists only environments, side schemes and attachments laid out `with` a
+stage (Ronan's Universal Weapon) in `start.inPlay`; `packs/packs_test.go`
+checks both. See [[project_scenario_decks]].

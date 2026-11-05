@@ -3751,7 +3751,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3775,7 +3775,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3799,7 +3799,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3823,7 +3823,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1
     },
     {
@@ -3863,7 +3863,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "04159a",
@@ -3907,7 +3907,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "04160a",
@@ -3951,7 +3951,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "04161a",
@@ -3995,7 +3995,7 @@
         }
       ],
       "set": "hydra_camp",
-      "back": "encounter",
+      "back": "player",
       "quantity": 1,
       "aliases": [
         "04162a",

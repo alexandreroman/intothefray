@@ -116,6 +116,10 @@ const (
 	// deck; a scenario discard is its discard pile.
 	KindScenarioDeck    PileKind = "scenarioDeck"
 	KindScenarioDiscard PileKind = "scenarioDiscard"
+	// A scenario area is an out-of-play game area of the scenario's own, such
+	// as The Collection: shared and public like the victory display, and
+	// named by its label (see pack.ScenarioArea).
+	KindScenarioArea PileKind = "scenarioArea"
 )
 
 // Well-known pile ids. Per-player piles are "deck:pN", "disc:pN", "aside:pN",
@@ -149,6 +153,14 @@ const (
 	scenarioDeckPrefix             = "sdeck:"
 	scenarioDiscardPrefix          = "sdisc:"
 )
+
+// scenarioAreaPrefix is the prefix of the id of a scenario area: "area:collection".
+const scenarioAreaPrefix = "area:"
+
+// scenarioAreaID returns the id of the scenario area with key: "area:collection".
+func scenarioAreaID(key string) string {
+	return scenarioAreaPrefix + key
+}
 
 // playerDeckID returns the id of the deck of the seat whose area is area:
 // "deck:p0".
@@ -212,7 +224,8 @@ type Pile struct {
 	Y     int      `json:"y"`
 	Cards []string `json:"cards"` // bottom → top
 	// Label names a side pile: "Invocation" for the Invocation deck and its
-	// discard pile.
+	// discard pile; a scenario deck, its discard pile and a scenario area go
+	// by their curated label too.
 	Label string `json:"label,omitempty"`
 	// TopFaceUp shows the top card of a side deck to everyone.
 	TopFaceUp bool `json:"topFaceUp,omitempty"`

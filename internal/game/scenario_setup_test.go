@@ -616,3 +616,31 @@ func TestConfigRejectsRequiredSetAsModular(t *testing.T) {
 		t.Errorf("got error %v, want the required set rejected as a modular set", err)
 	}
 }
+
+// TestConfigRejectsSetAsideSetAsModular checks that a set with a card the
+// scenario sets aside is no modular set to pick, as Escape the Museum sets the
+// Ship Command set aside whole, while the scenarios setting aside cards of their
+// own villain set keep their usual modular sets.
+func TestConfigRejectsSetAsideSetAsModular(t *testing.T) {
+	cat := newCatalog(t)
+
+	cfg := DefaultConfig(cat, "escape_the_museum")
+	cfg.Modulars = append(cfg.Modulars, "ship_command")
+	err := validateConfig(cfg, cat)
+	if !errors.Is(err, ErrInvalid) ||
+		!strings.Contains(err.Error(), `"ship_command" is already part of scenario "escape_the_museum"`) {
+		t.Errorf("got error %v, want Ship Command rejected as a modular set", err)
+	}
+
+	for _, id := range []string{"escape_the_museum", "taskmaster", "red_skull"} {
+		if err := validateConfig(DefaultConfig(cat, id), cat); err != nil {
+			t.Errorf("%s: got error %v, want its default config valid", id, err)
+		}
+	}
+	// Ship Command is a modular set like any other in a scenario that leaves it alone.
+	cfg = rhinoConfig()
+	cfg.Modulars = []string{"ship_command"}
+	if err := validateConfig(cfg, cat); err != nil {
+		t.Errorf("Rhino with Ship Command: got error %v, want none", err)
+	}
+}

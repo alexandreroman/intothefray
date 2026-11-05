@@ -601,6 +601,35 @@ describe('actionsFor', () => {
     expect(actionOf(item(items, 'flip'))).toEqual({ kind: 'flip', card: 'down' });
   });
 
+  it("offers each scenario area before the victory display, by the area's label", () => {
+    const view = makeView({
+      piles: [
+        ...makeView().table!.piles,
+        pile('area:collection', {
+          kind: 'scenarioArea',
+          count: 0,
+          cards: [],
+          label: 'The Collection',
+        }),
+      ],
+    });
+    // Any card goes there, the viewer's, another player's and an encounter card alike.
+    for (const id of ['mine', 'theirs', 'enemy']) {
+      const move = menuOf(itemsFor({ kind: 'card', id }, view), 'moveTo');
+      const outOfPlay = move.slice(move.findIndex((it) => it.id === 'area:collection'));
+      expect(outOfPlay.map((it) => [it.id, it.label])).toEqual([
+        ['area:collection', 'The Collection'],
+        ['victory', 'Victory display'],
+        ['aside', 'Set aside'],
+      ]);
+      expect(actionOf(item(move, 'area:collection'))).toEqual({
+        kind: 'toPile',
+        card: id,
+        target: 'area:collection',
+      });
+    }
+  });
+
   it("another player's card cannot go to a hand or a deck", () => {
     const move = menuOf(itemsFor({ kind: 'card', id: 'theirs' }), 'moveTo');
 
@@ -1330,6 +1359,34 @@ describe('a selected group', () => {
       actions: [
         { kind: 'toPile', card: 'c1', target: 'aside:p0' },
         { kind: 'toPile', card: 't1', target: 'saside' },
+      ],
+    });
+  });
+
+  it('a scenario area, listed before the victory display, sends toPile to it per unit', () => {
+    const view = groupView();
+    view.table!.piles.push(
+      pile('area:collection', {
+        kind: 'scenarioArea',
+        count: 0,
+        cards: [],
+        label: 'The Collection',
+      }),
+    );
+    const result = actionsFor({ kind: 'card', id: 'c1' }, view, 'en', new Set(['c1', 'e1', 't1']));
+    if (!Array.isArray(result)) {
+      throw new Error(`expected items, got the text "${result.text}"`);
+    }
+    const move = menuOf(result, 'moveTo');
+    expect(move.map((it) => it.id)).toEqual(['area:collection', 'victory', 'aside']);
+    const area = item(move, 'area:collection');
+    expect(area.label).toBe('The Collection');
+    expect(actionOf(area)).toEqual({
+      kind: 'group',
+      actions: [
+        { kind: 'toPile', card: 'c1', target: 'area:collection' },
+        { kind: 'toPile', card: 'e1', target: 'area:collection' },
+        { kind: 'toPile', card: 't1', target: 'area:collection' },
       ],
     });
   });

@@ -173,14 +173,37 @@ func TestSetupSetsAsideSeveralMainSchemes(t *testing.T) {
 	}
 }
 
+// TestSetupMainSchemeSetInPlay checks the cards a main scheme set starts in
+// play: on the table in the villain's row, on their first face, and out of the
+// encounter deck, at both difficulties.
 func TestSetupMainSchemeSetInPlay(t *testing.T) {
-	table := startedGame(t, underlingConfig("electro", "stop_the_presses")).Table
-
-	if c := cardWithCode(t, table, "60152"); c.Zone != ZoneTable {
-		t.Errorf("Daily Bugle zone = %q, want table", c.Zone)
+	tests := []struct {
+		scheme string
+		code   string
+	}{
+		{scheme: "stop_the_presses", code: "60152"},  // Daily Bugle
+		{scheme: "the_getaway", code: "60129"},       // Out Front
+		{scheme: "the_raft_breakout", code: "60143"}, // Master Key
 	}
-	if n := encounterCount(table, "60152"); n != 0 {
-		t.Errorf("Daily Bugle copies in the encounter deck = %d, want 0", n)
+	for _, tt := range tests {
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scheme+"/"+string(difficulty), func(t *testing.T) {
+				cfg := underlingConfig("electro", tt.scheme)
+				cfg.Difficulty = difficulty
+				if difficulty == pack.Expert {
+					cfg.Expert = "expert"
+				}
+				table := startedGame(t, cfg).Table
+
+				c := cardWithCode(t, table, tt.code)
+				if c.Zone != ZoneTable || c.Face != 0 || c.Y != rowY(villainRow) {
+					t.Errorf("%s = %+v, want on the table in the villain's row, face 0", tt.code, c)
+				}
+				if n := encounterCount(table, tt.code); n != 0 {
+					t.Errorf("%s copies in the encounter deck = %d, want 0", tt.code, n)
+				}
+			})
+		}
 	}
 }
 

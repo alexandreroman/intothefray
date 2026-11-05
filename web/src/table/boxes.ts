@@ -114,7 +114,8 @@ export function pileLabel(pile: PileView, view: View): string {
       // The scenario's own set-aside cards belong to nobody.
       return pile.owner === -1 ? pileName(pile) : `${ownerOf(pile, view)} set-aside cards`;
     default:
-      // The encounter and scenario piles and the victory display are shared: nobody's.
+      // The encounter and scenario piles, the victory display and the scenario areas are shared:
+      // nobody's.
       return pileName(pile);
   }
 }

@@ -328,6 +328,38 @@ describe('Table', () => {
     expect(within(box).getAllByRole('listitem')).toHaveLength(2);
   });
 
+  it("puts a scenario area's chip before the victory display and the set-aside cards", async () => {
+    const view = withOutOfPlay(makeView());
+    // Alex's card and an encounter card in The Collection.
+    view.table!.cards.push(
+      card('a1', { code: '01001', owner: 0, zone: 'pile' }),
+      card('a2', { code: '01001', owner: -1, zone: 'pile' }),
+    );
+    view.table!.piles.push(
+      pile('area:collection', {
+        kind: 'scenarioArea',
+        x: 0,
+        y: 30,
+        count: 2,
+        cards: ['a1', 'a2'],
+        label: 'The Collection',
+      }),
+    );
+    render(Table, { session: fakeSession(), view });
+    await catalogLoaded();
+
+    expect(chipNames(-1)).toEqual([
+      'The Collection (2)',
+      'Victory display (2)',
+      'Set-aside cards (0): empty',
+    ]);
+    expect(surface().querySelector('[data-id="area:collection"]')).toBeNull();
+
+    await fireEvent.click(chip('area:collection'));
+    const box = screen.getByRole('dialog', { name: 'The Collection' });
+    expect(within(box).getAllByRole('listitem')).toHaveLength(2);
+  });
+
   it('shows no chip for an out-of-play pile the table does not have', async () => {
     render(Table, { session: fakeSession(), view: makeView() });
     await catalogLoaded();

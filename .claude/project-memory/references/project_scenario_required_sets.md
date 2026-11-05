@@ -12,6 +12,10 @@ type: project
   encounter deck as it does a modular set, with their Setup-keyword cards
   in play. The lobby does not offer them as modular sets, and a game
   config naming one as a modular set is invalid.
+- A set with a card in the scenario's `setAside`, other than the villain
+  set, is excluded the same way: the index lists it in the scenario's
+  `sets` after the required sets (Escape the Museum: Ship Command), while
+  setup adds only the required sets to the encounter deck.
 - The modular sets the "Contents" line names come from the Cerebro
   recommendations, which the lobby preselects.
 
