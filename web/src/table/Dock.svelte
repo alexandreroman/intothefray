@@ -315,4 +315,21 @@
   .spacer {
     flex: 1;
   }
+
+  /*
+    A touch screen has no real hover, yet the button tapped last keeps matching :hover until the
+    next tap elsewhere: the hover wash of tokens.css would stay on it, as if it still had the
+    focus. There the buttons keep their rest look; a mouse still gets the hover. The rail's hand
+    button and a drop target keep theirs anyway: their rules outweigh the global hover.
+  */
+  @media (hover: none) {
+    .dock .ib:hover {
+      background-color: transparent;
+      color: var(--text-soft);
+    }
+
+    .dock:not(.rail) .handbtn:not(.drop):hover {
+      background-color: var(--panel-2);
+    }
+  }
 </style>

@@ -3,7 +3,8 @@
   and a panel that slides up from the bottom edge with a grab handle on top.
   A tap on the veil, a swipe down or Escape closes it. Like a
   dialog (Dialog.svelte), it counts as a modal while shown (see
-  modal.svelte.ts), keeps the focus inside and gives it back when it closes.
+  modal.svelte.ts) and keeps the focus inside; closed from the keyboard, it
+  gives the focus back to its opener, closed by the pointer, to the page.
   A sheet that is not modal (the hand's) leaves the table live, so that a
   press inside it can start a drag onto the table, and the page unlocked.
   Above 600 px wide, the panel is at most 480 px wide and centred. In dock
@@ -17,8 +18,8 @@
   carousel's scroll, a hand card's drag. Let go past 60 px or flung down, the
   sheet closes; else it springs back.
   It leaves sliding down as its veil fades out, however its caller removes it
-  (global transitions); as it starts leaving, it lets the page go and gives
-  the focus back, and takes no more taps or keys.
+  (global transitions); as it starts leaving, it lets the page go and the
+  focus move on, and takes no more taps or keys.
 -->
 <script module lang="ts">
   import { prefersReducedMotion } from 'svelte/motion';
@@ -86,15 +87,13 @@
 
   const focusedBefore =
     document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  const openedByPointer = lastPressByPointer();
 
   let leaving = false;
 
   /**
    * Lets the page go as the sheet starts sliding down, rather than once it is
    * gone, so that the table answers at once: the sheet takes no more taps,
-   * the modal count drops, and the focus goes back where it was, without a
-   * focus ring when the sheet was opened by the pointer, as for a dialog.
+   * the modal count drops, and the focus moves on (giveFocusBack).
    * Once, as it starts leaving or, without an outro, as it is destroyed.
    */
   function leave(): void {
@@ -107,10 +106,25 @@
       panel.inert = true;
     }
     releaseModal?.();
-    if (openedByPointer) {
-      focusedBefore?.focus({ focusVisible: false });
-    } else {
+    giveFocusBack();
+  }
+
+  /**
+   * Closed from the keyboard (Escape, a button pressed with Enter), the sheet
+   * gives the focus back to its opener, ring and all, for the keyboard
+   * navigation to go on from there. Closed by the pointer (a swipe, a tap on
+   * the veil or on an action), it lets the focus go to the page instead: the
+   * opener, a dock button say, would keep a focus nobody gave it, which a
+   * later Space or Enter would activate again (pointerBlur, lib/releaseFocus).
+   */
+  function giveFocusBack(): void {
+    if (!lastPressByPointer()) {
       focusedBefore?.focus();
+      return;
+    }
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && panel?.contains(active)) {
+      active.blur();
     }
   }
 

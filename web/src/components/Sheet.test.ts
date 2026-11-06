@@ -294,17 +294,60 @@ describe('Sheet', () => {
     expect(page.classList).not.toContain('scroll-locked');
   });
 
-  it('gives the focus back when it closes', () => {
-    const opener = document.createElement('button');
-    document.body.append(opener);
-    opener.focus();
+  describe('the focus as it closes', () => {
+    let opener: HTMLButtonElement;
 
-    const { sheet, view } = renderSheet();
-    expect(sheet.contains(document.activeElement)).toBe(true);
+    beforeEach(() => {
+      opener = document.createElement('button');
+      document.body.append(opener);
+      opener.focus();
+    });
 
-    view.unmount();
-    expect(document.activeElement).toBe(opener);
-    opener.remove();
+    afterEach(() => {
+      opener.remove();
+    });
+
+    it('goes back to the opener when closed from the keyboard', async () => {
+      const { onclose, sheet, view } = renderSheet();
+      expect(sheet.contains(document.activeElement)).toBe(true);
+
+      await fireEvent.keyDown(window, { key: 'Escape' });
+      expect(onclose).toHaveBeenCalledOnce();
+      view.unmount();
+
+      expect(document.activeElement).toBe(opener);
+    });
+
+    it('is let go when swiped shut, leaving the opener unfocused', async () => {
+      const { onclose, view } = renderSheet();
+      const play = screen.getByRole('button', { name: 'Play' });
+      play.focus();
+
+      // A finger's press is a pointer's first, as in a browser.
+      await fireEvent.pointerDown(play, { pointerType: 'touch', pointerId: 1 });
+      await swipe(play, [
+        [100, 300, 0],
+        [100, 320, 100],
+        [100, 400, 400],
+      ]);
+      expect(onclose).toHaveBeenCalledOnce();
+      view.unmount();
+
+      expect(document.activeElement).not.toBe(opener);
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it('is let go when a tap on the veil closes it', async () => {
+      const { onclose, view } = renderSheet();
+      const veil = view.container.querySelector('.veil')!;
+
+      await fireEvent.pointerDown(veil, { pointerType: 'touch', pointerId: 1 });
+      await fireEvent.click(veil);
+      expect(onclose).toHaveBeenCalledOnce();
+      view.unmount();
+
+      expect(document.activeElement).toBe(document.body);
+    });
   });
 
   it('keeps Tab inside the sheet', async () => {

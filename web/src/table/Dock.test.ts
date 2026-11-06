@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import Dock from './Dock.svelte';
+import dockSource from './Dock.svelte?raw';
 import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
 const CARD = 'https://img.intothefray.xyz/cards/en/';
@@ -128,6 +129,21 @@ describe('Dock', () => {
     expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
     expect(screen.getByRole('button', { name: UNDO_TIP })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'History' })).toBeTruthy();
+  });
+
+  it('styles a focus from the keyboard only: no :focus rule but :focus-visible', () => {
+    const focusRules = dockSource.match(/:focus(?!-visible)/g);
+    expect(focusRules).toBeNull();
+  });
+
+  it('keeps no hover look on a touch screen, where the last tapped button stays hovered', () => {
+    const touchRules = /@media \(hover: none\) \{([\s\S]*?)\n {2}\}/.exec(dockSource)?.[1] ?? '';
+    expect(touchRules).toMatch(
+      /\.ib:hover \{[^}]*background-color: transparent;[^}]*color: var\(--text-soft\);/,
+    );
+    expect(touchRules).toMatch(
+      /\.handbtn:not\(\.drop\):hover \{[^}]*background-color: var\(--panel-2\);/,
+    );
   });
 
   it('lays out as a bar in portrait', () => {
