@@ -197,6 +197,8 @@ class TableInteraction {
   #awaitingHold = $state(false);
   // When the press waiting for the hold began: the timeStamp of its pointerdown.
   #holdStart = 0;
+  // What the press waiting for the hold touched, which keeps the page from scrolling once armed.
+  #scrollGuarded: EventTarget | null = null;
   // The press began on a card of a carousel (HandSheet.svelte, data-carousel): a finger moving sideways on it
   // scrolls the carousel, and only a mostly upward move drags the card.
   #inCarousel = false;
@@ -380,12 +382,15 @@ class TableInteraction {
     this.#holdStart = event.timeStamp;
     const target = event.currentTarget;
     this.#inCarousel = target instanceof Element && target.closest('[data-carousel]') !== null;
-    if (this.#awaitingHold) {
+    if (this.#awaitingHold && event.target !== null) {
       // Added at the press, before the touchstart that follows its pointerdown: Chrome may make
       // every touchmove of a touch uncancelable once its first one went by unprevented, so a
       // listener added only at the hold could no longer stop the scroll. It stops it once armed.
-      // A listener on the window is passive unless told otherwise, and a passive one cannot.
-      window.addEventListener('touchmove', this.#preventScroll, { passive: false });
+      // On the element touched, not the window: every touchmove of the touch targets it, even once
+      // it is no longer in the page (a pile whose last card is dragged out draws its empty slot
+      // instead), and then no longer bubbles up to the window. Passive: false, else it cannot stop it.
+      this.#scrollGuarded = event.target;
+      this.#scrollGuarded.addEventListener('touchmove', this.#preventScroll, { passive: false });
     }
   }
 
@@ -431,7 +436,7 @@ class TableInteraction {
   }
 
   // Bound once, so that the very listener press adds is the one #endHold removes.
-  #preventScroll = (event: TouchEvent): void => {
+  #preventScroll = (event: Event): void => {
     if (this.armed) {
       event.preventDefault();
     }
@@ -441,7 +446,8 @@ class TableInteraction {
   #endHold(): void {
     this.#awaitingHold = false;
     this.armed = false;
-    window.removeEventListener('touchmove', this.#preventScroll);
+    this.#scrollGuarded?.removeEventListener('touchmove', this.#preventScroll);
+    this.#scrollGuarded = null;
   }
 
   /** The press turned into a drag: the token pill goes. */

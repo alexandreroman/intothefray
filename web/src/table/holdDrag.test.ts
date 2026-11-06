@@ -88,8 +88,7 @@ function layOut(view: View): void {
   });
 }
 
-async function renderTable() {
-  const view = makeView();
+async function renderTable(view = makeView()) {
   const session = fakeSession();
   layOut(view);
   render(Table, { session, view });
@@ -214,18 +213,18 @@ describe('a touch press on a table card, in touch mode', () => {
   it('keeps the page from scrolling under the finger once armed, and only then', async () => {
     await renderTable();
     await press(placed('mine'), 50, 400);
-    const early = new TouchEvent('touchmove', { cancelable: true });
-    window.dispatchEvent(early);
+    const early = new TouchEvent('touchmove', { bubbles: true, cancelable: true });
+    placed('mine').dispatchEvent(early);
     expect(early.defaultPrevented).toBe(false);
 
     await wait(300);
-    const armed = new TouchEvent('touchmove', { cancelable: true });
-    window.dispatchEvent(armed);
+    const armed = new TouchEvent('touchmove', { bubbles: true, cancelable: true });
+    placed('mine').dispatchEvent(armed);
     expect(armed.defaultPrevented).toBe(true);
 
     await release(50, 400);
-    const after = new TouchEvent('touchmove', { cancelable: true });
-    window.dispatchEvent(after);
+    const after = new TouchEvent('touchmove', { bubbles: true, cancelable: true });
+    placed('mine').dispatchEvent(after);
     expect(after.defaultPrevented).toBe(false);
   });
 
@@ -286,8 +285,9 @@ describe('a touch press on a table card, in touch mode', () => {
 
   it('adds its scroll guard at the press, and stops the scroll only once armed', async () => {
     await renderTable();
-    const add = vi.spyOn(window, 'addEventListener');
-    const remove = vi.spyOn(window, 'removeEventListener');
+    // Touch events target the element the finger landed on.
+    const add = vi.spyOn(placed('mine'), 'addEventListener');
+    const remove = vi.spyOn(placed('mine'), 'removeEventListener');
     await press(placed('mine'), 50, 400);
     const touchmoves = () => add.mock.calls.filter(([type]) => type === 'touchmove');
     expect(touchmoves()).toEqual([['touchmove', expect.any(Function), { passive: false }]]);
@@ -303,7 +303,7 @@ describe('a touch press on a table card, in touch mode', () => {
 
   it('removes its scroll guard when the finger scrolls the table instead', async () => {
     await renderTable();
-    const remove = vi.spyOn(window, 'removeEventListener');
+    const remove = vi.spyOn(placed('mine'), 'removeEventListener');
     await press(placed('mine'), 50, 400);
     await moveTo(50, 470);
     expect(interaction.held).toBeNull();
@@ -320,6 +320,27 @@ describe('a touch press on a table card, in touch mode', () => {
     expect(interaction.dragging).not.toBeNull();
     expect(interaction.isArmed({ kind: 'pile', id: 'enc' })).toBe(false);
     expect(placed('enc').classList).not.toContain('armed');
+  });
+
+  it('keeps the page from scrolling when the pile it drags its last card from empties', async () => {
+    const view = makeView();
+    view.table!.cards.push(card('d1', { zone: 'pile' }));
+    view.table!.piles.push(
+      pile('disc:p0', { kind: 'discard', owner: 0, x: 150, count: 1, cards: ['d1'] }),
+    );
+    await renderTable(view);
+    // The finger lands on the pile's card art, which touch events target until the finger lifts.
+    const touched = placed('disc:p0').querySelector('.art')!;
+    await press(touched, 200, 100);
+    await wait(300);
+    await moveTo(200, 300);
+    expect(interaction.dragging).not.toBeNull();
+    // The pile counts its only card out: it draws its empty slot, and the art the finger touched is gone.
+    expect(touched.isConnected).toBe(false);
+
+    const move = new TouchEvent('touchmove', { bubbles: true, cancelable: true });
+    touched.dispatchEvent(move);
+    expect(move.defaultPrevented).toBe(true);
   });
 });
 
