@@ -1696,3 +1696,64 @@ describe('a riffle in dock mode', () => {
     }
   });
 });
+
+describe('a "+N" on a table card in dock mode', () => {
+  /** The fixture, Alex's card on the table carrying these counters. */
+  function withCounters(counters: Partial<TableCard>): View {
+    const view = makeView();
+    const mine = view.table!.cards.find(({ id }) => id === 'mine')!;
+    Object.assign(mine, counters);
+    return view;
+  }
+
+  /** A tap, as a finger makes it: enters each element, outermost first, presses, lets go and clicks the last. */
+  async function tap(...entered: HTMLElement[]): Promise<void> {
+    const target = entered.at(-1)!;
+    const finger = { pointerType: 'touch', clientX: 50, clientY: 50 };
+    for (const element of entered) {
+      await fireEvent.pointerEnter(element, finger);
+    }
+    await fireEvent.pointerDown(target, { ...finger, button: 0 });
+    await fireEvent.pointerUp(target, { ...finger, button: 0 });
+    await fireEvent.click(target, { clientX: 50, clientY: 50 });
+    for (const element of [...entered].reverse()) {
+      await fireEvent.pointerLeave(element, finger);
+    }
+  }
+
+  function tokenPill(): HTMLElement | null {
+    return screen.queryByRole('group', { name: /^Change / });
+  }
+
+  // The "+N" has no behaviour of its own: a tap on it is a tap on its card, which opens the inspector.
+  it('opens the inspector on its card on a tap on the tokens\' "+N", with no pill', async () => {
+    mockScreen(PHONE);
+    // A 200 px wide play area zooms the table to 51 %: the card, 48 px high, holds two discs, so
+    // its four tokens show one and "+3".
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('tablewrap') ? 200 : 0;
+    });
+    await renderTable(withCounters({ tokens: { dmg: 1, thr: 2, acc: 1, gen: 4 } }));
+    const more = placed('mine').querySelector<HTMLElement>('.dock-counters .tok.more');
+    expect(more?.textContent).toBe('+3');
+
+    await tap(placed('mine'), more!);
+
+    expect(screen.getByRole('dialog', { name: /^Spider-Man, / })).toBeTruthy();
+    expect(tokenPill()).toBeNull();
+  });
+
+  it('opens the inspector on its card on a tap on the statuses\' "+N", with no pill', async () => {
+    mockScreen(PHONE);
+    await renderTable(withCounters({ status: { tough: 2, retaliate: 1, stunned: 1 } }));
+    const more = placed('mine').querySelector<HTMLElement>('.dock-counters .st.more');
+    expect(more?.textContent).toBe('+2');
+
+    await tap(placed('mine'), more!);
+
+    expect(screen.getByRole('dialog', { name: /^Spider-Man, / })).toBeTruthy();
+    expect(tokenPill()).toBeNull();
+  });
+});
