@@ -1518,7 +1518,7 @@
     return card ? countersFor(card) : [];
   }
 
-  /** The stack a table card belongs to, as the inspector's strip draws it; none for a card on its own or a pile. */
+  /** The stack a table card belongs to, as the inspector's carousel draws it; none for a card on its own or a pile. */
   function inspectorStack(element: TableElement): StackCard[] {
     if (element.kind !== 'card') {
       return [];

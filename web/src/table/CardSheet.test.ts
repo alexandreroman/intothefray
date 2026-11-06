@@ -121,12 +121,28 @@ const ARMOR_HEADER: ContextHeader = {
 };
 
 /** The strip of the stack under the card, if shown. */
-function strip(): HTMLElement | null {
+/** The carousel of the stack in place of the card, if shown. */
+function carousel(): HTMLElement | null {
   return screen.queryByRole('group', { name: 'Attached cards' });
 }
 
-function thumbnails(): HTMLElement[] {
-  return within(strip()!).getAllByRole('button');
+/** The cards of the carousel, in order. */
+function slides(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>('.inspector:not(.measure) .slide')];
+}
+
+function slideOf(id: string): HTMLElement {
+  return slides().find((slide) => slide.dataset.id === id)!;
+}
+
+/** The neighbours of the centred card, which a tap centres. */
+function peeks(): HTMLElement[] {
+  return within(carousel()!).getAllByRole('button');
+}
+
+/** Lays an element out sideways, as jsdom does not: its left edge and its width, in px. */
+function placeBox(element: HTMLElement, left: number, width: number): void {
+  element.getBoundingClientRect = () => new DOMRect(left, 0, width, 100);
 }
 
 /** The declarations of a rule of the sheet's stylesheet, at the given indent. */
@@ -570,57 +586,100 @@ describe('CardSheet', () => {
   });
 
   describe('the stack of the card (F-U15)', () => {
-    it('shows the whole stack under the card, the main card first and ringed, with the count attached', () => {
+    it('shows the stack in a carousel in place of the card, the main card first and centred', () => {
       renderSheet({ stack: STACK, cardId: 'rhino' });
 
-      expect(thumbnails().map((thumb) => thumb.getAttribute('aria-label'))).toEqual([
-        'Rhino',
-        'Armored Rhino',
-        'Face-down card',
-      ]);
-      expect(thumbnails().map((thumb) => thumb.getAttribute('aria-current'))).toEqual([
+      expect(slides().map((slide) => slide.dataset.id)).toEqual(['rhino', 'armor', 'hidden']);
+      expect(slides().map((slide) => slide.getAttribute('aria-current'))).toEqual([
         'true',
         null,
         null,
       ]);
-      expect(thumbnails()[0]!.classList).toContain('current');
-      const label = strip()!.querySelector('.stack-label')!;
-      expect(label.textContent).toContain('Attached');
-      expect(label.querySelector('.count-pill')?.textContent).toBe('2');
-      // Under the card, in its column.
-      expect(document.querySelector('.inspector .visual .face + .stack')).toBe(strip());
+      expect(slides().map((slide) => slide.classList.contains('dim'))).toEqual([false, true, true]);
+      // The centred card is the inspector's face, the one that turns over.
+      expect(slideOf('rhino').querySelector('.face')).not.toBeNull();
+      expect(within(carousel()!).getByRole('img', { name: 'Rhino' })).toBeTruthy();
+      // On the line of the card: no strip under it.
+      expect(document.querySelector('.inspector .visual > .face')).toBeNull();
+      expect(document.querySelector('.inspector .thumbs')).toBeNull();
     });
 
-    it('draws each thumbnail with its own face, a face-down card its back', () => {
+    it('draws each neighbour with its own face, a face-down card its back', () => {
       renderSheet({ stack: STACK, cardId: 'rhino' });
 
-      const sources = thumbnails().map((thumb) => thumb.querySelector('img')?.getAttribute('src'));
+      const sources = slides().map((slide) => slide.querySelector('img')?.getAttribute('src'));
       expect(sources).toEqual(['rhino.png', 'armor.png', 'back.png']);
     });
 
-    it('asks for a tapped card, but not for the one shown', async () => {
+    it('shows a dot per card under the carousel, the centred one lit', () => {
+      renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      const dots = [...document.querySelectorAll('.inspector:not(.measure) .dots i')];
+      expect(dots.map((dot) => dot.classList.contains('on'))).toEqual([true, false, false]);
+    });
+
+    it('asks for a tapped neighbour, the centred card having no button', async () => {
       const { onpick, onrun, onclose } = renderSheet({ stack: STACK, cardId: 'rhino' });
 
-      await fireEvent.click(thumbnails()[0]!);
-      expect(onpick).not.toHaveBeenCalled();
+      expect(peeks().map((peek) => peek.getAttribute('aria-label'))).toEqual([
+        'Armored Rhino',
+        'Face-down card',
+      ]);
+      await fireEvent.click(peeks()[0]!);
 
-      await fireEvent.click(thumbnails()[1]!);
       expect(onpick).toHaveBeenCalledExactlyOnceWith('armor');
       expect(onrun).not.toHaveBeenCalled();
       expect(onclose).not.toHaveBeenCalled();
     });
 
-    it('switches to the tapped card in the same sheet, the strip kept with the new card ringed', async () => {
+    it('asks for the card a swipe leaves in the middle, once the scroll settles', async () => {
+      vi.useFakeTimers();
+      try {
+        const { onpick } = renderSheet({ stack: STACK, cardId: 'rhino' });
+        // jsdom lays nothing out: the carousel 300 px wide, its slides 200 px apart, the second
+        // one in the middle after the swipe.
+        placeBox(carousel()!, 0, 300);
+        slides().forEach((slide, i) => placeBox(slide, 50 + 200 * (i - 1), 200));
+
+        await fireEvent.scroll(carousel()!);
+        expect(slides()[1]!.classList).not.toContain('dim');
+        expect(onpick).not.toHaveBeenCalled();
+        await fireEvent.scroll(carousel()!);
+        vi.advanceTimersByTime(200);
+
+        expect(onpick).toHaveBeenCalledExactlyOnceWith('armor');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('centres the shown card: at once on opening, smoothly as it changes', async () => {
+      const scrollTo = vi.fn();
+      HTMLElement.prototype.scrollTo = scrollTo as unknown as typeof HTMLElement.prototype.scrollTo;
+      try {
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+        await tick();
+        expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: 'instant' });
+
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        await tick();
+        expect(scrollTo).toHaveBeenLastCalledWith({ left: 0, behavior: 'smooth' });
+      } finally {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollTo;
+      }
+    });
+
+    it('switches to the tapped card in the same sheet, the carousel kept with the new card centred', async () => {
       const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
       const dialog = screen.getByRole('dialog');
-      const shown = strip();
+      const shown = carousel();
 
       await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
 
       expect(screen.getByRole('dialog')).toBe(dialog);
-      expect(strip()).toBe(shown);
+      expect(carousel()).toBe(shown);
       expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
-      expect(thumbnails().map((thumb) => thumb.getAttribute('aria-current'))).toEqual([
+      expect(slides().map((slide) => slide.getAttribute('aria-current'))).toEqual([
         null,
         'true',
         null,
@@ -648,24 +707,31 @@ describe('CardSheet', () => {
       expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
     });
 
-    it('shows no strip for a card on its own', () => {
+    it('shows the card alone, as ever, when it has no stack', () => {
       renderSheet({ stack: [], cardId: 'rhino' });
-      expect(strip()).toBeNull();
-      expect(document.querySelector('.stack')).toBeNull();
+
+      expect(carousel()).toBeNull();
+      expect(document.querySelector('.inspector .carousel')).toBeNull();
+      expect(document.querySelector('.inspector .visual > .face')).not.toBeNull();
+      expect(document.querySelector('.inspector .visual.stacked')).toBeNull();
     });
 
-    it('scrolls the strip sideways, its thumbnails a fifth of the sheet wide, the current one in signal blue', () => {
-      expect(rule('.thumbs')).toContain('overflow-x: auto;');
-      expect(rule('.thumb')).toContain('width: 22cqi;');
-      expect(rule('.thumb.current')).toContain('var(--sel)');
-      expect(rule('.inspector')).toContain('container-type: inline-size;');
+    it('snaps each card to the middle, its neighbours smaller and dimmed at the sides', () => {
+      const scroller = rule('.carousel');
+      expect(scroller).toContain('overflow-x: auto;');
+      expect(scroller).toContain('scroll-snap-type: x mandatory;');
+      expect(rule('.slide')).toContain('scroll-snap-align: center;');
+      expect(rule('.slide')).toContain('width: var(--slide-w);');
+      const dim = rule('.slide.dim');
+      expect(dim).toContain('scale: 0.9;');
+      expect(dim).toContain('opacity: 0.55;');
     });
 
-    it('on its side, sizes the thumbnails by their height under the card, which leaves them room', () => {
+    it('keeps the centred card at the size of a card alone, upright and on its side', () => {
+      expect(rule('.inspector.dock .visual.stacked')).toContain('--slide-h: 42dvh;');
       const side = block('@media (max-height: 500px)');
-      expect(ruleIn(side, '.inspector.dock .thumb')).toContain('height: var(--thumb-height);');
-      expect(ruleIn(side, '.inspector.dock .visual.stacked .face')).toContain(
-        'height: calc(var(--sheet-room) - var(--stack-room));',
+      expect(ruleIn(side, '.inspector.dock .visual.stacked')).toContain(
+        '--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));',
       );
     });
   });
@@ -819,30 +885,34 @@ describe('CardSheet', () => {
     });
 
     describe('switching to another card of the stack (F-U15)', () => {
-      /** The halves of the fade of the face and the column, out then in. */
+      /** The halves of the fade of the card's column, out then in: the carousel scrolls itself. */
       function fades(): { element: Element; keyframes: Keyframe[] }[] {
-        return animationsOf(90).filter(({ element }) => element.matches('.face, .side'));
+        return animationsOf(90).filter(({ element }) => element.matches('.side'));
       }
 
-      it('fades the card out and the tapped one in, without turning it over', async () => {
+      it('fades the column out and in with the new card, without turning the card over', async () => {
         const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
 
         await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
 
-        // Still the old card as it fades out.
+        // Still the old card's column as it fades out.
         expect(screen.getByText('Rhino', { selector: '.name' })).toBeTruthy();
         const out = fades();
-        expect(out.map(({ element }) => element.classList[0])).toEqual(['face', 'side']);
+        expect(out).toHaveLength(1);
         expect(out[0]?.keyframes.map((frame) => frame.opacity)).toEqual([1, 0]);
 
         await finishAnimations();
 
         expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
-        const back = fades().slice(2);
-        expect(back).toHaveLength(2);
+        const back = fades().slice(1);
+        expect(back).toHaveLength(1);
         expect(back[0]?.keyframes.map((frame) => frame.opacity)).toEqual([0, 1]);
         expect(animationsOf(180)).toEqual([]);
         expect(animationsOf(200)).toEqual([]);
+        // The face is now the centred slide's.
+        expect(slideOf('armor').querySelector('.face img')?.getAttribute('alt')).toBe(
+          'Armored Rhino',
+        );
       });
 
       it('switches at once under reduced motion', async () => {
@@ -855,15 +925,15 @@ describe('CardSheet', () => {
         expect(animate).not.toHaveBeenCalled();
       });
 
-      it('still turns a card of the stack that flips over', async () => {
+      it('still turns the centred card when it flips over', async () => {
         const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
 
         await rerender({ images: ['rhino-2.png'] });
 
         expect(fades()).toEqual([]);
-        expect(
-          animationsOf(180).filter(({ element }) => element.classList.contains('face')),
-        ).toHaveLength(1);
+        const turns = animationsOf(180).filter(({ element }) => element.classList.contains('face'));
+        expect(turns).toHaveLength(1);
+        expect(slideOf('rhino').contains(turns[0]!.element)).toBe(true);
       });
     });
 

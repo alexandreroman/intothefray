@@ -2,7 +2,7 @@
 // screen, beside the entries of its context menu (contextItems.ts): the
 // counters a card carries, with steppers, the entries it shows, their split
 // into the large buttons of the first group and the rows of the others, and
-// the stack the card belongs to, shown as a strip under it. Pure.
+// the stack the card belongs to, shown as a carousel in place of it. Pure.
 
 import type { CardView } from '../lib/types';
 import {
@@ -30,7 +30,7 @@ export interface SheetCounter {
   signed: boolean;
 }
 
-/** A card of the inspected card's stack, as the strip under it draws it. */
+/** A card of the inspected card's stack, as the inspector's carousel draws it. */
 export interface StackCard {
   id: string;
   /** What the inspector's header names it: a face-down card's name stays hidden. */

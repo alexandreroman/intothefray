@@ -29,15 +29,20 @@
   (Table.svelte keys it), which does not turn.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
-  A card of a stack shows the whole stack under its face, in a strip that
-  scrolls sideways: the main card first, the shown one ringed in signal blue.
-  A tap on another card of it asks the caller to show that one (onpick): the
-  same sheet then fades the card out and the tapped one in, never turning it,
-  its page keeping its height as through a submenu, and the strip staying.
+  A card of a stack shows the whole stack in place of its face: a carousel
+  that snaps each card to the middle, the main card first, the shown one
+  centred at the size of a card alone, its neighbours peeking at the sides,
+  smaller and dimmed (as HandSheet.svelte's), with a dot per card under it.
+  The card a swipe leaves in the middle once the scroll settles, or a tapped
+  neighbour, is asked of the caller (onpick): the same sheet then shows it,
+  its column fading out and in, never turning, its page keeping its height as
+  through a submenu. The centred card is the face that turns over on a flip.
+  A card alone shows its face alone.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
   import { fade, fly, slide, type TransitionConfig } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
   import { overflowTip } from '../lib/overflowTip';
@@ -101,8 +106,10 @@
   const TURN_PERSPECTIVE = 'perspective(700px)';
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
-  /** How long the shown card takes to fade out, then the tapped card of its stack to fade in, in ms. */
+  /** How long the column takes to fade out with the shown card, then in with the new one, in ms. */
   const SWITCH_MS = 180;
+  /** How long the carousel must be still before the card in its middle becomes the shown one, in ms. */
+  const SETTLE_MS = 120;
 
   /** A side of the card: the face it shows, and the header, counters and entries that go with it. */
   type Side = {
@@ -123,8 +130,17 @@
   /** The column beside or under the card: its header, counters and, in dock mode, its entries. */
   let sideElement = $state<HTMLElement>();
   let turn: Animation | undefined;
-  /** The fades of the face and its column as the sheet switches to another card of the stack. */
+  /** The fades of the column as the sheet switches to another card of the stack. */
   let fades: Animation[] = [];
+  /** The carousel of the stack, in place of the face, when the card has one. */
+  let carouselElement = $state<HTMLElement>();
+  /** The card a swipe has brought to the carousel's middle, before it settles; null until then. */
+  let swipedTo = $state<string | null>(null);
+  /** The card in the carousel's middle, which shows full size and lit: the shown one when still. */
+  const centredId = $derived(swipedTo ?? cardId);
+  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  /** The carousel has been scrolled to the shown card once: later moves to another one glide. */
+  let centredOnce = false;
   /** The ease of the sheet to the new side's size; it holds that size until the turn ends. */
   let resize: Animation | undefined;
   /** The side of the last update, which a new face turns away from. */
@@ -167,7 +183,69 @@
     turn?.cancel();
     resize?.cancel();
     cancelFades();
+    clearTimeout(settleTimer);
   });
+
+  // The shown card in the carousel's middle: at once as the sheet opens, gliding there after a
+  // tap on a neighbour. After a swipe it is there already.
+  $effect(() => {
+    const id = cardId;
+    const scroller = carouselElement;
+    if (id === undefined || scroller === undefined) {
+      return;
+    }
+    untrack(() => {
+      swipedTo = null;
+      const glide = centredOnce && !prefersReducedMotion.current;
+      centreSlide(scroller, id, glide ? 'smooth' : 'instant');
+      centredOnce = true;
+    });
+  });
+
+  function centreSlide(scroller: HTMLElement, id: string, behavior: 'instant' | 'smooth'): void {
+    const slide = scroller.querySelector<HTMLElement>(`.slide[data-id="${CSS.escape(id)}"]`);
+    // jsdom has no scrollTo.
+    if (slide === null || typeof scroller.scrollTo !== 'function') {
+      return;
+    }
+    const left = slide.offsetLeft + slide.offsetWidth / 2 - scroller.clientWidth / 2;
+    scroller.scrollTo({ left, behavior });
+  }
+
+  /** The card nearest the carousel's middle. */
+  function slideInMiddle(): string | undefined {
+    if (carouselElement === undefined) {
+      return undefined;
+    }
+    const box = carouselElement.getBoundingClientRect();
+    const middle = box.left + box.width / 2;
+    let nearest: string | undefined;
+    let nearestDistance = Infinity;
+    for (const slide of carouselElement.querySelectorAll<HTMLElement>('.slide')) {
+      const rect = slide.getBoundingClientRect();
+      const distance = Math.abs(rect.left + rect.width / 2 - middle);
+      if (distance < nearestDistance) {
+        nearest = slide.dataset.id;
+        nearestDistance = distance;
+      }
+    }
+    return nearest;
+  }
+
+  /**
+   * A scroll of the carousel lights the card in its middle as it goes; once the carousel is still,
+   * that card becomes the shown one, unless it is already.
+   */
+  function onCarouselScroll(): void {
+    swipedTo = slideInMiddle() ?? null;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      const id = slideInMiddle();
+      if (id !== undefined && id !== cardId) {
+        onpick?.(id);
+      }
+    }, SETTLE_MS);
+  }
 
   /** Whether the sheet goes from one card of the stack to another: not a flip, nor a reveal. */
   function isStackSwitch(from: Side, to: Side): boolean {
@@ -184,38 +262,35 @@
 
   /**
    * Shows another card of the stack: the page keeps its height and goes back to the main page at
-   * once, then the face and its column fade out with the old card and in with the new one. Under
-   * reduced motion, the card just changes.
+   * once, then the column fades out with the old card and in with the new one; the carousel
+   * brings the card to its middle itself. Under reduced motion, the column just changes.
    */
   function switchCard(from: Side): void {
     keepHeightForStack();
     void closeSubAtOnce();
-    if (motionMs(SWITCH_MS) === 0 || faceElement === undefined || sideElement === undefined) {
+    if (motionMs(SWITCH_MS) === 0 || sideElement === undefined) {
       return;
     }
+    const column = sideElement;
     turn?.cancel();
     resize?.cancel();
     cancelFades();
     leaving = from;
-    const shownParts = [faceElement, sideElement];
     const half = SWITCH_MS / 2;
-    const away = shownParts.map((part) =>
-      part.animate([{ opacity: 1 }, { opacity: 0 }], {
-        duration: half,
-        easing: 'ease-in',
-        fill: 'forwards',
-      }),
-    );
-    fades = away;
-    // Both fades run together: the first one's end is the moment the new card shows.
-    away[0]!.onfinish = () => {
+    const away = column.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: half,
+      easing: 'ease-in',
+      fill: 'forwards',
+    });
+    fades = [away];
+    away.onfinish = () => {
       leaving = null;
-      fades = shownParts.map((part) =>
-        part.animate([{ opacity: 0 }, { opacity: 1 }], { duration: half, easing: 'ease-out' }),
-      );
-      for (const fade of away) {
-        fade.cancel();
-      }
+      const back = column.animate([{ opacity: 0 }, { opacity: 1 }], {
+        duration: half,
+        easing: 'ease-out',
+      });
+      fades = [back];
+      away.cancel();
     };
   }
 
@@ -327,7 +402,7 @@
     pagesAtOnce = false;
   }
 
-  /** A tap on a card of the strip: another one is shown in its place, the shown one stays. */
+  /** A tap on a neighbour in the carousel: it becomes the shown one. */
   function pick(card: StackCard): void {
     if (card.id !== cardId) {
       onpick?.(card.id);
@@ -579,30 +654,65 @@
   </div>
 {/snippet}
 
-<!-- The stack under the card: a small face for each of its cards, which a tap shows in the sheet. -->
-{#snippet stackStrip()}
-  <div class="stack" role="group" aria-label="Attached cards">
-    <div class="stack-label" aria-hidden="true">
-      Attached <span class="stack-count count-pill">{stack.length - 1}</span>
-    </div>
-    <div class="thumbs">
-      {#each stack as card (card.id)}
-        <button
-          type="button"
-          class="thumb"
-          class:land={card.landscape}
-          class:current={card.id === cardId}
-          aria-label={card.name}
-          aria-current={card.id === cardId ? 'true' : undefined}
-          onclick={() => pick(card)}
-        >
-          <span class="thumb-face" aria-hidden="true">
-            <CardFace images={card.images} name={card.name} landscape={card.landscape} />
-          </span>
-        </button>
-      {/each}
-    </div>
+<!-- Room before the first card and after the last one, so that both can snap to the middle. -->
+{#snippet spacer(card: StackCard)}
+  <i class="spacer" class:land={card.landscape} aria-hidden="true"></i>
+{/snippet}
+
+<!-- The stack in place of the face: the shown card centred, the others peeking at its sides. -->
+{#snippet stackCarousel()}
+  <div
+    class="carousel"
+    role="group"
+    aria-label="Attached cards"
+    bind:this={carouselElement}
+    onscroll={onCarouselScroll}
+  >
+    {@render spacer(stack[0]!)}
+    {#each stack as card (card.id)}
+      {@const shown = card.id === side.cardId}
+      <div
+        class="slide"
+        class:land={shown ? side.landscape : card.landscape}
+        class:dim={card.id !== centredId}
+        data-id={card.id}
+        aria-current={card.id === cardId ? 'true' : undefined}
+      >
+        {#if shown}
+          <div class="face" class:land={side.landscape} bind:this={faceElement}>
+            <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+          </div>
+        {:else}
+          <button type="button" class="peek" aria-label={card.name} onclick={() => pick(card)}>
+            <span class="peek-face" aria-hidden="true">
+              <CardFace images={card.images} name={card.name} landscape={card.landscape} />
+            </span>
+          </button>
+        {/if}
+      </div>
+    {/each}
+    {@render spacer(stack.at(-1)!)}
   </div>
+  <div class="dots" aria-hidden="true">
+    {#each stack as card (card.id)}
+      <i class:on={card.id === centredId}></i>
+    {/each}
+  </div>
+{/snippet}
+
+<!-- The carousel as the hidden copy lays it out, its cards empty. -->
+{#snippet measuredCarousel()}
+  <div class="carousel">
+    {@render spacer(stack[0]!)}
+    {#each stack as card (card.id)}
+      <div
+        class="slide"
+        class:land={card.id === live.cardId ? live.landscape : card.landscape}
+      ></div>
+    {/each}
+    {@render spacer(stack.at(-1)!)}
+  </div>
+  <div class="dots"><i></i></div>
 {/snippet}
 
 <!-- The new side's note and main page, laid out as the content lays them, to be measured. -->
@@ -626,11 +736,12 @@
   <div class="inspector" class:dock={dock.current} bind:this={content}>
     <div class="top">
       <div class="visual" class:stacked={stack.length > 1}>
-        <div class="face" class:land={side.landscape} bind:this={faceElement}>
-          <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
-        </div>
         {#if stack.length > 1}
-          {@render stackStrip()}
+          {@render stackCarousel()}
+        {:else}
+          <div class="face" class:land={side.landscape} bind:this={faceElement}>
+            <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+          </div>
         {/if}
       </div>
       <div class="side" bind:this={sideElement}>
@@ -661,9 +772,10 @@
     >
       <div class="top">
         <div class="visual" class:stacked={stack.length > 1}>
-          <div class="face" class:land={live.landscape}></div>
           {#if stack.length > 1}
-            {@render stackStrip()}
+            {@render measuredCarousel()}
+          {:else}
+            <div class="face" class:land={live.landscape}></div>
           {/if}
         </div>
         <div class="side">
@@ -684,13 +796,11 @@
 </Sheet>
 
 <style>
-  /* A container: the thumbnails of the stack are sized by the sheet's width. */
   .inspector {
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding: 0 14px;
-    container-type: inline-size;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -743,79 +853,113 @@
   }
 
   /*
-    The stack's strip: as wide as the face's column, never wider (contain), its thumbnails in one
-    row that scrolls sideways once they do not fit.
+    The stack's carousel, in place of the face: sideways only, each card snapping to the middle.
+    Padded above and below for the cards' shadows. --slide-h and --slide-max size the cards: the
+    shown one is as large as a card alone would be, with room left for its neighbours to peek.
   */
-  .stack {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-self: stretch;
-    min-width: 0;
-    contain: inline-size;
+  .visual.stacked {
+    --slide-h: 100vh;
+    --slide-max: 82%;
+    width: 56%;
   }
 
-  .stack-label {
+  .carousel {
+    --gap: 12px;
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 16px;
-    padding-inline: 4px;
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  /* The count of attached cards, in a pile's capsule (countPill.css). */
-  .stack-count {
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: normal;
-  }
-
-  /* Padded so that the ring of the shown card is not cut by the scrolling edges. */
-  .thumbs {
-    display: flex;
-    gap: 8px;
-    padding: 4px;
+    gap: var(--gap);
+    padding-block: 10px 14px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
 
-  /* A card of the stack, about a fifth of the sheet wide, a landscape one on its side. */
-  .thumb {
+  .carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* --slide-w: a card's width, set on each card (and spacer) for its own ratio. */
+  .slide,
+  .spacer {
+    --face-ratio: 5 / 7;
+    --slide-w: min(var(--slide-max), calc(var(--slide-h) * var(--face-ratio)));
+  }
+
+  .slide.land,
+  .spacer.land {
+    --face-ratio: 7 / 5;
+  }
+
+  /* Flex items rather than padding: some browsers leave a scroller's end padding out of its scroll. */
+  .spacer {
     flex: none;
-    width: 22cqi;
-    aspect-ratio: 5 / 7;
+    align-self: stretch;
+    width: calc((100% - var(--slide-w)) / 2 - var(--gap));
+  }
+
+  .slide {
+    position: relative;
+    flex: none;
+    width: var(--slide-w);
+    aspect-ratio: var(--face-ratio);
+    scroll-snap-align: center;
+  }
+
+  .slide.dim {
+    scale: 0.9;
+    opacity: 0.55;
+  }
+
+  /* The shown card fills its place in the carousel, whatever size a face alone would take. */
+  .inspector .carousel .slide > .face {
+    width: 100%;
+    height: 100%;
+  }
+
+  .peek {
+    display: block;
+    width: 100%;
+    height: 100%;
     padding: 0;
     border: 0;
     border-radius: var(--card-radius);
     background: none;
-    box-shadow: 2px 3px 8px #000a;
+    box-shadow: 2px 4px 10px #000a;
   }
 
-  .thumb.land {
-    aspect-ratio: 7 / 5;
+  .slide.land .peek {
     border-radius: var(--card-radius-land);
   }
 
-  .thumb:hover:not(:disabled) {
+  .peek:hover:not(:disabled) {
     background: none;
   }
 
-  /* The card shown, in the signal blue of selection. */
-  .thumb.current {
-    outline: 2px solid var(--sel);
-    outline-offset: 2px;
-  }
-
-  .thumb-face {
+  .peek-face {
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  /* A dot per card, the centred one long and lit, as in the hand sheet. */
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .dots i {
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--line-strong);
+  }
+
+  .dots i.on {
+    width: 16px;
+    background: var(--text);
   }
 
   .side {
@@ -1028,6 +1172,17 @@
     .step:active:not(:disabled) {
       transform: scale(0.96);
     }
+
+    /* The carousel's cards and dots, as the centred card changes. */
+    .slide {
+      transition:
+        scale 0.2s,
+        opacity 0.2s;
+    }
+
+    .dots i {
+      transition: width 0.2s;
+    }
   }
 
   /*
@@ -1118,10 +1273,17 @@
     align-items: center;
   }
 
-  /* The face centred in a full-width column, the stack's strip full width under it. */
+  /* The face centred in a full-width column, or the stack's carousel across it. */
   .inspector.dock .visual {
     width: 100%;
     align-items: center;
+  }
+
+  .inspector.dock .visual.stacked {
+    --slide-h: 42dvh;
+    --slide-max: 80%;
+    width: 100%;
+    align-items: stretch;
   }
 
   .inspector.dock .face {
@@ -1144,28 +1306,24 @@
       align-items: flex-start;
     }
 
-    /*
-      The column as wide as the face; a strip under it takes its height from the face's: the
-      thumbnails' height, the label's and the gaps (8 + 16 + 6 px), and their padding (2 × 4 px).
-    */
+    /* The column as wide as the face. */
     .inspector.dock .visual {
       width: auto;
-      --thumb-height: calc(var(--sheet-room) * 0.22);
-      --stack-room: calc(var(--thumb-height) + 38px);
+    }
+
+    /*
+      The carousel as high as the sheet: its cards that high less its padding (24 px), the gap
+      (8 px) and the dots (6 px); as wide as a card with 44 px on each side for its neighbours.
+    */
+    .inspector.dock .visual.stacked {
+      --carousel-chrome: 38px;
+      --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
+      width: calc(var(--slide-h) * 5 / 7 + 88px);
     }
 
     .inspector.dock .face {
       width: auto;
       height: var(--sheet-room);
-    }
-
-    .inspector.dock .visual.stacked .face {
-      height: calc(var(--sheet-room) - var(--stack-room));
-    }
-
-    .inspector.dock .thumb {
-      width: auto;
-      height: var(--thumb-height);
     }
 
     .inspector.dock .side {
