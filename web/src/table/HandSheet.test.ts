@@ -80,12 +80,20 @@ afterEach(() => {
   interaction.reset();
 });
 
+/** The header's title: "Your hand", then the hand size. */
+function title(): HTMLElement {
+  return screen.getByText('Your hand', { selector: '.title' });
+}
+
 describe('HandSheet', () => {
   it('is a sheet that shows the hand count and each card face', () => {
     renderSheet();
 
     expect(screen.getByRole('dialog', { name: 'Your hand' })).toBeTruthy();
-    expect(screen.getByText('Your hand · 3')).toBeTruthy();
+    // The size in the piles' capsule, after the words, no middle dot between them.
+    expect(title().textContent).toBe('Your hand 3');
+    expect(title().querySelector('.count')?.classList.contains('count-pill')).toBe(true);
+    expect(title().querySelector('.count')?.textContent).toBe('3');
     expect(cardItems()).toHaveLength(3);
     expect(screen.getByRole('img', { name: 'Swinging Web Kick' })).toBeTruthy();
   });
@@ -93,7 +101,7 @@ describe('HandSheet', () => {
   it('renders the picker in the header when given', () => {
     renderSheet({ withPicker: true });
 
-    const header = screen.getByText('Your hand · 3').closest('header')!;
+    const header = title().closest('header')!;
     expect(within(header).getByRole('button', { name: 'Spider-Man' })).toBeTruthy();
   });
 
@@ -238,7 +246,7 @@ describe('HandSheet', () => {
     it('has a one-line header, the hero first', () => {
       renderSheet({ withPicker: true });
 
-      const header = screen.getByText('Your hand · 3').closest('header')!;
+      const header = title().closest('header')!;
       expect(header.firstElementChild?.textContent).toBe('Spider-Man');
       expect(rule('header')).toContain('white-space: nowrap;');
     });

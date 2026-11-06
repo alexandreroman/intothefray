@@ -807,7 +807,9 @@ describe('CardSheet', () => {
         await rerender({ header: TURNED, images: ['rhino-2.png'], counters: [DAMAGE] });
 
         expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
-        expect(screen.getByText('20', { selector: '.count' })).toBeTruthy();
+        expect(
+          screen.getByText('20', { selector: '.count' }).classList.contains('count-pill'),
+        ).toBe(true);
         expect(screen.queryByText('Damage')).toBeNull();
         expect(turns()).toHaveLength(1);
 

@@ -155,6 +155,10 @@ describe('HeroPicker', () => {
       '3',
       '0',
     ]);
+    // The piles' capsule, as every card count.
+    expect(
+      radios().every((radio) => radio.querySelector('.n')?.classList.contains('count-pill')),
+    ).toBe(true);
   });
 
   it("shows the hero's art, and a disc of the seat colour for a seat without a hero", () => {

@@ -22,6 +22,7 @@
   import Sheet from '../components/Sheet.svelte';
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardFace from './CardFace.svelte';
+  import './countPill.css';
   import { dockMode } from './dockMode';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
@@ -106,7 +107,7 @@
   <div class="body" class:landscape>
     <header>
       {@render picker?.()}
-      <b class="title">Your hand · {cards.length}</b>
+      <b class="title">Your hand <span class="count count-pill">{cards.length}</span></b>
     </header>
 
     {#if cards.length === 0}
@@ -210,6 +211,13 @@
     font-size: 16px;
     font-weight: 800;
     text-overflow: ellipsis;
+  }
+
+  /* The hand size, in a pile's capsule (countPill.css). */
+  .count {
+    margin-left: 2px;
+    font-size: 13px;
+    vertical-align: 2px;
   }
 
   .stage {

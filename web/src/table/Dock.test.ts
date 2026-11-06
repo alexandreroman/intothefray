@@ -54,7 +54,10 @@ describe('Dock', () => {
   it('labels the hand button with the hand size and the hero name, and shows four mini cards', () => {
     render(Dock, props());
     const hand = handButton();
-    expect(hand.querySelector('.lbl b')?.textContent).toBe('Hand · 5');
+    // The size in the piles' capsule, right after the word, no middle dot between them.
+    expect(hand.querySelector('.lbl b')?.textContent).toBe('Hand5');
+    expect(hand.querySelector('.lbl b .count')?.classList.contains('count-pill')).toBe(true);
+    expect(hand.querySelector('.lbl b .count')?.textContent).toBe('5');
     expect(hand.querySelector('.lbl small')?.textContent).toBe('Rocket Raccoon');
     expect(hand.querySelectorAll('.minis img')).toHaveLength(4);
   });
@@ -123,6 +126,7 @@ describe('Dock', () => {
     const hand = handButton();
     expect(hand.querySelector('.avatar')).not.toBeNull();
     expect(hand.querySelector('.count')?.textContent).toBe('5');
+    expect(hand.querySelector('.count')?.classList.contains('count-pill')).toBe(true);
     expect(hand.querySelector('.lbl')).toBeNull();
     expect(hand.querySelector('.minis')).toBeNull();
     expect(hand.getAttribute('aria-label')).toBe('Hand · 5, Rocket Raccoon');
@@ -139,6 +143,7 @@ describe('Dock', () => {
   it('lays out as a bar in portrait', () => {
     const { container } = render(Dock, props());
     expect(container.querySelector('.dock')?.classList.contains('rail')).toBe(false);
-    expect(handButton().querySelector('.count')).toBeNull();
+    // The size is in the label, not on the avatar.
+    expect(handButton().querySelector(':scope > .count')).toBeNull();
   });
 });

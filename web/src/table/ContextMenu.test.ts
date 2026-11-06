@@ -441,6 +441,8 @@ describe('the context menu', () => {
       count: '29',
       color: 'var(--villain)',
     });
+    // The piles' capsule, as every card count.
+    expect(menu.querySelector('.title .count')?.classList.contains('count-pill')).toBe(true);
   });
 
   it('starts an arrow from the card', async () => {

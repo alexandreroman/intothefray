@@ -37,6 +37,7 @@
   import Sheet, { motionMs } from '../components/Sheet.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import CardFace from './CardFace.svelte';
+  import './countPill.css';
   import { dockMode } from './dockMode';
   import { LIFT_SCALE } from './motion.svelte';
   import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
@@ -468,7 +469,7 @@
 {#snippet nameline(of: ContextHeader)}
   <div class="nameline" aria-hidden="true">
     <span class="name" use:overflowTip>{of.name}</span>
-    {#if of.count !== undefined}<span class="count">{of.count}</span>{/if}
+    {#if of.count !== undefined}<span class="count count-pill">{of.count}</span>{/if}
   </div>
 {/snippet}
 
@@ -617,18 +618,11 @@
     white-space: nowrap;
   }
 
-  /* A pile's count: a small pill, its digits lined up as they change. */
+  /* A pile's count, in a pile's capsule (countPill.css), its digits lined up as they change. */
   .count {
     flex: none;
-    padding: 0 8px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    background: var(--panel-2);
-    color: var(--muted);
     font-size: 13px;
-    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    line-height: 22px;
   }
 
   /* A counter: its colour and name, then its steppers. */

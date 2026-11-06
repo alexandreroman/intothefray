@@ -46,6 +46,7 @@ describe('PileView', () => {
     );
     const el = pileElement(container);
     expect(el.querySelector('.count')?.textContent).toBe('12');
+    expect(el.querySelector('.count')?.classList.contains('count-pill')).toBe(true);
     expect(el.style.left).toBe('120px');
     expect(el.style.top).toBe('20px');
     expect(el.style.width).toBe('112px');

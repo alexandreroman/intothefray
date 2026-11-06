@@ -14,6 +14,7 @@
   import { interaction, type PreviewChange } from './interaction.svelte';
   import { cardBox, pileBox } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
+  import './countPill.css';
 
   let {
     pile,
@@ -128,7 +129,9 @@
   {/if}
 
   {#if !empty}
-    <span class="count" class:hushed aria-hidden={hushed ? 'true' : undefined}>{shownCount}</span>
+    <span class="count count-pill" class:hushed aria-hidden={hushed ? 'true' : undefined}
+      >{shownCount}</span
+    >
   {/if}
 
   {#if previewer !== undefined}
@@ -218,14 +221,8 @@
     bottom: -7px;
     left: 50%;
     transform: translateX(-50%);
-    background: #000c;
-    border: 1px solid var(--line);
-    border-radius: 999px;
     font-size: 9px;
     padding: 0 6px;
-    white-space: nowrap;
-    /* It sticks out of the pile's edge, past the pile's shadow: its own, as the status tabs' (CardView). */
-    box-shadow: 0 2px 4px #0009;
     /* A quick fade out of the way of the cards an animation plays over the pile, and back once done. */
     transition: opacity 0.12s ease-out;
   }

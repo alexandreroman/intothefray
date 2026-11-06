@@ -12,6 +12,7 @@
   import Icon from '../components/Icon.svelte';
   import { pointerBlur } from '../lib/releaseFocus';
   import CardFace from './CardFace.svelte';
+  import './countPill.css';
   import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
   let {
@@ -55,12 +56,13 @@
   const MAX_UNREAD = 9;
   const DROP_LABEL = 'Drop here: back to hand';
 
-  const handTitle = $derived(`Hand · ${handCount}`);
+  // Read aloud and shown as a tooltip in the rail; the button itself shows the size in a capsule.
+  const handName = $derived(`Hand · ${handCount}`);
   const handLabel = $derived.by(() => {
     if (dropActive) {
       return DROP_LABEL;
     }
-    return heroName ? `${handTitle}, ${heroName}` : handTitle;
+    return heroName ? `${handName}, ${heroName}` : handName;
   });
   // The art shows the hero's first image, as the hero selector does.
   const avatarSrc = $derived(avatar?.[0]);
@@ -87,7 +89,7 @@
           {/if}
         </span>
         {#if landscape}
-          <span class="count" aria-hidden="true">{handCount}</span>
+          <span class="count count-pill" aria-hidden="true">{handCount}</span>
         {:else}
           {#if minis.length > 0}
             <span class="minis" aria-hidden="true">
@@ -97,7 +99,7 @@
             </span>
           {/if}
           <span class="lbl" aria-hidden="true">
-            <b>{handTitle}</b>
+            <b>Hand<span class="count count-pill">{handCount}</span></b>
             {#if heroName}
               <small>{heroName}</small>
             {/if}
@@ -281,20 +283,19 @@
     background: var(--seat);
   }
 
-  /* The hand size in the rail, top right of the avatar, as the hero selector shows it. */
-  .count {
+  /* The hand size, in a pile's capsule (countPill.css): after the word on the bar. */
+  .lbl .count {
+    margin-left: 6px;
+    font-size: 12px;
+    vertical-align: 1px;
+  }
+
+  /* In the rail, top right of the avatar, as the hero selector shows it. */
+  .handbtn > .count {
     position: absolute;
     top: -2px;
     right: -4px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: var(--bg);
-    border: 1px solid var(--line-strong);
-    color: var(--text-soft);
-    font: 700 11px/16px var(--font);
-    text-align: center;
+    font-size: 11px;
   }
 
   /* Up to four cards of the hand, overlapping. */
