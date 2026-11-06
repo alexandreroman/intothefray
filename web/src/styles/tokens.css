@@ -116,6 +116,7 @@ html.scroll-locked-gutter {
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
   - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
     or a box); a lighter red on hover, and a yellow ring under a mouse; it sinks when pressed.
+  Hovers apply only under a real hover: a tap on a touch screen leaves none behind.
   A disabled button has no hover. A pressed or "on" state set by a component keeps its look
   and gives its own hover.
   A label never wraps.
@@ -139,9 +140,11 @@ button {
     color 0.12s;
 }
 
-button:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: var(--hover);
-  border-color: var(--muted);
+@media (hover: hover) {
+  button:hover:not(:disabled, [aria-disabled='true']) {
+    background-color: var(--hover);
+    border-color: var(--muted);
+  }
 }
 
 .btn-ghost {
@@ -149,10 +152,12 @@ button:hover:not(:disabled, [aria-disabled='true']) {
   border-color: transparent;
 }
 
-.btn-ghost:hover:not(:disabled, [aria-disabled='true']) {
-  background-color: var(--hover-wash);
-  border-color: transparent;
-  color: var(--text);
+@media (hover: hover) {
+  .btn-ghost:hover:not(:disabled, [aria-disabled='true']) {
+    background-color: var(--hover-wash);
+    border-color: transparent;
+    color: var(--text);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -331,8 +336,10 @@ select:focus {
 
 /* The button stays transparent on hover too: the standard button's hover surface would show
    at the rounded corners. The hover red is on the panel. */
-.btn-primary:hover:not(:disabled, [aria-disabled='true']) {
-  background: transparent;
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled, [aria-disabled='true']) {
+    background: transparent;
+  }
 }
 
 /* The main action of a dialog or a box, sized as the buttons next to it. */
@@ -373,8 +380,10 @@ select:focus {
   that the darker red wins whatever the order of the rules: both selectors weigh the same. Without motion the
   button does not sink, but the panel still darkens: that is a colour, not a motion.
 */
-.btn-primary:hover:not(:active, :disabled, [aria-disabled='true'])::before {
-  background: var(--accent-hover);
+@media (hover: hover) {
+  .btn-primary:hover:not(:active, :disabled, [aria-disabled='true'])::before {
+    background: var(--accent-hover);
+  }
 }
 
 .btn-primary:active:not(:disabled, [aria-disabled='true'])::before {

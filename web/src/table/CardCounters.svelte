@@ -389,11 +389,6 @@
       0 2px 4px #000000a0;
   }
 
-  /* The rim stays the chip's under a finger (the app's buttons light theirs). */
-  .tok:hover {
-    border-color: var(--rim);
-  }
-
   /* Its pill open: the chip is ringed, as a hovered one on the table. */
   .tok.open {
     box-shadow:
@@ -517,10 +512,6 @@
       0 2px 4px #0009,
       inset 0 1px 0 #ffffff40;
     text-shadow: 0 1px 1px #0008;
-  }
-
-  .st:hover {
-    border-color: #0008;
   }
 
   .st.stunned {

@@ -172,9 +172,11 @@
       text-decoration-color 0.12s;
   }
 
-  a:hover {
-    color: var(--text);
-    text-decoration-color: currentColor;
+  @media (hover: hover) {
+    a:hover {
+      color: var(--text);
+      text-decoration-color: currentColor;
+    }
   }
 
   a:focus-visible {

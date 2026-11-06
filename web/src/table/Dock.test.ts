@@ -136,16 +136,6 @@ describe('Dock', () => {
     expect(focusRules).toBeNull();
   });
 
-  it('keeps no hover look on a touch screen, where the last tapped button stays hovered', () => {
-    const touchRules = /@media \(hover: none\) \{([\s\S]*?)\n {2}\}/.exec(dockSource)?.[1] ?? '';
-    expect(touchRules).toMatch(
-      /\.ib:hover \{[^}]*background-color: transparent;[^}]*color: var\(--text-soft\);/,
-    );
-    expect(touchRules).toMatch(
-      /\.handbtn:not\(\.drop\):hover \{[^}]*background-color: var\(--panel-2\);/,
-    );
-  });
-
   it('lays out as a bar in portrait', () => {
     const { container } = render(Dock, props());
     expect(container.querySelector('.dock')?.classList.contains('rail')).toBe(false);

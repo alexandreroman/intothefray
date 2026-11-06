@@ -501,9 +501,11 @@
     color: var(--text);
   }
 
-  .chip:hover:not([aria-disabled='true']) {
-    background: var(--hover);
-    border-color: var(--owner);
-    color: var(--text);
+  @media (hover: hover) {
+    .chip:hover:not([aria-disabled='true']) {
+      background: var(--hover);
+      border-color: var(--owner);
+      color: var(--text);
+    }
   }
 </style>

@@ -1034,8 +1034,10 @@
     color: var(--bg);
   }
 
-  .main.default:hover {
-    background: var(--accent-hover);
+  @media (hover: hover) {
+    .main.default:hover {
+      background: var(--accent-hover);
+    }
   }
 
   /* A press reads as taken before the sheet closes: the default button darkens as the primary

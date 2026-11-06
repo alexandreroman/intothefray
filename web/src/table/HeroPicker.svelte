@@ -277,8 +277,10 @@
     background: var(--seat);
   }
 
-  .item:hover .art {
-    filter: grayscale(0.6) brightness(0.85);
+  @media (hover: hover) {
+    .item:hover .art {
+      filter: grayscale(0.6) brightness(0.85);
+    }
   }
 
   .item[aria-checked='true'] .art {
@@ -312,8 +314,10 @@
       color 0.3s;
   }
 
-  .item:hover .name {
-    color: var(--text-soft);
+  @media (hover: hover) {
+    .item:hover .name {
+      color: var(--text-soft);
+    }
   }
 
   .item[aria-checked='true'] .name {

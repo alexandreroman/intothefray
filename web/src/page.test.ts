@@ -95,6 +95,14 @@ describe('the table page on a touch screen', () => {
     )?.[1];
     expect(touchRules).toMatch(/html\.fixed-screen \{\s*touch-action: pan-x pan-y;\s*\}/);
   });
+
+  it('leaves no hover look on the button tapped last, which a touch screen keeps hovered', () => {
+    expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*button:hover/);
+    expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*\.btn-ghost:hover/);
+    expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*\.btn-primary:hover/);
+    // A rule outside any media query starts its line.
+    expect(tokensCss).not.toMatch(/^\S*:hover/m);
+  });
 });
 
 describe('a card box', () => {

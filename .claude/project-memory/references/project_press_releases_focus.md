@@ -1,6 +1,6 @@
 ---
 name: "A table press releases a control's focus"
-description: "Table presses and shortcuts blur a control focused elsewhere; chrome buttons blur after a pointer click"
+description: "Table presses and shortcuts blur a control focused elsewhere; chrome buttons blur after a pointer click; hovers need a real hover"
 type: project
 ---
 
@@ -22,6 +22,11 @@ type: project
   `{@attach pointerBlur}`: a pointer click (`detail > 0`) blurs them, a
   keyboard activation (`detail === 0`) keeps the focus. The history toggle
   refocuses its replacement button on keyboard activation only.
+- Hover looks (button washes, rings, zooms, colours) sit under
+  `@media (hover: hover)`: a touch screen keeps matching `:hover` on the
+  element tapped last until the next tap elsewhere, which would read as a
+  focus that stayed. The hand fan's `.hcard:hover` layout rules are the
+  exception (see [[project_hand_sizes]]).
 - Keyboard navigation (Tab order, `:focus-visible` styling) is untouched.
 
 **Why:** `preventDefault()` on `pointerdown` (no text selection, no native
@@ -29,7 +34,8 @@ image drag) also cancels the browser's focus move. The last clicked button
 then stays focused, shows its focus ring at the first table key, and Space
 or Enter activate it again (fullscreen toggles).
 
-**How to apply:** a new `pointerdown` handler that calls
+**How to apply:** a new hover look goes under `@media (hover: hover)`.
+A new `pointerdown` handler that calls
 `preventDefault()` on a table element calls
 `releaseFocus(event.currentTarget)` after it.
 A new chrome icon button outside dialogs and menus takes

@@ -339,8 +339,10 @@
     cursor: pointer;
   }
 
-  .e:hover {
-    background: var(--line-hover);
+  @media (hover: hover) {
+    .e:hover {
+      background: var(--line-hover);
+    }
   }
 
   .e.new {

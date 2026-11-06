@@ -95,7 +95,7 @@
 - [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; tested
 - [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
 - [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only
-- [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome
+- [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome; (hover: hover)
 - [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists games being played; Home capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
