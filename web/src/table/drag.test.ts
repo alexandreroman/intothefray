@@ -1,7 +1,10 @@
 import type { CardView, PileView, TableView, View } from '../lib/types';
 import {
   dealRecipient,
+  DROP_DWELL_MS,
+  DROP_MARGIN,
   dropAction,
+  dropKey,
   dropTarget,
   goesToHand,
   handAreaOf,
@@ -12,7 +15,9 @@ import {
   pileTargets,
   sourceOf,
   stackOf,
+  SteadyDrop,
   tucks,
+  unshifted,
   type DragSource,
   type DropRect,
 } from './drag';
@@ -1312,5 +1317,122 @@ describe('a deck takes any card of its owner', () => {
       where: 'top',
       pile: 'side:p0:0',
     });
+  });
+});
+
+describe('the drop the rows show in dock mode (spec 3.8)', () => {
+  // Player 1's row of four cards, drawn at 0.6 and wrapped at 400 (see dropAction in dock mode).
+  const FRAME: DockItem = { id: 'frame', x: -10, y: 400, w: 262, h: 157 + 20, kind: 'frame' };
+  const items: DockItem[] = [
+    FRAME,
+    ...[300, 452, 604, 756].map((x, i): DockItem => ({
+      id: `c${i}`,
+      x,
+      y: 410,
+      w: 112,
+      h: 157,
+      kind: 'card',
+    })),
+  ];
+  const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
+  /** A card's slot for its middle drawn at x, on the row's second line. */
+  const slotAt = (at: { x: number; y: number }) => map.insertAt({ x: at.x, y: at.y }, 112);
+  const keyOf = (spot: { x: number; y: number }) => `${spot.x},${spot.y}`;
+  const Y = 190;
+
+  /** The first drawn x, going right by a pixel, whose slot differs from the one at `from`. */
+  function boundaryFrom(from: number): number {
+    const first = keyOf(slotAt({ x: from, y: Y }));
+    for (let x = from; x < from + 400; x++) {
+      if (keyOf(slotAt({ x, y: Y })) !== first) {
+        return x;
+      }
+    }
+    throw new Error('no boundary');
+  }
+
+  it('keeps one slot while the pointer jitters by a pixel on the boundary between two', () => {
+    const boundary = boundaryFrom(0);
+    const jitter = [boundary - 1, boundary, boundary - 1, boundary + 1, boundary, boundary - 1];
+    // Under the pointer alone, the slot flips with each pixel.
+    expect(new Set(jitter.map((x) => keyOf(slotAt({ x, y: Y })))).size).toBe(2);
+
+    const steady = new SteadyDrop(keyOf);
+    const shown = jitter.map((x, frame) =>
+      keyOf(steady.settle({ x, y: Y }, DROP_MARGIN, frame * 16, slotAt)),
+    );
+    expect(new Set(shown)).toEqual(new Set([keyOf(slotAt({ x: boundary - 1, y: Y }))]));
+  });
+
+  it('shows the next slot once the pointer is a margin past the boundary', () => {
+    const boundary = boundaryFrom(0);
+    const steady = new SteadyDrop(keyOf);
+    steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 0, slotAt);
+
+    const within = steady.settle({ x: boundary + DROP_MARGIN - 2, y: Y }, DROP_MARGIN, 16, slotAt);
+    expect(keyOf(within)).toBe(keyOf(slotAt({ x: boundary - 1, y: Y })));
+    const past = steady.settle({ x: boundary + DROP_MARGIN, y: Y }, DROP_MARGIN, 32, slotAt);
+    expect(past).toEqual(slotAt({ x: boundary + DROP_MARGIN, y: Y }));
+    // Back to the boundary, then a pixel over it: the new slot holds in turn.
+    for (let x = boundary + DROP_MARGIN - 1; x >= boundary; x--) {
+      steady.settle({ x, y: Y }, DROP_MARGIN, 48, slotAt);
+    }
+    expect(steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 64, slotAt)).toEqual(past);
+  });
+
+  it('shows the slot under the pointer once it stays past the boundary 80 ms', () => {
+    const boundary = boundaryFrom(0);
+    const steady = new SteadyDrop(keyOf);
+    const before = steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 0, slotAt);
+    const over = { x: boundary + 1, y: Y };
+
+    expect(steady.settle(over, DROP_MARGIN, 100, slotAt)).toEqual(before);
+    expect(steady.waiting).toBe(true);
+    expect(steady.settle(over, DROP_MARGIN, 100 + DROP_DWELL_MS - 1, slotAt)).toEqual(before);
+    expect(steady.settle(over, DROP_MARGIN, 100 + DROP_DWELL_MS, slotAt)).toEqual(slotAt(over));
+    expect(steady.waiting).toBe(false);
+  });
+
+  it('drops in the slot shown, not the one under a pointer let go a pixel past it', () => {
+    const boundary = boundaryFrom(0);
+    // The drop a card dragged with its middle at a point sends, as DragLayer locates it.
+    const spot = (corner: { x: number; y: number }) =>
+      slotAt({ x: corner.x + 33.6, y: corner.y + 47.1 });
+    const dropAt = (middle: { x: number; y: number }) =>
+      dropAction(TABLE_CARD, TABLE, { x: middle.x - 33.6, y: middle.y - 47.1 }, DEAL_TO, map, spot);
+    const steady = new SteadyDrop((action: ReturnType<typeof dropAt>) => JSON.stringify(action));
+    const shown = steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 0, dropAt);
+
+    const letGo = { x: boundary + 1, y: Y };
+    expect(dropAt(letGo)).not.toEqual(shown);
+    expect(steady.settle(letGo, DROP_MARGIN, 16, dropAt)).toEqual(shown);
+  });
+
+  it('reads the cards where they lie, not where they make way for the drag', () => {
+    // A card drawn 91.2 right of where it lies at zoom 2, mid-way through its glide: at 45.6.
+    const drawn = rect(300, 100, 100, 140);
+    expect(unshifted(drawn, '45.6px 0px', 2)).toEqual(rect(208.8, 100, 100, 140));
+    expect(unshifted(drawn, '-10px 6px', 1)).toEqual(rect(310, 94, 100, 140));
+    expect(unshifted(drawn, '12px', 1)).toEqual(rect(288, 100, 100, 140));
+    expect(unshifted(drawn, 'none', 2)).toEqual(drawn);
+
+    // The pointer over the gap the card left as it made way drops on the table, not on that card.
+    const table: DropRect = { kind: 'table', rect: rect(0, 0, 1000, 800) };
+    const pushed: DropRect = { kind: 'card', card: 'other', z: 1, rect: drawn };
+    const lies: DropRect = { ...pushed, rect: unshifted(drawn, '91.2px 0px', 1) };
+    const pointer = { x: 380, y: 150 };
+    expect(dropTarget(pointer, [table, pushed])?.kind).toBe('card');
+    expect(dropTarget(pointer, [table, lies])?.kind).toBe('table');
+  });
+
+  it('keys a drop by what it lands on and what it sends, not by where it was measured', () => {
+    const onTable: DropRect = { kind: 'table', rect: rect(0, 0, 10, 10) };
+    const move = { kind: 'move', card: 'c', x: 40, y: 410 } as const;
+    expect(dropKey(onTable, move)).toBe(dropKey({ ...onTable, rect: rect(5, 5, 10, 10) }, move));
+    expect(dropKey(onTable, move)).not.toBe(dropKey(onTable, { ...move, x: 80 }));
+    const onCard: DropRect = { kind: 'card', card: 'other', z: 1, rect: rect(0, 0, 10, 10) };
+    const attach = { kind: 'attach', card: 'c', target: 'other' } as const;
+    expect(dropKey(onCard, attach)).not.toBe(dropKey(onTable, attach));
+    expect(dropKey(onTable, null)).not.toBe(dropKey(null, null));
   });
 });

@@ -39,7 +39,10 @@
     dealRecipient,
     DECK_TOP_ID,
     DRAG_THRESHOLD,
+    DROP_DWELL_MS,
+    DROP_MARGIN,
     dropAction,
+    dropKey,
     dropTarget,
     ENCOUNTER_TOP_ID,
     goesToHand,
@@ -51,7 +54,9 @@
     pileTargets,
     sourceOf,
     stackOf,
+    SteadyDrop,
     tucks,
+    unshifted,
     type DragSource,
     type DropRect,
     type DropSpot,
@@ -165,6 +170,12 @@
   let pendingPreview: DockPreview | null = null;
   /** The frame that feeds the pending preview, 0 when none is pending. */
   let previewFrame = 0;
+  /** The drop the rows show in dock mode, kept while the pointer wavers on its edge. */
+  const steady = new SteadyDrop<Located | null>((found) =>
+    dropKey(found?.target ?? null, found?.action ?? null),
+  );
+  /** The timer that shows the drop under a still pointer once it has stayed there, 0 when none. */
+  let dwellTimer = 0;
   /** The label above the drop target. */
   let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
     null,
@@ -459,6 +470,7 @@
     stopSway();
     cancelAnimationFrame(riseFrame);
     cancelAnimationFrame(previewFrame);
+    clearTimeout(dwellTimer);
   });
 
   /** Once drawn, the ghost of a card picked up off the deck's slot turns to lie landscape. */
@@ -691,8 +703,18 @@
     return tableMap.toTable({ x: landed.x + offset.x, y: landed.y + offset.y });
   }
 
-  function placedRect(selector: string): DOMRect | undefined {
-    return root?.querySelector(selector)?.getBoundingClientRect();
+  /**
+   * Where a card or a pile on the surface lies on the screen, never shifted aside by the drag's
+   * preview (spec 3.8): a card gliding out of the way under the pointer would take the drop, the
+   * preview would go, the card glide back, and so on.
+   */
+  function placedRect(selector: string): Rect | undefined {
+    const element = root?.querySelector(selector);
+    if (!element) {
+      return undefined;
+    }
+    // The computed translate, not the style's: mid-glide, the card is drawn on its way there.
+    return unshifted(element.getBoundingClientRect(), getComputedStyle(element).translate, zoom);
   }
 
   /** Everything the dragged thing can be dropped on, measured on the screen. */
@@ -810,6 +832,27 @@
   }
 
   /**
+   * What a drop at the pointer lands on, as the rows show it in dock mode (spec 3.8): the drop shown
+   * holds until the pointer is DROP_MARGIN drawn units past where it last lay under it, or has
+   * stayed off it DROP_DWELL_MS. Elsewhere, and for what the rows show no drop of, what lies under the pointer.
+   */
+  function settledAt(from: DragSource, at: Point): Located | null {
+    if (tableMap.insertAt === undefined || from.kind === 'marker' || units.length > 0) {
+      return locate(from, at);
+    }
+    clearTimeout(dwellTimer);
+    dwellTimer = 0;
+    const found = steady.settle(at, DROP_MARGIN * zoom, performance.now(), (point) =>
+      locate(from, point),
+    );
+    if (steady.waiting) {
+      // The pointer may stay put past the edge: the drop under it shows all the same.
+      dwellTimer = window.setTimeout(aim, DROP_DWELL_MS);
+    }
+    return found;
+  }
+
+  /**
    * In dock mode (spec 3.7), where a card dropped on the table goes: among the units of the row
    * its ghost's middle is drawn in, the dragged cards left out. None elsewhere, nor for a marker.
    */
@@ -904,7 +947,7 @@
     if (!source || !pointer) {
       return;
     }
-    const found = locate(source, pointer);
+    const found = settledAt(source, pointer);
     feedPreview(previewOf(source, found));
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
     // Only what a drop would change is outlined: not the pile a card came from.
@@ -964,8 +1007,8 @@
     }
     const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
-    const found = isStillThere(pressed, from) ? locate(from, at) : null;
-    // The rows show the drop as it is let go: its card lands in the slot they open for it.
+    // The drop lands where the rows show it: in the slot they open for its card.
+    const found = isStillThere(pressed, from) ? settledAt(from, at) : null;
     pendingPreview = from && found ? previewOf(from, found) : null;
     flushPreview();
     end();
@@ -1020,6 +1063,9 @@
   /** The drag is over: dropped, or cancelled. */
   function end(): void {
     interaction.letGo();
+    clearTimeout(dwellTimer);
+    dwellTimer = 0;
+    steady.reset();
     units = [];
     pointer = null;
     hint = null;

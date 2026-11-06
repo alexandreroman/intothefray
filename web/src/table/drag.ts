@@ -656,3 +656,109 @@ export function isDownward(from: Point, to: Point): boolean {
 export function insertIndex(middles: number[], x: number): number {
   return middles.filter((middle) => middle < x).length;
 }
+
+/**
+ * Where an element drawn at `rect` on the screen lies without its `translate`: the computed style,
+ * "none" or "x [y]" in px of the surface, which `zoom` scales. In dock mode a drag draws the cards
+ * and piles it pushes aside with a translate (spec 3.8): the drop reads them where they lie, so that
+ * the cards gliding out of the way never move what the pointer is over.
+ */
+export function unshifted(rect: Rect, translate: string, zoom: number): Rect {
+  if (translate === 'none') {
+    return rect;
+  }
+  const [x = 0, y = 0] = translate.split(' ').map((length) => Number.parseFloat(length) || 0);
+  return {
+    left: rect.left - x * zoom,
+    top: rect.top - y * zoom,
+    right: rect.right - x * zoom,
+    bottom: rect.bottom - y * zoom,
+  };
+}
+
+/**
+ * What a drop lands on and the action it sends, as text: two drops alike land alike, wherever the
+ * screen measured their target.
+ */
+export function dropKey(target: DropRect | null, action: Action | null): string {
+  if (target === null) {
+    return 'none';
+  }
+  let on: string;
+  switch (target.kind) {
+    case 'hand':
+      on = `hand:${target.index}`;
+      break;
+    case 'pile':
+      on = `pile:${target.pile}:${target.drop}`;
+      break;
+    case 'card':
+      on = `card:${target.card}`;
+      break;
+    default:
+      on = target.kind;
+  }
+  return `${on} ${JSON.stringify(action)}`;
+}
+
+/**
+ * How far past the edge of the drop the rows show (dock mode, spec 3.8) the pointer goes before
+ * they show the next one, in drawn units: a quarter of a slot.
+ */
+export const DROP_MARGIN = 11;
+
+/** How long the pointer stays past that edge, if not by the margin, before the next drop shows. */
+export const DROP_DWELL_MS = 80;
+
+/**
+ * The drop the rows show during a drag in dock mode (spec 3.8), kept while the pointer wavers on
+ * its edge (hysteresis): a finger shaking by a pixel on the boundary between two slots would
+ * otherwise flip the cards making way back and forth. The next drop shows once the pointer is
+ * `margin` past the last point the shown one lay under it, or has stayed off it DROP_DWELL_MS. A
+ * drop let go is settled the same way: it lands where the rows show it.
+ */
+export class SteadyDrop<T> {
+  readonly #keyOf: (drop: T) => string;
+  /** The drop shown, with its key and the last point it lay under the pointer. */
+  #shown: { key: string; drop: T; at: Point } | null = null;
+  /** The other drop under the pointer, and since when, while the shown one holds. */
+  #pending: { key: string; since: number } | null = null;
+
+  constructor(keyOf: (drop: T) => string) {
+    this.#keyOf = keyOf;
+  }
+
+  /** Whether another drop lies under the pointer, which shows once it stays there long enough. */
+  get waiting(): boolean {
+    return this.#pending !== null;
+  }
+
+  /**
+   * The drop to show with the pointer at `at`, `now` in ms: `locate`'s there, unless the pointer is
+   * still within `margin` of where the shown one last lay under it and has not stayed off it
+   * DROP_DWELL_MS.
+   */
+  settle(at: Point, margin: number, now: number, locate: (at: Point) => T): T {
+    const drop = locate(at);
+    const key = this.#keyOf(drop);
+    const shown = this.#shown;
+    const near = shown !== null && Math.hypot(at.x - shown.at.x, at.y - shown.at.y) < margin;
+    if (shown !== null && key !== shown.key && near) {
+      if (this.#pending?.key !== key) {
+        this.#pending = { key, since: now };
+      }
+      if (now - this.#pending.since < DROP_DWELL_MS) {
+        return shown.drop;
+      }
+    }
+    this.#shown = { key, drop, at };
+    this.#pending = null;
+    return drop;
+  }
+
+  /** Forgets the drop shown: the next drag starts afresh. */
+  reset(): void {
+    this.#shown = null;
+    this.#pending = null;
+  }
+}
