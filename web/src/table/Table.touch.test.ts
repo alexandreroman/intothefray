@@ -139,6 +139,25 @@ describe('the inspector', () => {
     expect(contextMenu()).toBeNull();
   });
 
+  it('names a pile and a face-down card in its column, not a face-up card, whose face prints it', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const hidden = card('hidden', { code: '01003', faceDown: true, x: 400 });
+    await renderTable(makeView([card('mine'), hidden, ...OTHERS]));
+    const nameLine = () => sheet()!.querySelector('.nameline');
+
+    await tap(placed('two'));
+    expect(screen.getByRole('dialog', { name: /^Peter Parker/ })).toBe(sheet());
+    expect(nameLine()).toBeNull();
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('hidden'));
+    expect(nameLine()?.textContent).toContain('Face-down card');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('deck:p0'));
+    expect(nameLine()?.querySelector('.count')).not.toBeNull();
+  });
+
   it('leaves the context menu to a mouse (mouse_click_opens_menu)', async () => {
     await renderTable();
 

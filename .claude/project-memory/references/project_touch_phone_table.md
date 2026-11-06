@@ -32,9 +32,10 @@ type: project
     out as [[project_no_lone_button]] says), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
     entries left out (`visibleEntries`), and no arrows: arrows are drawn
-    with a mouse or a pen only. Its header shows the card's name only,
-    centred with margins and an ellipsis (a pile's kind with its count);
-    the sheet's accessible name also gives the type and owner. It keeps
+    with a mouse or a pen only. A face-up card has no title line: its
+    name is printed on the face. A pile shows its kind with its count, a
+    face-down card what it is, centred with margins and an ellipsis; the
+    sheet's accessible name gives the name, type and owner. It keeps
     its size across submenus: the entries area keeps the main page's
     height. Token, status and modifier entries and the pills keep it
     open; every other entry closes it. Flip keeps it open and turns the

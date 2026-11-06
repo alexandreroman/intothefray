@@ -1,8 +1,11 @@
 <!--
   The inspector of a table card or pile on a touch screen, in place of its
   context menu (ContextMenu.svelte): a bottom sheet (Sheet.svelte) with the
-  card's face large, its counters drawn on it, and a column with its name and
-  the same entries as the menu (contextItems.ts). The first group shows as
+  card's face large, its counters drawn on it, and a column with the same
+  entries as the menu (contextItems.ts). The column names only what the face
+  does not: a pile, its kind and count over a back or its top card, and a
+  face-down card, over its back; a face-up card prints its own name, so its
+  column starts with the entries. The first group shows as
   large buttons, the default one in Fray red, the others as rows; a submenu
   opens in the sheet, with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
   it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
@@ -87,6 +90,7 @@
     counters,
     stack = [],
     cardId,
+    faceDown = false,
     onrun,
     onstep,
     onpick,
@@ -107,6 +111,8 @@
     stack?: StackCard[];
     /** The id of the table card shown, which the strip rings; none for a pile. */
     cardId?: string;
+    /** The card lies face down: its face shows its back, so the column names it. */
+    faceDown?: boolean;
     /** Runs a chosen item; the caller closes the sheet. */
     onrun: (item: ActionItem) => void;
     /** Adds one to a counter, or takes one away. */
@@ -145,9 +151,10 @@
     counters: SheetCounter[];
     entries: ContextEntry[];
     cardId: string | undefined;
+    faceDown: boolean;
   };
 
-  const live = $derived<Side>({ images, landscape, header, counters, entries, cardId });
+  const live = $derived<Side>({ images, landscape, header, counters, entries, cardId, faceDown });
   /**
    * The side the card turns away from, which its face shows until it is edge-on; null while it does
    * not turn. The column, its name and entries, shows the live side from the update that brings it.
@@ -197,6 +204,14 @@
    */
   function columnBesideCard(of: Side): boolean {
     return dock.current ? short.current : layoutOf(of).includes('beside');
+  }
+
+  /**
+   * Whether the column starts with the side's name: a pile's (cardId is none) or a face-down card's,
+   * whose face shows a back. A face-up card's name is printed on its face.
+   */
+  function namedInColumn(of: Side): boolean {
+    return of.cardId === undefined || of.faceDown;
   }
 
   /** What tells one face from another: a new array of the same images is the same face. */
@@ -603,7 +618,7 @@
   {/if}
 {/snippet}
 
-<!-- The note or the entries, in the card's column under its name. -->
+<!-- The note or the entries, in the card's column, under its name when the face does not print it. -->
 {#snippet entriesBlock()}
   {#if note !== undefined}
     <p class="note">{note}</p>
@@ -654,7 +669,8 @@
 {/snippet}
 
 <!-- The sheet is named by its whole header, its type, stage or owner included: shown, the name
-     alone, which is not read a second time; an eyebrow line would take room. -->
+     alone, which is not read a second time; an eyebrow line would take room. Drawn only where the
+     face does not print it (namedInColumn). -->
 {#snippet nameline(of: ContextHeader)}
   <div class="nameline" aria-hidden="true">
     <span class="name" use:overflowTip>{of.name}</span>
@@ -788,7 +804,9 @@
         {/if}
       </div>
       <div class="side">
-        {@render nameline(live.header)}
+        {#if namedInColumn(live)}
+          {@render nameline(live.header)}
+        {/if}
         {@render entriesBlock()}
       </div>
     </div>
@@ -812,7 +830,9 @@
           {/if}
         </div>
         <div class="side">
-          {@render nameline(live.header)}
+          {#if namedInColumn(live)}
+            {@render nameline(live.header)}
+          {/if}
           {@render measuredEntries()}
         </div>
       </div>
@@ -833,6 +853,8 @@
   .inspector {
     --overhang: max(var(--portrait-w) * 6 / 112, var(--landscape-w) * 6 / 157);
     --gutter: calc(var(--overhang) + 12px);
+    /* The carousel's padding above its cards, for their shadows (see .carousel). */
+    --carousel-top: 10px;
     display: flex;
     flex-direction: column;
     user-select: none;
@@ -903,7 +925,7 @@
     display: flex;
     align-items: center;
     gap: var(--gap);
-    padding-block: 10px 14px;
+    padding-block: var(--carousel-top) 14px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
@@ -988,7 +1010,10 @@
     background: var(--text);
   }
 
-  /* The column's width tells the main buttons how many go side by side (see .main-grid). */
+  /*
+    The column's width tells the main buttons how many go side by side (see .main-grid). Its first
+    line, the name or the main buttons, starts level with the card's top when it lies beside it.
+  */
   .side {
     flex: 1;
     min-width: 0;
@@ -1288,6 +1313,10 @@
       overflow-y: auto;
       overscroll-behavior: contain;
     }
+
+    .inspector.dock .visual.stacked + .side {
+      padding-top: var(--carousel-top);
+    }
   }
 
   .inspector.dock .name {
@@ -1323,6 +1352,11 @@
     max-height: var(--sheet-room);
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  /* Level with the shown card of a stack, under the carousel's padding. */
+  .inspector.beside .visual.stacked + .side {
+    padding-top: var(--carousel-top);
   }
 
   /*
