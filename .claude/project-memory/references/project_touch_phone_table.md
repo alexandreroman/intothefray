@@ -40,8 +40,8 @@ type: project
     reveal leaves it on the deck. Its opening, closing, drill-down,
     counters and presses animate (none under reduced motion). A tap on a
     raised hand card lifts it to read it, a second one lets it go: the
-    fan's cards are played and discarded by drag and drop, with no
-    inspector.
+    fan's cards are played and discarded by drag and drop; the inspector
+    serves table cards and piles.
     "Select" enters select mode: taps toggle table cards in the group, a
     pill "N selected · Done" ends it.
   - Every bottom sheet (inspector, hand, history; `Sheet.svelte`) closes
@@ -83,9 +83,9 @@ type: project
   - On a narrow screen the resting hand drops by the same share of its
     card as on a wide one, so its strip is a finger's target (see
     [[project_hand_sizes]]).
-  - The hero selector's avatars, the history panel's buttons and the card
-    box's footer and filter have 44 px targets
-    (`.app.touch:not(.dock-mode)`), their look unchanged.
+  - The history panel's buttons and the card box's footer and filter are
+    44 px high, and the hero selector's avatars have 44 px hit areas, the
+    avatars drawn at their own size (`.app.touch:not(.dock-mode)`).
 - Dock mode (phones):
   - A dock (`Dock.svelte`) at the bottom, or a 64 px rail on the left on
     a phone on its side, holds the hand button (hero avatar, mini cards,
@@ -103,7 +103,7 @@ type: project
     dragged up out of it goes onto the table. It closes when the viewer's
     own Play or Discard empties the hand.
   - A card played or discarded from the hand rises and fades out where it
-    was shown: the hand sheet, the inspector or the dock's hand button
+    was shown: the hand sheet or the dock's hand button
     (`RiseFlight` in motion.svelte.ts, 300 ms).
   - The history opens as a sheet (`HistorySheet.svelte`) from the dock's
     or rail's History button.
@@ -160,9 +160,11 @@ type: project
 inspector and dock"): on a phone the table text is unreadable and hover
 does not exist, so cards are read in the inspector, moved by a hold and
 the screen goes to the table. Tablets have the room for the desktop
-layout; what changes on them is only what a mouse does and a finger
-cannot: hover to raise the hand or read the history, small targets, and
-a narrow sheet that leaves a large screen's room unused.
+layout; what they adapt is what a mouse does and a finger cannot (hover
+to raise the hand or read the history, small targets), and a sheet up to
+760 px wide uses their room to show the card large. Decided with the
+user: a tablet's hand cards play by drag and drop, a scheme reads best
+above its actions.
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action
