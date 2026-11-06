@@ -5,7 +5,9 @@
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
   control, unless it would hide the whole hovered element there, and never
   the hero selector's corner; touch mode previews nothing (touch.ts). On a
-  narrow screen and in dock mode there is no side column.
+  narrow screen and in dock mode there is no side column: the dock, or on a
+  tablet a History button in the bottom right corner, opens the history in a
+  sheet.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -539,6 +541,10 @@
   // The history column beside the table: none on a narrow screen, nor in dock mode at any width,
   // where the dock's History button opens the history sheet.
   const sidePanel = $derived(!narrow.current && !dockMode);
+  // A tablet without the history column (touch mode on a narrow screen, not dock mode): a History
+  // button beside the floating Undo opens the history sheet dock mode uses (spec 2.2), as a finger
+  // has no other way to read the history. A mouse window keeps its corner as it is.
+  const historySheetMode = $derived(touchMode.current && !sidePanel && !dockMode);
   // The cards and piles below read it too: small cards and small piles (spec 3.6).
   setDockMode({
     get current() {
@@ -595,14 +601,22 @@
     }
     return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
   });
-  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
+  // A small screen drops its cards by the same share as a wide one. So does a narrow touch screen
+  // (spec 2.3): there the resting strip is the target a finger taps to raise the hand, and the
+  // desktop drop would leave only 36 px of its smaller cards showing. A mouse raises the hand by
+  // hovering it, so a narrow mouse window keeps the desktop drop.
+  const baseHandDrop = $derived(
+    small.current || (narrow.current && touchMode.current)
+      ? smallHandDrop(baseHandCard.h)
+      : HAND_REST_DROP,
+  );
 
   // The room between the resting hand's strip and the controls above it on a small screen, in px
   // (controlsBottom).
   const ABOVE_HAND = 8;
 
-  // The height of the controls at the bottom right (the zoom control, the narrow Undo), measured:
-  // the rows keep clear of them, and the Focus panel at home sits above them.
+  // The height of the controls at the bottom right (the zoom control, the narrow Undo and History),
+  // measured: the rows keep clear of them, and the Focus panel at home sits above them.
   let cornerHeight = $state(0);
 
   // The room under the table's rows, in px: the resting hand's strip, or the controls at the bottom,
@@ -907,7 +921,8 @@
   // The room between the hands and the controls beside them on a wide screen, in px.
   const CONTROLS_GAP = 32;
 
-  // The width of the controls at the bottom right (the zoom control, the narrow Undo).
+  // The width of the controls at the bottom right (the zoom control, the narrow Undo and History),
+  // measured: the resting hands keep clear of them (handsRoom).
   let cornerWidth = $state(0);
 
   // On a wide screen the resting hands keep to the room between the hero selector, when it shows,
@@ -1793,18 +1808,25 @@
     return goesToHand(from, grouped.length > 1 ? grouped : [], view);
   });
 
-  // The sheets the dock opens: the selected deck's hand, the history.
+  // The sheets the dock opens: the selected deck's hand, the history. The corner's History button
+  // opens the history one too (historySheetMode).
   let handSheetShown = $state(false);
   let historyShown = $state(false);
 
-  // Out of dock mode (a phone turned into a tablet's size), the dock's sheets go with it.
+  // Out of dock mode (a phone turned into a tablet's size), the hand sheet goes with it; the history
+  // sheet goes once neither the dock nor the corner's History button shows (the history column
+  // takes over, or a mouse came).
   $effect.pre(() => {
-    if (!dockMode) {
-      untrack(() => {
+    const handSheetGone = !dockMode;
+    const historySheetGone = !dockMode && !historySheetMode;
+    untrack(() => {
+      if (handSheetGone) {
         handSheetShown = false;
+      }
+      if (historySheetGone) {
         historyShown = false;
-      });
-    }
+      }
+    });
   });
 
   function openHandSheet(): void {
@@ -2563,8 +2585,10 @@
 
   <!--
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
-    Undo floats there, left of the zoom control. On a small screen, both share one bar above the
-    resting hand. In dock mode the dock has Undo, and fingers zoom.
+    Undo floats there, left of the zoom control. On a tablet (historySheetMode), History shares
+    Undo's bar, as in the dock: it opens the history sheet. On a small screen, Undo and the zoom
+    control share one bar above the resting hand. In dock mode the dock has Undo and History, and
+    fingers zoom.
   -->
   {#if !dockMode}
     <div
@@ -2591,6 +2615,28 @@
           >
             <Icon name="undo" />
           </button>
+          {#if historySheetMode}
+            <!-- The dock's History button, its clock face drawn at Undo's size. -->
+            <button
+              class="btn-ghost"
+              aria-label="History"
+              data-tip="History"
+              onclick={openHistory}
+              {@attach pointerBlur}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7.5V12l3 2" />
+              </svg>
+            </button>
+          {/if}
         </div>
         {#if small.current}
           <span class="floatbar-sep" aria-hidden="true"></span>
@@ -3178,6 +3224,12 @@
     background: none;
     border: none;
     box-shadow: none;
+  }
+
+  /* Undo, and History beside it on a tablet. */
+  .undo {
+    display: flex;
+    gap: 2px;
   }
 
   .undo button {

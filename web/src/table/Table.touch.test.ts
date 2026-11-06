@@ -4,7 +4,15 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import tableSource from './Table.svelte?raw';
 import { interaction, LANDING_MS } from './interaction.svelte';
-import { DESKTOP, mockScreen } from '../lib/screen.testing';
+import {
+  DESKTOP,
+  mockScreen,
+  PHONE,
+  resizeScreen,
+  TABLET,
+  type TestScreen,
+} from '../lib/screen.testing';
+import { HAND_CARD_NARROW, HAND_REST_DROP, handRestDrop, smallHandDrop } from './layout';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
 import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
@@ -621,5 +629,92 @@ describe('the inspector, a stack of cards (F-U15)', () => {
     await fireEvent.keyDown(window, { key: 'Escape' });
     await tap(placed('deck:p0'));
     expect(carousel()).toBeNull();
+  });
+});
+
+// A tablet upright with a finger (iPad Air): narrow, so without the history column, but no phone.
+const TOUCH_TABLET: TestScreen = { width: 820, height: 1180, touch: true };
+
+describe('a tablet without the history column (spec 2.2)', () => {
+  /** The bottom right corner's History button, if it shows. */
+  function cornerHistory(): HTMLElement | null {
+    const corner = document.querySelector<HTMLElement>('.corner');
+    return corner ? within(corner).queryByRole('button', { name: 'History' }) : null;
+  }
+
+  it('shows History beside the floating Undo, which opens the history sheet', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable();
+
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
+    const history = cornerHistory();
+    expect(history).not.toBeNull();
+    expect(history!.dataset.tip).toBe('History');
+    // In Undo's bar, right after it.
+    expect(undo.nextElementSibling).toBe(history);
+    expect(screen.queryByRole('dialog', { name: 'History' })).toBeNull();
+
+    await fireEvent.click(history!);
+
+    expect(screen.getByRole('dialog', { name: 'History' })).toBeTruthy();
+  });
+
+  it('closes the history sheet once the history column shows', async () => {
+    const lists = mockScreen(TOUCH_TABLET);
+    await renderTable();
+    await fireEvent.click(cornerHistory()!);
+
+    await resizeScreen(lists, { ...DESKTOP, touch: true });
+
+    expect(screen.queryByRole('dialog', { name: 'History' })).toBeNull();
+    expect(cornerHistory()).toBeNull();
+  });
+
+  it('keeps the corner without History in a narrow mouse window, and in dock mode', async () => {
+    mockScreen(TABLET);
+    const { unmount } = await renderTable();
+    expect(screen.getByRole('button', { name: 'Undo last action' })).toBeTruthy();
+    expect(cornerHistory()).toBeNull();
+    unmount();
+
+    // A phone: the dock has History, and there is no corner.
+    mockScreen(PHONE);
+    await renderTable();
+    expect(document.querySelector('.corner')).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'History' })).toHaveLength(1);
+  });
+});
+
+describe('the resting hand on a narrow touch screen (spec 2.3)', () => {
+  function hand(): HTMLElement {
+    return screen.getByRole('list', { name: 'Your hand' });
+  }
+
+  /** The raised card the hand is drawn from, which its rest drop is measured against. */
+  function raisedCard(): { w: number; h: number } {
+    return {
+      w: Number.parseFloat(hand().style.getPropertyValue('--card-w')),
+      h: Number.parseFloat(hand().style.getPropertyValue('--card-h')),
+    };
+  }
+
+  it('drops the narrow card by the share a wide screen drops its card, for a finger to tap', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable();
+
+    // 196 × 140 / 259 ≈ 106 px down, so that about 70 px of the cards show.
+    expect(smallHandDrop(HAND_CARD_NARROW.h)).toBe(106);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe(
+      `${handRestDrop(HAND_CARD_NARROW, smallHandDrop(HAND_CARD_NARROW.h), raisedCard())}px`,
+    );
+  });
+
+  it('keeps the desktop drop in a narrow mouse window', async () => {
+    mockScreen(TABLET);
+    await renderTable();
+
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe(
+      `${handRestDrop(HAND_CARD_NARROW, HAND_REST_DROP, raisedCard())}px`,
+    );
   });
 });
