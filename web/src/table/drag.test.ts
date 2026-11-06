@@ -617,9 +617,37 @@ describe('pileTargets', () => {
     expect(targetsOf('up').map((t) => t.drop)).toEqual(['top', 'discard']);
   });
 
-  it('offers the encounter deck its discard pile only', () => {
-    const targets = pileTargets({ kind: 'encounter', pile: 'enc' }, view);
-    expect(targets.map((t) => t.pile)).toEqual(['encd']);
+  it('offers the encounter deck its discard pile, and itself, where a drop sends nothing', () => {
+    const encounter: DragSource = { kind: 'encounter', pile: 'enc' };
+    expect(pileTargets(encounter, view).map((t) => [t.pile, t.drop, t.label])).toEqual([
+      ['encd', 'discard', 'Discard'],
+      ['enc', 'return', 'Top of deck'],
+    ]);
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'enc',
+      drop: 'return',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(encounter, own, AT_ORIGIN, DEAL_TO)).toBeNull();
+  });
+
+  it('puts an encounter card from the table on top of the encounter deck, its home', () => {
+    const home: DropRect = {
+      kind: 'pile',
+      pile: 'enc',
+      drop: 'top',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    const minion: DragSource = { kind: 'card', card: 'minion', x: 0, y: 0 };
+    expect(dropAction(minion, home, AT_ORIGIN, DEAL_TO)).toEqual({
+      kind: 'toDeck',
+      card: 'minion',
+      where: 'top',
+      pile: 'enc',
+    });
   });
 });
 
@@ -783,9 +811,21 @@ describe("the top card of the viewer's deck", () => {
     expect(dropAction(deck, hand, AT_ORIGIN, DEAL_TO)).toEqual({ kind: 'draw', n: 1 });
   });
 
-  it('is discarded on its own discard pile only', () => {
+  it('sends nothing when dropped back on its deck', () => {
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'deck:p0',
+      drop: 'return',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(deck, own, AT_ORIGIN, DEAL_TO)).toBeNull();
+  });
+
+  it('is discarded on its own discard pile, and takes its own deck back', () => {
     expect(pileTargets(deck, view)).toEqual([
       { pile: 'disc:p0', drop: 'discard', label: 'Discard' },
+      { pile: 'deck:p0', drop: 'return', label: 'Top of deck' },
     ]);
     const discard: DropRect = {
       kind: 'pile',
@@ -915,7 +955,7 @@ describe('a player with two decks', () => {
     const targets = (drag: DragSource) => pileTargets(drag, view).map((t) => t.pile);
     expect(targets({ kind: 'card', card: 'second', x: 0, y: 0 })).toEqual(['deck:p1', 'disc:p1']);
     expect(targets({ kind: 'card', card: 'sams', x: 0, y: 0 })).toEqual(['disc:p2']);
-    expect(targets({ kind: 'deck', pile: 'deck:p1' })).toEqual(['disc:p1']);
+    expect(targets({ kind: 'deck', pile: 'deck:p1' })).toEqual(['disc:p1', 'deck:p1']);
   });
 });
 
@@ -1043,8 +1083,21 @@ describe('side decks', () => {
       n: 1,
       pile: 'side:p0:0',
     });
-    expect(of(side)).toEqual([['sided:p0:0', 'discard', 'Discard']]);
-    expect(of({ kind: 'deck', pile: 'side:p0:1' })).toEqual([]);
+    expect(of(side)).toEqual([
+      ['sided:p0:0', 'discard', 'Discard'],
+      ['side:p0:0', 'return', 'Top of Invocation deck'],
+    ]);
+    expect(of({ kind: 'deck', pile: 'side:p0:1' })).toEqual([
+      ['side:p0:1', 'return', 'Top of Sense deck'],
+    ]);
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'side:p0:1',
+      drop: 'return',
+      label: 'Top of Sense deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction({ kind: 'deck', pile: 'side:p0:1' }, own, AT_ORIGIN, DEAL_TO)).toBeNull();
   });
 
   it('plays the top card of a side deck tucked under the card it is dropped on, in one action', () => {
@@ -1132,12 +1185,12 @@ describe('a scenario deck', () => {
   it('takes its own deck, where a drop leaves it, and discards to its own discard pile', () => {
     expect(pileTargets(weapons, view).map((t) => [t.pile, t.drop])).toEqual([
       ['sdisc:weapons', 'discard'],
-      ['sdeck:weapons', 'top'],
+      ['sdeck:weapons', 'return'],
     ]);
     const own: DropRect = {
       kind: 'pile',
       pile: 'sdeck:weapons',
-      drop: 'top',
+      drop: 'return',
       label: 'Top of deck',
       rect: rect(0, 0, 1, 1),
     };
@@ -1183,7 +1236,7 @@ describe('a scenario deck without a discard pile of its own', () => {
   it('discards its top card to the encounter discard pile, and takes its own deck', () => {
     expect(of(weapons)).toEqual([
       ['encd', 'discard'],
-      ['sdeck:weapons', 'top'],
+      ['sdeck:weapons', 'return'],
     ]);
     const discard: DropRect = {
       kind: 'pile',

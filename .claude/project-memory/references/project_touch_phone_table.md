@@ -75,7 +75,8 @@ type: project
     its side), below the notch (`TopBar` `autoHide={false}`).
   - The hand opens as a carousel sheet (`HandSheet.svelte`, non-modal):
     one card at 64 % of the width, with Play and Discard only; a card
-    dragged up out of it goes onto the table.
+    dragged up out of it goes onto the table. It closes when the viewer's
+    own Play or Discard empties the hand.
   - A card played or discarded from the hand rises and fades out where it
     was shown: the hand sheet, the inspector or the dock's hand button
     (`RiseFlight` in motion.svelte.ts, 300 ms).

@@ -194,7 +194,7 @@
   const HIDDEN_CARD = 'hidden-0';
 
   // The prototype's arrows in front of the labels.
-  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
+  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→', return: '↑' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
 
@@ -953,8 +953,10 @@
     const found = settledAt(source, pointer);
     feedPreview(previewOf(source, found));
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
-    // Only what a drop would change is outlined: not the pile a card came from.
-    const target = found?.action ? found.target : null;
+    // Only what a drop would change is outlined: not the pile a card came from. A deck's top card
+    // dropped back on its deck is the exception: that drop is a target, which cancels the drag.
+    const returns = found?.target.kind === 'pile' && found.target.drop === 'return';
+    const target = found && (found.action || returns) ? found.target : null;
     const handArea = handAreaOf(source, view);
     if (target?.kind === 'toHand' && handArea) {
       const label = { glyph: HAND_GLYPH, text: handName(handArea), tuck: false };

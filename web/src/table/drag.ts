@@ -59,9 +59,10 @@ export interface Rect {
 
 /**
  * What a drop onto a pile does: back on top of the deck, discarded, or put in
- * that pile.
+ * that pile. A deck's top card dropped back on its own deck returns there: the
+ * drop is outlined as any other, and sends nothing.
  */
-export type PileDrop = 'top' | 'discard' | 'pile';
+export type PileDrop = 'top' | 'discard' | 'pile' | 'return';
 
 /** Where a drop can land, with its box on the screen. */
 export type DropRect =
@@ -312,6 +313,8 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
     return drop === 'discard' ? { kind: 'discardTop', pile: drag.pile, n: 1 } : null;
   }
   switch (drop) {
+    case 'return':
+      return null;
     case 'top':
       return { kind: 'toDeck', card: drag.card, where: 'top', pile };
     case 'discard':
@@ -514,8 +517,8 @@ export interface PileTarget {
  * when it stays on the table. Move to ▾ offers its home deck only. The top
  * card of a deck goes to the pile that deck discards to (deckDiscardOf): a
  * player's deck to its discard pile, the encounter deck's to the encounter
- * discard pile, a side or scenario deck's to the pile it names. A scenario
- * deck's top card also takes its own deck, where a drop does nothing.
+ * discard pile, a side or scenario deck's to the pile it names. A deck's top
+ * card also takes its own deck, where a drop returns it and sends nothing.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -537,11 +540,9 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     if (discard !== null) {
       targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
     }
-    // A drop on the scenario deck itself does nothing (onPile): without this target, it would
-    // play the card at the deck's spot. Its label never shows.
-    if (deck.kind === 'scenarioDeck') {
-      targets.push({ pile: deck.id, drop: 'top', label: 'Top of deck' });
-    }
+    // A drop on the deck itself cancels the drag: without this target, it would deal or play the
+    // card at the deck's spot.
+    targets.push({ pile: deck.id, drop: 'return', label: `Top of ${deckName(deck)}` });
     return targets;
   }
 
