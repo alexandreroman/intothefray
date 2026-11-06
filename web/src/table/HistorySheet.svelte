@@ -1,7 +1,8 @@
 <!--
-  The history in a bottom sheet, for the dock (dock mode): the same lines as the side column
-  (SidePanel.svelte), newest first and worded the same, and the Undo button under them. In dock
-  mode it may take the whole height, its lines compact.
+  The history in a bottom sheet, opened by the dock (dock mode) and by a tablet corner's History
+  button where there is no history column: the same lines as the side column (SidePanel.svelte),
+  newest first and worded the same, and the Undo button under them. In dock mode it may take the
+  whole height, its lines compact.
 -->
 <script lang="ts">
   import Icon from '../components/Icon.svelte';

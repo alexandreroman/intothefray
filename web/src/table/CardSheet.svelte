@@ -97,7 +97,7 @@
     counters: SheetCounter[];
     /** The stack the card belongs to, its main card first (inspector.stackCardsOf); none for a card on its own. */
     stack?: StackCard[];
-    /** The id of the table card shown, which the strip rings; none for a pile or a hand card. */
+    /** The id of the table card shown, which the strip rings; none for a pile. */
     cardId?: string;
     /** Runs a chosen item; the caller closes the sheet. */
     onrun: (item: ActionItem) => void;
@@ -721,7 +721,7 @@
   {/if}
 {/snippet}
 
-<Sheet label={header.label} dock={dock.current} wide={!dock.current} {onclose}>
+<Sheet label={header.label} dock={dock.current} wide {onclose}>
   <div class={['inspector', layoutOf(side)]} bind:this={content}>
     <div class="top">
       <div class="visual" class:stacked={stack.length > 1}>
@@ -802,9 +802,9 @@
   }
 
   /*
-    --face-ratio: its width over its height, which dock mode sizes it by. No minimum size from its
-    image: the face keeps the card's ratio whatever the scan's, as the copy that measures a new
-    side, drawn without an image, lays it out.
+    --face-ratio: its width over its height, which dock mode and the tablet's rules size it by. No
+    minimum size from its image: the face keeps the card's ratio whatever the scan's, as the copy
+    that measures a new side, drawn without an image, lays it out.
   */
   .face {
     --face-ratio: 5 / 7;

@@ -436,10 +436,9 @@ function risesAway(
 
 /**
  * Where a card discarded or played from the viewer's hand in dock mode rises from: its card in the
- * hand sheet's carousel, whose Play and Discard send it (the viewer's hand card leaves from nowhere
- * else but a drop); else, with the sheet shut (the card sent another way, as by an undo), a card
- * the table draws on the dock's hand button. The sheet is still there as it slides away: the copy
- * rises from where the card was. An open inspector never shows a hand card, so it is no origin.
+ * hand sheet's carousel, whose Play and Discard send it; else, with the sheet shut (the card sent
+ * another way, as by an undo), a card the table draws on the dock's hand button. The sheet is still
+ * there as it slides away: the copy rises from where the card was.
  */
 function riseOrigin(
   root: HTMLElement,

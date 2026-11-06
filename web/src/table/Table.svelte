@@ -544,7 +544,7 @@
   // A tablet without the history column (touch mode on a narrow screen, not dock mode): a History
   // button beside the floating Undo opens the history sheet dock mode uses (spec 2.2), as a finger
   // has no other way to read the history. A mouse window keeps its corner as it is.
-  const historySheetMode = $derived(touchMode.current && !sidePanel && !dockMode);
+  const historySheetMode = $derived(touchMode.current && narrow.current && !dockMode);
   // The cards and piles below read it too: small cards and small piles (spec 3.6).
   setDockMode({
     get current() {
@@ -1349,6 +1349,9 @@
    * for a hand card, nor for an element without either (a card, to a spectator).
    */
   type ContextContent = { entries: ContextEntry[]; note?: string };
+  // A table card or pile: what a tap or a right click on the surface opens, the inspector included.
+  // A hand card is no such element: it has no context menu and no inspector.
+  type SurfaceElement = Exclude<TableElement, { kind: 'hand' }>;
 
   function contextContentOf(element: TableElement): ContextContent | null {
     if (element.kind === 'hand') {
@@ -1390,7 +1393,7 @@
   });
 
   /** The table card or pile an element of the surface belongs to, if any: what a context menu is for. */
-  function contextElementOf(target: EventTarget | null): TableElement | null {
+  function contextElementOf(target: EventTarget | null): SurfaceElement | null {
     if (!(target instanceof Element)) {
       return null;
     }
@@ -1407,7 +1410,7 @@
    * show. It previews the element as entering it would (PileView: a deck that
    * shows its back clears the preview).
    */
-  function openContextMenu(element: TableElement, at: Point): void {
+  function openContextMenu(element: SurfaceElement, at: Point): void {
     // A touch screen has the inspector instead, a bottom sheet the finger reaches.
     if (touchMode.current) {
       openInspector(element);
@@ -1496,7 +1499,7 @@
   // in place of the context menu. A hand card has none: it is played or discarded by a drag, or
   // from the hand sheet in dock mode. Its own state, not the context
   // menu's: the sheet is modal, and a modal lets go of the context menu (see below).
-  let inspected = $state.raw<TableElement | null>(null);
+  let inspected = $state.raw<SurfaceElement | null>(null);
   // How many times an inspector has opened: each opening draws a sheet of its own. The switch from
   // a deck to the card revealed on it is no opening: the same sheet turns the card over in place.
   let inspectorOpenings = $state(0);
@@ -1639,7 +1642,7 @@
   }
 
   /** Opens the element's inspector, unless it has nothing to show. */
-  function openInspector(element: TableElement): void {
+  function openInspector(element: SurfaceElement): void {
     if (modal.open || interaction.dragging !== null || inspectorContentOf(element) === null) {
       return;
     }

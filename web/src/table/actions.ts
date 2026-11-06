@@ -330,12 +330,11 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
   // or modifiers (the server refuses it, inPlayCard), and its owner draws it from there. It takes
   // tokens, which count on it where it lies.
   const revealed = card.onPile !== undefined;
+  const exhausts = !revealed && canExhaust(card);
   const items: ActionItem[] = [];
-  if (!revealed) {
-    if (canExhaust(card)) {
-      items.push(exhaustItem(card));
-    }
-  } else if (drawsRevealed(card, context)) {
+  if (exhausts) {
+    items.push(exhaustItem(card));
+  } else if (revealed && drawsRevealed(card, context)) {
     items.push(drawRevealedItem(card));
   }
   const stage = context.table.stages.find((s) => s.current === card.id);
@@ -350,7 +349,7 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
   }
   // Without Exhaust, a card in play makes its first turning action the default: Flip or Change card….
   const firstTurn = items.find((item) => item.group === GROUP_TURN);
-  if (!revealed && firstTurn && !items.some((item) => item.default)) {
+  if (!revealed && !exhausts && firstTurn) {
     firstTurn.default = true;
   }
   items.push(counterMenu(card, 'token'));
@@ -876,13 +875,13 @@ function hasPile(table: TableView, id: string): boolean {
 
 // ---- Hand cards ----
 
-// Groups of a hand card, in inspector order: Play, then Discard.
+// Groups of a hand card, in the order of the dock's hand sheet: Play, then Discard.
 const GROUP_PLAY = 0;
 const GROUP_DISCARD = 1;
 
 /**
  * The actions on a card of one of the viewer's own hands, as its keys run
- * them (keys.ts) and the touch inspector lists them: Play, to the first free
+ * them (keys.ts) and the dock's hand sheet lists them: Play, to the first free
  * slot of its deck's row (freeSlot), and Discard, disabled for a side deck's
  * card without a discard pile. Nothing for any other card, nor for a
  * spectator. The desktop has no hand card menu: actionsFor gives them none.
