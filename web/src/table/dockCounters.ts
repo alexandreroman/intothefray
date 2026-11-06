@@ -21,7 +21,7 @@ import type { CardView } from '../lib/types';
 import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
 
 /** The font size of every number, status initial and modifier: the readable floor on a phone. */
-export const NUMBER_PX = 11;
+const NUMBER_PX = 11;
 
 /** A token's diameter: its number with a rim around it. */
 const DISC = 16.5;

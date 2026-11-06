@@ -1,7 +1,6 @@
 import { clearPrefMemory } from '../lib/prefs';
 import type { PileView } from '../lib/types';
 import {
-  ALL_ROWS,
   ALL_TABLE,
   drawnDelta,
   lastRow,
@@ -34,11 +33,6 @@ describe('rows', () => {
     expect(rowOfSeat([], 1)).toBe(2);
     expect(lastRow(piles)).toBe(3);
     expect(lastRow([])).toBe(1);
-  });
-
-  it('ALL_ROWS draws every height where it is', () => {
-    expect(ALL_ROWS.toDisplay(1234)).toBe(1234);
-    expect(ALL_ROWS.toTable(1234)).toBe(1234);
   });
 
   it("fits the villain's row and two players' rows in the height available, on the grid", () => {

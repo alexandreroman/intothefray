@@ -27,13 +27,13 @@ import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
 import { ROW_LABEL_ROOM, rowHeight, rowOf, rowTop } from './rows';
 
 /** The room above a row's lines for its owner names, in drawn units. */
-export const DOCK_NAME_ROOM = 12;
+const DOCK_NAME_ROOM = 12;
 
 /** The gap under each line of a row, in drawn units: room for an exhausted card's corners. */
-export const DOCK_LINE_GAP = 16;
+const DOCK_LINE_GAP = 16;
 
 /** The gap under each row, in drawn units. */
-export const DOCK_ROW_GAP = 20;
+const DOCK_ROW_GAP = 20;
 
 /** Something drawn on the table, in table units. */
 export interface DockItem {
@@ -77,8 +77,6 @@ export interface DockLayoutInput {
   seatRows?: readonly number[];
   /** The width a row wraps at, in drawn units. */
   wrapWidth: number;
-  /** Drawn units per table unit: DOCK_SCALE unless given. */
-  scale?: number;
   rowGap?: number;
   lineGap?: number;
   nameRoom?: number;
@@ -558,8 +556,8 @@ export function dockFitWidth(
   items: readonly DockItem[],
   rows: readonly number[],
   seatRows: readonly number[] = [],
-  scale = DOCK_SCALE,
 ): number {
+  const scale = DOCK_SCALE;
   const splits = [...groupsByRow(items, rows, seatRows).values()].map((groups) => splitRow(groups));
   const grid = gridOf(splits, scale);
   const indents = splits.map((split) =>
@@ -623,7 +621,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   if (input.rows.length === 0) {
     throw new Error('dockLayout needs at least one row to show');
   }
-  const scale = input.scale ?? DOCK_SCALE;
+  const scale = DOCK_SCALE;
   const nameRoom = input.nameRoom ?? DOCK_NAME_ROOM;
   const lineGap = input.lineGap ?? DOCK_LINE_GAP;
   const rowGap = input.rowGap ?? DOCK_ROW_GAP;

@@ -21,6 +21,6 @@ export interface Placement {
 }
 
 /** A table card's or pile's box as dock mode draws it, from its own top-left corner: its size scaled. */
-export function dockCardBox<T extends { w: number; h: number }>(box: T, scale = DOCK_SCALE): T {
-  return { ...box, w: box.w * scale, h: box.h * scale };
+export function dockCardBox<T extends { w: number; h: number }>(box: T): T {
+  return { ...box, w: box.w * DOCK_SCALE, h: box.h * DOCK_SCALE };
 }

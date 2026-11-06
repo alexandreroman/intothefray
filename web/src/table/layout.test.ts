@@ -4,7 +4,6 @@ import {
   cardBox,
   contentWidth,
   fanPositions,
-  FILLED_FAN_MIN_SHOW,
   filledFanPositions,
   filledHandCard,
   footprints,
@@ -481,7 +480,6 @@ describe('filledHandCard', () => {
   const pitchOf = (fan: { x: number }[]) => fan[1]!.x - fan[0]!.x;
 
   it('shrinks the raised card for each card to show a quarter of its width at least', () => {
-    expect(FILLED_FAN_MIN_SHOW).toBe(0.25);
     for (const [n, width] of [
       [7, 564],
       [10, 732],

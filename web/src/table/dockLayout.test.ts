@@ -198,19 +198,6 @@ describe('dockLayout', () => {
     }
   });
 
-  it('takes another scale', () => {
-    const layout = dockLayout({
-      items: [card('a', 300, 30)],
-      rows: [0],
-      wrapWidth: 1000,
-      scale: 0.5,
-      ...ROOMS,
-    });
-
-    // On the first column of a grid from 0 (no frame anywhere), 30 × 0.5 under the line's top, 10.
-    expectBox(layout.itemBox('a'), { x: 0, y: 25, w: 56, h: 78.5 });
-  });
-
   it("wraps a long row onto a second line, from the row's left edge, under the frame", () => {
     // c3 would end at 450 + 67.2 = 517.2, past 500.
     const layout = dockLayout(playerRow(4, 500));

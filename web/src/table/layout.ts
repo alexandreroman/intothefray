@@ -518,7 +518,7 @@ export interface HandInsets {
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
 
 /** The least share of each card's width a raised fan shows, beside the next card (filledHandCard). */
-export const FILLED_FAN_MIN_SHOW = 0.25;
+const FILLED_FAN_MIN_SHOW = 0.25;
 
 /** The room between two resting fans side by side, as seen, in px. */
 export const HANDS_GAP = 48;
