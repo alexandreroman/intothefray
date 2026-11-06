@@ -1,3 +1,4 @@
+import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
 import type { CardView, PileView, Point, Size } from '../lib/types';
 import {
   cardBox,
@@ -10,6 +11,7 @@ import {
   freeSlot,
   HAND_CARD,
   HAND_CARD_NARROW,
+  HAND_PADDING,
   HAND_REST_DROP,
   HAND_REST_SCALE,
   handRestDrop,
@@ -28,7 +30,10 @@ import {
   smallHandCard,
   smallHandDrop,
   surfaceSize,
+  TOUCH_POP_SCALE,
+  touchPop,
   visualBox,
+  type FanSlot,
 } from './layout';
 import { card, pile } from './fixtures.testing';
 
@@ -610,6 +615,110 @@ describe('the raised hand', () => {
     expect(box).toBeLessThanOrEqual(restingStrip(HAND_CARD.h, HAND_REST_DROP));
     // Never above its raised place.
     expect(handRestDrop(HAND_CARD, 0, raised)).toBe(0);
+  });
+});
+
+describe("a tablet's selected hand card", () => {
+  // Tablets, either way up: iPad, iPad Pro 12.9" and iPad mini.
+  const TABLETS = [
+    { w: 1180, h: 820 },
+    { w: 820, h: 1180 },
+    { w: 1366, h: 1024 },
+    { w: 1024, h: 1366 },
+    { w: 744, h: 1133 },
+    { w: 1133, h: 744 },
+  ];
+
+  /**
+   * Where a selected card of a raised hand across the whole window is drawn, popped, in the
+   * window's px, as Hand.svelte draws it: the hand's bottom edge on the window's, its card turned
+   * and scaled about a point a tenth of its height below its bottom edge, then moved by touchPop.
+   */
+  function poppedBox(
+    slot: FanSlot,
+    card: { w: number; h: number },
+    window: { w: number; h: number },
+  ): { left: number; top: number; right: number; bottom: number } {
+    const room = {
+      left: HAND_PADDING.side - window.w / 2,
+      right: window.w / 2 - HAND_PADDING.side,
+    };
+    const pop = touchPop(slot, card, room);
+    const pivot = {
+      x: window.w / 2 + slot.x + pop.x,
+      y: window.h - HAND_PADDING.bottom + 0.1 * card.h + pop.y,
+    };
+    const angle = (slot.angle * Math.PI) / 180;
+    const s = TOUCH_POP_SCALE;
+    const corners = [-0.5, 0.5].flatMap((x) =>
+      [-1.1, -0.1].map((y) => ({ x: x * card.w * s, y: y * card.h * s })),
+    );
+    const xs = corners.map((c) => pivot.x + c.x * Math.cos(angle) - c.y * Math.sin(angle));
+    const ys = corners.map((c) => pivot.y + c.x * Math.sin(angle) + c.y * Math.cos(angle));
+    return {
+      left: Math.min(...xs),
+      top: Math.min(...ys),
+      right: Math.max(...xs),
+      bottom: Math.max(...ys),
+    };
+  }
+
+  it('pops less than a hovered card under a mouse', () => {
+    expect(TOUCH_POP_SCALE).toBe(1.15);
+  });
+
+  it('shows whole in the window at any slot, below the top bar, for 5 to 8 cards', () => {
+    for (const window of TABLETS) {
+      const base = window.w > 900 ? HAND_CARD : HAND_CARD_NARROW;
+      const raised = raisedHandCard(base, window, { small: false });
+      for (let n = 5; n <= 8; n++) {
+        const fanWidth = window.w - 2 * HAND_PADDING.side;
+        const card = filledHandCard(raised, base, n, fanWidth);
+        for (const slot of filledFanPositions(n, fanWidth, card)) {
+          const box = poppedBox(slot, card, window);
+          const where = `${window.w}x${window.h}, ${n} cards, slot ${slot.x}`;
+          expect(box.top, where).toBeGreaterThanOrEqual(TOP_BAR_HEIGHT + HAND_PADDING.bottom);
+          expect(box.bottom, where).toBeCloseTo(window.h - HAND_PADDING.bottom);
+          expect(box.left, where).toBeGreaterThanOrEqual(HAND_PADDING.side - 1e-9);
+          expect(box.right, where).toBeLessThanOrEqual(window.w - HAND_PADDING.side + 1e-9);
+        }
+      }
+    }
+  });
+
+  it("fits below the top bar at the fan's steepest tilt, whatever the window's height", () => {
+    // From the shortest window that is not a small screen up: the preview's card decides.
+    for (let h = 501; h <= 1600; h++) {
+      const window = { w: 1600, h };
+      const card = raisedHandCard(HAND_CARD, window, { small: false });
+      const box = poppedBox({ x: 0, y: 0, angle: 22 }, card, window);
+      expect(box.top, `${h}`).toBeGreaterThanOrEqual(TOP_BAR_HEIGHT + HAND_PADDING.bottom);
+    }
+  });
+
+  it("rests the middle card's bottom edge where it lies at rest, and lifts a sagging end card more", () => {
+    const card = { w: 286, h: 400 };
+    const room = { left: -1000, right: 1000 };
+    // Scaled from below its bottom, the middle card would rise by 1.5 % of its height: it does not.
+    expect(touchPop({ x: 0, y: 0, angle: 0 }, card, room)).toEqual({
+      x: 0,
+      y: expect.closeTo(6, 6),
+    });
+    // The end card of 8 sags by 58 px at 17.5°: it rises above its rest place.
+    const [end] = filledFanPositions(8, 1144, card);
+    expect(touchPop(end!, card, room).y).toBeLessThan(-30);
+  });
+
+  it('moves a tilted end card in, as far as it takes to keep within the room', () => {
+    const card = { w: 286, h: 400 };
+    const slots = filledFanPositions(6, 824, card);
+    const room = { left: -412, right: 412 };
+    const first = touchPop(slots[0]!, card, room);
+    const last = touchPop(slots[5]!, card, room);
+    expect(first.x).toBeGreaterThan(0);
+    expect(last.x).toBeCloseTo(-first.x);
+    // A card in the middle has room to spare.
+    expect(touchPop(slots[2]!, card, room).x).toBe(0);
   });
 });
 

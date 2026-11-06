@@ -35,6 +35,8 @@
     type FanSlot,
     type HandInsets,
     restingFanPositions,
+    TOUCH_POP_SCALE,
+    touchPop,
   } from './layout';
   import { motion } from './motion.svelte';
   import { areaOf } from './seats';
@@ -132,17 +134,25 @@
   const restScale = $derived(handRestScale(restCard, cardSize));
   const slots = $derived(open ? raisedSlots() : restingSlots());
 
+  // The raised fan's room, in px from the hand's middle, less the hand's side padding: from the
+  // left edge of the hand's room, which keeps the hero selector clear, to the table's right edge,
+  // over the controls at the bottom right, which the veil covers while the hand is raised. A card
+  // selected on a tablet pops within it too (touchPop).
+  const raisedRoom = $derived({
+    left: HAND_PADDING.side - width / 2,
+    right: width / 2 + inset.right - HAND_PADDING.side,
+  });
+
   /**
-   * The raised fan, as wide as its room allows, less the hand's side padding: from the left edge of
-   * the hand's room, which keeps the hero selector clear, to the table's right edge, over the
-   * controls at the bottom right, which the veil covers while the hand is raised. The hand keeps
-   * its margins, so its slots move over to the middle of that room.
+   * The raised fan, as wide as its room allows. The hand keeps its margins, so its slots move over
+   * to the middle of that room.
    */
   function raisedSlots(): FanSlot[] {
-    const room = width + inset.right - 2 * HAND_PADDING.side;
+    const room = raisedRoom.right - raisedRoom.left;
+    const middle = (raisedRoom.left + raisedRoom.right) / 2;
     return filledFanPositions(shown.length, room, cardSize).map((slot) => ({
       ...slot,
-      x: slot.x + inset.right / 2,
+      x: slot.x + middle,
     }));
   }
 
@@ -754,6 +764,7 @@
   style:--pad-top="{HAND_PADDING.top}px"
   style:--pad-bottom="{HAND_PADDING.bottom}px"
   style:--pad-side="{HAND_PADDING.side}px"
+  style:--touch-pop-scale={TOUCH_POP_SCALE}
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -771,6 +782,7 @@
       </li>
     {:else}
       {@const face = faceOf(card)}
+      {@const pop = slot ? touchPop(slot, cardSize, raisedRoom) : { x: 0, y: 0 }}
       <!--
       Only a touch tap raises the hand and selects (there is no hover on touch): keyboard users act
       on hand cards with their keys instead.
@@ -786,6 +798,8 @@
         style:--x="{slot?.x ?? 0}px"
         style:--rot="{slot?.angle ?? 0}deg"
         style:--ty="{slot?.y ?? 0}px"
+        style:--touch-pop-x="{pop.x}px"
+        style:--touch-pop-y="{pop.y}px"
         onpointerenter={(event) => enterCard(card.id, event)}
         onpointerleave={() => leaveCard(card.id)}
         onpointerdown={(event) => pressCard(card.id, event)}
@@ -976,11 +990,12 @@
 
   /*
     A card selected by a tap stays up like a hovered one. The hand a tap pinned pops its selected
-    card only: a finger leaves a sticky :hover on the last card it tapped, deselected or not. A
-    card just reordered under a mouse or a pen (kept) stays up too, and pops alone: the neighbour
-    lying over it under the pointer does not.
+    card only: a finger leaves a sticky :hover on the last card it tapped, deselected or not. In
+    touch mode no hovered card pops at all: a finger hovers nothing. A card just reordered under a
+    mouse or a pen (kept) stays up too, and pops alone: the neighbour lying over it under the
+    pointer does not.
   */
-  .hand:not(.pinned, .inactive, .keeping) .hcard:hover,
+  :global(.app:not(.touch)) .hand:not(.pinned, .inactive, .keeping) .hcard:hover,
   .hcard.kept,
   .hcard.locked {
     z-index: 60;
@@ -1031,10 +1046,20 @@
     top rises by a third of its height: the raised hand's cards, sized from the preview's (or half
     a small screen), leave room enough for that above them in the window.
   */
-  .hand:not(.pinned, .inactive, .keeping) .hcard:hover .fan,
+  :global(.app:not(.touch)) .hand:not(.pinned, .inactive, .keeping) .hcard:hover .fan,
   .hcard.kept .fan,
   .hcard.locked .fan {
     transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.3);
+  }
+
+  /*
+    On a tablet the selected card pops less, and off its sag on the arc: its lowest corner rests
+    on the hand's bottom padding line, and a tilted end card moves in as far as the fan's room
+    takes, so that the whole card shows in the window wherever its slot (touchPop, layout.ts).
+  */
+  :global(.app.touch:not(.dock-mode)) .hcard.locked .fan {
+    transform: translate(var(--touch-pop-x), var(--touch-pop-y)) rotate(var(--rot))
+      scale(var(--touch-pop-scale));
   }
 
   /* A card just dropped by a reorder lands popped, as it was dragged: it does not grow into it. */
