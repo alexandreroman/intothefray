@@ -234,12 +234,54 @@ function travelsWith(item: DockItem, id: string, byId: ReadonlyMap<string, DockI
   return false;
 }
 
+// A marker lies by a card when its box comes at most this close to the card's, in table units: the
+// first player token starts 40 right of its identity, the active counter 23 under its villain.
+const MARKER_REACH = 60;
+
+/** How far apart two boxes lie: the widest gap between them along either axis, 0 when they overlap. */
+function gapBetween(a: DockItem, b: DockItem): number {
+  return Math.max(0, b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
+}
+
+/**
+ * The card a marker lies by, which it travels with: the closest one within reach, the leftmost of
+ * those as close; none else.
+ */
+export function markerAnchor(marker: DockItem, cards: readonly DockItem[]): string | undefined {
+  let found: DockItem | undefined;
+  let foundGap = Infinity;
+  for (const card of cards) {
+    const gap = gapBetween(marker, card);
+    if (gap > MARKER_REACH) {
+      continue;
+    }
+    if (gap < foundGap || (gap === foundGap && card.x < (found?.x ?? Infinity))) {
+      found = card;
+      foundGap = gap;
+    }
+  }
+  return found?.id;
+}
+
 /**
  * The items as they would lie once the previewed drag is dropped: the dragged card at its new
- * corner, on its own (its anchor dropped), and what travels with it moved by as much; a card not on
- * the table yet added there.
+ * corner, on its own (its anchor dropped), and the cards that travel with it moved by as much; a
+ * card not on the table yet added there. A marker stays where it lies, since a drop never moves
+ * one, and lies by the card closest to it then.
  */
 function previewItems(items: readonly DockItem[], preview: DockPreview): DockItem[] {
+  const moved = movedItems(items, preview);
+  const cards = moved.filter((item) => item.kind === 'card');
+  return moved.map((item) => {
+    if (item.kind !== 'marker') {
+      return item;
+    }
+    return { ...item, anchor: markerAnchor(item, cards) };
+  });
+}
+
+/** The items with the previewed card and the cards that travel with it moved; the markers left where they lie. */
+function movedItems(items: readonly DockItem[], preview: DockPreview): DockItem[] {
   const byId = new Map(items.map((item) => [item.id, item]));
   const dragged = byId.get(preview.unitId);
   const { x, y } = preview.insertAt;
@@ -257,7 +299,7 @@ function previewItems(items: readonly DockItem[], preview: DockPreview): DockIte
     if (item === dragged) {
       return { ...item, x, y, anchor: undefined };
     }
-    if (travelsWith(item, dragged.id, byId)) {
+    if (item.kind !== 'marker' && travelsWith(item, dragged.id, byId)) {
       return { ...item, x: item.x + dx, y: item.y + dy };
     }
     return item;

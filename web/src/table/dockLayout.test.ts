@@ -1,3 +1,4 @@
+import { dockItems, markerItemId, type DockTable } from './dockItems';
 import type { Placement } from './dockPiles';
 import {
   blockRowOf,
@@ -6,7 +7,9 @@ import {
   dockShifts,
   type DockItem,
   type DockLayoutInput,
+  type Point,
 } from './dockLayout';
+import { card as fixtureCard } from './fixtures.testing';
 
 // Every expected value below is worked out by hand, in drawn units (table units × 0.6). The rooms
 // are set in each test: a 10-unit name room above a row's lines, a 10-unit gap under each line and
@@ -896,6 +899,40 @@ describe('a drag previewed on the rows (spec 3.8)', () => {
     expectBox(layout.itemBox('main'), cardAt(267.6, 28));
     expectBox(layout.itemBox('next'), cardAt(358.8, 28));
     expectBox(layout.itemBox('tucked'), cardAt(450, 28));
+  });
+
+  it('keeps a marker where it lies, re-anchored as it is once the drop is made', () => {
+    // The first player token (460..544) lies 46 left of the played card (590..), 48 right of the
+    // identity (..412): it lies by the played card. The server never moves a marker: once the
+    // played card is dropped past the other card, the token lies by the identity.
+    const table = (playedAt: Point): DockTable => ({
+      cards: [
+        fixtureCard('identity', { x: 300, y: 470 }),
+        fixtureCard('played', playedAt),
+        fixtureCard('other', { x: 750, y: 470 }),
+      ],
+      piles: [],
+      frames: [],
+      markers: { firstPlayer: { x: 460, y: 510 } },
+      sizeOf: () => 'std',
+    });
+    const input = (items: readonly DockItem[]): DockLayoutInput => ({
+      items,
+      rows: [1],
+      wrapWidth: 1000,
+      ...ROOMS,
+    });
+    const token = markerItemId('firstPlayer');
+    const items = dockItems(table({ x: 590, y: 470 }));
+    expect(items.find((item) => item.id === token)?.anchor).toBe('played');
+    // The played card dragged past the other card.
+    const insertAt = dockLayout(input(items)).insertAt({ x: 900, y: 60 }, 112, new Set(['played']));
+
+    const preview = dockLayout({ ...input(items), preview: { unitId: 'played', insertAt } });
+    const dropped = dockLayout(input(dockItems(table(insertAt))));
+
+    expectBox(preview.itemBox(token), dropped.itemBox(token) as Placement);
+    expectBox(preview.itemBox('played'), dropped.itemBox('played') as Placement);
   });
 
   it('needs the size of a card that is not on the table', () => {
