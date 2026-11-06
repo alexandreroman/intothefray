@@ -198,7 +198,9 @@ type: project
     badges ("+1 DEF") in a column up from the bottom-left corner,
     standing out of the left edge only as far as a badge wider than the
     room left of the tokens needs. A full region shows what fits but one,
-    then "+N"; the inspector shows them all.
+    then "+N"; the inspector shows them all. The "+N" has no behaviour of
+    its own: a tap on it opens the card's inspector, as a tap anywhere
+    else on the card does.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
   safe areas, its top bar included (the bar's edges follow the content
   column's safe padding). A web app manifest (`display: standalone`,
@@ -221,7 +223,9 @@ reads best above them; the column is centred on the card. Also decided
 with the user: touch mode follows the screen's main pointer alone, so a
 mouse, trackpad or pen on a touch screen gets no mode of its own (a pen's
 hover moving the hand and a pen tap lifting nothing are accepted); the
-dock zoom ignores owner lines, a simple fit over a slot more in view.
+dock zoom ignores owner lines, a simple fit over a slot more in view;
+the "+N" counter opens the inspector like the rest of the card, which
+already shows every counter.
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action
