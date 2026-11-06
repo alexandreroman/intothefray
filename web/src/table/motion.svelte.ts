@@ -128,6 +128,12 @@ const DRAW_EDGE_ON = 0.8;
 /** A card drawn into a hand the viewer does not see slides down out of its pile, fading. */
 const DRAW_AWAY_DROP_PX = 40;
 const DRAW_AWAY_SCALE = 0.85;
+/**
+ * In dock mode (spec 3.4) the viewer's hand is not drawn on the table: a card discarded from it
+ * does not fly across the table. Where the viewer saw it, a copy rises, held up, and fades out.
+ */
+const RISE_MS = 300;
+const RISE_PX = 120;
 
 /** A card or a pile on the screen: its middle, and its size without its tilt. */
 interface Measured {
@@ -217,7 +223,21 @@ interface ArriveFlight extends UnseenHandFlight {
   pile: string;
 }
 
-type Flight = PileFlight | DrawFlight | AwayFlight | ArriveFlight;
+/**
+ * A copy of a card discarded from the viewer's hand in dock mode, rising and fading out where the
+ * viewer saw it (riseOrigin): its pile shows it at once.
+ */
+interface RiseFlight extends FlightBase {
+  kind: 'rise';
+  /** The card as it was in the hand. */
+  card: CardView;
+  /** Its face shows as the hand sheet draws it, a landscape card turned a quarter; else as the inspector does. */
+  portrait: boolean;
+  /** It starts on the dock's hand button as a card the table draws: what it shows is zoomed alike. */
+  zoomed: boolean;
+}
+
+type Flight = PileFlight | DrawFlight | AwayFlight | ArriveFlight | RiseFlight;
 
 const handCard = (id: string) => `.hand .hcard[data-id="${CSS.escape(id)}"]`;
 /** A card another player drags, or has just let go of (Presence.svelte). */
@@ -232,6 +252,10 @@ const ownGhost = (id: string) => `${OWN_GHOST}[data-id="${CSS.escape(id)}"]`;
 const pilePlace = (id: string) => `${tablePile(id)}, .surface .chip[data-pile="${CSS.escape(id)}"]`;
 /** The chip that stands for an out-of-play pile, on its owner's frame (Surface.svelte). */
 const PILE_CHIP = '.surface .chip[data-pile]';
+/** The card the inspector shows (CardSheet.svelte), not the hidden copy measuring a new side. */
+const INSPECTOR_FACE = '.inspector:not(.measure) .face';
+/** The hand button of the dock (Dock.svelte), where the hand opens in dock mode. */
+const DOCK_HAND_BUTTON = '.dock .handbtn';
 const tableMarker = (name: MarkerName) => `.surface .marker[data-marker="${name}"]`;
 /** The marker another player drags, or has just let go of (Presence.svelte). */
 const remoteMarker = (name: MarkerName) => `.presence .marker.ghost[data-marker="${name}"]`;
@@ -369,14 +393,68 @@ function measureOrigin(element: HTMLElement, zoom: number): Measured {
   if (!element.matches(PILE_CHIP)) {
     return measure(element, zoom);
   }
-  const chip = measure(element, zoom);
-  const scale = element.closest('.dock-mode') ? DOCK_SCALE : 1;
+  return tableCardOn(element, zoom, element.closest('.dock-mode') !== null);
+}
+
+/** A portrait card as the table draws it, centred on an element: in dock mode, at the dock scale. */
+function tableCardOn(element: HTMLElement, zoom: number, dock: boolean): Measured {
+  const under = measure(element, zoom);
+  const scale = dock ? DOCK_SCALE : 1;
   return {
-    cx: chip.cx,
-    cy: chip.cy,
+    cx: under.cx,
+    cy: under.cy,
     w: PORTRAIT_CARD.w * scale * zoom,
     h: PORTRAIT_CARD.h * scale * zoom,
   };
+}
+
+/**
+ * Whether a card goes from the viewer's hand to a discard pile in dock mode by an action of the
+ * hand sheet or the inspector, not a drop: it rises where the viewer saw it (RiseFlight). A drop
+ * flies from its ghost, which the viewer saw let go, as anywhere else.
+ */
+function risesAway(
+  root: HTMLElement,
+  anim: Anim,
+  tables: { before: TableView | undefined; after: TableView | undefined },
+): anim is Extract<Anim, { kind: 'fly' }> {
+  if (anim.kind !== 'fly' || anim.fromPile !== undefined || anim.dropped) {
+    return false;
+  }
+  if (!root.matches('.dock-mode')) {
+    return false;
+  }
+  const ghost = root.querySelector(`${remoteGhost(anim.id)}, ${ownGhost(anim.id)}`);
+  const card = tables.before?.cards.find((c) => c.id === anim.id);
+  const pile = tables.after?.piles.find((p) => p.id === anim.toPile);
+  return ghost === null && card?.zone === 'hand' && pile?.kind === 'discard';
+}
+
+/**
+ * Where a card discarded from the viewer's hand in dock mode rises from: its card in the hand
+ * sheet's carousel; else the inspector's card, which shows it (the viewer's hand card is
+ * discarded from nowhere else but a drop); else, with neither open, a card the table draws on the
+ * dock's hand button. The inspector closes as Discard runs, and is still there while it slides
+ * away: the copy rises from where the card was.
+ */
+function riseOrigin(
+  root: HTMLElement,
+  id: string,
+  zoom: number,
+): Pick<RiseFlight, 'from' | 'portrait' | 'zoomed'> | null {
+  const inSheet = root.querySelector<HTMLElement>(handCard(id));
+  if (inSheet) {
+    return { from: measure(inSheet, zoom), portrait: true, zoomed: false };
+  }
+  const inInspector = root.querySelector<HTMLElement>(INSPECTOR_FACE);
+  if (inInspector) {
+    return { from: measure(inInspector, zoom), portrait: false, zoomed: false };
+  }
+  const button = root.querySelector<HTMLElement>(DOCK_HAND_BUTTON);
+  if (button) {
+    return { from: tableCardOn(button, zoom, true), portrait: true, zoomed: true };
+  }
+  return null;
 }
 
 /** A deck's hidden top card the viewer dragged landed as an unknown card, not under its id. */
@@ -593,6 +671,12 @@ const DRAW_AWAY_FRAMES: Keyframe[] = [
   { transform: `translate(0, ${DRAW_AWAY_DROP_PX}px) scale(${DRAW_AWAY_SCALE})`, opacity: 0 },
 ];
 
+/** A card discarded from the viewer's hand in dock mode rises, held up, and fades out (RiseFlight). */
+const RISE_FRAMES: Keyframe[] = [
+  { transform: 'translateY(0)', scale: `${LIFT_SCALE}`, opacity: 1 },
+  { transform: `translateY(-${RISE_PX}px)`, scale: `${LIFT_SCALE}`, opacity: 0 },
+];
+
 /** A card put on a pile out of a hand the viewer does not see rises into it, fading in. */
 const ARRIVE_FRAMES: Keyframe[] = [...DRAW_AWAY_FRAMES].reverse();
 
@@ -690,6 +774,9 @@ function chipFlipFrames(flight: PileFlight): Keyframe[] {
  * or turned over first when it goes to a chip.
  */
 function flightMs(flight: Flight): number {
+  if (flight.kind === 'rise') {
+    return RISE_MS;
+  }
   if (flight.kind !== 'toPile') {
     return DRAW_MS;
   }
@@ -761,6 +848,8 @@ function flightEnds(flight: Flight, touched: Set<Subject>, after: TableView | un
       return isTouched(flight.card) || leftPile(flight.pile, flight.card, !flight.under);
     case 'arrive':
       return isTouched(flight.card) || leftPile(flight.pile, flight.card, true);
+    case 'rise':
+      return isTouched(flight.card);
     case 'draw':
       return (
         isTouched(flight.card) ||
@@ -848,6 +937,18 @@ class TableMotion {
         before.set(anim.id, measureOrigin(element, zoom));
       }
     }
+    // A card discarded from the viewer's hand in dock mode rises where the viewer saw it (riseOrigin).
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const rising = new Map<string, Pick<RiseFlight, 'from' | 'portrait' | 'zoomed'>>();
+    for (const anim of shown) {
+      if (!root || !risesAway(root, anim, tables)) {
+        continue;
+      }
+      const origin = riseOrigin(root, anim.id, zoom);
+      if (origin) {
+        rising.set(anim.id, origin);
+      }
+    }
     // A card drawn or put on a pile with no card on the table goes from where the pile shows (pilePlace).
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const pilesBefore = new Map<string, Measured>();
@@ -912,7 +1013,7 @@ class TableMotion {
     }
     // The pile is drawn without the flying cards from the start: they land on it later.
     const flying = shown.flatMap((anim) => {
-      if (anim.kind === 'fly' && before.has(anim.id)) {
+      if (anim.kind === 'fly' && before.has(anim.id) && !rising.has(anim.id)) {
         return [anim.id];
       }
       if (anim.kind === 'arrive' && anim.card !== undefined && pilesBefore.has(anim.pile)) {
@@ -934,7 +1035,9 @@ class TableMotion {
     // their new count shows once the cards have landed. Without Web Animations (#run), nothing plays
     // on them: they keep it in sight, rather than hide it as the view is drawn.
     const animates = typeof root.animate === 'function';
-    const hushed = new Set(animates ? shown.flatMap(hushedPiles) : []);
+    // Nothing lands on the pile a card rises away to: it shows its new count at once.
+    const landing = shown.filter((anim) => !(anim.kind === 'fly' && rising.has(anim.id)));
+    const hushed = new Set(animates ? landing.flatMap(hushedPiles) : []);
     for (const pile of hushed) {
       this.#hush(pile);
     }
@@ -1058,6 +1161,12 @@ class TableMotion {
             break;
           }
           case 'fly': {
+            const rise = rising.get(anim.id);
+            const inHand = cardsBefore.get(anim.id);
+            if (rise && inHand) {
+              flights.push({ kind: 'rise', key: ++this.#nextKey, card: inHand, ...rise, delay: 0 });
+              break;
+            }
             // Turning face up, it shows the face it lands on: it may lie face down before, or be new
             // in the view, out of a deck. Otherwise it shows as it left.
             const card =
@@ -1243,6 +1352,16 @@ class TableMotion {
       case 'arrive':
         animations.push(this.#run(element, ARRIVE_FRAMES, { ...timing, duration: DRAW_MS }, null));
         break;
+      case 'rise':
+        animations.push(
+          this.#run(
+            element,
+            RISE_FRAMES,
+            { ...timing, duration: RISE_MS, easing: 'ease-out' },
+            null,
+          ),
+        );
+        break;
     }
     // The copy itself moves first: it lands when that ends.
     const flown = animations[0];
@@ -1384,6 +1503,7 @@ class TableMotion {
       case 'draw':
         return this.drawing;
       case 'drawAway':
+      case 'rise':
         return null;
     }
   }
