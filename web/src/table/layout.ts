@@ -349,7 +349,11 @@ const HAND_PADDING_Y = HAND_PADDING.top + HAND_PADDING.bottom;
  */
 export const HAND_REST_SCALE = 0.82;
 
-/** How far the resting hand drops below its raised place, in px, but on a small screen. */
+/**
+ * How far the resting hand drops below its raised place, in px, but on a
+ * small screen or a narrow touch screen (900 px wide or less), which drop by
+ * smallHandDrop instead (Table.svelte, baseHandDrop).
+ */
 export const HAND_REST_DROP = 140;
 
 /**
@@ -368,9 +372,9 @@ export function smallHandCard(window: { w: number; h: number }): { w: number; h:
 }
 
 /**
- * How far a small screen's resting hand drops, in px: the share of its card
- * height that HAND_REST_DROP is of the desktop card's, so that as much of
- * each card shows.
+ * How far the resting hand drops on a small screen or a narrow touch screen,
+ * in px: the share of its card height that HAND_REST_DROP is of the desktop
+ * card's, so that as much of each card shows.
  */
 export function smallHandDrop(cardHeight: number): number {
   return Math.round((cardHeight * HAND_REST_DROP) / HAND_CARD.h);
