@@ -530,40 +530,78 @@ describe('the raised hand', () => {
   });
 
   it("takes 80 % of the preview's card on a desktop", () => {
-    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 1080 }, { small: false })).toEqual({
+    expect(
+      raisedHandCard(HAND_CARD, { w: 1500, h: 1080 }, { small: false, tablet: false }),
+    ).toEqual({
       w: 286,
       h: 400,
     });
-    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 600 }, { small: false })).toEqual({
-      w: 227,
-      h: 318,
-    });
+    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 600 }, { small: false, tablet: false })).toEqual(
+      {
+        w: 227,
+        h: 318,
+      },
+    );
   });
 
   it('follows a narrow table area', () => {
-    expect(raisedHandCard(HAND_CARD_NARROW, { w: 500, h: 1000 }, { small: false })).toEqual({
+    expect(
+      raisedHandCard(HAND_CARD_NARROW, { w: 500, h: 1000 }, { small: false, tablet: false }),
+    ).toEqual({
       w: 162,
       h: 227,
     });
   });
 
+  it("takes 65 % of the preview's card on a tablet", () => {
+    // An iPad on its side: the preview's 358 px card.
+    expect(raisedHandCard(HAND_CARD, { w: 1180, h: 820 }, { small: false, tablet: true })).toEqual({
+      w: 233,
+      h: 326,
+    });
+    expect(raisedHandCard(HAND_CARD, { w: 1180, h: 820 }, { small: false, tablet: false })).toEqual(
+      {
+        w: 286,
+        h: 400,
+      },
+    );
+    // Upright, narrow: 45 % of the table area.
+    expect(
+      raisedHandCard(HAND_CARD_NARROW, { w: 820, h: 1180 }, { small: false, tablet: true }),
+    ).toEqual({
+      w: 226,
+      h: 316,
+    });
+    // Never below the base card.
+    expect(raisedHandCard(HAND_CARD, { w: 600, h: 1000 }, { small: false, tablet: true })).toBe(
+      HAND_CARD,
+    );
+  });
+
   it('is never smaller than the base card', () => {
     // A short window, and a table area not measured yet.
-    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 500 }, { small: false })).toBe(HAND_CARD);
-    expect(raisedHandCard(HAND_CARD, { w: 0, h: 1080 }, { small: false })).toBe(HAND_CARD);
+    expect(raisedHandCard(HAND_CARD, { w: 1500, h: 500 }, { small: false, tablet: false })).toBe(
+      HAND_CARD,
+    );
+    expect(raisedHandCard(HAND_CARD, { w: 0, h: 1080 }, { small: false, tablet: false })).toBe(
+      HAND_CARD,
+    );
     const phone = smallHandCard({ w: 844, h: 390 });
-    expect(raisedHandCard(phone, { w: 844, h: 390 }, { small: true })).toBe(phone);
+    expect(raisedHandCard(phone, { w: 844, h: 390 }, { small: true, tablet: false })).toBe(phone);
   });
 
   it('never raises over half the window height on a small screen, its padding included', () => {
     const window = { w: 560, h: 500 };
     const base = smallHandCard(window);
     expect(base).toEqual({ w: 140, h: 196 });
-    const raised = raisedHandCard(base, window, { small: true });
+    const raised = raisedHandCard(base, window, { small: true, tablet: false });
     expect(raised).toEqual({ w: 147, h: 206 });
     expect(raised.h + 44).toBeLessThanOrEqual(window.h / 2);
     // Elsewhere, the preview alone decides.
-    expect(raisedHandCard(base, window, { small: false })).toEqual({ w: 170, h: 238 });
+    expect(raisedHandCard(base, window, { small: false, tablet: false })).toEqual({
+      w: 170,
+      h: 238,
+    });
   });
 
   it('draws the raised cards at rest as large as the base card at HAND_REST_SCALE', () => {
@@ -670,7 +708,7 @@ describe("a tablet's selected hand card", () => {
   it('shows whole in the window at any slot, below the top bar, for 5 to 8 cards', () => {
     for (const window of TABLETS) {
       const base = window.w > 900 ? HAND_CARD : HAND_CARD_NARROW;
-      const raised = raisedHandCard(base, window, { small: false });
+      const raised = raisedHandCard(base, window, { small: false, tablet: true });
       for (let n = 5; n <= 8; n++) {
         const fanWidth = window.w - 2 * HAND_PADDING.side;
         const card = filledHandCard(raised, base, n, fanWidth);
@@ -690,9 +728,12 @@ describe("a tablet's selected hand card", () => {
     // From the shortest window that is not a small screen up: the preview's card decides.
     for (let h = 501; h <= 1600; h++) {
       const window = { w: 1600, h };
-      const card = raisedHandCard(HAND_CARD, window, { small: false });
-      const box = poppedBox({ x: 0, y: 0, angle: 22 }, card, window);
-      expect(box.top, `${h}`).toBeGreaterThanOrEqual(TOP_BAR_HEIGHT + HAND_PADDING.bottom);
+      // The desktop's larger card too: the tablet's share only makes it smaller.
+      for (const tablet of [true, false]) {
+        const card = raisedHandCard(HAND_CARD, window, { small: false, tablet });
+        const box = poppedBox({ x: 0, y: 0, angle: 22 }, card, window);
+        expect(box.top, `${h}`).toBeGreaterThanOrEqual(TOP_BAR_HEIGHT + HAND_PADDING.bottom);
+      }
     }
   });
 

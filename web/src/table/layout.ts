@@ -394,6 +394,9 @@ const PREVIEW_BORDER = 1;
 /** The raised hand's cards are this share of the preview's card. */
 const RAISED_HAND_SHARE = 0.8;
 
+/** On a tablet, where the raised hand stays out of the table's way, they are this share of it. */
+const TABLET_RAISED_HAND_SHARE = 0.65;
+
 /**
  * The width of the portrait card the preview shows, in px, from the table
  * area's width (`area.w`) and the window's height (`area.h`), as .peek's CSS
@@ -408,18 +411,20 @@ export function previewCardWidth(area: { w: number; h: number }): number {
 
 /**
  * A card of the raised hand, in px: 80 % of the preview's card (see
- * previewCardWidth for `area`), never smaller than the base card the resting
- * hand shows, and on a small screen never so tall that the raised hand takes
- * more than half the window's height. On a tablet, the preview's card, kept
- * 200 px shorter than the window, leaves room enough for the selected card to
- * pop whole in the window (touchPop).
+ * previewCardWidth for `area`), 65 % on a tablet (a touch screen outside dock
+ * mode), never smaller than the base card the resting hand shows, and on a
+ * small screen never so tall that the raised hand takes more than half the
+ * window's height. The preview's card, kept 200 px shorter than the window,
+ * leaves room enough for a tablet's selected card to pop whole in the window
+ * (touchPop).
  */
 export function raisedHandCard(
   base: { w: number; h: number },
   area: { w: number; h: number },
-  opts: { small: boolean },
+  opts: { small: boolean; tablet: boolean },
 ): { w: number; h: number } {
-  let w = Math.round(RAISED_HAND_SHARE * previewCardWidth(area));
+  const share = opts.tablet ? TABLET_RAISED_HAND_SHARE : RAISED_HAND_SHARE;
+  let w = Math.round(share * previewCardWidth(area));
   if (opts.small) {
     w = Math.min(w, Math.floor(halfHeightCardWidth(area.h)));
   }

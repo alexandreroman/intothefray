@@ -922,11 +922,16 @@
 
   // ---- The hand and the controls at the bottom ----
 
-  // The raised hand's cards, 80 % of the preview's. At rest, Hand.svelte draws them at the size of
-  // the base card at HAND_REST_SCALE, on the base card's fan, and they drop so that as tall a part
-  // of them shows as of the base card dropped by baseHandDrop.
+  // The raised hand's cards, 80 % of the preview's, 65 % on a tablet (touch mode outside dock
+  // mode). At rest, Hand.svelte draws them at the size of the base card at HAND_REST_SCALE, on the
+  // base card's fan, and they drop so that as tall a part of them shows as of the base card
+  // dropped by baseHandDrop.
   const raisedCard = $derived(
-    raisedHandCard(baseHandCard, { w: scrollerWidth, h: windowHeight }, { small: small.current }),
+    raisedHandCard(
+      baseHandCard,
+      { w: scrollerWidth, h: windowHeight },
+      { small: small.current, tablet: touchMode.current && !dockMode },
+    ),
   );
 
   // The room between the hands and the controls beside them on a wide screen, in px.
