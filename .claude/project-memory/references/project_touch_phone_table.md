@@ -70,6 +70,9 @@ type: project
   - The hand opens as a carousel sheet (`HandSheet.svelte`, non-modal):
     one card at 64 % of the width, with Play and Discard only; a card
     dragged up out of it goes onto the table.
+  - A card played or discarded from the hand rises and fades out where it
+    was shown: the hand sheet, the inspector or the dock's hand button
+    (`RiseFlight` in motion.svelte.ts, 300 ms).
   - The history opens as a sheet (`HistorySheet.svelte`).
   - Sheets and card boxes take the whole screen. The inspector shows the
     card on top (at most 42 % of the height) with its list under it when
@@ -90,8 +93,13 @@ type: project
     there inserts in that seat's band. Every seat row keeps its own block,
     even empty; the villain row is never folded.
   - Owner lines show the hero's (villain's) avatar at the chips' height
-    instead of the name (scenario decks keep their name); every chip line
-    ends on one shared right edge.
+    instead of the name, then the out-of-play chips right after it,
+    left-aligned, so that they line up on the left across rows; a
+    scenario deck shows its name, its chips after it.
+  - During a drag the rows lay themselves out as if the dragged unit lay
+    in its drop slot (the `preview` input of `dockLayout`, spec 3.8): the
+    cards after it glide aside (180 ms, none under reduced motion) and
+    glide back on a cancel.
   - The dock zoom is fixed: it fits the widest row's indent plus three
     card slots in the width, never above 100 %.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
