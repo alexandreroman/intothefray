@@ -1,5 +1,5 @@
 import type { Placement } from './dockPiles';
-import { dockLayout, type DockItem, type DockLayoutInput } from './dockLayout';
+import { dockFitWidth, dockLayout, type DockItem, type DockLayoutInput } from './dockLayout';
 
 // Every expected value below is worked out by hand, in drawn units (table units × 0.6). The rooms
 // are set in each test: a 10-unit name room above a row's lines, a 10-unit gap under each line and
@@ -172,8 +172,8 @@ describe('dockLayout', () => {
 
     expectBox(layout.itemBox('c8'), { x: 404, y: 278.4, w: 67.2, h: 94.2 });
     expectBox(layout.itemBox('token'), { x: 495.2, y: 302.4, w: 50.4, h: 42 });
-    // Still three lines.
-    expect(layout.rowHeight(1)).toBeCloseTo(402.6, 6);
+    // Three lines, and a fourth for the row's empty slot: the token ends line 2 past its end.
+    expect(layout.rowHeight(1)).toBeCloseTo(402.6 + 122.2, 6);
   });
 
   it('keeps the frames and piles left of the indent on line 0, at their scaled place', () => {
@@ -238,8 +238,9 @@ describe('dockLayout', () => {
     expectBox(layout.itemBox('crew2-discard'), { x: 474.2, y: 156.2, w: 48, h: 67.2 });
     // Line 1 holds 91.2 of content (the frame): line 2 starts at 138.2 + 101.2 = 239.4.
     expectBox(layout.itemBox('villain2'), { x: 432.4, y: 257.4, w: 67.2, h: 94.2 });
-    // 10 + 128.2 + 101.2 + 122.2 + 20.
-    expect(layout.height).toBeCloseTo(381.6, 6);
+    // 10 + 128.2 + 101.2 + 122.2 + 20, and a line of 122.2 for the row's empty slot: villain2
+    // ends line 2 past its end.
+    expect(layout.height).toBeCloseTo(381.6 + 122.2, 6);
   });
 
   it('stacks the shown rows only in the focus view', () => {
@@ -315,8 +316,8 @@ describe('dockLayout', () => {
     expectBox(layout.itemBox('c2'), { x: 228, y: 278.4, w: 67.2, h: 94.2 });
     // Line 3 holds nothing: only its 10 gap, so line 4 starts at 382.6 + 10.
     expectBox(layout.itemBox('c3'), { x: 184.8, y: 410.6, w: 67.2, h: 94.2 });
-    // 10 + 128.2 + 122.2 + 122.2 + 10 + 122.2 + 20.
-    expect(layout.height).toBeCloseTo(534.8, 6);
+    // 10 + 128.2 + 122.2 + 122.2 + 10 + 122.2 + 20, and a line of 122.2 for the row's empty slot.
+    expect(layout.height).toBeCloseTo(534.8 + 122.2, 6);
   });
 
   it('knows no unknown item', () => {
@@ -329,5 +330,82 @@ describe('dockLayout', () => {
 
   it('needs a row to show', () => {
     expect(() => dockLayout({ items: [], rows: [], wrapWidth: 500 })).toThrow();
+  });
+});
+
+describe('the empty slot at the end of each row', () => {
+  // Line width 500 − 180 − 67.2 = 252.8: each line ends at 432.8 for a card's left edge. A slot is
+  // a drawn card and a drawn gap, 67.2 + 24.
+
+  it('lies past the last item of the last line when it starts before the line ends', () => {
+    const layout = dockLayout(playerRow(4, 500));
+
+    // c4 ends at 292 + 67.2 = 359.2: the slot starts at 383.2, right after c4 on the table
+    // (908 + 112 + 40 = 1060).
+    expectPoint(layout.toTable({ x: 383.2, y: 156.2 }), { x: 1060, y: 410 });
+    expectPoint(layout.toDisplay({ x: 1060, y: 410 }), { x: 383.2, y: 156.2 });
+    // No line of its own: 10 + 128.2 + 122.2 + 20.
+    expect(layout.rowHeight(1)).toBeCloseTo(280.4, 6);
+    // As wide as the slot reaches: 383.2 + 67.2.
+    expect(layout.width).toBeCloseTo(450.4, 6);
+  });
+
+  it('takes a new line when the last line is full, past the last item on the table', () => {
+    // c5 (1060) is drawn at 383.2 on line 1 and ends at 450.4: the slot would start at 474.4,
+    // past the line's end. A third line holds it, its top at 260.4, as high as a card's line.
+    const layout = dockLayout(playerRow(5, 500));
+
+    expect(layout.rowHeight(1)).toBeCloseTo(10 + 128.2 + 122.2 + 122.2 + 20, 6);
+    // The slot, drawn at (1060 + 112 + 40) × 0.6 − 2 × 252.8 = 221.6, is right after c5.
+    expectPoint(layout.toTable({ x: 221.6, y: 278.4 }), { x: 1212, y: 410 });
+    expectPoint(layout.toDisplay({ x: 1212, y: 410 }), { x: 221.6, y: 278.4 });
+    // Left of the slot on its line counts at the slot: never under the last item.
+    expectPoint(layout.toTable({ x: 180, y: 278.4 }), { x: 1212, y: 410 });
+    expectPoint(layout.toTable({ x: 300, y: 300 }), {
+      x: (300 + 505.6) / 0.6,
+      y: 380 + 39.6 / 0.6,
+    });
+  });
+
+  it('lies past the last item of a row that does not wrap', () => {
+    const layout = dockLayout({
+      items: PLAYER_PILES.slice(0, 3),
+      rows: [1],
+      wrapWidth: 100,
+      ...ROOMS,
+    });
+
+    // The frame ends at 151.2: the slot from 175.2 to 242.4, 40 past the frame on the table.
+    expect(layout.width).toBeCloseTo(242.4, 6);
+    expectPoint(layout.toTable({ x: 175.2, y: 28 }), { x: 292, y: 410 });
+  });
+});
+
+describe('dockLayout at an infinite wrap width', () => {
+  it('wraps nothing: every item scaled where it lies, and back', () => {
+    const layout = dockLayout({
+      items: [...PLAYER_PILES, ...played(8)],
+      rows: [1],
+      wrapWidth: Number.POSITIVE_INFINITY,
+      ...ROOMS,
+    });
+
+    // c8 at 452 + 152 × 7 = 1516, drawn 909.6 on the first line, 18 below its top.
+    expectBox(layout.itemBox('c8'), { x: 909.6, y: 28, w: 67.2, h: 94.2 });
+    expectPoint(layout.toTable({ x: 909.6, y: 28 }), { x: 1516, y: 410 });
+  });
+});
+
+describe('dockFitWidth', () => {
+  it("is the widest row's indent and three slots of a drawn card and a drawn gap", () => {
+    // The villain row's indent is 0 (its villain at 0), player 1's 180 (the identity at 300):
+    // 180 + 3 × (112 + 40) × 0.6.
+    const items = [card('villain', 0, 30), ...PLAYER_PILES, ...played(2)];
+    expect(dockFitWidth(items, [0, 1])).toBeCloseTo(180 + 3 * 91.2, 6);
+  });
+
+  it('leaves out the rows not shown, and counts a row of piles alone from 0', () => {
+    expect(dockFitWidth(PLAYER_PILES, [0])).toBeCloseTo(3 * 91.2, 6);
+    expect(dockFitWidth(PLAYER_PILES.slice(0, 3), [1])).toBeCloseTo(3 * 91.2, 6);
   });
 });

@@ -14,7 +14,8 @@ import {
   type TestScreen,
 } from '../lib/screen.testing';
 import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
-import { storedZoom } from './zoom';
+import { saveViewMode } from './rows';
+import { saveZoom, storedZoom } from './zoom';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { Area, CardView as TableCard, DeckView, LogView, PackFace, View } from '../lib/types';
 import {
@@ -666,14 +667,16 @@ describe('small cards and small piles in dock mode', () => {
     return Number(document.querySelector<HTMLElement>('.app')!.style.getPropertyValue('--z'));
   }
 
-  it('draws the cards in play whole at 60 %, where they lie, and the piles small', async () => {
+  it('draws the cards in play whole at 60 %, where the projection puts them, and the piles small', async () => {
     mockScreen(PHONE);
     await renderTable();
 
     const mine = placed('mine', '.card');
     expect(mine.classList).toContain('scaled');
     const box = boxOf(mine);
-    expect(box.x).toBe(300);
+    // Unmeasured, nothing wraps: 300 × 0.6 across, under the villain row's 12 units of name room.
+    expect(box.x).toBeCloseTo(180, 6);
+    expect(box.y).toBeCloseTo(12 + 180, 6);
     expect(box.w).toBeCloseTo(67.2, 6);
     expect(box.h).toBeCloseTo(94.2, 6);
     expect(placed('v', '.card').querySelector('img')?.getAttribute('alt')).toBe('Rhino');
@@ -730,10 +733,11 @@ describe('small cards and small piles in dock mode', () => {
     await fireEvent.pointerUp(window, { clientX: pressed.x - 80, clientY: pressed.y });
     const [action] = vi.mocked(session.act).mock.calls.at(-1)!;
     expect(action).toMatchObject({ kind: 'move', card: 'mine' });
-    // Its top-left corner as drawn, snapped to the grid: a full-size box would put it 22 units left.
-    expect(action.x).toBe(Math.round(drawn.x / 10) * 10);
-    // Not moved up or down, past the snap of the drawn corner and the rows' mapping to the table.
-    expect(Math.abs(action.y! - 300)).toBeLessThanOrEqual(10);
+    // Its top-left corner as drawn, brought back to the table's scale (no wrap: the scroller is
+    // unmeasured), on dock mode's 40-unit grid.
+    expect(action.x).toBe(Math.round(drawn.x / 0.6 / 40) * 40);
+    // Not moved up or down: 300 is on the villain row's line 310 (30 + 7 × 40) give or take.
+    expect(action.y).toBe(310);
   });
 
   it("holds a deck's top card by the middle of its 60 % ghost", async () => {
@@ -797,12 +801,258 @@ describe('small cards and small piles in dock mode', () => {
   });
 });
 
-describe('the zoom in dock mode (F-V3)', () => {
-  // The play area's size, in px, as its scroller measures it.
-  let visible = { w: 5000, h: 390 };
+describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
+  // The scroller's size, in px: a phone held upright, as wide as its window.
+  let visible = { w: 390, h: 844 };
 
   beforeEach(() => {
-    visible = { w: 5000, h: 390 };
+    visible = { w: 390, h: 844 };
+    const scrollerSize = (el: Element, size: number) =>
+      el.classList.contains('tablewrap') ? size : 0;
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return scrollerSize(this, visible.w);
+    });
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockImplementation(function (this: Element) {
+      return scrollerSize(this, visible.w);
+    });
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return scrollerSize(this, visible.h);
+    });
+  });
+
+  // Rhino at 300 in the villain's row, its encounter deck and discard at 0 and 130; Alex's row (p0)
+  // with the deck and discard, Spider-Man at 300 and seven cards in play from 460, 160 apart.
+  const PLAYED = Array.from({ length: 7 }, (_, i) => `c${i + 1}`);
+
+  function busyView(extra: TableCard[] = []): View {
+    const view = makeView();
+    view.table!.cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
+      card('id', { x: 300, y: 410 }),
+      ...PLAYED.map((id, i) => card(id, { x: 460 + 160 * i, y: 410 })),
+      ...extra,
+      ...view.table!.cards.filter((c) => c.zone === 'hand'),
+    ];
+    view.table!.piles = [
+      pile('encounter', { kind: 'encounter', owner: -1, x: 0, y: 30 }),
+      pile('encounterDiscard', { kind: 'encounterDiscard', owner: -1, x: 130, y: 30 }),
+      pile('deck:p0', { owner: 0, x: 0, y: 410 }),
+      pile('discard:p0', { kind: 'discard', owner: 0, x: 130, y: 410 }),
+    ];
+    // One hero: no first player token.
+    view.table!.firstPlayer = undefined;
+    return view;
+  }
+
+  function shownZoom(): number {
+    return Number(document.querySelector<HTMLElement>('.app')!.style.getPropertyValue('--z'));
+  }
+
+  /** The box an element is drawn at, in drawn units of the surface. */
+  function drawnBox(el: HTMLElement): { x: number; y: number; w: number; h: number } {
+    return {
+      x: Number.parseFloat(el.style.left),
+      y: Number.parseFloat(el.style.top),
+      w: Number.parseFloat(el.style.width),
+      h: Number.parseFloat(el.style.height),
+    };
+  }
+
+  function expectAt(id: string, x: number, y: number): void {
+    const box = drawnBox(placed(id, '.card'));
+    expect(box.x).toBeCloseTo(x, 4);
+    expect(box.y).toBeCloseTo(y, 4);
+  }
+
+  // The fit: both rows' indent (the villain and the identity at 300, drawn 180) and three slots of
+  // a 67.2 card and a 24 gap, 453.6, in 390 − 2 × 24 − 12 = 330 px: 72 %. The rows wrap at
+  // (390 − 48) / 0.72 = 475: the lines are 475 − 180 − 67.2 = 227.8 wide. The villain's row is
+  // 12 + 118.2 (its frame, from 20 to 197) + 10 + 20 = 160.2 high; Alex's row starts there, its
+  // first line 12 lower, at 172.2, 128.2 high (the frame again), the next lines 122.2.
+
+  it('fits the widest indent and three cards in the width by default, never above 100 %', async () => {
+    mockScreen(PHONE);
+    await renderTable(busyView());
+
+    expect(shownZoom()).toBe(0.72);
+    expect(storedZoom()).toBeNull();
+  });
+
+  it('wraps a long row under its identity: a card past the width goes on a new line', async () => {
+    mockScreen(PHONE);
+    await renderTable(busyView());
+
+    // The identity and the two first cards (drawn 276, 372) on the first line, 18 under its top.
+    expectAt('id', 180, 190.2);
+    expectAt('c2', 372, 190.2);
+    // c3 and c4 (drawn 468, 564) one line width left, on the second line (top 300.4).
+    expectAt('c3', 468 - 227.8, 318.4);
+    expectAt('c4', 564 - 227.8, 318.4);
+    // The seventh card (drawn 852) on the third line (top 422.6).
+    expectAt('c7', 852 - 2 * 227.8, 440.6);
+    // The villain's row is not wrapped: its piles and Rhino lie where they lie, at 0.6.
+    expectAt('v', 180, 30);
+    for (const id of ['id', ...PLAYED]) {
+      const box = drawnBox(placed(id, '.card'));
+      expect(box.x + box.w).toBeLessThanOrEqual(475);
+    }
+  });
+
+  it('draws the frame and the piles of a row where the projection puts them', async () => {
+    mockScreen(PHONE);
+    await renderTable(busyView());
+
+    const frame = drawnBox(document.querySelector<HTMLElement>('.ownerbox[data-owner="0"]')!);
+    // The frame from −10, 400 (262 × 177): drawn at −6, 160.2 + 12 + 12.
+    expect(frame.x).toBeCloseTo(-6, 4);
+    expect(frame.y).toBeCloseTo(184.2, 4);
+    expect(frame.w).toBeCloseTo(157.2, 4);
+    const discard = drawnBox(placed('discard:p0', '.pile'));
+    expect(discard.x).toBeCloseTo(78, 4);
+    expect(discard.y).toBeCloseTo(190.2, 4);
+  });
+
+  it('keeps a stack together on its main card’s line', async () => {
+    mockScreen(PHONE);
+    // Tucked under c2 though it lies past the wrap: drawn with c2, 6 right and 12 down.
+    await renderTable(busyView([card('up', { x: 720, y: 430, parent: 'c2' })]));
+
+    expectAt('up', 720 * 0.6, 190.2 + 12);
+  });
+
+  it('makes the surface as high as the drawn rows, and as wide as what shows', async () => {
+    mockScreen(PHONE);
+    visible = { w: 390, h: 400 };
+    await renderTable(busyView());
+
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    // 160.2 + 12 + 128.2 + 2 × 122.2 + 20, and a line of 122.2 for the row's empty slot: c7 ends
+    // its line at 463.6, too far right for a slot. Rounded up.
+    expect(surface.style.height).toBe('687px');
+    expect(surface.style.width).toBe('475px');
+  });
+
+  it('shows the villain row and the chosen player row right under it in "Villain + player"', async () => {
+    mockScreen(PHONE);
+    saveViewMode('focus');
+    const view = busyView([card('theirs', { owner: 1, x: 300, y: 630 })]);
+    const twoDecks = makeView({ twoDecks: true });
+    view.players = twoDecks.players;
+    view.you = twoDecks.you;
+    view.table!.hands = twoDecks.table!.hands;
+    view.table!.piles.push(pile('deck:p1', { owner: 1, x: 0, y: 630 }));
+    await renderTable(view);
+
+    expect(document.querySelector('.surface .card[data-id="theirs"]')).toBeNull();
+    expectAt('id', 180, 190.2);
+  });
+
+  it('drops a card on a wrapped line at the table point the projection gives back', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    // jsdom lays nothing out: every element of the surface measures where its style puts it, at
+    // the zoom, the surface from the window's corner, the dock's hand button off the screen.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const z = shownZoom();
+      if (this.closest('.handbtn')) {
+        return domRect(-100, -100, 0, 0);
+      }
+      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
+      if (!inSurface) {
+        return domRect(0, 0, PHONE.width, PHONE.height);
+      }
+      const box = drawnBox(this as HTMLElement);
+      return domRect(box.x * z, box.y * z, box.w * z, box.h * z);
+    });
+    const z = shownZoom();
+    const from = drawnBox(placed('c1', '.card'));
+    const pressed = { x: (from.x + from.w / 2) * z, y: (from.y + from.h / 2) * z };
+    // Its corner to 420, 330: on the second line, right of c4, which ends at 403.4.
+    const to = { x: (420 + from.w / 2) * z, y: (330 + from.h / 2) * z };
+    await fireEvent.pointerDown(placed('c1'), {
+      clientX: pressed.x,
+      clientY: pressed.y,
+      pointerType: 'mouse',
+    });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: to.x, clientY: to.y });
+
+    // (420 + 227.8) / 0.6 = 1079.7 across, 380 + (330 − 300.4) / 0.6 = 429.3 down: on the 40-unit
+    // grid of the row, whose lines start at 410.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'c1', x: 1080, y: 410 },
+      0,
+    );
+  });
+
+  it("drops a card in a row's empty slot right after its last card", async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const z = shownZoom();
+      if (this.closest('.handbtn')) {
+        return domRect(-100, -100, 0, 0);
+      }
+      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
+      if (!inSurface) {
+        return domRect(0, 0, PHONE.width, PHONE.height);
+      }
+      const box = drawnBox(this as HTMLElement);
+      return domRect(box.x * z, box.y * z, box.w * z, box.h * z);
+    });
+    const z = shownZoom();
+    const from = drawnBox(placed('c1', '.card'));
+    const pressed = { x: (from.x + from.w / 2) * z, y: (from.y + from.h / 2) * z };
+    // c7 (1420) ends the third line at 463.6: the slot lies alone on a fourth line (top 544.8),
+    // at (1420 + 112 + 40) × 0.6 − 3 × 227.8 = 259.8. Let go with the corner at 200, left of it.
+    const to = { x: (200 + from.w / 2) * z, y: (562.8 + from.h / 2) * z };
+    await fireEvent.pointerDown(placed('c1'), {
+      clientX: pressed.x,
+      clientY: pressed.y,
+      pointerType: 'mouse',
+    });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y, buttons: 1 });
+    await fireEvent.pointerUp(window, { clientX: to.x, clientY: to.y });
+
+    // At the slot, 1572, on the 40-unit grid: 1560, past c7's end (1532), in its row.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'c1', x: 1560, y: 410 },
+      0,
+    );
+  });
+
+  it('draws the dots of the 40-unit grid it drops on, at its scale', async () => {
+    mockScreen(PHONE);
+    await renderTable(busyView());
+
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    expect(surface.style.backgroundSize).toBe('24px 24px');
+  });
+
+  it('keeps the 10-unit dots on a touch tablet', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable(busyView());
+
+    expect(document.querySelector<HTMLElement>('.tablewrap .surface')!.style.backgroundSize).toBe(
+      '',
+    );
+  });
+});
+
+describe('the zoom in dock mode', () => {
+  // The play area's size, in px, as its scroller measures it.
+  let visible = { w: 844, h: 390 };
+
+  beforeEach(() => {
+    visible = { w: 844, h: 390 };
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function (
       this: HTMLElement,
     ) {
@@ -821,76 +1071,124 @@ describe('the zoom in dock mode (F-V3)', () => {
     return document.querySelector<HTMLElement>('.tablewrap')!;
   }
 
-  /** One finger touching `target` at (x, y) and lifting there. */
-  function fingerTap(target: Element, x: number, y: number): void {
-    const point = [{ clientX: x, clientY: y }];
-    const start = new Event('touchstart', { bubbles: true, cancelable: true });
-    Object.defineProperties(start, { touches: { value: point }, changedTouches: { value: point } });
-    target.dispatchEvent(start);
-    const end = new Event('touchend', { bubbles: true, cancelable: true });
-    Object.defineProperties(end, { touches: { value: [] }, changedTouches: { value: point } });
-    target.dispatchEvent(end);
+  /** Fingers touching `target` at those points. */
+  function touch(target: EventTarget, type: string, points: { x: number; y: number }[]): void {
+    const event = new Event(type, { bubbles: true, cancelable: true });
+    const touches = points.map((p) => ({ clientX: p.x, clientY: p.y }));
+    Object.defineProperty(event, 'touches', { value: type === 'touchend' ? [] : touches });
+    Object.defineProperty(event, 'changedTouches', { value: touches });
+    target.dispatchEvent(event);
+  }
+
+  /** Two fingers spread apart on the table: a pinch out. */
+  function pinchOut(): void {
+    touch(scroller(), 'touchstart', [
+      { x: 100, y: 100 },
+      { x: 200, y: 100 },
+    ]);
+    touch(scroller(), 'touchmove', [
+      { x: 75, y: 100 },
+      { x: 225, y: 100 },
+    ]);
   }
 
   async function doubleTap(): Promise<void> {
     const surface = document.querySelector('.tablewrap .surface')!;
-    fingerTap(surface, 100, 100);
-    fingerTap(surface, 100, 100);
+    for (let i = 0; i < 2; i++) {
+      touch(surface, 'touchstart', [{ x: 100, y: 100 }]);
+      touch(surface, 'touchend', [{ x: 100, y: 100 }]);
+    }
     await tick();
   }
 
-  it('fits the drawn rows into the height beside the rail on a phone on its side', async () => {
+  // The test view's indent: Rhino at 0 in the villain's row, so 0 + 3 × 91.2 = 273.6 units.
+
+  it('fits three cards past the widest indent, following the window live', async () => {
     mockScreen(LANDSCAPE_PHONE);
+    visible = { w: 300, h: 390 };
+    await renderTable();
+    // 300 − 48 − 12 = 240 px over 273.6.
+    expect(shownZoom()).toBe('0.87');
+
+    visible = { w: 200, h: 390 };
+    ManualResizeObserver.resized(scroller());
+    await tick();
+    expect(shownZoom()).toBe('0.51');
+  });
+
+  it('never fits below the phone minimum, 30 %, nor above 100 %', async () => {
+    mockScreen(LANDSCAPE_PHONE);
+    visible = { w: 100, h: 390 };
+    await renderTable();
+    expect(shownZoom()).toBe('0.3');
+
+    visible = { w: 5000, h: 390 };
+    ManualResizeObserver.resized(scroller());
+    await tick();
+    expect(shownZoom()).toBe('1');
+  });
+
+  it('ignores a zoom another screen saved, and keeps it', async () => {
+    saveZoom(1.5);
+    mockScreen(LANDSCAPE_PHONE);
+    visible = { w: 300, h: 390 };
     await renderTable();
 
-    // 390 px less the top bar's 56 px and the 24 px gutter above and below the rows: the villain's
-    // row drawn 270 high and the player's row 220, 490 units.
-    expect(shownZoom()).toBe('0.58');
+    expect(shownZoom()).toBe('0.87');
+    expect(storedZoom()).toBe(1.5);
+  });
+
+  it('does not zoom on a pinch, nor remember a zoom', async () => {
+    mockScreen(PHONE);
+    visible = { w: 300, h: 844 };
+    await renderTable();
+
+    pinchOut();
+    await tick();
+
+    expect(shownZoom()).toBe('0.87');
     expect(storedZoom()).toBeNull();
   });
 
-  it('fits the width when it is the narrower fit', async () => {
-    mockScreen(LANDSCAPE_PHONE);
-    visible = { w: 300, h: 5000 };
+  it('pans the table with two fingers', async () => {
+    mockScreen(PHONE);
     await renderTable();
+    scroller().scrollLeft = 50;
+    scroller().scrollTop = 50;
 
-    const zoom = Number(shownZoom());
-    expect(zoom).toBeLessThan(1);
-    expect(zoom).toBeGreaterThanOrEqual(0.3);
+    touch(scroller(), 'touchstart', [
+      { x: 100, y: 100 },
+      { x: 200, y: 100 },
+    ]);
+    touch(scroller(), 'touchmove', [
+      { x: 90, y: 80 },
+      { x: 190, y: 80 },
+    ]);
+
+    expect(scroller().scrollLeft).toBe(60);
+    expect(scroller().scrollTop).toBe(70);
   });
 
-  it('never fits below the phone minimum, 30 %', async () => {
+  it('does not zoom on a double tap', async () => {
     mockScreen(LANDSCAPE_PHONE);
-    visible = { w: 5000, h: 150 };
+    visible = { w: 300, h: 390 };
     await renderTable();
 
-    expect(shownZoom()).toBe('0.3');
+    await doubleTap();
+
+    expect(shownZoom()).toBe('0.87');
+    expect(storedZoom()).toBeNull();
   });
 
-  it('follows the window live while no zoom was chosen', async () => {
-    mockScreen(LANDSCAPE_PHONE);
+  it('zooms on a pinch on a touch tablet', async () => {
+    mockScreen(TOUCH_TABLET);
     await renderTable();
-    expect(shownZoom()).toBe('0.58');
 
-    // 300 px less the top bar and the two gutters over the same 490 units.
-    visible = { w: 5000, h: 300 };
-    ManualResizeObserver.resized(scroller());
+    pinchOut();
     await tick();
 
-    expect(shownZoom()).toBe('0.4');
-  });
-
-  it('double tap toggles between the fit and the readable zoom', async () => {
-    mockScreen(LANDSCAPE_PHONE);
-    await renderTable();
-
-    await doubleTap();
-    expect(shownZoom()).toBe('1');
-
-    // Back to the fit, remembered on the zoom's 10 % steps.
-    await doubleTap();
-    expect(storedZoom()).toBe(0.6);
-    expect(shownZoom()).toBe('0.6');
+    expect(storedZoom()).toBe(1.5);
+    expect(shownZoom()).toBe('1.5');
   });
 
   it.each([

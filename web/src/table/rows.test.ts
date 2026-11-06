@@ -2,6 +2,8 @@ import { clearPrefMemory } from '../lib/prefs';
 import type { PileView } from '../lib/types';
 import {
   ALL_ROWS,
+  ALL_TABLE,
+  drawnDelta,
   lastRow,
   ROW_HEIGHT,
   rowOf,
@@ -11,9 +13,9 @@ import {
   shownItems,
   spreadRows,
   storedViewMode,
+  tableMapOf,
   VILLAIN_ROW_HEIGHT,
   villainPitch,
-  type RowMap,
 } from './rows';
 
 function deck(owner: number, y: number): PileView {
@@ -229,23 +231,26 @@ describe('rows', () => {
 
 describe('shownItems', () => {
   // Draws every height 10 units lower, and hides the heights of 1000 and more.
-  const lower: RowMap = { toDisplay: (y) => (y < 1000 ? y + 10 : null), toTable: (y) => y - 10 };
-  const higher: RowMap = { toDisplay: (y) => y - 10, toTable: (y) => y + 10 };
+  const lower = tableMapOf({
+    toDisplay: (y) => (y < 1000 ? y + 10 : null),
+    toTable: (y) => y - 10,
+  });
+  const higher = tableMapOf({ toDisplay: (y) => y - 10, toTable: (y) => y + 10 });
 
   it('copies each item at its drawn height, and drops those hidden', () => {
-    const shown = shownItems<{ id: string; y: number }>();
+    const shown = shownItems<{ id: string; x: number; y: number }>();
     const items = [
-      { id: 'a', y: 0 },
-      { id: 'b', y: 1200 },
+      { id: 'a', x: 0, y: 0 },
+      { id: 'b', x: 0, y: 1200 },
     ];
 
-    expect(shown(items, lower)).toEqual([{ id: 'a', y: 10 }]);
-    expect(items[0]).toEqual({ id: 'a', y: 0 });
+    expect(shown(items, lower)).toEqual([{ id: 'a', x: 0, y: 10 }]);
+    expect(items[0]).toEqual({ id: 'a', x: 0, y: 0 });
   });
 
   it('keeps the copy of the same item drawn at the same height', () => {
-    const shown = shownItems<{ id: string; y: number }>();
-    const item = { id: 'a', y: 0 };
+    const shown = shownItems<{ id: string; x: number; y: number }>();
+    const item = { id: 'a', x: 0, y: 0 };
 
     const [first] = shown([item], lower);
     const [second] = shown([item], { ...lower });
@@ -254,23 +259,102 @@ describe('shownItems', () => {
   });
 
   it('makes a new copy of the same item drawn at another height', () => {
-    const shown = shownItems<{ id: string; y: number }>();
-    const item = { id: 'a', y: 100 };
+    const shown = shownItems<{ id: string; x: number; y: number }>();
+    const item = { id: 'a', x: 0, y: 100 };
 
     const [first] = shown([item], lower);
     const [second] = shown([item], higher);
 
     expect(second).not.toBe(first);
-    expect(second).toEqual({ id: 'a', y: 90 });
+    expect(second).toEqual({ id: 'a', x: 0, y: 90 });
+  });
+
+  it('makes a new copy of the same item drawn at another x', () => {
+    const shown = shownItems<{ id: string; x: number; y: number }>();
+    const item = { id: 'a', x: 100, y: 0 };
+    const halved = {
+      toDisplay: (p: { x: number; y: number }) => ({ x: p.x / 2, y: p.y }),
+      toTable: (p: { x: number; y: number }) => p,
+    };
+
+    const [first] = shown([item], ALL_TABLE);
+    const [second] = shown([item], halved);
+
+    expect(second).not.toBe(first);
+    expect(second).toEqual({ id: 'a', x: 50, y: 0 });
+  });
+
+  it('hands the map the id of each item', () => {
+    const shown = shownItems<{ id: string; x: number; y: number }>();
+    const asked: (string | undefined)[] = [];
+    const map = {
+      toDisplay: (p: { x: number; y: number }, id?: string) => {
+        asked.push(id);
+        return p;
+      },
+      toTable: (p: { x: number; y: number }) => p,
+    };
+
+    shown([{ id: 'a', x: 0, y: 0 }], map);
+
+    expect(asked).toEqual(['a']);
   });
 
   it('makes a new copy of a new item, even with the same data', () => {
-    const shown = shownItems<{ id: string; y: number }>();
+    const shown = shownItems<{ id: string; x: number; y: number }>();
 
-    const [first] = shown([{ id: 'a', y: 0 }], lower);
-    const [second] = shown([{ id: 'a', y: 0 }], lower);
+    const [first] = shown([{ id: 'a', x: 0, y: 0 }], lower);
+    const [second] = shown([{ id: 'a', x: 0, y: 0 }], lower);
 
     expect(second).not.toBe(first);
     expect(second).toEqual(first);
+  });
+});
+
+describe('tableMapOf', () => {
+  it('moves heights as the rows do and keeps every width', () => {
+    const rows = spreadRows(220, 3, 2);
+    const map = tableMapOf(rows);
+
+    expect(map.toDisplay({ x: 123, y: 650 })).toEqual({ x: 123, y: rows.toDisplay(650) });
+    expect(map.toDisplay({ x: 123, y: 450 })).toBeNull();
+    expect(map.toTable({ x: 45, y: 300 })).toEqual({ x: 45, y: rows.toTable(300) });
+  });
+
+  it('ALL_TABLE draws every point where it is', () => {
+    expect(ALL_TABLE.toDisplay({ x: 12, y: 1234 }, 'card')).toEqual({ x: 12, y: 1234 });
+    expect(ALL_TABLE.toTable({ x: 12, y: 1234 })).toEqual({ x: 12, y: 1234 });
+  });
+});
+
+describe('drawnDelta', () => {
+  it('is the offset between where two points are drawn', () => {
+    const map = tableMapOf(spreadRows(220, 1));
+    const from = { x: 300, y: 295 };
+    const to = { x: 100, y: 410 };
+    const drawnFrom = map.toDisplay(from)!;
+    const drawnTo = map.toDisplay(to)!;
+
+    expect(drawnDelta(map, from, to)).toEqual({
+      x: drawnTo.x - drawnFrom.x,
+      y: drawnTo.y - drawnFrom.y,
+    });
+  });
+
+  it('draws a point of an item with its item, and falls back to the table offset when hidden', () => {
+    const map = {
+      toDisplay: (p: { x: number; y: number }, id?: string) =>
+        id === 'hidden' ? null : { x: id === 'wrapped' ? p.x - 100 : p.x, y: p.y },
+      toTable: (p: { x: number; y: number }) => p,
+    };
+
+    expect(drawnDelta(map, { x: 0, y: 0 }, { id: 'wrapped', x: 150, y: 20 })).toEqual({
+      x: 50,
+      y: 20,
+    });
+    expect(drawnDelta(map, { x: 0, y: 0 }, { id: 'hidden', x: 150, y: 20 })).toEqual({
+      x: 150,
+      y: 20,
+    });
   });
 });

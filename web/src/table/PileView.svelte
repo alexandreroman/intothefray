@@ -9,10 +9,10 @@
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
-  import { DOCK_SCALE, dockPileBox } from './dockPiles';
+  import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
-  import { cardBox, pileBox, type OwnerFrame } from './layout';
+  import { cardBox, pileBox } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 
   let {
@@ -20,7 +20,6 @@
     top,
     face = null,
     draggable = false,
-    frame,
   }: {
     pile: PileView;
     /** The top card, for a pile that lists its cards. */
@@ -29,17 +28,15 @@
     face?: PackFace | null;
     /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a menu. */
     draggable?: boolean;
-    /** The owner frame the pile lies in, which dock mode draws it smaller about; none for any other pile. */
-    frame?: OwnerFrame;
   } = $props();
 
-  // In dock mode (spec 3.6) a pile in an owner frame is drawn smaller, scaled about the frame's
-  // top-left corner as the frame is (Surface). The element is the drawn box: it takes the presses and
-  // the drops, and the flights measure it.
+  // In dock mode (spec 3.7) the pile is drawn smaller, from its top-left corner, which the table
+  // already draws through its projection (dockLayout.ts). The element is the drawn box: it takes the
+  // presses and the drops, and the flights measure it.
   const dock = dockMode();
-  const scaled = $derived(dock.current && frame !== undefined);
+  const scaled = $derived(dock.current);
   const slot = $derived({ x: pile.x, y: pile.y, ...pileBox(pile) });
-  const drawn = $derived(scaled && frame ? dockPileBox(slot, frame) : slot);
+  const drawn = $derived(scaled ? dockCardBox(slot) : slot);
 
   // While a card taken from it is dragged or waits for the server, the pile counts it out; so it does
   // with the cards still flying to it.

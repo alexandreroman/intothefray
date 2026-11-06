@@ -37,7 +37,7 @@
   import MarkerToken from './MarkerToken.svelte';
   import { backCaption, pileBack } from './face';
   import { interaction, LANDING_MS } from './interaction.svelte';
-  import { ALL_ROWS, drawnGap, type RowMap } from './rows';
+  import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { scrollerRect, surfaceRect, toScreen, toTable } from './screen';
 
   let {
@@ -48,7 +48,7 @@
     root,
     zoom,
     faceOf,
-    rowMap = ALL_ROWS,
+    tableMap = ALL_TABLE,
     layout,
   }: {
     view: View;
@@ -62,8 +62,8 @@
     root: HTMLElement | undefined;
     zoom: number;
     faceOf: (card: TableCard | undefined) => PackFace | null;
-    /** Where the view mode draws the heights of the table (rows.ts). */
-    rowMap?: RowMap;
+    /** Where the view mode draws the points of the table (rows.ts, dockLayout.ts). */
+    tableMap?: TableMap;
     /** What moves the cards on the screen without a new view (the surface size): redrawn on change. */
     layout: unknown;
   } = $props();
@@ -181,8 +181,8 @@
       return null;
     }
     // The server takes whole table units only.
-    const point = toTable(at, surface, zoom);
-    return { x: Math.round(point.x), y: Math.round(rowMap.toTable(point.y)) };
+    const point = tableMap.toTable(toTable(at, surface, zoom));
+    return { x: Math.round(point.x), y: Math.round(point.y) };
   }
 
   function onPointerMove(event: PointerEvent): void {
@@ -382,11 +382,11 @@
   function place(spot: PresencePoint, origin: DOMRect): Placed | null {
     const surface = surfaceRect(root);
     const scroller = scrollerRect(root);
-    const shownY = isSpot(spot) ? rowMap.toDisplay(spot.y) : null;
-    if (!surface || !scroller || shownY === null) {
+    const shown = isSpot(spot) ? tableMap.toDisplay(spot) : null;
+    if (!surface || !scroller || shown === null) {
       return null;
     }
-    const at = toScreen({ x: spot.x, y: shownY }, surface, zoom);
+    const at = toScreen(shown, surface, zoom);
     let { x, y } = at;
     let vertical = '';
     if (y > scroller.bottom - EDGE_IN) {
@@ -452,8 +452,8 @@
       // Off the deck it is revealed on, a card lies as the table draws it: landscape for a side
       // scheme, as the dragging player's ghost (DragLayer).
       if (card.zone === 'table' && first?.zone === 'table') {
-        const dy = drawnGap(rowMap, first.y, card.y);
-        return { ...card, x: x + card.x - first.x, y: y + dy, onPile: undefined };
+        const offset = drawnDelta(tableMap, first, card);
+        return { ...card, x: x + offset.x, y: y + offset.y, onPile: undefined };
       }
       return { ...card, zone: 'table', x, y, onPile: undefined, parent: undefined };
     });
@@ -465,11 +465,11 @@
    */
   function cornerOf(drag: PresenceDrag, origin: DOMRect): Point | null {
     const surface = surfaceRect(root);
-    const shownY = isSpot(drag) ? rowMap.toDisplay(drag.y) : null;
-    if (!surface || shownY === null) {
+    const shown = isSpot(drag) ? tableMap.toDisplay(drag) : null;
+    if (!surface || shown === null) {
       return null;
     }
-    const corner = toScreen({ x: drag.x, y: shownY }, surface, zoom);
+    const corner = toScreen(shown, surface, zoom);
     return toTable(corner, origin, zoom);
   }
 

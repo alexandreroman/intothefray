@@ -16,7 +16,8 @@ import {
   type DragSource,
   type DropRect,
 } from './drag';
-import { spreadRows } from './rows';
+import { dockLayout, type DockItem } from './dockLayout';
+import { spreadRows, tableMapOf } from './rows';
 import { card, pile, playingView, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
@@ -164,7 +165,7 @@ describe('dropAction', () => {
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
     // "Villain + player" with the second of three players, rows as close as they go: the villain's
     // row drawn 270 high, its empty band from 210 squeezed into 60, then row 2 (600 to 820).
-    const rows = spreadRows(220, 3, 2);
+    const rows = tableMapOf(spreadRows(220, 3, 2));
     const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
     // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
     expect(yAt(267)).toBe(600);
@@ -175,6 +176,52 @@ describe('dropAction', () => {
     // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
     expect(yAt(486)).toBe(810);
     expect(yAt(2000)).toBe(810);
+  });
+
+  it('dropAction on a wrapped line of dock mode sends the table point the layout draws there', () => {
+    // Player 1's row (top 380) at 0.6, wrapped at 400: the identity drawn at 180 (the indent), the
+    // lines 152.8 wide (400 − 180 − a 67.2 card); c2 and c3 wrap to the second line, whose top is
+    // 134.2 (a 12 name room, then the first line: 112.2 of cards and a 10 gap).
+    const items: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
+      id: `c${i}`,
+      x,
+      y: 410,
+      w: 112,
+      h: 157,
+      kind: 'card',
+    }));
+    const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
+    const at = (x: number, y: number) => dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map);
+    // (250 + 152.8) / 0.6 = 671.3 across, 380 + (150 − 134.2) / 0.6 = 406.3 down: on the grid.
+    expect(at(250, 150)).toEqual({ kind: 'move', card: 'c', x: 670, y: 400 });
+    // Left of the indent on a wrapped line: at the indent, (180 + 152.8) / 0.6 = 554.7.
+    expect(at(100, 150)).toEqual({ kind: 'move', card: 'c', x: 550, y: 400 });
+    // On the first line, the drawn point scaled back: 250 / 0.6 = 416.7, 380 + 38 / 0.6 = 443.3.
+    expect(at(250, 50)).toEqual({ kind: 'move', card: 'c', x: 420, y: 440 });
+  });
+
+  it('dropAction in dock mode snaps on its 40-unit grid, after mapping the point to the table', () => {
+    const items: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
+      id: `c${i}`,
+      x,
+      y: 410,
+      w: 112,
+      h: 157,
+      kind: 'card',
+    }));
+    const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
+    const at = (x: number, y: number) => dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map, 40);
+    // 671.3 across goes to 680; 406.3 down to the row's first line, 410 (30 under its top, 380).
+    expect(at(250, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
+    // 416.7 to 400, 443.3 to 450 on the first line.
+    expect(at(250, 50)).toEqual({ kind: 'move', card: 'c', x: 400, y: 450 });
+    // Never into the next row: 599, the row's last unit, goes to its last line, 570.
+    expect(at(250, 1000)).toMatchObject({ y: 570 });
+    // The same point on the 10-unit grid, as on a desktop.
+    expect(dropAction(TABLE_CARD, TABLE, { x: 250, y: 150 }, DEAL_TO, map)).toMatchObject({
+      x: 670,
+      y: 400,
+    });
   });
 
   it('drop on card attaches', () => {

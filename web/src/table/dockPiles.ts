@@ -1,13 +1,15 @@
-// Small cards and small piles in dock mode (spec 3.6): every table card is drawn scaled about its
-// own top-left corner; each owner frame and the piles inside it are drawn scaled about the frame's
-// top-left corner, so that the frame wraps the small piles and the gaps between them shrink alike.
-// Only the drawing changes: the positions the server holds stay as they are.
+// Small cards and small piles in dock mode (spec 3.6, 3.7): every table card and pile is drawn
+// scaled from its top-left corner, which the table's projection places (dockLayout.ts). Only the
+// drawing changes: the positions the server holds stay as they are.
 
-import type { PileView } from '../lib/types';
-import { frameLabel, type OwnerFrame } from './layout';
-
-/** How much smaller dock mode draws the table cards, the owner frames and their piles. */
+/** How much smaller dock mode draws the table: its cards, piles, owner frames and the room between them. */
 export const DOCK_SCALE = 0.6;
+
+/**
+ * The grid a drop on the table snaps to in dock mode, in table units: coarser than the 10-unit
+ * GRID (layout.ts), so that a finger places cards in line with less care.
+ */
+export const DOCK_GRID = 40;
 
 /** A box on the table, in table units. */
 export interface Placement {
@@ -17,28 +19,7 @@ export interface Placement {
   h: number;
 }
 
-/** A table card's box as dock mode draws it, about its own top-left corner: its size scaled. */
+/** A table card's or pile's box as dock mode draws it, from its own top-left corner: its size scaled. */
 export function dockCardBox<T extends { w: number; h: number }>(box: T, scale = DOCK_SCALE): T {
   return { ...box, w: box.w * scale, h: box.h * scale };
-}
-
-/** The frame as dock mode draws it: same top-left corner, its size scaled. */
-export function dockFrameBox(frame: Placement, scale = DOCK_SCALE): Placement {
-  return { x: frame.x, y: frame.y, w: frame.w * scale, h: frame.h * scale };
-}
-
-/** A pile's slot as dock mode draws it: scaled about the top-left corner of its frame. */
-export function dockPileBox(slot: Placement, frame: Placement, scale = DOCK_SCALE): Placement {
-  return {
-    x: frame.x + (slot.x - frame.x) * scale,
-    y: frame.y + (slot.y - frame.y) * scale,
-    w: slot.w * scale,
-    h: slot.h * scale,
-  };
-}
-
-/** The frame ownerFrames draws around a pile, if any: the one of its owner and its label. */
-export function pileFrame(pile: PileView, frames: readonly OwnerFrame[]): OwnerFrame | undefined {
-  const label = frameLabel(pile);
-  return frames.find((frame) => frame.owner === pile.owner && frame.label === label);
 }

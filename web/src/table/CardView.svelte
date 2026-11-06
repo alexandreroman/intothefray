@@ -46,9 +46,10 @@
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
-  // In dock mode (spec 3.6) the card is drawn whole at a smaller scale, about its top-left corner,
-  // which stays where it lies. The element is the drawn box: it takes the presses and the drops, the
-  // rings go round it, it tilts about its middle and the flights measure it.
+  // In dock mode (spec 3.6, 3.7) the card is drawn whole at a smaller scale, from its top-left
+  // corner, which the table hands already projected (dockLayout.ts). The element is the drawn box: it
+  // takes the presses and the drops, the rings go round it, it tilts about its middle and the flights
+  // measure it.
   const dock = dockMode();
   const drawn = $derived(dock.current ? dockCardBox(box) : box);
   // A hidden card has no face: it is not known to be a scheme.

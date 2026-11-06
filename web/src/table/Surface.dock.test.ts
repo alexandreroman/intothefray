@@ -1,5 +1,6 @@
-// The owner frames and their piles in dock mode (spec 3.6): drawn at 60 %, about the frame's
-// top-left corner, while the name line and the chips stay where they are.
+// The owner frames and their piles in dock mode (spec 3.7): the table hands them where its
+// projection draws them (dockLayout.ts); the piles draw themselves at 60 % from there, the frame at
+// its drawn box, while the name line and the chips keep the frame's full width.
 import { render } from '@testing-library/svelte';
 import type { PileView as TablePile } from '../lib/types';
 import { DOCK_MODE_KEY } from './dockMode';
@@ -11,16 +12,26 @@ import surfaceSource from './Surface.svelte?raw';
 const PILES: TablePile[] = [
   pile('encounter', { kind: 'encounter', owner: -1, x: 0, y: 70, count: 20 }),
   pile('encounterDiscard', { kind: 'encounterDiscard', owner: -1, x: 130, y: 70, count: 2 }),
-  pile('elsewhere', { kind: 'deck', owner: 3, x: 500, y: 700, count: 5 }),
 ];
 
-// The villain's frame is { x: -10, y: 60, w: 262, h: 177 }; the deck of owner 3 has none here.
+// The villain's frame is { x: -10, y: 60, w: 262, h: 177 }.
+const FRAME = ownerFrames(PILES)[0]!;
+const VICTORY = [{ kind: 'victory', pile: 'victory', label: 'Victory display', count: 1 }] as const;
 const OWNERS: OwnerBox[] = [
+  { frame: FRAME, name: 'Villain', color: 'var(--villain)', outOfPlay: [...VICTORY] },
+];
+
+// The same as dock mode's projection hands them: the frame drawn at -6, 24, 157.2 × 106.2, the
+// deck and discard 6 inside it, the discard 78 to the right.
+const DRAWN_PILES: TablePile[] = [
+  { ...PILES[0]!, x: 0, y: 30 },
+  { ...PILES[1]!, x: 78, y: 30 },
+];
+const DRAWN_OWNERS: OwnerBox[] = [
   {
-    frame: ownerFrames(PILES)[0]!,
-    name: 'Villain',
-    color: 'var(--villain)',
-    outOfPlay: [{ kind: 'victory', pile: 'victory', label: 'Victory display', count: 1 }],
+    ...OWNERS[0]!,
+    frame: { ...FRAME, x: -6, y: 24, w: 157.2, h: 106.2 },
+    nameRoom: 262,
   },
 ];
 
@@ -28,8 +39,8 @@ function renderSurface(dock: boolean) {
   return render(Surface, {
     props: {
       cards: [],
-      piles: PILES,
-      owners: OWNERS,
+      piles: dock ? DRAWN_PILES : PILES,
+      owners: dock ? DRAWN_OWNERS : OWNERS,
       topOf: () => undefined,
       faceOf: () => null,
       captionOf: () => undefined,
@@ -61,32 +72,25 @@ function expectPlaced(el: HTMLElement, expected: number[]): void {
 }
 
 describe('Surface in dock mode', () => {
-  it('draws each owner frame at 60 % from its top-left corner', () => {
+  it('draws each owner frame at its drawn box', () => {
     const { container } = renderSurface(true);
 
-    expectPlaced(element(container, '.ownerbox'), [-10, 60, 157.2, 106.2]);
+    expectPlaced(element(container, '.ownerbox'), [-6, 24, 157.2, 106.2]);
   });
 
-  it('draws the piles of a frame at 60 %, about its top-left corner, as their hit areas', () => {
+  it('draws the piles at 60 % from their drawn corner, as their hit areas', () => {
     const { container } = renderSurface(true);
 
-    // Deck: -10 + 10 × 0.6, 60 + 10 × 0.6; discard: -10 + 140 × 0.6.
-    expectPlaced(element(container, '.pile[data-id="encounter"]'), [-4, 66, 67.2, 94.2]);
-    expectPlaced(element(container, '.pile[data-id="encounterDiscard"]'), [74, 66, 67.2, 94.2]);
+    expectPlaced(element(container, '.pile[data-id="encounter"]'), [0, 30, 67.2, 94.2]);
+    expectPlaced(element(container, '.pile[data-id="encounterDiscard"]'), [78, 30, 67.2, 94.2]);
   });
 
-  it('draws a pile outside any frame where it lies, full size', () => {
-    const { container } = renderSurface(true);
-
-    expectPlaced(element(container, '.pile[data-id="elsewhere"]'), [500, 700, 112, 157]);
-  });
-
-  it('keeps the chips where they are, over the frame width as it would be at full size', () => {
+  it('puts the chips on the drawn frame, over the frame width as it would be at full size', () => {
     const { container } = renderSurface(true);
 
     const chips = element(container, '.chips');
-    expect(chips.style.left).toBe('-10px');
-    expect(chips.style.top).toBe('60px');
+    expect(chips.style.left).toBe('-6px');
+    expect(chips.style.top).toBe('24px');
     expect(chips.style.getPropertyValue('--frame-w')).toBe('262px');
   });
 

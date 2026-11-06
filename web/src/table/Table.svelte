@@ -70,6 +70,8 @@
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
+  import { dockItems, dockRows, frameItemId, markerItemId } from './dockItems';
+  import { dockFitWidth, dockLayout, type DockLayout } from './dockLayout';
   import { setDockMode } from './dockMode';
   import { DRAG_THRESHOLD, goesToHand, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
@@ -96,6 +98,9 @@
     isOutOfPlay,
     chipsByFrame,
     ownerFrames,
+    type OwnerFrame,
+    PORTRAIT_CARD,
+    SLOT_GAP,
     raisedHandCard,
     restingFanWidth,
     restingStrip,
@@ -105,14 +110,14 @@
   } from './layout';
   import {
     lastRow,
-    ROW_HEIGHT,
     rowOfSeat,
     rowPitch,
     saveViewMode,
     shownItems,
     spreadRows,
     storedViewMode,
-    VILLAIN_ROW_HEIGHT,
+    tableMapOf,
+    type TableMap,
     type ViewMode,
   } from './rows';
   import { motion } from './motion.svelte';
@@ -441,36 +446,51 @@
     selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
-  // What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. A
-  // card or pile keeps its drawn copy while it stays the same, so its view does not redraw.
+  // Out-of-play piles are not drawn: the chips on their owner's frame open them.
+  const piledInPlay = $derived(piles.filter((pile) => !isOutOfPlay(pile)));
+  const cardsInPlay = $derived(cards.filter((card) => card.zone === 'table'));
+
+  // What lies at a point of the table, drawn where the view mode shows it (tableMap, below);
+  // nothing when hidden. A card or pile keeps its drawn copy while it stays the same, so its view
+  // does not redraw.
   const shownPiles = shownItems<PileView>();
   const shownCards = shownItems<TableCard>();
+  const tablePiles = $derived.by(() => shownPiles(piledInPlay, tableMap));
+  const tableCards = $derived.by(() => shownCards(cardsInPlay, tableMap));
 
-  // Out-of-play piles are not drawn: the chips on their owner's frame open them.
-  const tablePiles = $derived.by(() => {
-    const inPlay = piles.filter((pile) => !isOutOfPlay(pile));
-    return shownPiles(inPlay, rowMap);
-  });
-  const tableCards = $derived.by(() => {
-    const onTable = cards.filter((card) => card.zone === 'table');
-    return shownCards(onTable, rowMap);
+  /** The frames around each owner's deck and discard pile as drawn, with the name line's width in dock mode. */
+  const drawnFrames = $derived.by((): { frame: OwnerFrame; nameRoom?: number }[] => {
+    if (dockView === null) {
+      return ownerFrames(tablePiles).map((frame) => ({ frame }));
+    }
+    // Laid out with the rest of the table, at its full size; the name line keeps that width.
+    const layout = dockView;
+    return ownerFrames(piledInPlay).flatMap((frame) => {
+      const box = layout.itemBox(frameItemId(frame));
+      return box === null ? [] : [{ frame: { ...frame, ...box }, nameRoom: frame.w }];
+    });
   });
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived.by(() => {
-    const frames = ownerFrames(tablePiles);
-    const chips = chipsByFrame(frames, piles);
-    return frames.map((frame, i): OwnerBox => {
+    const chips = chipsByFrame(
+      drawnFrames.map(({ frame }) => frame),
+      piles,
+    );
+    return drawnFrames.map(({ frame, nameRoom }, i): OwnerBox => {
       const outOfPlay = chips[i] ?? [];
       const { name: ownerName, color } = ownerLook(view, frame.owner);
       const name = frame.label ?? ownerName;
+      const owner: OwnerBox = { frame, name, color, outOfPlay };
+      if (nameRoom !== undefined) {
+        owner.nameRoom = nameRoom;
+      }
       // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = seatDeck(view, frame.owner);
-      if (!deck) {
-        return { frame, name, color, outOfPlay };
+      if (deck) {
+        owner.tip = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
       }
-      const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
-      return { frame, name, color, tip: inHand, outOfPlay };
+      return owner;
     });
   });
 
@@ -587,6 +607,46 @@
   );
   const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow));
 
+  // ---- Dock mode's compact, wrapped table (spec 3.7) ----
+
+  // In dock mode the table is drawn through one projection (dockLayout.ts): the desktop layout at
+  // DOCK_SCALE, each row wrapped at the visible width, the rows stacked by their drawn height.
+  // Elsewhere the rows are drawn spread (rowMap), every width as it is.
+
+  /** Where each marker lies on the table; none for a marker the table does not have. */
+  const markersOnTable = $derived.by(() => {
+    const table = view.table;
+    const result: Partial<Record<MarkerName, Point>> = {};
+    for (const name of MARKERS) {
+      const at = table ? markerPoint(table, name) : undefined;
+      if (at) {
+        result[name] = at;
+      }
+    }
+    return result;
+  });
+  // Only read in dock mode: the other view modes never lay them out.
+  const dockTableItems = $derived(
+    dockItems({
+      cards: cardsInPlay,
+      piles: piledInPlay,
+      frames: ownerFrames(piledInPlay),
+      markers: markersOnTable,
+      sizeOf,
+    }),
+  );
+  const dockShownRows = $derived(dockRows(dockTableItems, shownRow));
+  // The width the rows wrap at, in drawn units: what shows of the surface at the zoom. Unmeasured
+  // (before the first layout), nothing wraps.
+  const wrapWidth = $derived.by(() =>
+    visibleWidth > 0 ? (visibleWidth - 2 * SCROLL_PADDING) / zoom : Number.POSITIVE_INFINITY,
+  );
+  const dockView: DockLayout | null = $derived(
+    dockMode ? dockLayout({ items: dockTableItems, rows: dockShownRows, wrapWidth }) : null,
+  );
+  /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
+  const tableMap: TableMap = $derived(dockView ?? tableMapOf(rowMap));
+
   // ---- The zoom ----
 
   // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
@@ -600,27 +660,25 @@
   const SCROLLBAR_ROOM = 12;
 
   // The zoom that fits the content's width into the scroller, as they are now.
+  // On a narrow screen (PHONE_QUERY) the content keeps an empty card slot at its right, which the
+  // fit brings into view and the surface keeps, so that a card can be dropped past the last one.
+  const NARROW_FREE_SLOT = PORTRAIT_CARD.w + SLOT_GAP;
+  const fittedWidth = $derived(
+    contentWidth(tableCards, tablePiles, sizeOf) + (phone.current ? NARROW_FREE_SLOT : 0),
+  );
   const widthFit = $derived(
+    fitZoom(fittedWidth, scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM, zoomMin),
+  );
+  // In dock mode the fit brings the widest row's indent and three card slots past it into view
+  // (spec 3.7): the rows wrap at the width that shows and the table scrolls down.
+  const dockFit = $derived(
     fitZoom(
-      contentWidth(tableCards, tablePiles, sizeOf),
+      dockFitWidth(dockTableItems, dockShownRows),
       scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
       zoomMin,
     ),
   );
-  // How high the rows are drawn, in table units: down to the last shown row's own band, its cards
-  // and the room under them (spreadRows).
-  const rowsHeight = $derived.by(() => {
-    const lastShownRow = shownRow ?? lastDeckRow;
-    const lastRowTop = rowMap.toDisplay(VILLAIN_ROW_HEIGHT + ROW_HEIGHT * (lastShownRow - 1));
-    return (lastRowTop ?? 0) + ROW_HEIGHT;
-  });
-  // The zoom that fits the drawn rows into the play area's height, between its paddings.
-  const heightFit = $derived(
-    fitZoom(rowsHeight, visibleHeight - topPadding - bottomPadding, zoomMin),
-  );
-  // In dock mode the fit brings the content into view both ways, beside the rail or above the dock
-  // (spec 3.4): a phone on its side is wide enough to show a row, but not two rows' height.
-  const contentFit = $derived(dockMode ? Math.min(widthFit, heightFit) : widthFit);
+  const contentFit = $derived(dockMode ? dockFit : widthFit);
   // The fit holds still while the action menu is open, which any zoom change closes
   // (ContextMenu.svelte), and while a card or a pile is pressed or dragged, which a zoom would move
   // from under the finger: a card another player moves meanwhile changes the content's width.
@@ -634,29 +692,44 @@
     }
   });
   // Until the viewer chooses a zoom: a phone fits the content's width, as a row would not show
-  // across it at 100 %, and dock mode fits it both ways; a wider screen shows 100 % and scrolls.
-  // Live: a resize or a turn across 600 px switches between them.
+  // across it at 100 %, and dock mode fits its widest indent and three cards; a wider screen shows
+  // 100 % and scrolls. Live: a resize or a turn across 600 px switches between them.
   const defaultZoom = $derived(phone.current || dockMode ? fittedZoom : 1);
-  // The surface size follows it, so it is declared before it.
-  const zoom = $derived(chosenZoom === null ? defaultZoom : clampZoom(chosenZoom, zoomMin));
-
-  // In table units: at least what shows, rounded down so that an empty table never scrolls.
-  const surface = $derived(
-    surfaceSize(tableCards, tablePiles, sizeOf, {
-      w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
-      h: Math.max(0, Math.floor((visibleHeight - topPadding - bottomPadding) / zoom)),
-    }),
+  // Dock mode does not zoom (setZoom): it always shows its fit, whatever zoom another screen
+  // chose. The surface size follows the zoom, so it is declared before it.
+  const zoom = $derived(
+    chosenZoom === null || dockMode ? defaultZoom : clampZoom(chosenZoom, zoomMin),
   );
 
-  /** Where each marker lies, as the view mode draws it; none for a marker the table does not have. */
+  // What shows of the surface, in table units, rounded down so that an empty table never scrolls.
+  const visibleSurface = $derived({
+    w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
+    h: Math.max(0, Math.floor((visibleHeight - topPadding - bottomPadding) / zoom)),
+  });
+  // In table units, or drawn units in dock mode: at least what shows. Dock mode's reaches as far
+  // as its drawn items and the empty slot after each row, and down its drawn rows.
+  const surface = $derived.by(() => {
+    if (dockView !== null) {
+      return {
+        w: Math.max(visibleSurface.w, Math.ceil(dockView.width)),
+        h: Math.max(visibleSurface.h, Math.ceil(dockView.height)),
+      };
+    }
+    const size = surfaceSize(tableCards, tablePiles, sizeOf, visibleSurface);
+    if (!phone.current) {
+      return size;
+    }
+    return { ...size, w: Math.max(size.w, Math.ceil(fittedWidth)) };
+  });
+
+  /** Where each marker lies, as the view mode draws it; none for a marker not shown. */
   const markers = $derived.by(() => {
-    const table = view.table;
     const result: Partial<Record<MarkerName, Point>> = {};
     for (const name of MARKERS) {
-      const at = table ? markerPoint(table, name) : undefined;
-      const y = at ? rowMap.toDisplay(at.y) : null;
-      if (at && y !== null) {
-        result[name] = { ...at, y };
+      const at = markersOnTable[name];
+      const drawn = at ? tableMap.toDisplay(at, markerItemId(name)) : null;
+      if (drawn) {
+        result[name] = drawn;
       }
     }
     return result;
@@ -2098,9 +2171,13 @@
   /**
    * Zooms around a point of the screen, keeping the table point under it in
    * place. Without a point, zooms from the left edge, so the decks and
-   * identities stay in view.
+   * identities stay in view. Dock mode does not zoom, nor remember a zoom: a
+   * phone always shows its fit, and a pinch only moves the table about.
    */
   async function setZoom(wanted: number, pointX?: number, pointY?: number): Promise<void> {
+    if (dockMode) {
+      return;
+    }
     const from = zoom;
     const next = clampZoom(wanted, zoomMin);
     // The viewer chose it, even when it does not change: the table no longer fits its width.
@@ -2136,7 +2213,8 @@
 
   // Touch mode: two fingers pinch-zoom the table and pan it, and a double tap on an empty spot
   // toggles the fit zoom and the readable one (touchZoom.ts). The zoom they choose is remembered,
-  // as the buttons' is.
+  // as the buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the
+  // table and the page itself never pinch-zooms.
   const fingerZoom = touchZoom({
     enabled: () => touchMode.current,
     zoom: () => zoom,
@@ -2277,7 +2355,7 @@
       <Arrows
         {view}
         root={app}
-        layout={[zoom, surface, rowMap, motion.frame]}
+        layout={[zoom, surface, tableMap, motion.frame]}
         raised={interaction.dragging !== null || interaction.landing !== null || motion.moving}
       />
     </div>
@@ -2292,8 +2370,8 @@
     root={app}
     {zoom}
     {faceOf}
-    {rowMap}
-    layout={[surface, rowMap]}
+    {tableMap}
+    layout={[surface, tableMap]}
   />
 
   {#if interaction.band}
@@ -2477,7 +2555,7 @@
     root={app}
     {faceOf}
     {sizeOf}
-    {rowMap}
+    {tableMap}
     {selected}
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}

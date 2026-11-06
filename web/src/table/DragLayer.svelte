@@ -55,13 +55,20 @@
     type TableRect,
   } from './drag';
   import { dockMode } from './dockMode';
-  import { dockCardBox } from './dockPiles';
+  import { DOCK_GRID, dockCardBox } from './dockPiles';
   import { backCaption, isHidden, pileBack } from './face';
   import { HOLD_MS } from './gestures';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
-  import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
+  import {
+    ACTIVE_COUNTER_BOX,
+    cardBox,
+    FIRST_PLAYER_BOX,
+    GRID,
+    HAND_CARD,
+    type Box,
+  } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
-  import { ALL_ROWS, drawnGap, type RowMap } from './rows';
+  import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
@@ -73,7 +80,7 @@
     root,
     faceOf,
     sizeOf,
-    rowMap = ALL_ROWS,
+    tableMap = ALL_TABLE,
     selected,
     act,
     onhand,
@@ -86,8 +93,8 @@
     root: HTMLElement | undefined;
     faceOf: (card: TableCard | undefined) => PackFace | null;
     sizeOf: (card: TableCard) => Size;
-    /** Where the view mode draws the heights of the table (rows.ts). */
-    rowMap?: RowMap;
+    /** Where the view mode draws the points of the table (rows.ts, dockLayout.ts). */
+    tableMap?: TableMap;
     /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
     selected: number | null;
     /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
@@ -504,13 +511,9 @@
     return { x: 0.5, y: 0.5 };
   }
 
-  /**
-   * Where a table card's top-left corner shows on the screen. In dock mode a card revealed on a pile
-   * lies on the pile as drawn (Surface), which may stand elsewhere in its smaller frame.
-   */
+  /** Where a table card's top-left corner shows on the screen, drawn with its stack or its pile. */
   function drawnCorner(card: TableCard, surface: Rect): Point | null {
-    const pile = dock.current && card.onPile ? placedRect(tablePile(card.onPile)) : undefined;
-    return pile ? { x: pile.left, y: pile.top } : onScreen(card, surface);
+    return onScreen(card, surface, card.id);
   }
 
   /** The box a card is drawn at on the table: smaller in dock mode (spec 3.6). */
@@ -579,16 +582,18 @@
     return cardBox(sizeOf(card), {});
   }
 
-  /** Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is hidden. */
-  function onScreen(point: Point, surface: Rect): Point | null {
-    const y = rowMap.toDisplay(point.y);
-    return y === null ? null : toScreen({ x: point.x, y }, surface, zoom);
+  /**
+   * Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is
+   * hidden; a spot of an item, named by its id, is drawn with that item.
+   */
+  function onScreen(point: Point, surface: Rect, itemId?: string): Point | null {
+    const drawn = tableMap.toDisplay(point, itemId);
+    return drawn === null ? null : toScreen(drawn, surface, zoom);
   }
 
   /** The spot of the table drawn at a point of the screen, whatever the view mode. */
   function onTable(at: Point, surface: Rect): Point {
-    const drawn = toTable(at, surface, zoom);
-    return { x: drawn.x, y: rowMap.toTable(drawn.y) };
+    return tableMap.toTable(toTable(at, surface, zoom));
   }
 
   /** The top-left corner of the dragged card at table size, on the screen. */
@@ -635,10 +640,13 @@
     if (first?.x === undefined || first.y === undefined || !moved || !lead) {
       return null;
     }
-    const landed = rowMap.toDisplay(first.y);
-    const y =
-      landed === null ? first.y : rowMap.toTable(landed + drawnGap(rowMap, moved.y, lead.y));
-    return { x: lead.x + first.x - moved.x, y };
+    // Where the first move lands as drawn, then the lead's drawn offset from the moved card.
+    const landed = tableMap.toDisplay({ x: first.x, y: first.y });
+    if (landed === null) {
+      return { x: lead.x + first.x - moved.x, y: first.y };
+    }
+    const offset = drawnDelta(tableMap, moved, lead);
+    return tableMap.toTable({ x: landed.x + offset.x, y: landed.y + offset.y });
   }
 
   function placedRect(selector: string): DOMRect | undefined {
@@ -755,7 +763,9 @@
     // A group tucks under nothing: over a card, it moves there as over the table.
     const onto: DropRect =
       units.length > 0 && target.kind === 'card' ? { kind: 'table', rect: target.rect } : target;
-    const single = dropAction(from, onto, spot, dealTo, rowMap);
+    // A finger on a phone places cards on a coarser grid (spec 3.7).
+    const grid = dock.current ? DOCK_GRID : GRID;
+    const single = dropAction(from, onto, spot, dealTo, tableMap, grid);
     return { target, action: grouped(from, single) };
   }
 
@@ -767,7 +777,7 @@
     if (single === null || units.length === 0 || from.kind !== 'card') {
       return single;
     }
-    return groupAction(units, from.card, single, cards, rowMap);
+    return groupAction(units, from.card, single, cards, tableMap);
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */
@@ -982,9 +992,11 @@
     // deck it is revealed on, a card lies as the table draws it (boxOf).
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
-      return k
-        ? [{ ...k, x: x + k.x - card.x, y: y + drawnGap(rowMap, card.y, k.y), onPile: undefined }]
-        : [];
+      if (!k) {
+        return [];
+      }
+      const offset = drawnDelta(tableMap, card, k);
+      return [{ ...k, x: x + offset.x, y: y + offset.y, onPile: undefined }];
     });
   }
 

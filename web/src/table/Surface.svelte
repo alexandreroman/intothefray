@@ -11,7 +11,13 @@
 
   /** The frame around an owner's deck and discard pile, with the name above it. */
   export interface OwnerBox {
+    /** The frame as drawn: in dock mode, where the table's projection draws it, smaller. */
     frame: OwnerFrame;
+    /**
+     * The width the name line keeps over the frame, in drawn units, when it is not the frame's: in
+     * dock mode the frame is drawn smaller but its name line is not, and it keeps the frame's full width.
+     */
+    nameRoom?: number;
     /** The player's name, "Villain", or the label of a scenario deck. */
     name: string;
     /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
@@ -35,8 +41,7 @@
   import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
   import { dockMode } from './dockMode';
-  import { dockFrameBox, dockPileBox, pileFrame } from './dockPiles';
-  import { pileBox } from './layout';
+  import { DOCK_GRID, DOCK_SCALE } from './dockPiles';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -80,25 +85,12 @@
     canDrag?: (element: TableElement) => boolean;
   } = $props();
 
-  // In dock mode (spec 3.6) each owner frame and its piles are drawn smaller, about the frame's
-  // top-left corner (PileView); the name line and the chips stay where they are, at full size. The
-  // cards are drawn smaller too, each about its own top-left corner (CardView).
+  // In dock mode (spec 3.7) the table hands every card, pile, frame and marker at the corner its
+  // projection draws it at (dockLayout.ts): the cards and piles draw themselves smaller from there
+  // (CardView, PileView), the name lines and the chips stay at full size. The dots show the grid a
+  // drop snaps to there, drawn (DOCK_GRID).
   const dock = dockMode();
-  const frames = $derived(owners.map((owner) => owner.frame));
-
-  /**
-   * The card where the surface draws it: in dock mode, a card revealed on a pile of a frame lies on
-   * the pile as drawn, its top-left corner on the pile's, as it does at full size.
-   */
-  function drawnCard(card: TableCard): TableCard {
-    const pile = dock.current && card.onPile ? piles.find((p) => p.id === card.onPile) : undefined;
-    const frame = pile ? pileFrame(pile, frames) : undefined;
-    if (!pile || !frame) {
-      return card;
-    }
-    const drawn = dockPileBox({ x: pile.x, y: pile.y, ...pileBox(pile) }, frame);
-    return { ...card, x: drawn.x, y: drawn.y };
-  }
+  const DOCK_DOTS = `${DOCK_GRID * DOCK_SCALE}px ${DOCK_GRID * DOCK_SCALE}px`;
 
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
@@ -127,20 +119,24 @@
 </script>
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
-<div class="surface table-dots" style:width="{width}px" style:height="{height}px">
+<div
+  class="surface table-dots"
+  style:width="{width}px"
+  style:height="{height}px"
+  style:background-size={dock.current ? DOCK_DOTS : undefined}
+>
   {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
-    {@const drawn = dock.current ? dockFrameBox(owner.frame) : owner.frame}
     <div
       class="ownerbox"
       data-owner={owner.frame.owner}
       data-tip={owner.tip}
       style:--owner={owner.color}
       style:--chips={owner.outOfPlay.length}
-      style:--name-room={dock.current ? `${owner.frame.w}px` : undefined}
-      style:left="{drawn.x}px"
-      style:top="{drawn.y}px"
-      style:width="{drawn.w}px"
-      style:height="{drawn.h}px"
+      style:--name-room={owner.nameRoom === undefined ? undefined : `${owner.nameRoom}px`}
+      style:left="{owner.frame.x}px"
+      style:top="{owner.frame.y}px"
+      style:width="{owner.frame.w}px"
+      style:height="{owner.frame.h}px"
     >
       <span class="owner" use:overflowTip>{owner.name}</span>
       {#if owner.tip}
@@ -160,7 +156,7 @@
         data-owner={owner.frame.owner}
         style:--owner={owner.color}
         style:--chips={owner.outOfPlay.length}
-        style:--frame-w="{owner.frame.w}px"
+        style:--frame-w="{owner.nameRoom ?? owner.frame.w}px"
         style:left="{owner.frame.x}px"
         style:top="{owner.frame.y}px"
       >
@@ -183,17 +179,11 @@
   {/each}
   {#each piles as pile (pile.id)}
     {@const top = topOf(pile)}
-    <PileView
-      {pile}
-      {top}
-      face={faceOf(top)}
-      draggable={canDrag({ kind: 'pile', id: pile.id })}
-      frame={pileFrame(pile, frames)}
-    />
+    <PileView {pile} {top} face={faceOf(top)} draggable={canDrag({ kind: 'pile', id: pile.id })} />
   {/each}
   {#each cards as card (card.id)}
     <CardView
-      card={drawnCard(card)}
+      {card}
       face={faceOf(card)}
       caption={captionOf(card)}
       draggable={canDrag({ kind: 'card', id: card.id })}
