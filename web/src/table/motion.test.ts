@@ -1,7 +1,7 @@
-// A card discarded from the viewer's hand in dock mode (spec 3.4, 5.5): the hand is not drawn on
-// the table, so the card does not fly across it to the discard pile. Where the viewer saw it (the
-// hand sheet's carousel, the inspector, or else the dock's hand button), a copy rises and fades
-// out; the pile shows the card at once.
+// A card discarded or played from the viewer's hand in dock mode (spec 3.4, 5.5): the hand is not
+// drawn on the table, so the card does not fly across it. Where the viewer saw it (the hand sheet's
+// carousel, the inspector, or else the dock's hand button), a copy rises and fades out; the pile
+// shows a discarded card at once.
 import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Flights from './Flights.svelte';
@@ -264,6 +264,145 @@ describe('a card discarded from the hand out of dock mode', () => {
 
     expect(motion.flights).toMatchObject([{ kind: 'toPile', pile: 'disc:p0' }]);
     expect(motion.flying.has('a')).toBe(true);
+  });
+});
+
+// A card played from the viewer's hand in dock mode rises and fades out where the viewer saw it, as
+// a discarded one does; the table plays its own part where the card lands, as it did before.
+describe('a card played from the hand in dock mode', () => {
+  /** The table after the viewer played hand card a onto the table. */
+  const PLAYED = table([card('a', { zone: 'table', x: 10, y: 10 })], [DECK, DISCARD]);
+  const PLAYS: Anim[] = [
+    {
+      kind: 'move',
+      id: 'a',
+      from: { zone: 'hand', x: 0, y: 0 },
+      to: { zone: 'table', x: 10, y: 10 },
+    },
+  ];
+
+  /**
+   * Plays the view in which the viewer played hand card a: the card is drawn at its spot on the
+   * surface once measured where it showed before, as the new view draws it. Returns that card.
+   */
+  async function play(app: HTMLElement, anims: Anim[] = PLAYS): Promise<HTMLElement> {
+    const animating = motion.animate(app, anims, { before: BEFORE, after: PLAYED }, ZOOM);
+    const placed = box('card', { left: 20, top: 20, width: 67, height: 94 });
+    placed.dataset.id = 'a';
+    app.querySelector('.surface')!.append(placed);
+    await animating;
+    return placed;
+  }
+
+  it('rises and fades out from the hand sheet card showing it', async () => {
+    const app = page(true);
+    handSheet(app);
+
+    const placed = await play(app);
+
+    expect(motion.flights).toMatchObject([
+      {
+        kind: 'rise',
+        card: { id: 'a', zone: 'hand' },
+        from: { cx: 195, cy: 375, w: 250, h: 350 },
+        portrait: true,
+        zoomed: false,
+        delay: 0,
+      },
+    ]);
+    // The table still slides the card to its spot from where it showed, under the sheet.
+    expect(animate.mock.contexts).toContain(placed);
+  });
+
+  it("rises from the inspector's card when no hand sheet shows it", async () => {
+    const app = page(true);
+    inspector(app);
+
+    await play(app);
+
+    expect(motion.flights).toMatchObject([
+      { kind: 'rise', from: { cx: 195, cy: 193, w: 190, h: 266 }, portrait: false, zoomed: false },
+    ]);
+  });
+
+  it("rises from the dock's hand button, as a card the table draws, with neither sheet open", async () => {
+    const app = page(true);
+
+    await play(app);
+
+    expect(motion.flights).toMatchObject([
+      {
+        kind: 'rise',
+        from: {
+          cx: 80,
+          cy: 740,
+          w: PORTRAIT_CARD.w * DOCK_SCALE * ZOOM,
+          h: PORTRAIT_CARD.h * DOCK_SCALE * ZOOM,
+        },
+        portrait: true,
+        zoomed: true,
+      },
+    ]);
+  });
+
+  it("the viewer's own drop on the table slides from where it was let go, with no rising copy", async () => {
+    const app = page(true);
+    const layer = document.createElement('div');
+    layer.className = 'draglayer';
+    const ghost = box('card ghost landed', { left: 150, top: 300, width: 67, height: 94 });
+    ghost.dataset.id = 'a';
+    layer.append(ghost);
+    app.append(layer);
+
+    const placed = await play(app, [{ ...PLAYS[0], dropped: true } as Anim]);
+
+    expect(motion.flights).toEqual([]);
+    expect(animate.mock.contexts).toContain(placed);
+  });
+
+  it('a card moved on the table does not rise', async () => {
+    const app = page(true);
+    const before = table([card('a', { zone: 'table' })], [DECK, DISCARD]);
+
+    await motion.animate(
+      app,
+      [
+        {
+          kind: 'move',
+          id: 'a',
+          from: { zone: 'table', x: 0, y: 0 },
+          to: { zone: 'table', x: 10, y: 10 },
+        },
+      ],
+      { before, after: PLAYED },
+      ZOOM,
+    );
+
+    expect(motion.flights).toEqual([]);
+  });
+
+  it('plays nothing under reduced motion', async () => {
+    const app = page(true);
+    handSheet(app);
+    reducedMotion.on = true;
+    try {
+      await play(app);
+    } finally {
+      reducedMotion.on = false;
+    }
+
+    expect(motion.flights).toEqual([]);
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('out of dock mode, only slides from its place in the hand', async () => {
+    const app = page(false);
+    handSheet(app);
+
+    const placed = await play(app);
+
+    expect(motion.flights).toEqual([]);
+    expect(animate.mock.contexts).toContain(placed);
   });
 });
 

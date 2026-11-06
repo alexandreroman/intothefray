@@ -10,10 +10,10 @@
   into a hand the viewer does not see leaving its pile or its spot on the
   table; and a card coming out of such a hand rising into its pile. In dock
   mode (spec 3.6) a copy flies at the size the table draws its cards and
-  piles at, and what it shows is zoomed alike; a card discarded from the
-  viewer's hand rises and fades out where it was seen: drawn as the hand
-  sheet or the inspector draws it, or, from the dock's hand button, as the
-  table does.
+  piles at, and what it shows is zoomed alike; a card discarded or played
+  from the viewer's hand rises and fades out where it was seen: drawn as the
+  hand sheet or the inspector draws it, or, from the dock's hand button, as
+  the table does.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
@@ -145,8 +145,8 @@
   }
 
   /*
-    A card discarded from the hand in dock mode rises out of the sheet that showed it (Sheet.svelte,
-    5500): over it, under the dialogs (5600).
+    A card discarded or played from the hand in dock mode rises out of the sheet that showed it
+    (Sheet.svelte, 5500): over it, under the dialogs (5600).
   */
   .fly.rise {
     z-index: 5550;
