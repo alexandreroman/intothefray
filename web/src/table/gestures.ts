@@ -14,10 +14,10 @@ export const DOUBLE_TAP_MS = 300;
 /** A second tap within this distance of the first, in screen pixels, makes a double tap. */
 export const DOUBLE_TAP_SLOP = 30;
 
-/** Below this zoom the cards are too small to read: the readable zoom is never under it. */
+/** The readable zoom: the cards at their own size. */
 const READABLE_ZOOM = 1;
 
-/** The readable zoom when the fit zoom is already readable, so a double tap still zooms in. */
+/** The close-up zoom, where a double tap zooms in to. */
 const CLOSE_UP_ZOOM = 1.5;
 
 /** Two zooms this close, as a share of the larger one, count as the same. */
@@ -60,15 +60,11 @@ function near(a: number, b: number): boolean {
 }
 
 /**
- * The zoom a double tap toggles to: the fit zoom from the readable zoom, the readable zoom from anywhere
- * else. The readable zoom is the larger of 1 and `fit`, or 1.5 when `fit` is already about 1.
+ * The zoom a double tap goes to: it toggles between the readable zoom (100 %) and the close-up zoom (150 %);
+ * from any other zoom it goes to 150 %.
  */
-export function doubleTapZoom(current: number, fit: number): number {
-  let readable = Math.max(READABLE_ZOOM, fit);
-  if (fit >= READABLE_ZOOM && Math.abs(fit - READABLE_ZOOM) < ZOOM_TOLERANCE * READABLE_ZOOM) {
-    readable = CLOSE_UP_ZOOM;
-  }
-  return near(current, readable) ? fit : readable;
+export function doubleTapZoom(current: number): number {
+  return near(current, CLOSE_UP_ZOOM) ? READABLE_ZOOM : CLOSE_UP_ZOOM;
 }
 
 /**

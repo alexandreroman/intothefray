@@ -46,20 +46,20 @@ describe('isDoubleTap', () => {
 });
 
 describe('doubleTapZoom', () => {
-  it('goes from fit to readable', () => {
-    expect(doubleTapZoom(0.53, 0.53)).toBe(1);
+  it('goes from the readable zoom to the close-up zoom', () => {
+    expect(doubleTapZoom(1)).toBe(1.5);
   });
 
-  it('goes from readable back to fit', () => {
-    expect(doubleTapZoom(1, 0.53)).toBe(0.53);
+  it('goes from the close-up zoom back to the readable zoom', () => {
+    expect(doubleTapZoom(1.5)).toBe(1);
   });
 
-  it('reads at 1.5 when fit is already readable', () => {
-    expect(doubleTapZoom(1, 1)).toBe(1.5);
+  it('goes to the close-up zoom from any other zoom', () => {
+    expect(doubleTapZoom(0.6)).toBe(1.5);
   });
 
-  it('goes to fit when the zoom is within 5 % of readable', () => {
-    expect(doubleTapZoom(0.97, 0.5)).toBe(0.5);
+  it('goes back to the readable zoom within 5 % of the close-up zoom', () => {
+    expect(doubleTapZoom(1.45)).toBe(1);
   });
 });
 

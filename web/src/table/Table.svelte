@@ -2436,13 +2436,12 @@
   const NOT_EMPTY = '.card, .marker, [data-counter], .chip, button';
 
   // Touch mode: two fingers pinch-zoom the table and pan it, and a double tap on an empty spot
-  // toggles the fit zoom and the readable one (touchZoom.ts). The zoom they choose is remembered,
-  // as the buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the
-  // table and the page itself never pinch-zooms.
+  // toggles between 100 % and 150 % (touchZoom.ts). The zoom they choose is remembered, as the
+  // buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the table and
+  // the page itself never pinch-zooms.
   const fingerZoom = touchZoom({
     enabled: () => touchMode.current,
     zoom: () => zoom,
-    fit: () => defaultZoom,
     setZoom: (wanted, x, y) => {
       wheelTarget = null;
       void setZoom(wanted, x, y);
@@ -2623,7 +2622,7 @@
     Undo floats there, left of the zoom control. On a tablet (historySheetMode), History shares
     Undo's bar, as in the dock: it opens the history sheet. On a small screen, Undo and the zoom
     control share one bar above the resting hand. In dock mode the dock has Undo and History, and
-    fingers zoom.
+    the zoom is fixed (setZoom).
   -->
   {#if !dockMode}
     <div
