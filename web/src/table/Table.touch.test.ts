@@ -423,6 +423,28 @@ describe('the inspector, revealing a card from a deck (F-U8)', () => {
     expect(within(sheet()!).queryByRole('button', { name: /^Reveal/ })).toBeNull();
   });
 
+  it("draws the revealed card's entries in the update that shows it, none of the deck's leaving", async () => {
+    // jsdom has no Web Animations: with animations that never end, a row that slides or fades out
+    // stays in the DOM, as it does on screen while it leaves.
+    const originalAnimate = Element.prototype.animate;
+    const animate = vi.fn(() => ({ onfinish: null, cancel: () => {}, effect: null }));
+    Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+    try {
+      const { rerender } = await revealFrom('enc');
+      expect(within(sheet()!).getByRole('button', { name: /^Top X/ })).toBeTruthy();
+
+      await rerender({ view: revealView([ON_ENCOUNTER]) });
+
+      expect(within(sheet()!).getByRole('button', { name: /^Flip/ })).toBeTruthy();
+      const deckEntries = [/^Reveal/, /^Top X/, /^Search/, /^Discard 1/, /^Discard X/, /^Shuffle/];
+      for (const deckEntry of deckEntries) {
+        expect(within(sheet()!).queryByRole('button', { name: deckEntry })).toBeNull();
+      }
+    } finally {
+      Element.prototype.animate = originalAnimate;
+    }
+  });
+
   it('stays on the deck when the server refuses the reveal', async () => {
     const { session, rerender } = await revealFrom('enc');
 

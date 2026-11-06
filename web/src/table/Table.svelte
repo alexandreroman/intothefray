@@ -1520,14 +1520,6 @@
     return { entries: [...content.entries, { kind: 'separator' }, SELECT_ENTRY] };
   }
 
-  // From the current view, as the context menu's: a redraw updates the entries and the counters.
-  const inspectorContent = $derived.by((): ContextContent | null => {
-    void catalog;
-    return inspected ? inspectorContentOf(inspected) : null;
-  });
-
-  const inspectorHeader = $derived(inspected ? headerOf(inspected) : null);
-
   // A Reveal run from a deck's inspector: the inspector stays on the deck and waits for the card
   // revealed there (spec 3.1), until the server refuses the action of that id or LANDING_MS passes.
   let awaitingReveal = $state.raw<{ pile: string; action: number } | null>(null);
@@ -1546,6 +1538,37 @@
 
   $effect(() => () => clearTimeout(awaitingRevealTimer));
 
+  /** Whether the inspector is still on the awaited deck, and the server has not refused its Reveal. */
+  function stillAwaiting(awaited: { pile: string; action: number }): boolean {
+    // The viewer closed the inspector, or opened another, while the reveal was on its way.
+    const onDeck = inspected?.kind === 'pile' && inspected.id === awaited.pile;
+    return onDeck && session.lastError?.id !== awaited.action;
+  }
+
+  // The card revealed on the awaited deck, once the view shows it.
+  const revealedOnInspected = $derived.by((): TableCard | undefined => {
+    const awaited = awaitingReveal;
+    if (awaited === null || !stillAwaiting(awaited)) {
+      return undefined;
+    }
+    return cards.find((card) => card.zone === 'table' && card.onPile === awaited.pile);
+  });
+
+  // The element the sheet shows: the revealed card in the very update whose view shows it. The
+  // effect below commits it as the inspected element only after that update is drawn: drawn with
+  // the deck, its entries, which the revealed card makes refused, would start to leave first.
+  const sheetElement = $derived.by((): SurfaceElement | null => {
+    return revealedOnInspected ? { kind: 'card', id: revealedOnInspected.id } : inspected;
+  });
+
+  // From the current view, as the context menu's: a redraw updates the entries and the counters.
+  const inspectorContent = $derived.by((): ContextContent | null => {
+    void catalog;
+    return sheetElement ? inspectorContentOf(sheetElement) : null;
+  });
+
+  const inspectorHeader = $derived(sheetElement ? headerOf(sheetElement) : null);
+
   // The view that shows a card revealed on the awaited deck switches the inspector to that card, in
   // the same sheet, which turns the deck over to it (CardSheet.svelte). Declared before the effect
   // below, which runs after it: the switch comes first.
@@ -1554,24 +1577,20 @@
     if (awaited === null) {
       return;
     }
-    // The viewer closed the inspector, or opened another, while the reveal was on its way.
-    const stillOnDeck = inspected?.kind === 'pile' && inspected.id === awaited.pile;
-    if (!stillOnDeck || session.lastError?.id === awaited.action) {
-      untrack(stopAwaitingReveal);
-      return;
-    }
-    const revealed = cards.find((card) => card.zone === 'table' && card.onPile === awaited.pile);
+    const revealed = revealedOnInspected;
     if (revealed) {
       untrack(() => {
         stopAwaitingReveal();
         inspected = { kind: 'card', id: revealed.id };
       });
+    } else if (!stillAwaiting(awaited)) {
+      untrack(stopAwaitingReveal);
     }
   });
 
   // A redraw that takes its element away, or leaves it without actions, closes the inspector.
   $effect(() => {
-    if (inspected && (inspectorContent === null || !isPresent(inspected))) {
+    if (sheetElement && (inspectorContent === null || !isPresent(sheetElement))) {
       untrack(() => (inspected = null));
     }
   });
@@ -1690,7 +1709,7 @@
    * open too, and switches it to the revealed card once the view shows it.
    */
   function runInspectorItem(item: ActionItem): void {
-    const element = inspected;
+    const element = sheetElement;
     if (element === null) {
       return;
     }
@@ -1713,10 +1732,10 @@
 
   /** A stepper of the inspector: sends what the token pill's − / + sends (stepCounter). */
   function stepInspected(counter: SheetCounter, delta: -1 | 1): void {
-    if (inspected?.kind === 'card') {
+    if (sheetElement?.kind === 'card') {
       act(
-        { kind: counter.kind, card: inspected.id, name: counter.name, delta },
-        { kind: 'card', id: inspected.id },
+        { kind: counter.kind, card: sheetElement.id, name: counter.name, delta },
+        { kind: 'card', id: sheetElement.id },
       );
     }
   }
@@ -2776,18 +2795,18 @@
     {/key}
   {/if}
 
-  {#if inspected && inspectorHeader && inspectorContent}
+  {#if sheetElement && inspectorHeader && inspectorContent}
     <!-- Created afresh for each opening, as the menu: the focus it gives back is the one before it. -->
     {#key inspectorOpenings}
       <CardSheet
         header={inspectorHeader}
         entries={inspectorContent.entries}
         note={inspectorContent.note}
-        images={inspectorImages(inspected)}
-        landscape={inspectorLandscape(inspected)}
-        counters={inspectorCounters(inspected)}
-        stack={inspectorStack(inspected)}
-        cardId={inspected.kind === 'card' ? inspected.id : undefined}
+        images={inspectorImages(sheetElement)}
+        landscape={inspectorLandscape(sheetElement)}
+        counters={inspectorCounters(sheetElement)}
+        stack={inspectorStack(sheetElement)}
+        cardId={sheetElement.kind === 'card' ? sheetElement.id : undefined}
         onrun={runInspectorItem}
         onstep={stepInspected}
         onpick={inspectStackCard}

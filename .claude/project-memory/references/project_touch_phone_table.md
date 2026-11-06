@@ -79,6 +79,12 @@ type: project
     face that changes shape (a flip, a scheme revealed from a deck's
     inspector) changes layout once edge-on in its turn; a revealed scheme
     shows as it is, landscape, with no handling of its own.
+  - The inspector has one gutter, in every layout (phones too): what
+    stands out of the card (status tabs, modifier badges: 6 table units
+    at the card's zoom) plus 12 px, ≈ 30 px on a tablet. It sets the
+    space between the sheet's edge and the card, between the card and
+    its column, between the column and the sheet's edge, and under the
+    card (`--gutter` in CardSheet.svelte).
   - Without the history column (a narrow screen), a History button beside
     the floating Undo opens the history sheet dock mode uses
     (`historySheetMode` in Table.svelte); the history column shows on
