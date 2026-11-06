@@ -588,6 +588,18 @@ describe('the inspector, a stack of cards (F-U15)', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 't1' }, 0);
   });
 
+  it('draws each neighbour with its own tokens', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const damaged = STACKED.map((c) => (c.id === 't1' ? { ...c, tokens: { dmg: 2 } } : c));
+    await renderTable(makeView(damaged));
+
+    await tap(placed('host'));
+
+    const disc = peek('Peter Parker').querySelector('[data-counter="token:dmg"]');
+    expect(disc?.textContent).toBe('2');
+    expect(peek('Web-Shooter').querySelector('[data-counter]')).toBeNull();
+  });
+
   it('shows the same stack from a tucked card, centred on it', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(makeView(STACKED));

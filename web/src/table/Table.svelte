@@ -1529,11 +1529,14 @@
     }
     return stackCardsOf(element.id, cards).map((id) => {
       const member: TableElement = { kind: 'card', id };
+      const header = headerOf(member);
       return {
         id,
-        name: headerOf(member)?.name ?? '',
+        name: header?.name ?? '',
         images: inspectorImages(member),
         landscape: inspectorLandscape(member),
+        counters: inspectorCounters(member),
+        scheme: header?.scheme ?? false,
       };
     });
   }

@@ -101,3 +101,4 @@
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
 - [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold to drag, pinch; phone dock, hand carousel, small cards
 - [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector, inspector: .count-pill
+- [No button alone on a line](references/project_no_lone_button.md) — buttonGrid: 1 full, pairs, 3 in a row if ≥96 px, else default on top

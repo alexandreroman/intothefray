@@ -13,15 +13,20 @@ type: project
 - Touch mode, every size:
   - A tap on a table card, a pile or a token opens the **inspector**
     (`CardSheet.svelte` in a bottom `Sheet`): the card large, its tokens,
-    statuses and modifiers with 44 px − / + steppers, the first menu group
-    as big buttons (default in Fray red), the rest as rows, submenus as
+    status tabs and modifier badges drawn on its image (`CardCounters`),
+    where they change: a tap on one opens a − / + pill (a status: ✕).
+    A card of a stack shows the whole stack as a carousel on the card's
+    line, the neighbours peeking at its sides, each card with its own
+    tokens; a swipe or a tap on a neighbour switches the sheet to it.
+    The first menu group shows as big buttons (default in Fray red; laid
+    out as [[project_no_lone_button]] says), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
     entries left out (`visibleEntries`), and no arrows: arrows are drawn
     with a mouse or a pen only. Its header shows the card's name only,
     centred with margins and an ellipsis (a pile's kind with its count);
     the sheet's accessible name also gives the type and owner. It keeps
     its size across submenus: the entries area keeps the main page's
-    height. Token, status and modifier entries and the steppers keep it
+    height. Token, status and modifier entries and the pills keep it
     open; every other entry closes it. Flip keeps it open and turns the
     card over in it (360 ms). Reveal from a deck's inspector keeps it open
     and switches it to the revealed card once the table shows it: the
@@ -56,8 +61,8 @@ type: project
     takes its own room above the table (right of the rail on a phone on
     its side), below the notch (`TopBar` `autoHide={false}`).
   - The hand opens as a carousel sheet (`HandSheet.svelte`, non-modal):
-    one card at 64 % of the width, Play, Discard, More…; a card dragged up
-    out of it goes onto the table.
+    one card at 64 % of the width, with Play and Discard only; a card
+    dragged up out of it goes onto the table.
   - The history opens as a sheet (`HistorySheet.svelte`).
   - Sheets and card boxes take the whole screen. The inspector shows the
     card on top (at most 42 % of the height) with its list under it when
