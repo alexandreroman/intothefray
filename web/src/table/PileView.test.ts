@@ -160,7 +160,7 @@ describe('PileView', () => {
   });
 });
 
-describe('PileView in dock mode (small piles, spec 3.7)', () => {
+describe('PileView in dock mode (small piles)', () => {
   // The discard pile as the table's projection draws it (dockLayout.ts): its corner at 74, 65.2.
   const discard = pile('enc', { kind: 'encounterDiscard', x: 74, y: 65.2, count: 12 });
 

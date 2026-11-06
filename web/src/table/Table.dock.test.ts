@@ -1,4 +1,4 @@
-// The table in dock mode (spec 3.4): on a small touch screen, a dock stands in for the hand's fan
+// The table in dock mode: on a small touch screen, a dock stands in for the hand's fan
 // and the controls at the bottom right, the hero selector floating beside it; its buttons open the
 // hand and the history in bottom sheets. The top bar always shows, in its own room above the table.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
@@ -228,27 +228,24 @@ describe('dock mode', () => {
   it.each([
     ['upright', PHONE],
     ['on its side', LANDSCAPE_PHONE],
-  ])(
-    'shows the top bar at all times, and no menu button, on a phone %s (F-U1)',
-    async (_name, size) => {
-      mockScreen(size);
-      await renderTable();
-      expect(topBar().classList).not.toContain('hidden');
-      expect(within(dock()!).queryByRole('button', { name: 'Menu' })).toBeNull();
+  ])('shows the top bar at all times, and no menu button, on a phone %s', async (_name, size) => {
+    mockScreen(size);
+    await renderTable();
+    expect(topBar().classList).not.toContain('hidden');
+    expect(within(dock()!).queryByRole('button', { name: 'Menu' })).toBeNull();
 
-      // It does not hide by itself as the table scrolls down.
-      const scroller = document.querySelector<HTMLElement>('.tablewrap')!;
-      Object.defineProperties(scroller, {
-        scrollHeight: { value: 3000, configurable: true },
-        clientHeight: { value: 600, configurable: true },
-        scrollTop: { value: 400, configurable: true, writable: true },
-      });
-      await fireEvent.scroll(scroller);
-      scroller.scrollTop = 900;
-      await fireEvent.scroll(scroller);
-      expect(topBar().classList).not.toContain('hidden');
-    },
-  );
+    // It does not hide by itself as the table scrolls down.
+    const scroller = document.querySelector<HTMLElement>('.tablewrap')!;
+    Object.defineProperties(scroller, {
+      scrollHeight: { value: 3000, configurable: true },
+      clientHeight: { value: 600, configurable: true },
+      scrollTop: { value: 400, configurable: true, writable: true },
+    });
+    await fireEvent.scroll(scroller);
+    scroller.scrollTop = 900;
+    await fireEvent.scroll(scroller);
+    expect(topBar().classList).not.toContain('hidden');
+  });
 
   it('keeps the top bar shown with a mouse on a narrow window', async () => {
     mockScreen(NARROW_MOUSE);
@@ -640,7 +637,7 @@ describe('the history sheet', () => {
     return within(dock()!).getByRole('button', { name: /^History/ });
   }
 
-  it('names the History button plainly as lines are written, with no unread count (F-U14)', async () => {
+  it('names the History button plainly as lines are written, with no unread count', async () => {
     mockScreen(PHONE);
     const { rerender } = await renderTable();
     expect(historyButton().getAttribute('aria-label')).toBe('History');
@@ -735,7 +732,7 @@ describe('the top bar in dock mode', () => {
     ['upright', PHONE],
     ['on its side', LANDSCAPE_PHONE],
   ])(
-    'keeps its room at the top of the table, the top overlays under it, on a phone %s (F-U1)',
+    'keeps its room at the top of the table, the top overlays under it, on a phone %s',
     async (_name, size) => {
       mockScreen(size);
       await renderTable();
@@ -745,7 +742,7 @@ describe('the top bar in dock mode', () => {
     },
   );
 
-  it('sits below the notch, its room and the notch both kept at the top of the table (F-U1)', async () => {
+  it('sits below the notch, its room and the notch both kept at the top of the table', async () => {
     const NOTCH = 47;
     vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
       return this.classList.contains('safe-top') ? NOTCH : 0;
@@ -955,7 +952,7 @@ describe('small cards and small piles in dock mode', () => {
   });
 });
 
-describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
+describe('the compact, wrapped table in dock mode', () => {
   // The scroller's size, in px: a phone held upright, as wide as its window.
   let visible = { w: 390, h: 844 };
 
@@ -1073,7 +1070,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(discard.y).toBeCloseTo(306.4, 4);
   });
 
-  it("shows each owner line's avatar in place of its name, the full name kept to read (F-U13)", async () => {
+  it("shows each owner line's avatar in place of its name, the full name kept to read", async () => {
     mockScreen(PHONE);
     const view = busyView();
     view.table!.stages = [
@@ -1135,7 +1132,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(villain.w).toBeCloseTo(157.2, 4);
   });
 
-  it('keeps the names as text on a touch tablet (F-U13)', async () => {
+  it('keeps the names as text on a touch tablet', async () => {
     mockScreen(TOUCH_TABLET);
     await renderTable(busyView());
 
@@ -1325,7 +1322,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
   // c1 (460..572) and c2 (620): (572 + 620) / 2 − 56 = 540. Laid out with c7 there, c7 takes c2's
   // column (358.8); c2 would end at 450 + 67.2 = 517.2, past 468.5: it starts the second line
   // (−6, 422.6), c3 to c6 each a column right (91.2), and the slot c7 leaves closes up.
-  it('pushes the cards after the slot under a dragged card aside, and lets them back on a cancel (spec 3.8)', async () => {
+  it('pushes the cards after the slot under a dragged card aside, and lets them back on a cancel', async () => {
     mockScreen(PHONE);
     await renderTable(busyView());
     measureDrawn();

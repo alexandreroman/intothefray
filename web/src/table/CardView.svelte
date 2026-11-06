@@ -36,7 +36,7 @@
     draggable?: boolean;
     /** The caption of its back: the side deck it belongs to, when that deck has its own back. */
     caption?: string;
-    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside, as a translate. */
+    /** Dock mode, during a drag: how far it is drawn pushed aside, as a translate. */
     shift?: string;
   } = $props();
 
@@ -50,7 +50,7 @@
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
-  // In dock mode (spec 3.6, 3.7) the card is drawn whole at a smaller scale, from its top-left
+  // In dock mode the card is drawn whole at a smaller scale, from its top-left
   // corner, which the table hands already projected (dockLayout.ts). The element is the drawn box: it
   // takes the presses and the drops, the rings go round it, it tilts about its middle and the flights
   // measure it.
@@ -334,14 +334,14 @@
     touch-action: none;
   }
 
-  /* In touch mode, a finger swiping over the card scrolls the table: only a hold drags it (spec 3.2). */
+  /* In touch mode, a finger swiping over the card scrolls the table: only a hold drags it. */
   :global(.app.touch) .card {
     touch-action: pan-x pan-y;
   }
 
   /*
     A hold lifts it in place (.armed) only in touch mode, where it eases up and back down, let go without a move
-    or not. Pushed aside by a drag (dock mode, spec 3.8), it glides as the surface says (--shift-glide). A ghost
+    or not. Pushed aside by a drag (dock mode), it glides as the surface says (--shift-glide). A ghost
     takes its own transition.
   */
   :global(.app.touch) .card:not(.ghost) {
@@ -782,7 +782,7 @@
   }
 
   /*
-    Dock mode (spec 3.6): the element is the card's drawn box, a fraction (--scale) of its footprint,
+    Dock mode: the element is the card's drawn box, a fraction (--scale) of its footprint,
     and what it draws is zoomed by the same scale, so that its face, its back and its shade shrink
     alike; the percentages still fill the box.
   */

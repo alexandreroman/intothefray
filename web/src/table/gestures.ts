@@ -1,4 +1,4 @@
-// Touch gestures on the table (spec 3.2 and 3.3): when a press becomes a hold, when two taps make a double tap,
+// Touch gestures on the table: when a press becomes a hold, when two taps make a double tap,
 // and the zoom a double tap or a pinch asks for. Pure helpers; interaction.svelte.ts and touchZoom.ts follow the
 // fingers and call them.
 

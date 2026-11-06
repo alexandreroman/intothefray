@@ -807,7 +807,7 @@ describe('a drop on a row of dock mode (insertAt)', () => {
   });
 });
 
-describe('a drag previewed on the rows (spec 3.8)', () => {
+describe('a drag previewed on the rows', () => {
   // playerRow(4, 1000): the identity, c1 to c4 on the first line, on the columns 176.4, 267.6,
   // 358.8, 450 and 541.2, 28 down (10 + 18); the empty slot on 632.4. A drop's middle drawn at 350,
   // left of c2's middle (392.4), goes between c1 (452..564) and c2 (604): 530.

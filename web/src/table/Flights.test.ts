@@ -1,4 +1,4 @@
-// The copies of flying cards in dock mode (spec 3.6): the table draws its cards and piles at 60 %, so
+// The copies of flying cards in dock mode: the table draws its cards and piles at 60 %, so
 // a copy flies at that drawn size, its back's label and its face zoomed alike. Out of dock mode
 // nothing changes.
 import { render } from '@testing-library/svelte';

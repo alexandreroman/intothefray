@@ -1,4 +1,4 @@
-// Zoom with the fingers on the table scroller (spec 3.3): two fingers pinch-zoom around their midpoint and pan
+// Zoom with the fingers on the table scroller: two fingers pinch-zoom around their midpoint and pan
 // with it, and a double tap on an empty spot toggles between the readable zoom (100 %) and the close-up one
 // (150 %). The page itself never pinch-zooms: iOS's gesturestart is prevented.
 

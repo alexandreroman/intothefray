@@ -84,8 +84,8 @@ export type TableRect = Extract<DropRect, { kind: 'table' }>;
 
 /**
  * Where a card dropped on the table goes, in table units, from the corner it
- * is drawn at: in dock mode, its insertion among the units of a row (spec 3.7,
- * dockLayout.ts insertAt), which knows the dragged card's size and what is
+ * is drawn at: in dock mode, its insertion among the units of a row
+ * (dockLayout.ts insertAt), which knows the dragged card's size and what is
  * dragged.
  */
 export type DropSpot = (corner: Point) => Point;
@@ -665,7 +665,7 @@ export function insertIndex(middles: number[], x: number): number {
 /**
  * Where an element drawn at `rect` on the screen lies without its `translate`: the computed style,
  * "none" or "x [y]" in px of the surface, which `zoom` scales. In dock mode a drag draws the cards
- * and piles it pushes aside with a translate (spec 3.8): the drop reads them where they lie, so that
+ * and piles it pushes aside with a translate: the drop reads them where they lie, so that
  * the cards gliding out of the way never move what the pointer is over.
  */
 export function unshifted(rect: Rect, translate: string, zoom: number): Rect {
@@ -707,7 +707,7 @@ export function dropKey(target: DropRect | null, action: Action | null): string 
 }
 
 /**
- * How far past the edge of the drop the rows show (dock mode, spec 3.8) the pointer goes before
+ * How far past the edge of the drop the rows show (dock mode) the pointer goes before
  * they show the next one, in drawn units: a quarter of a slot.
  */
 export const DROP_MARGIN = 11;
@@ -716,7 +716,7 @@ export const DROP_MARGIN = 11;
 export const DROP_DWELL_MS = 80;
 
 /**
- * The drop the rows show during a drag in dock mode (spec 3.8), kept while the pointer wavers on
+ * The drop the rows show during a drag in dock mode, kept while the pointer wavers on
  * its edge (hysteresis): a finger shaking by a pixel on the boundary between two slots would
  * otherwise flip the cards making way back and forth. The next drop shows once the pointer is
  * `margin` past the last point the shown one lay under it, or has stayed off it DROP_DWELL_MS. A

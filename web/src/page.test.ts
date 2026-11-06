@@ -1,4 +1,4 @@
-// The page around the app on a touch screen (spec 3.5): its viewport, the web app manifest that lets a game added to
+// The page around the app on a touch screen: its viewport, the web app manifest that lets a game added to
 // the home screen run full screen, no pinch zoom on the table, and card boxes that keep the keyboard down.
 
 import { readFileSync } from 'node:fs';

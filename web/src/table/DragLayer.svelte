@@ -9,8 +9,8 @@
   revealed on a deck is dragged as the table draws it: a side scheme turns
   from the deck's portrait slot to lie landscape. In touch mode, a finger on
   a table card, a pile or a marker must hold still for HOLD_MS before it
-  drags (spec 3.2): a quick swipe scrolls the table instead. In dock mode,
-  the rows show a drop on the table before it is let go (spec 3.8): this layer
+  drags: a quick swipe scrolls the table instead. In dock mode,
+  the rows show a drop on the table before it is let go: this layer
   feeds the table where the drop would put the card, once a frame at most,
   and the table lays its rows out with the card there, pushing the others
   aside.
@@ -105,7 +105,7 @@
     /** Where the view mode draws the points of the table (rows.ts, dockLayout.ts). */
     tableMap?: TableMap;
     /**
-     * Where the table is drawn, the drag's preview included (dock mode, spec 3.8): a drop lands
+     * Where the table is drawn, the drag's preview included (dock mode): a drop lands
      * where it shows the card. The tableMap unless given.
      */
     drawnMap?: TableMap;
@@ -120,7 +120,7 @@
     /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
     ondrag: (drag: PresenceDrag | null) => void;
     /**
-     * Dock mode only (spec 3.8): the drop on the table the rows show before it is let go, null once
+     * Dock mode only: the drop on the table the rows show before it is let go, null once
      * there is none, the drag over or its drop answered.
      */
     onpreview?: (preview: DockPreview | null) => void;
@@ -158,7 +158,7 @@
   let handSize: { w: number; h: number } = { w: HAND_CARD.w, h: HAND_CARD.h };
   /** The sway of the ghosts: they lean with the pointer's horizontal speed (sway.ts). */
   const sway = new Sway();
-  // In dock mode (spec 3.6) the table draws its cards smaller, and so this layer draws the ghosts
+  // In dock mode the table draws its cards smaller, and so this layer draws the ghosts
   // (CardView): the grab, the corner and the drop follow the drawn box.
   const dock = dockMode();
   /** The frame that steps the sway next, 0 when it rests. */
@@ -558,7 +558,7 @@
     return onScreen(card, surface, card.id);
   }
 
-  /** The box a card is drawn at on the table: smaller in dock mode (spec 3.6). */
+  /** The box a card is drawn at on the table: smaller in dock mode. */
   function drawn(box: Box): Box {
     return dock.current ? dockCardBox(box) : box;
   }
@@ -651,7 +651,7 @@
 
   /**
    * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
-   * places it, in the slot the rows opened for it in dock mode (spec 3.8), where it was let go when
+   * places it, in the slot the rows opened for it in dock mode, where it was let go when
    * it tucks it into a stack, whose chain the server lays out: the next view slides it from there
    * (animate.ts).
    */
@@ -704,7 +704,7 @@
 
   /**
    * Where a card or a pile on the surface lies on the screen, never shifted aside by the drag's
-   * preview (spec 3.8): a card gliding out of the way under the pointer would take the drop, the
+   * preview: a card gliding out of the way under the pointer would take the drop, the
    * preview would go, the card glide back, and so on.
    */
   function placedRect(selector: string): Rect | undefined {
@@ -799,7 +799,7 @@
   }
 
   /**
-   * In dock mode the only hand on the screen is the dock's hand button (spec 3.4), and none of the
+   * In dock mode the only hand on the screen is the dock's hand button, and none of the
    * table around it: it takes what goes to a hand, and a hand card dragged out of the carousel back
    * to the hand, which sends nothing (dropAction). Null for anything else, or with no hand button.
    */
@@ -831,7 +831,7 @@
   }
 
   /**
-   * What a drop at the pointer lands on, as the rows show it in dock mode (spec 3.8): the drop shown
+   * What a drop at the pointer lands on, as the rows show it in dock mode: the drop shown
    * holds until the pointer is DROP_MARGIN drawn units past where it last lay under it, or has
    * stayed off it DROP_DWELL_MS. Elsewhere, and for what the rows show no drop of, what lies under the pointer.
    */
@@ -852,7 +852,7 @@
   }
 
   /**
-   * In dock mode (spec 3.7), where a card dropped on the table goes: among the units of the row
+   * In dock mode, where a card dropped on the table goes: among the units of the row
    * its ghost's middle is drawn in, the dragged cards left out. None elsewhere, nor for a marker.
    */
   function dockSpotOf(from: DragSource): DropSpot | undefined {
@@ -868,7 +868,7 @@
   }
 
   /**
-   * In dock mode (spec 3.8), the drop the rows show before it is let go: the dragged card where the
+   * In dock mode, the drop the rows show before it is let go: the dragged card where the
    * drop would put it, the same spot as the drop sends. None for a drop anywhere but on the table,
    * one that tucks the card into a stack or would not move it, a group, a marker, and elsewhere.
    */

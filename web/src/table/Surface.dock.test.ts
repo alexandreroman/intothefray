@@ -1,4 +1,4 @@
-// The owner frames and their piles in dock mode (spec 3.7): the table hands them where its
+// The owner frames and their piles in dock mode: the table hands them where its
 // projection draws them (dockLayout.ts); the piles draw themselves at 60 % from there, the frame at
 // its drawn box, and the name line keeps within the drawn frame's width.
 import { render, within } from '@testing-library/svelte';
@@ -118,7 +118,7 @@ describe('Surface in dock mode', () => {
   });
 });
 
-describe('the chip lines and the avatars in dock mode (F-U13)', () => {
+describe('the chip lines and the avatars in dock mode', () => {
   const ASIDE = { kind: 'aside', pile: 'aside', label: 'Set-aside cards', count: 0 } as const;
   // Hercules's frame holds four piles (deck, discard and two side piles): drawn 313.2 wide, twice
   // the villain's 157.2, both from −6.

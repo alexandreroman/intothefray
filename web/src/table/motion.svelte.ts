@@ -129,7 +129,7 @@ const DRAW_EDGE_ON = 0.8;
 const DRAW_AWAY_DROP_PX = 40;
 const DRAW_AWAY_SCALE = 0.85;
 /**
- * In dock mode (spec 3.4) the viewer's hand is not drawn on the table: a card discarded or played
+ * In dock mode the viewer's hand is not drawn on the table: a card discarded or played
  * from it does not fly across the table. Where the viewer saw it, a copy rises, held up, and fades
  * out.
  */
@@ -380,7 +380,7 @@ function measure(element: HTMLElement, zoom: number): Measured {
  * is wider than tall and smaller than a card, but a card leaves it as a card:
  * it travels at a card's size, from the chip's middle, and a portrait card
  * does not count as landscape for the quarter turn (PileFlight.quarter). In
- * dock mode it is the size the table draws its cards at (spec 3.6).
+ * dock mode it is the size the table draws its cards at.
  */
 function measureOrigin(element: HTMLElement, zoom: number): Measured {
   if (element.matches(OWN_GHOST)) {

@@ -1,4 +1,4 @@
-// The table in touch mode (spec 3.1 and 3.3): a tap opens the inspector, a bottom sheet, in place of
+// The table in touch mode: a tap opens the inspector, a bottom sheet, in place of
 // the context menu; Select enters select mode; two fingers zoom the table.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
@@ -343,7 +343,7 @@ describe('touch zoom', () => {
   });
 });
 
-describe('the inspector, adding tokens, statuses and modifiers (F-U6)', () => {
+describe('the inspector, adding tokens, statuses and modifiers', () => {
   it.each([
     ['tokens', /^Damage/, { kind: 'token', card: 'two', name: 'dmg', delta: 1 }],
     ['statuses', /^Confused/, { kind: 'status', card: 'two', name: 'confused', delta: 1 }],
@@ -392,7 +392,7 @@ describe('arrows on touch', () => {
   });
 });
 
-describe('the inspector, revealing a card from a deck (F-U8)', () => {
+describe('the inspector, revealing a card from a deck', () => {
   // Rhino with Alex, the viewer's deck and the encounter deck; `revealed` lies on one of them.
   function revealView(revealed: TableCard[] = []): View {
     return playingView({
@@ -526,7 +526,7 @@ describe('the inspector, revealing a card from a deck (F-U8)', () => {
   });
 });
 
-describe('the inspector, flipping a card (F-U9)', () => {
+describe('the inspector, flipping a card', () => {
   it('stays open on Flip, on the same sheet, which shows the face the view turns the card to', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     const { session, rerender } = await renderTable();
@@ -600,7 +600,7 @@ describe('the inspector, flipping a card (F-U9)', () => {
   });
 });
 
-describe('the inspector, a stack of cards (F-U15)', () => {
+describe('the inspector, a stack of cards', () => {
   // Spider-Man with Peter Parker tucked under it, and a Web-Shooter under Peter Parker.
   const STACKED: TableCard[] = [
     card('host', { x: 100, y: 100 }),
@@ -732,7 +732,7 @@ describe('the inspector, a stack of cards (F-U15)', () => {
 // A tablet upright with a finger (iPad Air): narrow, so without the history column, but no phone.
 const TOUCH_TABLET: TestScreen = { width: 820, height: 1180, touch: true };
 
-describe('a tablet without the history column (spec 2.2)', () => {
+describe('a tablet without the history column', () => {
   /** The bottom right corner's History button, if it shows. */
   function cornerHistory(): HTMLElement | null {
     const corner = document.querySelector<HTMLElement>('.corner');
@@ -782,7 +782,7 @@ describe('a tablet without the history column (spec 2.2)', () => {
   });
 });
 
-describe('the resting hand on a narrow touch screen (spec 2.3)', () => {
+describe('the resting hand on a narrow touch screen', () => {
   function hand(): HTMLElement {
     return screen.getByRole('list', { name: 'Your hand' });
   }

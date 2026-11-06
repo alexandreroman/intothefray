@@ -293,7 +293,7 @@ export type DrawnAt = (id: string) => Point | null;
 const BESIDE_A_SLIDE: ReadonlySet<Anim['kind']> = new Set(['tilt', 'glow']);
 
 /**
- * Dock mode's changes to a view's animations (spec 3.7). Its rows flow: a
+ * Dock mode's changes to a view's animations. Its rows flow: a
  * card or a marker the view leaves where it lay on the table may be drawn
  * elsewhere, as cards come into its row or leave it, before it or beside it.
  * It slides there, as a moved card does, unless it already travels or turns

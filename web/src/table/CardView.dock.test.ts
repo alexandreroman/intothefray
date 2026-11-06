@@ -1,4 +1,4 @@
-// Table cards in dock mode (spec 3.6): every card is drawn whole at 60 % of its footprint, scaled
+// Table cards in dock mode: every card is drawn whole at 60 % of its footprint, scaled
 // about its top-left corner, and its element is the drawn box. Out of dock mode nothing changes.
 import { render, screen } from '@testing-library/svelte';
 import CardView from './CardView.svelte';
@@ -61,7 +61,7 @@ function ruleOf(source: string, selector: string): string | undefined {
   return new RegExp(`\\n {2}${escaped}(?: \\{|,[^{]*\\{)([^}]*)\\}`).exec(source)?.[1];
 }
 
-describe('CardView in dock mode (small cards, spec 3.6)', () => {
+describe('CardView in dock mode (small cards)', () => {
   it('shares its scale with the piles: 60 %', () => {
     expect(DOCK_SCALE).toBe(0.6);
   });

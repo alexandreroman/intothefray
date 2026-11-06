@@ -30,11 +30,11 @@
     face?: PackFace | null;
     /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a menu. */
     draggable?: boolean;
-    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside with its frame, as a translate. */
+    /** Dock mode, during a drag: how far it is drawn pushed aside with its frame, as a translate. */
     shift?: string;
   } = $props();
 
-  // In dock mode (spec 3.7) the pile is drawn smaller, from its top-left corner, which the table
+  // In dock mode the pile is drawn smaller, from its top-left corner, which the table
   // already draws through its projection (dockLayout.ts). The element is the drawn box: it takes the
   // presses and the drops, and the flights measure it.
   const dock = dockMode();
@@ -158,14 +158,14 @@
     touch-action: none;
   }
 
-  /* In touch mode, a finger swiping over the pile scrolls the table: only a hold drags from it (spec 3.2). */
+  /* In touch mode, a finger swiping over the pile scrolls the table: only a hold drags from it. */
   :global(.app.touch) .card {
     touch-action: pan-x pan-y;
   }
 
   /*
     A hold lifts it in place (.armed) only in touch mode: it eases up, and back down when let go, moved or not.
-    Pushed aside with its frame by a drag (dock mode, spec 3.8), it glides as the surface says (--shift-glide).
+    Pushed aside with its frame by a drag (dock mode), it glides as the surface says (--shift-glide).
   */
   :global(.app.touch) .card {
     transition:

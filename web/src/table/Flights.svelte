@@ -9,7 +9,7 @@
   drawn flying from its pile to its slot in the viewer's hand; a card going
   into a hand the viewer does not see leaving its pile or its spot on the
   table; and a card coming out of such a hand rising into its pile. In dock
-  mode (spec 3.6) a copy flies at the size the table draws its cards and
+  mode a copy flies at the size the table draws its cards and
   piles at, and what it shows is zoomed alike; a card discarded or played
   from the viewer's hand rises and fades out where it was seen: drawn as the
   hand sheet draws it (a landscape card turned a quarter), at the table's

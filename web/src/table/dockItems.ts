@@ -1,4 +1,4 @@
-// What dock mode's projection lays out (spec 3.7, dockLayout.ts): the table cards, the piles drawn on
+// What dock mode's projection lays out (dockLayout.ts): the table cards, the piles drawn on
 // the table, the owner frames around them and the markers, in table units, each with the item it
 // travels with. A tucked card goes with the card it is tucked under, a card revealed on a pile with
 // that pile, a pile with its owner frame, and a marker with the card it lies by.

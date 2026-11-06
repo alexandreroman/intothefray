@@ -36,11 +36,11 @@
     tip?: string;
     onpointerenter?: (event: PointerEvent) => void;
     onpointerdown?: (event: PointerEvent) => void;
-    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside with its card, as a translate. */
+    /** Dock mode, during a drag: how far it is drawn pushed aside with its card, as a translate. */
     shift?: string;
   } = $props();
 
-  // In dock mode (spec 3.7) the marker is drawn at DOCK_SCALE from its corner, which the table
+  // In dock mode the marker is drawn at DOCK_SCALE from its corner, which the table
   // hands already projected (dockLayout.ts), its art zoomed with it.
   const dock = dockMode();
   const fullBox = $derived(name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX);
@@ -82,13 +82,13 @@
     z-index: var(--above-cards);
     touch-action: none;
     filter: var(--token-shadow);
-    /* Pushed aside with its card by a drag (dock mode, spec 3.8), it glides as the surface says. */
+    /* Pushed aside with its card by a drag (dock mode), it glides as the surface says. */
     transition:
       transform 0.12s,
       translate var(--shift-glide, 0s) ease-out;
   }
 
-  /* In touch mode, a finger swiping over the marker scrolls the table: only a hold drags it (spec 3.2). */
+  /* In touch mode, a finger swiping over the marker scrolls the table: only a hold drags it. */
   :global(.app.touch) .marker {
     touch-action: pan-x pan-y;
   }

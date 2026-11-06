@@ -1030,7 +1030,7 @@ describe('CardSheet', () => {
     });
   });
 
-  describe('the stack of the card (F-U15)', () => {
+  describe('the stack of the card', () => {
     it('shows the stack in a carousel in place of the card, the main card first and centred', () => {
       renderSheet({ stack: STACK, cardId: 'rhino' });
 
@@ -1451,7 +1451,7 @@ describe('CardSheet', () => {
       expect(rule('.row:active:not(:disabled)')).toContain('background-color: var(--hover);');
     });
 
-    describe('switching to another card of the stack (F-U15)', () => {
+    describe('switching to another card of the stack', () => {
       /** The other card's entries: Discard gone, so that a row leaves as the sheet switches. */
       const ARMOR_ENTRIES = ENTRIES.filter((entry) => entry !== ENTRIES[3]);
 
@@ -1572,7 +1572,7 @@ describe('CardSheet', () => {
       });
     });
 
-    describe('turning the card over (F-U9)', () => {
+    describe('turning the card over', () => {
       const TURNED: ContextHeader = {
         ...HEADER,
         name: 'Rhino II',

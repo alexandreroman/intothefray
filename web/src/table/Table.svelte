@@ -495,7 +495,7 @@
   });
 
   /**
-   * The avatar an owner's frame shows in place of its name in dock mode (F-U13): the hero's, the
+   * The avatar an owner's frame shows in place of its name in dock mode: the hero's, the
    * current villain's on the villain's frame; none on a scenario deck's frame, which keeps its name.
    */
   function frameAvatar(frame: OwnerFrame): string | null | undefined {
@@ -539,7 +539,7 @@
   // The short case of a small screen (SMALL_SCREEN_QUERY): a phone on its side.
   const short = new MediaQuery(SHORT_SCREEN_QUERY);
 
-  // Dock mode, a phone held either way on a touch screen (spec 3.4): the dock (Dock.svelte) stands in
+  // Dock mode, a phone held either way on a touch screen: the dock (Dock.svelte) stands in
   // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the
   // history in bottom sheets; the hero selector floats beside it. A mouse or a pen never sees it, at
   // any width.
@@ -552,10 +552,10 @@
   // where the dock's History button opens the history sheet.
   const sidePanel = $derived(!narrow.current && !dockMode);
   // A tablet without the history column (touch mode on a narrow screen, not dock mode): a History
-  // button beside the floating Undo opens the history sheet dock mode uses (spec 2.2), as a finger
+  // button beside the floating Undo opens the history sheet dock mode uses, as a finger
   // has no other way to read the history. A mouse window keeps its corner as it is.
   const historySheetMode = $derived(tablet && narrow.current);
-  // The cards and piles below read it too: small cards and small piles (spec 3.6).
+  // The cards and piles below read it too: small cards and small piles.
   setDockMode({
     get current() {
       return dockMode;
@@ -580,7 +580,7 @@
 
   // On a small screen the top bar floats over the play area (TopBar): the table starts below it, and
   // what floats at the top of the play area keeps clear of it while it shows. Off dock mode it slides
-  // away as the table scrolls down; in dock mode it always shows (spec 3.4).
+  // away as the table scrolls down; in dock mode it always shows.
   let scrolledAway = $state(false);
   const barHidden = $derived(scrolledAway && !dockMode);
   // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
@@ -611,8 +611,8 @@
     }
     return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
   });
-  // A small screen drops its cards by the same share as a wide one. So does a narrow touch screen
-  // (spec 2.3): there the resting strip is the target a finger taps to raise the hand, and the
+  // A small screen drops its cards by the same share as a wide one. So does a narrow touch screen:
+  // there the resting strip is the target a finger taps to raise the hand, and the
   // desktop drop would leave only 36 px of its smaller cards showing. A mouse raises the hand by
   // hovering it, so a narrow mouse window keeps the desktop drop.
   const baseHandDrop = $derived(
@@ -671,7 +671,7 @@
   );
   const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow, minVillain));
 
-  // ---- Dock mode's compact, wrapped table (spec 3.7) ----
+  // ---- Dock mode's compact, wrapped table ----
 
   // In dock mode the table is drawn through one projection (dockLayout.ts): the desktop layout at
   // DOCK_SCALE, each row wrapped at the visible width, the rows stacked by their drawn height.
@@ -728,7 +728,7 @@
   /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
   const tableMap: TableMap = $derived(dockView ?? tableMapOf(rowMap));
 
-  // ---- A drop shown before it is let go (spec 3.8) ----
+  // ---- A drop shown before it is let go ----
 
   // During a drag in dock mode, the rows are drawn as if the dragged card lay where the drop would
   // put it (DragLayer feeds it): the units after it pushed along, the slot it left closed up. The
@@ -805,8 +805,8 @@
   const widthFit = $derived(
     fitZoom(fittedWidth, scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM, zoomMin),
   );
-  // In dock mode the fit brings the widest row's indent and three card slots past it into view
-  // (spec 3.7): the rows wrap at the width that shows and the table scrolls down.
+  // In dock mode the fit brings the widest row's indent and three card slots past it into view:
+  // the rows wrap at the width that shows and the table scrolls down.
   const dockFit = $derived(
     fitZoom(
       dockFitWidth(dockTableItems, dockShownRows, seatRows),
@@ -1299,7 +1299,7 @@
 
   // ---- The arrow mode's hint ----
 
-  // Arrows are drawn with a mouse: touch mode offers none (spec 3.1).
+  // Arrows are drawn with a mouse: touch mode offers none.
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
 
   // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
@@ -1548,7 +1548,7 @@
   }
 
   // A Reveal run from a deck's inspector: the inspector stays on the deck and waits for the card
-  // revealed there (spec 3.1), until the server refuses the action of that id or LANDING_MS passes.
+  // revealed there, until the server refuses the action of that id or LANDING_MS passes.
   let awaitingReveal = $state.raw<{ pile: string; action: number } | null>(null);
   let awaitingRevealTimer: ReturnType<typeof setTimeout> | undefined;
 

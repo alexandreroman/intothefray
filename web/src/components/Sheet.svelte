@@ -11,7 +11,7 @@
   (the inspector's on a tablet) at most 760 px, and never nearer than 16 px to
   the window's sides; a wide one that fits its content is as wide as the
   content lays itself out, within the same 16 px. In dock
-  mode (a phone, spec 3.4) it spans the whole width and may take the whole
+  mode (a phone) it spans the whole width and may take the whole
   height but the top safe area; its content decides its height below that,
   and reads the room it has in --sheet-room.
   The swipe: a mouse or a pen drags the handle down; a finger drags the whole

@@ -1434,7 +1434,7 @@ describe('a deck takes any card of its owner', () => {
   });
 });
 
-describe('the drop the rows show in dock mode (spec 3.8)', () => {
+describe('the drop the rows show in dock mode', () => {
   // Player 1's row of four cards, drawn at 0.6 and wrapped at 400 (see dropAction in dock mode).
   const FRAME: DockItem = { id: 'frame', x: -10, y: 460, w: 262, h: 157 + 20, kind: 'frame' };
   const items: DockItem[] = [

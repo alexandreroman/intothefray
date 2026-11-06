@@ -394,7 +394,7 @@ class TableInteraction {
     return this.#inCarousel;
   }
 
-  /** Whether the press waits for the hold before it may drag (touch mode, spec 3.2). */
+  /** Whether the press waits for the hold before it may drag (touch mode). */
   get awaitingHold(): boolean {
     return this.#awaitingHold;
   }

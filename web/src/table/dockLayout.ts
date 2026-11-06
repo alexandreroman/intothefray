@@ -1,4 +1,4 @@
-// The compact, wrapped phone layout (spec 3.7): dock mode draws the table through one projection,
+// The compact, wrapped phone layout: dock mode draws the table through one projection,
 // from table units to drawn units, and back for drops. Everything is drawn at DOCK_SCALE. Each row
 // keeps its owner frames and piles at their scaled place on its first line; past them, its units (a
 // card with everything that travels with it, or a frame with its piles) flow in their order on the
@@ -18,7 +18,7 @@
 // A frame takes, in its row, the wider of its drawn width and its owner line's (lineWidths): the line
 // above it starts at its left edge, and what follows it starts past both, on a half column, so that
 // no owner line runs over the next frame or a card.
-// During a drag the rows show the drop before it is let go (spec 3.8): laid out with the dragged
+// During a drag the rows show the drop before it is let go: laid out with the dragged
 // card where the drop would put it, as if it lay there already, the units after it pushed along
 // and the slot it left closed up.
 
@@ -55,7 +55,7 @@ export interface DockItem {
 }
 
 /**
- * A drag the layout shows as if dropped (spec 3.8): the dragged card where the drop would put it on
+ * A drag the layout shows as if dropped: the dragged card where the drop would put it on
  * the table, with everything that travels with it, out of the unit it was part of.
  */
 export interface DockPreview {
@@ -547,7 +547,7 @@ const MIN_LINES = 2;
 const FIT_SLOTS = 3;
 
 /**
- * The drawn width the default zoom brings into view (spec 3.7): the widest
+ * The drawn width the default zoom brings into view: the widest
  * indent of the shown rows and three card slots past it, each a drawn
  * portrait card and the drawn gap between units. It does not depend on the
  * wrap width, which the zoom sets.
@@ -917,7 +917,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
 const SHIFT_EPSILON = 1e-3;
 
 /**
- * How far from where `base` draws them `preview` draws the items of `ids` (spec 3.8), in drawn
+ * How far from where `base` draws them `preview` draws the items of `ids`, in drawn
  * units: only those it draws elsewhere, and only those both draw.
  */
 export function dockShifts(
