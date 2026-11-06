@@ -71,9 +71,9 @@ describe('the web app manifest', () => {
     expect(manifest.theme_color).toBe('#0d111b');
   });
 
-  it('opens the page added to the home screen, a game rather than home, and keeps to the base path', () => {
-    // Without a start URL, the app starts at the URL of the page that was added.
-    expect(manifest).not.toHaveProperty('start_url');
+  it('opens Home from the home screen and keeps to the base path', () => {
+    // The home-screen icon opens Home under the base path, not the page added: a game expires.
+    expect(manifest.start_url).toBe('./');
     expect(manifest.scope).toBe('./');
   });
 

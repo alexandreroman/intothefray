@@ -1,6 +1,7 @@
 {
   "name": "Into the Fray",
   "short_name": "Into the Fray",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0d111b",
