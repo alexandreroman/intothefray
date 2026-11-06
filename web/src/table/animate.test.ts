@@ -1,5 +1,5 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
-import { type Anim, diffViews, mergedLines, type OwnDrop } from './animate';
+import { type Anim, diffViews, dockMotions, mergedLines, type OwnDrop } from './animate';
 import { card, pile, playingView, seated } from './fixtures.testing';
 
 /** A pile of seat 0's, 10 cards, right of the table's origin. */
@@ -2178,5 +2178,100 @@ describe('mergedLines', () => {
 
     expect(mergedLines(prev, next)).toEqual([1]);
     expect(mergedLines(next, next)).toEqual([]);
+  });
+});
+
+describe('dockMotions', () => {
+  // Where the dock layout draws each item, before and after the view: a row's cards flow, so a
+  // card may be drawn elsewhere while it lies where it lay.
+  function drawnAt(spots: Record<string, Point>): (id: string) => Point | null {
+    return (id) => spots[id] ?? null;
+  }
+
+  it('slides a card the flow draws elsewhere, though it lies where it lay', () => {
+    const before = view({ cards: [card('a', { x: 452, y: 410 }), card('b', { x: 604, y: 410 })] });
+    const after = view({
+      cards: [
+        card('new', { x: 300, y: 410 }),
+        card('a', { x: 452, y: 410 }),
+        card('b', { x: 604, y: 410 }),
+      ],
+    });
+    const anims = dockMotions([], before.table!, after.table!, {
+      before: drawnAt({ a: { x: 180, y: 28 }, b: { x: 271.2, y: 28 } }),
+      after: drawnAt({ new: { x: 180, y: 28 }, a: { x: 271.2, y: 28 }, b: { x: 271.2, y: 28 } }),
+    });
+
+    // a moves one slot right; b is drawn where it was; the new card has no place before.
+    expect(anims).toEqual([
+      {
+        kind: 'move',
+        id: 'a',
+        from: { zone: 'table', x: 452, y: 410 },
+        to: { zone: 'table', x: 452, y: 410 },
+      },
+    ]);
+  });
+
+  it('leaves a card that already travels or turns over alone, and slides one that only tilts', () => {
+    const cards = [card('moved', { x: 452, y: 410 }), card('tilted', { x: 604, y: 410 })];
+    const before = view({ cards: [...cards, card('flipped', { x: 756, y: 410 })] });
+    const after = view({ cards: [...cards, card('flipped', { x: 756, y: 410 })] });
+    const own: Anim[] = [
+      {
+        kind: 'move',
+        id: 'moved',
+        from: { zone: 'hand', x: 0, y: 0 },
+        to: { zone: 'table', x: 452, y: 410 },
+      },
+      { kind: 'flip', id: 'flipped' },
+      { kind: 'tilt', id: 'tilted', exhausted: true },
+    ];
+    const anims = dockMotions(own, before.table!, after.table!, {
+      before: drawnAt({ moved: { x: 0, y: 0 }, tilted: { x: 0, y: 0 }, flipped: { x: 0, y: 0 } }),
+      after: drawnAt({ moved: { x: 9, y: 9 }, tilted: { x: 9, y: 9 }, flipped: { x: 9, y: 9 } }),
+    });
+
+    expect(
+      anims.filter((anim) => anim.kind === 'move').map((anim) => 'id' in anim && anim.id),
+    ).toEqual(['moved', 'tilted']);
+  });
+
+  it("slides the viewer's own drop from its ghost to where the flow draws it, rather than settling", () => {
+    const before = view({ cards: [card('a', { x: 452, y: 410 })] });
+    const after = view({ cards: [card('a', { x: 680, y: 410 }), card('p', { x: 300, y: 410 })] });
+    const anims = dockMotions(
+      [
+        { kind: 'settle', id: 'a' },
+        { kind: 'settle', id: 'p', fromPile: 'deck:p0' },
+      ],
+      before.table!,
+      after.table!,
+      { before: drawnAt({}), after: drawnAt({}) },
+    );
+
+    expect(anims).toEqual([
+      {
+        kind: 'move',
+        id: 'a',
+        from: { zone: 'table', x: 452, y: 410 },
+        to: { zone: 'table', x: 680, y: 410 },
+        dropped: true,
+      },
+      { kind: 'enter', id: 'p', fromPile: 'deck:p0', dropped: true },
+    ]);
+  });
+
+  it('slides a marker drawn elsewhere with the card it lies by', () => {
+    const before = view({ firstPlayer: { x: 460, y: 450 } });
+    const after = view({ firstPlayer: { x: 460, y: 450 } });
+    const anims = dockMotions([], before.table!, after.table!, {
+      before: drawnAt({ 'marker:firstPlayer': { x: 276, y: 52 } }),
+      after: drawnAt({ 'marker:firstPlayer': { x: 300, y: 52 } }),
+    });
+
+    expect(anims).toEqual([
+      { kind: 'marker', name: 'firstPlayer', from: { x: 460, y: 450 }, to: { x: 460, y: 450 } },
+    ]);
   });
 });

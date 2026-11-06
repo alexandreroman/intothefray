@@ -7,17 +7,20 @@ type: project
 # Action menu organisation
 
 - Table cards in play, piles and box tiles act through their **action
-  menu**: a click (no drag) or a right click opens it at the pointer, a
-  tap on touch (a long press opens nothing). Hover only rings, previews
-  and targets keys; a hovered token shows its −/+ pill.
-- A click or tap on a token or status disc opens no menu; it shows the
-  −/+ pill, which a tap pins until a tap elsewhere or Esc. A hovered
-  token's pill holds while the pointer stays in the box spanning the
-  token's bounding box and the pill (an exhausted card's 15° tilt leaves
-  a gap below the pill); out of that box, it goes after the 100 ms
-  linger. In touch mode (no hover, coarse pointer) nothing is ever
-  previewed. Under a coarse pointer, menu entries, chips and pill buttons
-  have at least 44 px hit areas.
+  menu**: a click (no drag) or a right click opens it at the pointer; in
+  touch mode a tap shows the same entries in the inspector sheet
+  (refused entries left out, no Draw an arrow) and a 300 ms hold picks
+  the card up (see [[project_touch_phone_table]]).
+  Hover only rings, previews and targets keys; a hovered token shows its
+  −/+ pill.
+- A click on a token or status disc opens no menu; it shows the −/+ pill.
+  In touch mode a tap on it opens the card's inspector. A hovered token's
+  pill holds while the pointer stays in the box spanning the token's
+  bounding box and the pill (an exhausted card's 15° tilt leaves a gap
+  below the pill); out of that box, it goes after the 100 ms linger. In
+  touch mode (no hover, coarse pointer) nothing is ever previewed. Under
+  a coarse pointer, menu entries, chips and pill buttons have at least
+  44 px hit areas.
 - The menu's title is an eyebrow in the owner's colour (card type and
   stage, or the pile's owner) above the card name, or the pile kind with
   its count pill, which counts a card revealed on the deck.
@@ -33,7 +36,8 @@ type: project
   encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X,
   Shuffle; discard pile Search │ Shuffle into deck. Dragging the top of
   an own deck (or the encounter deck) onto its discard pile discards it,
-  as Discard 1 does.
+  as Discard 1 does. A deck's top card dropped back on its own deck
+  cancels the drag: the deck is outlined as a target and nothing is sent.
   A card dropped anywhere on its home deck (player deck, side deck or
   encounter deck) goes on top of it, as Move to ▾ "Top of deck" does;
   Bottom of deck is a Move to ▾ entry (B) only, never a drop target.
@@ -57,8 +61,10 @@ type: project
   and keeps the group selection.
 - Hand cards are played by dragging, P, and X or Backspace to discard. On
   touch, a tap on the lowered hand raises and pins it; a tap on a card then
-  selects (lifts) it; a tap on the table, Esc, a downward swipe, a drop on
-  the table or a dialog lowers it.
+  opens its inspector (Play, Discard, from `handActions`); a tap on the
+  table, Esc, a downward swipe, a drop on the table or a dialog lowers it.
+  In dock mode the hand is a carousel sheet (see
+  [[project_touch_phone_table]]).
 - Tokens come from the submenus, the keys and the token pill.
 - Out-of-play piles (scenario areas, victory display, set-aside) are
   reached from chips

@@ -15,8 +15,9 @@
   import Icon from '../components/Icon.svelte';
   import { playerColorVar } from '../lib/playerColor';
   import { pointerBlur } from '../lib/releaseFocus';
-  import type { FaceRef, LogPart, LogView } from '../lib/types';
+  import type { LogView } from '../lib/types';
   import { mergedLines } from './animate';
+  import { partsOf, timeOf, type LinePart, type NameOf } from './historyLines';
   import { interaction } from './interaction.svelte';
 
   let {
@@ -39,7 +40,7 @@
     /** The id of the element that collapses (aria-controls). */
     controls: string;
     /** The name of a face in the viewer's language; without it, or when unknown, the English text shows. */
-    nameOf?: (ref: FaceRef) => string | undefined;
+    nameOf?: NameOf;
   } = $props();
 
   let collapseButton = $state<HTMLButtonElement>();
@@ -62,46 +63,6 @@
     if (canUndo) {
       onundo();
     }
-  }
-
-  interface Part {
-    text: string;
-    /** Bracketed details, dimmed. */
-    aside: boolean;
-    /** A card name, in bold. Only the server flags one: no text a player typed can. */
-    card: boolean;
-  }
-
-  /** Splits a piece of a line around its bracketed details. */
-  function splitAsides(text: string, card: boolean): Part[] {
-    const parts: Part[] = [];
-    let start = 0;
-    for (const match of text.matchAll(/\([^()]*\)/g)) {
-      parts.push({ text: text.slice(start, match.index), aside: false, card });
-      parts.push({ text: match[0], aside: true, card });
-      start = match.index + match[0].length;
-    }
-    parts.push({ text: text.slice(start), aside: false, card });
-    return parts.filter((part) => part.text !== '');
-  }
-
-  /** The text of a piece: a card name it refers to is shown in the viewer's language. */
-  function textOf(piece: LogPart): string {
-    if (piece.card !== true || piece.ref === undefined) {
-      return piece.text;
-    }
-    return nameOf?.(piece.ref) ?? piece.text;
-  }
-
-  /** Splits a line into its card names and its bracketed details. */
-  function partsOf(entry: LogView): Part[] {
-    const pieces = entry.parts ?? [{ text: entry.text }];
-    return pieces.flatMap((piece) => splitAsides(textOf(piece), piece.card === true));
-  }
-
-  function timeOf(at: string): string {
-    // hh:mm, local time.
-    return new Date(at).toTimeString().slice(0, 5);
   }
 
   // Lines added after a render slide in; the ones already there at load do not.
@@ -135,7 +96,7 @@
       .map((entry, index) => ({
         key: index,
         entry,
-        parts: partsOf(entry),
+        parts: partsOf(entry, nameOf),
         time: timeOf(entry.at),
         isNew: index >= seen,
       }))
@@ -168,7 +129,7 @@
   });
 </script>
 
-{#snippet lineText(entry: LogView, parts: Part[])}
+{#snippet lineText(entry: LogView, parts: LinePart[])}
   <!-- The line break between the name and the text renders as one space. -->
   <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
   {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}>{part.text}</b

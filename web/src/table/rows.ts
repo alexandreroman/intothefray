@@ -4,10 +4,11 @@
 // moved on the server; the screen only draws them spread over its height,
 // each row's empty band squeezed or stretched (spreadRows), and in "Villain +
 // player" the shown player's row right under the villain's. A RowMap turns a
-// height of the table into where it is drawn, and back.
+// height of the table into where it is drawn, and back; a TableMap does so with
+// a whole point, which dock mode also moves across (dockLayout.ts).
 
 import { getPref, setPref } from '../lib/prefs';
-import type { PileView } from '../lib/types';
+import type { PileView, Point } from '../lib/types';
 import { GRID } from './layout';
 
 /**
@@ -18,6 +19,13 @@ export const VILLAIN_ROW_HEIGHT = 380;
 
 /** The height of a player's row, in table units: row r ≥ 1 covers [380 + 220·(r−1), 380 + 220·r). */
 export const ROW_HEIGHT = 220;
+
+/**
+ * How far below the top of its row the setup lays a row's cards and piles, in
+ * table units: the owner's name lies above them. It mirrors rowContentY in
+ * internal/game/setup.go.
+ */
+export const ROW_LABEL_ROOM = 30;
 
 export type ViewMode = 'all' | 'focus';
 
@@ -46,9 +54,50 @@ export const ALL_ROWS: RowMap = {
   toTable: (y) => y,
 };
 
+/**
+ * Where points of the table are drawn, in drawn units of the surface, and
+ * back: the one map every layer that draws the table or reads a point of it
+ * goes through. Rows drawn spread (tableMapOf) move heights only; dock mode
+ * (dockLayout.ts) scales the table and wraps its rows.
+ */
+export interface TableMap {
+  /**
+   * Where a point of the table is drawn, or null when it is not shown. A
+   * point of an item, named by its id, is drawn with that item.
+   */
+  toDisplay(p: Point, itemId?: string): Point | null;
+  /** The point of the table drawn at a point of the surface. */
+  toTable(p: Point): Point;
+  /**
+   * Dock mode only (dockLayout.ts): where a card `width` table units wide,
+   * dropped with its middle drawn at `p`, goes among the units of its row,
+   * those of `exclude` left out.
+   */
+  insertAt?(p: Point, width: number, exclude?: ReadonlySet<string>): Point;
+}
+
+/** The map of rows drawn where `rows` draws their heights, every width drawn as it is. */
+export function tableMapOf(rows: RowMap): TableMap {
+  return {
+    toDisplay(p) {
+      const y = rows.toDisplay(p.y);
+      return y === null ? null : { x: p.x, y };
+    },
+    toTable: (p) => ({ x: p.x, y: rows.toTable(p.y) }),
+  };
+}
+
+/** Every point drawn where it is: the default of the components that draw the table, and of tests. */
+export const ALL_TABLE: TableMap = tableMapOf(ALL_ROWS);
+
 /** The height of the top of a row of the table. */
-function rowTop(row: number): number {
+export function rowTop(row: number): number {
   return row === 0 ? 0 : VILLAIN_ROW_HEIGHT + ROW_HEIGHT * (row - 1);
+}
+
+/** The height of a row of the table, in table units. */
+export function rowHeight(row: number): number {
+  return row === 0 ? VILLAIN_ROW_HEIGHT : ROW_HEIGHT;
 }
 
 /** The row a height of the table is in; heights above the table count in the villain's row. */
@@ -209,37 +258,48 @@ export function spreadRows(pitch: number, lastRow: number, shownRow?: number): R
   };
 }
 
-/**
- * How far below the height `from` the height `to` is drawn: a group of cards
- * keeps its shape as drawn, across rows drawn closer or further apart than
- * they lie. Their offset on the table when either height is hidden.
- */
-export function drawnGap(rows: RowMap, from: number, to: number): number {
-  const top = rows.toDisplay(from);
-  const bottom = rows.toDisplay(to);
-  return top === null || bottom === null ? to - from : bottom - top;
+/** A point of the table, of an item when it has an id. */
+interface Spot extends Point {
+  id?: string;
 }
 
 /**
- * A function that lays items at the heights where `rows` draws them: each
- * item copied with its drawn height, those of hidden rows dropped. It keeps
- * each item's copy while the item and its drawn height stay the same, so a
- * redraw hands an unchanged item's view the same object, and that view does
- * not re-derive. Items are told apart by identity, which holds as views are
- * never changed in place, and an unchanged card keeps its object from one view
- * to the next (lib/reuse.ts).
+ * How far from `from` the point `to` is drawn: a group of cards keeps its
+ * shape as drawn, across rows drawn closer or further apart than they lie,
+ * or wrapped. Their offset on the table when either point is hidden.
  */
-export function shownItems<T extends { y: number }>(): (items: readonly T[], rows: RowMap) => T[] {
+export function drawnDelta(map: TableMap, from: Spot, to: Spot): Point {
+  const start = map.toDisplay(from, from.id);
+  const end = map.toDisplay(to, to.id);
+  if (start === null || end === null) {
+    return { x: to.x - from.x, y: to.y - from.y };
+  }
+  return { x: end.x - start.x, y: end.y - start.y };
+}
+
+/**
+ * A function that lays items where `map` draws them: each item copied with
+ * its drawn corner, those not shown dropped. It keeps each item's copy while
+ * the item and its drawn corner stay the same, so a redraw hands an unchanged
+ * item's view the same object, and that view does not re-derive. Items are
+ * told apart by identity, which holds as views are never changed in place,
+ * and an unchanged card keeps its object from one view to the next
+ * (lib/reuse.ts).
+ */
+export function shownItems<T extends { id: string; x: number; y: number }>(): (
+  items: readonly T[],
+  map: TableMap,
+) => T[] {
   const copies = new WeakMap<T, T>();
-  return (items, rows) =>
+  return (items, map) =>
     items.flatMap((item) => {
-      const y = rows.toDisplay(item.y);
-      if (y === null) {
+      const drawn = map.toDisplay(item, item.id);
+      if (drawn === null) {
         return [];
       }
       let copy = copies.get(item);
-      if (copy === undefined || copy.y !== y) {
-        copy = { ...item, y };
+      if (copy === undefined || copy.x !== drawn.x || copy.y !== drawn.y) {
+        copy = { ...item, x: drawn.x, y: drawn.y };
         copies.set(item, copy);
       }
       return [copy];

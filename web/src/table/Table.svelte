@@ -5,10 +5,11 @@
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
   control, unless it would hide the whole hovered element there, and never
   the hero selector's corner; touch mode previews nothing (touch.ts). On a
-  narrow screen there is no side column.
+  narrow screen and in dock mode there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
+  import CardArt from '../components/CardArt.svelte';
   import Icon from '../components/Icon.svelte';
   import { modal } from '../components/modal.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
@@ -39,12 +40,13 @@
     View,
   } from '../lib/types';
   import { MARKERS, markerPoint } from '../lib/types';
-  import { diffViews, MAX_APART_MS } from './animate';
+  import { diffViews, dockMotions, MAX_APART_MS } from './animate';
   import {
     actionsFor,
     counterName,
     countersOf,
     deckCount,
+    handActions,
     isLocked,
     type ActionItem,
     type CountQuestion,
@@ -56,21 +58,36 @@
   import AskCount from './AskCount.svelte';
   import type { LocalBox, ShownBox } from './boxes';
   import CardBox from './CardBox.svelte';
+  import CardSheet from './CardSheet.svelte';
   import ContextMenu from './ContextMenu.svelte';
+  import Dock from './Dock.svelte';
   import {
     cardHeader,
     contextItems,
     pileHeader,
+    type ContextAction,
     type ContextEntry,
     type ContextHeader,
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
-  import { DRAG_THRESHOLD, intersect, sourceOf, type Rect } from './drag';
+  import { dockItems, dockRows, frameItemId, markerItemId } from './dockItems';
+  import {
+    dockFitWidth,
+    dockLayout,
+    dockShifts,
+    type DockLayout,
+    type DockPreview,
+  } from './dockLayout';
+  import { setDockMode } from './dockMode';
+  import { DRAG_THRESHOLD, goesToHand, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
-  import { backCaption, isHidden } from './face';
+  import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
+  import HandSheet from './HandSheet.svelte';
   import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
-  import { interaction, type PreviewChange } from './interaction.svelte';
+  import HistorySheet from './HistorySheet.svelte';
+  import { countersFor, stackCardsOf, type SheetCounter, type StackCard } from './inspector';
+  import { interaction, LANDING_MS, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
   import {
@@ -87,6 +104,9 @@
     isOutOfPlay,
     chipsByFrame,
     ownerFrames,
+    type OwnerFrame,
+    PORTRAIT_CARD,
+    SLOT_GAP,
     raisedHandCard,
     restingFanWidth,
     restingStrip,
@@ -102,6 +122,8 @@
     shownItems,
     spreadRows,
     storedViewMode,
+    tableMapOf,
+    type TableMap,
     type ViewMode,
   } from './rows';
   import { motion } from './motion.svelte';
@@ -120,7 +142,7 @@
     seatPlayer,
   } from './seats';
   import { tableCard, tablePile } from './screen';
-  import { cardsInBand, isFree } from './selection';
+  import { cardsInBand, groupUnits, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -133,8 +155,10 @@
     type Corner,
   } from './focus';
   import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
-  import Surface, { type OwnerBox } from './Surface.svelte';
+  import Surface, { ownerLineWidth, type OwnerBox } from './Surface.svelte';
+  import { backUrl } from './theme';
   import { TOUCH_MODE_QUERY } from './touch';
+  import { touchZoom } from './touchZoom';
   import ZoomControl from './ZoomControl.svelte';
   import {
     clampZoom,
@@ -428,36 +452,70 @@
     selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
-  // What lies at a height of the table, drawn where the view mode shows it; nothing when hidden. A
-  // card or pile keeps its drawn copy while it stays the same, so its view does not redraw.
+  // Out-of-play piles are not drawn: the chips on their owner's frame open them.
+  const piledInPlay = $derived(piles.filter((pile) => !isOutOfPlay(pile)));
+  const cardsInPlay = $derived(cards.filter((card) => card.zone === 'table'));
+
+  // What lies at a point of the table, drawn where the view mode shows it (tableMap, below);
+  // nothing when hidden. A card or pile keeps its drawn copy while it stays the same, so its view
+  // does not redraw.
   const shownPiles = shownItems<PileView>();
   const shownCards = shownItems<TableCard>();
+  const tablePiles = $derived.by(() => shownPiles(piledInPlay, tableMap));
+  const tableCards = $derived.by(() => shownCards(cardsInPlay, tableMap));
 
-  // Out-of-play piles are not drawn: the chips on their owner's frame open them.
-  const tablePiles = $derived.by(() => {
-    const inPlay = piles.filter((pile) => !isOutOfPlay(pile));
-    return shownPiles(inPlay, rowMap);
+  /** The frames around each owner's deck and discard pile, as drawn. */
+  const drawnFrames = $derived.by((): OwnerFrame[] => {
+    if (dockView === null) {
+      return ownerFrames(tablePiles);
+    }
+    // Laid out with the rest of the table.
+    const layout = dockView;
+    return ownerFrames(piledInPlay).flatMap((frame) => {
+      const box = layout.itemBox(frameItemId(frame));
+      return box === null ? [] : [{ ...frame, ...box }];
+    });
   });
-  const tableCards = $derived.by(() => {
-    const onTable = cards.filter((card) => card.zone === 'table');
-    return shownCards(onTable, rowMap);
+
+  /** The image of the current villain's face, the villain frame's avatar in dock mode; null when none shows. */
+  const villainImage = $derived.by((): string | null => {
+    const stage = view.table?.stages.find((s) => s.villain);
+    const villain = stage && cards.find((c) => c.id === stage.current);
+    return faceOf(villain)?.images[0] ?? null;
   });
+
+  /**
+   * The avatar an owner's frame shows in place of its name in dock mode (F-U13): the hero's, the
+   * current villain's on the villain's frame; none on a scenario deck's frame, which keeps its name.
+   */
+  function frameAvatar(frame: OwnerFrame): string | null | undefined {
+    if (dockView === null || frame.label !== undefined) {
+      return undefined;
+    }
+    if (frame.owner === -1) {
+      return villainImage;
+    }
+    return seatDeck(view, frame.owner)?.heroImage ?? null;
+  }
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived.by(() => {
-    const frames = ownerFrames(tablePiles);
-    const chips = chipsByFrame(frames, piles);
-    return frames.map((frame, i): OwnerBox => {
+    const chips = chipsByFrame(drawnFrames, piles);
+    return drawnFrames.map((frame, i): OwnerBox => {
       const outOfPlay = chips[i] ?? [];
       const { name: ownerName, color } = ownerLook(view, frame.owner);
       const name = frame.label ?? ownerName;
+      const owner: OwnerBox = { frame, name, color, outOfPlay };
+      const avatar = frameAvatar(frame);
+      if (avatar !== undefined) {
+        owner.avatar = avatar;
+      }
       // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = seatDeck(view, frame.owner);
-      if (!deck) {
-        return { frame, name, color, outOfPlay };
+      if (deck) {
+        owner.tip = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
       }
-      const inHand = `${deck.handCount} ${deck.handCount === 1 ? 'card' : 'cards'} in hand`;
-      return { frame, name, color, tip: inHand, outOfPlay };
+      return owner;
     });
   });
 
@@ -468,6 +526,28 @@
   const phone = new MediaQuery(PHONE_QUERY);
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
+  // The short case of a small screen (SMALL_SCREEN_QUERY): a phone on its side.
+  const short = new MediaQuery('(max-height: 500px)');
+
+  // Dock mode, a phone held either way on a touch screen (spec 3.4): the dock (Dock.svelte) stands in
+  // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the
+  // history in bottom sheets; the hero selector floats beside it. A mouse or a pen never sees it, at
+  // any width.
+  const dockMode = $derived(touchMode.current && small.current);
+  // On a phone on its side, the dock is a rail down the left edge, the table right of it.
+  const dockRail = $derived(dockMode && short.current);
+  // The history column beside the table: none on a narrow screen, nor in dock mode at any width,
+  // where the dock's History button opens the history sheet.
+  const sidePanel = $derived(!narrow.current && !dockMode);
+  // The cards and piles below read it too: small cards and small piles (spec 3.6).
+  setDockMode({
+    get current() {
+      return dockMode;
+    },
+    get zoom() {
+      return zoom;
+    },
+  });
 
   // The window's size, in px: a small screen's hand cards follow it.
   let windowWidth = $state(window.innerWidth);
@@ -482,13 +562,19 @@
   // play area's gutter (--content-gutter), which the top bar's left edge shares.
   const SCROLL_PADDING = 24;
 
-  // On a small screen the top bar floats over the play area, and slides away as the table scrolls
-  // down (TopBar): the table starts below it, and what floats at the top of the play area keeps
-  // clear of it while it shows.
-  let barHidden = $state(false);
+  // On a small screen the top bar floats over the play area (TopBar): the table starts below it, and
+  // what floats at the top of the play area keeps clear of it while it shows. Off dock mode it slides
+  // away as the table scrolls down; in dock mode it always shows (spec 3.4).
+  let scrolledAway = $state(false);
+  const barHidden = $derived(scrolledAway && !dockMode);
+  // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
+  // dock mode the top bar sits below it.
+  let safeTop = $state(0);
+  // The top bar's height, in px, with the notch above it in dock mode.
+  const barHeight = $derived(TOP_BAR_HEIGHT + (dockMode ? safeTop : 0));
   // The room the bar keeps at the start of the table, and over the top of the play area, in px.
-  const barStart = $derived(small.current ? TOP_BAR_HEIGHT : 0);
-  const barRoom = $derived(small.current && !barHidden ? TOP_BAR_HEIGHT : 0);
+  const barStart = $derived(small.current ? barHeight : 0);
+  const barRoom = $derived(small.current && !barHidden ? barHeight : 0);
 
   // The table's visible size, in px.
   let visibleWidth = $state(0);
@@ -526,39 +612,176 @@
   const controlsRoom = $derived(
     (small.current && own.length > 0 ? restingRoom + ABOVE_HAND : TABLE_EDGE_BOTTOM) + cornerHeight,
   );
-  const rowsBottom = $derived(Math.max(restingRoom, controlsRoom));
+
+  // The dock's bar at the bottom of the table in dock mode, 8 px off the window's edge and the safe
+  // area under it (Dock.svelte), and 8 px over it. The rail leaves the bottom free.
+  const DOCK_ROOM = 8 + 60 + 8;
+  // The safe area at the bottom of the screen, in px (the home indicator), measured: the dock sits
+  // above it.
+  let safeBottom = $state(0);
+  // The scroller's padding under the surface, in px: the gutter, or the dock's room above the safe
+  // area, so that the bottom of the table scrolls out from under the dock.
+  const bottomPadding = $derived(dockMode && !dockRail ? DOCK_ROOM + safeBottom : SCROLL_PADDING);
+  // The scroller's padding over the surface, in px: the gutter and the top bar's room.
+  const topPadding = $derived(SCROLL_PADDING + barStart);
+
+  // In dock mode no hand nor control lies over the table: the rows keep clear of the dock alone.
+  const rowsBottom = $derived(dockMode ? bottomPadding : Math.max(restingRoom, controlsRoom));
   // Numbers, so that the row map, which the layers re-measure on, changes only with them.
   const lastDeckRow = $derived(lastRow(piles));
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
-  const pitch = $derived(
-    rowPitch(visibleHeight - SCROLL_PADDING - barStart - rowsBottom, lastDeckRow),
-  );
+  const pitch = $derived(rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow));
   const shownRow = $derived(
     focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
   );
   const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow));
+
+  // ---- Dock mode's compact, wrapped table (spec 3.7) ----
+
+  // In dock mode the table is drawn through one projection (dockLayout.ts): the desktop layout at
+  // DOCK_SCALE, each row wrapped at the visible width, the rows stacked by their drawn height.
+  // Elsewhere the rows are drawn spread (rowMap), every width as it is.
+
+  /** Where each marker lies on the table; none for a marker the table does not have. */
+  const markersOnTable = $derived.by(() => {
+    const table = view.table;
+    const result: Partial<Record<MarkerName, Point>> = {};
+    for (const name of MARKERS) {
+      const at = table ? markerPoint(table, name) : undefined;
+      if (at) {
+        result[name] = at;
+      }
+    }
+    return result;
+  });
+  // Only read in dock mode: the other view modes never lay them out.
+  const dockTableItems = $derived(
+    dockItems({
+      cards: cardsInPlay,
+      piles: piledInPlay,
+      frames: ownerFrames(piledInPlay),
+      markers: markersOnTable,
+      sizeOf,
+    }),
+  );
+  // The rows the seats' decks lie in: a row of none is drawn in the block of the last of them above.
+  const seatRows = $derived(seats.map((seat) => rowOfSeat(piles, seat)));
+  const dockShownRows = $derived(dockRows(dockTableItems, shownRow, seatRows));
+  // The width the rows wrap at, in drawn units: what shows of the surface at the zoom. Unmeasured
+  // (before the first layout), nothing wraps.
+  const wrapWidth = $derived.by(() =>
+    visibleWidth > 0 ? (visibleWidth - 2 * SCROLL_PADDING) / zoom : Number.POSITIVE_INFINITY,
+  );
+  // How far right of its frame's left edge each owner line reaches, by frame id (Surface.svelte):
+  // a frame takes as much room in its row when its line is wider. Every frame shows an avatar but
+  // a scenario deck's, which shows its name (frameAvatar).
+  const lineWidths = $derived.by(() => {
+    const frames = ownerFrames(piledInPlay);
+    const chips = chipsByFrame(frames, piles);
+    return new Map(
+      frames.map((frame, i) => {
+        const line = { avatar: frame.label === undefined, chips: chips[i]?.length ?? 0 };
+        return [frameItemId(frame), ownerLineWidth(line, zoom)];
+      }),
+    );
+  });
+  const dockView: DockLayout | null = $derived(
+    dockMode
+      ? dockLayout({ items: dockTableItems, rows: dockShownRows, seatRows, wrapWidth, lineWidths })
+      : null,
+  );
+  /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
+  const tableMap: TableMap = $derived(dockView ?? tableMapOf(rowMap));
+
+  // ---- A drop shown before it is let go (spec 3.8) ----
+
+  // During a drag in dock mode, the rows are drawn as if the dragged card lay where the drop would
+  // put it (DragLayer feeds it): the units after it pushed along, the slot it left closed up. The
+  // cards stay placed by tableMap, which the drop reads; each one pushed aside is drawn shifted
+  // from there (a translate, which glides), so that nothing is laid out again but the shifts.
+
+  /** The preview DragLayer last fed, with the view it was made on: a newer view shows no preview. */
+  let fedPreview = $state.raw<{ preview: DockPreview; view: View } | null>(null);
+  const dockPreview = $derived(fedPreview?.view === view ? fedPreview.preview : null);
+  const previewView: DockLayout | null = $derived(
+    dockView !== null && dockPreview !== null
+      ? dockLayout({
+          items: dockTableItems,
+          rows: dockShownRows,
+          seatRows,
+          wrapWidth,
+          lineWidths,
+          preview: dockPreview,
+        })
+      : null,
+  );
+  /** The layout the table shows, the preview's while there is one. */
+  const shownDockView = $derived(previewView ?? dockView);
+  const NO_SHIFTS: ReadonlyMap<string, Point> = new Map();
+  /** How far each item pushed aside is drawn from its place, in drawn units. */
+  const shifts: ReadonlyMap<string, Point> = $derived(
+    dockView !== null && previewView !== null
+      ? dockShifts(
+          dockView,
+          previewView,
+          dockTableItems.map((item) => item.id),
+        )
+      : NO_SHIFTS,
+  );
+  // The shifts glide (a CSS transition) from one preview to the next of the same view. A new view
+  // draws every card at its new place at once, its own motions playing from where they showed
+  // (motion.svelte.ts): the shifts it drops jump with it, for the first frame it draws.
+  let shiftsGlide = $state(true);
+  let glideFrame = 0;
+
+  /** Lets the shifts jump for the next frame drawn, then glide again. */
+  function pauseGlide(): void {
+    cancelAnimationFrame(glideFrame);
+    shiftsGlide = false;
+    glideFrame = requestAnimationFrame(() => {
+      glideFrame = requestAnimationFrame(() => {
+        glideFrame = 0;
+        shiftsGlide = true;
+      });
+    });
+  }
+
+  $effect(() => () => cancelAnimationFrame(glideFrame));
 
   // ---- The zoom ----
 
   // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
   // the % label went back to the fit on a phone: the table then shows the screen's default zoom.
   let chosenZoom = $state(storedZoom());
-  const zoomMin = $derived(phone.current ? ZOOM_MIN_SMALL : ZOOM_MIN);
+  // Dock mode is a phone too, held either way: on its side it is wider than PHONE_QUERY.
+  const zoomMin = $derived(phone.current || dockMode ? ZOOM_MIN_SMALL : ZOOM_MIN);
 
   // Kept free for a vertical scrollbar when fitting. Measured with the scrollbar or without, the
   // fit would make the scrollbar come and go, and the fit with it.
   const SCROLLBAR_ROOM = 12;
 
   // The zoom that fits the content's width into the scroller, as they are now.
-  const contentFit = $derived(
+  // On a narrow screen (PHONE_QUERY) the content keeps an empty card slot at its right, which the
+  // fit brings into view and the surface keeps, so that a card can be dropped past the last one.
+  const NARROW_FREE_SLOT = PORTRAIT_CARD.w + SLOT_GAP;
+  const fittedWidth = $derived(
+    contentWidth(tableCards, tablePiles, sizeOf) + (phone.current ? NARROW_FREE_SLOT : 0),
+  );
+  const widthFit = $derived(
+    fitZoom(fittedWidth, scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM, zoomMin),
+  );
+  // In dock mode the fit brings the widest row's indent and three card slots past it into view
+  // (spec 3.7): the rows wrap at the width that shows and the table scrolls down.
+  const dockFit = $derived(
     fitZoom(
-      contentWidth(tableCards, tablePiles, sizeOf),
+      dockFitWidth(dockTableItems, dockShownRows, seatRows),
       scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
       zoomMin,
     ),
   );
+  const contentFit = $derived(dockMode ? dockFit : widthFit);
   // The fit holds still while the action menu is open, which any zoom change closes
   // (ContextMenu.svelte), and while a card or a pile is pressed or dragged, which a zoom would move
   // from under the finger: a card another player moves meanwhile changes the content's width.
@@ -572,29 +795,44 @@
     }
   });
   // Until the viewer chooses a zoom: a phone fits the content's width, as a row would not show
-  // across it at 100 %; a wider screen shows 100 % and scrolls. Live: a resize or a turn across
-  // 600 px switches between the two.
-  const defaultZoom = $derived(phone.current ? fittedZoom : 1);
-  // The surface size follows it, so it is declared before it.
-  const zoom = $derived(chosenZoom === null ? defaultZoom : clampZoom(chosenZoom, zoomMin));
-
-  // In table units: at least what shows, rounded down so that an empty table never scrolls.
-  const surface = $derived(
-    surfaceSize(tableCards, tablePiles, sizeOf, {
-      w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
-      h: Math.max(0, Math.floor((visibleHeight - 2 * SCROLL_PADDING - barStart) / zoom)),
-    }),
+  // across it at 100 %, and dock mode fits its widest indent and three cards; a wider screen shows
+  // 100 % and scrolls. Live: a resize or a turn across 600 px switches between them.
+  const defaultZoom = $derived(phone.current || dockMode ? fittedZoom : 1);
+  // Dock mode does not zoom (setZoom): it always shows its fit, whatever zoom another screen
+  // chose. The surface size follows the zoom, so it is declared before it.
+  const zoom = $derived(
+    chosenZoom === null || dockMode ? defaultZoom : clampZoom(chosenZoom, zoomMin),
   );
 
-  /** Where each marker lies, as the view mode draws it; none for a marker the table does not have. */
+  // What shows of the surface, in table units, rounded down so that an empty table never scrolls.
+  const visibleSurface = $derived({
+    w: Math.max(0, Math.floor((visibleWidth - 2 * SCROLL_PADDING) / zoom)),
+    h: Math.max(0, Math.floor((visibleHeight - topPadding - bottomPadding) / zoom)),
+  });
+  // In table units, or drawn units in dock mode: at least what shows. Dock mode's reaches as far
+  // as its drawn items and the empty slot after each row, and down its drawn rows.
+  const surface = $derived.by(() => {
+    if (dockView !== null) {
+      return {
+        w: Math.max(visibleSurface.w, Math.ceil(dockView.width)),
+        h: Math.max(visibleSurface.h, Math.ceil(dockView.height)),
+      };
+    }
+    const size = surfaceSize(tableCards, tablePiles, sizeOf, visibleSurface);
+    if (!phone.current) {
+      return size;
+    }
+    return { ...size, w: Math.max(size.w, Math.ceil(fittedWidth)) };
+  });
+
+  /** Where each marker lies, as the view mode draws it; none for a marker not shown. */
   const markers = $derived.by(() => {
-    const table = view.table;
     const result: Partial<Record<MarkerName, Point>> = {};
     for (const name of MARKERS) {
-      const at = table ? markerPoint(table, name) : undefined;
-      const y = at ? rowMap.toDisplay(at.y) : null;
-      if (at && y !== null) {
-        result[name] = { ...at, y };
+      const at = markersOnTable[name];
+      const drawn = at ? tableMap.toDisplay(at, markerItemId(name)) : null;
+      if (drawn) {
+        result[name] = drawn;
       }
     }
     return result;
@@ -836,19 +1074,39 @@
   // The view the table was last drawn from: the next one is animated from it.
   // svelte-ignore state_referenced_locally
   let drawnView = view;
+  // In dock mode, the layout it was last drawn with: its rows flow, and a card the next view leaves
+  // where it lay may be drawn elsewhere (dockMotions). Kept up to date as the screen changes too.
+  let drawnDock: DockLayout | null = null;
+  $effect.pre(() => {
+    const layout = shownDockView;
+    const shown = view;
+    untrack(() => {
+      if (shown === drawnView) {
+        drawnDock = layout;
+      }
+    });
+  });
 
   // Before the new view is drawn, while the cards still show where they were.
   // The viewer's own drop (DragLayer's landing, which ends with this view)
   // already lies where it went on the table or in the hand; onto a pile, it
   // flies there from its landed ghost, still drawn now, and into a stack, it
-  // slides from that ghost to its spot in the chain.
+  // slides from that ghost to its spot in the chain. In dock mode the rows
+  // flow: a drop slides from its ghost to its slot, and the cards it pushes
+  // along slide too (dockMotions).
   $effect.pre(() => {
     const next = view;
     untrack(() => {
       const prev = drawnView;
       drawnView = next;
+      const before = drawnDock;
+      const after = shownDockView;
+      drawnDock = after;
       if (prev === next) {
         return;
+      }
+      if (fedPreview !== null) {
+        pauseGlide();
       }
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
@@ -856,7 +1114,13 @@
         void tick().then(rehoverUnderPointer);
         return;
       }
-      const anims = diffViews(prev, next, interaction.landing ?? undefined);
+      let anims = diffViews(prev, next, interaction.landing ?? undefined);
+      if (before !== null && after !== null && prev.table && next.table) {
+        anims = dockMotions(anims, prev.table, next.table, {
+          before: (id) => before.itemBox(id),
+          after: (id) => after.itemBox(id),
+        });
+      }
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {
@@ -996,9 +1260,8 @@
 
   // ---- The arrow mode's hint ----
 
-  // A touch screen has no Esc key, and taps rather than clicks.
+  // Arrows are drawn with a mouse: touch mode offers none (spec 3.1).
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
-  const ARROW_HINT_TOUCH = 'Tap the card to point at — tap an empty spot to cancel.';
 
   // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
   // pointer hovers meanwhile; not while a Shift + drag draws it, which shows where it goes.
@@ -1016,10 +1279,11 @@
   // ---- The token pill ----
 
   // Found again by names at every view, so the pill follows its token through
-  // redraws; it goes with the token (zero) or the card (off the table).
+  // redraws; it goes with the token (zero) or the card (off the table). Touch mode has no pill:
+  // a tap on a token opens its card's inspector, which has the steppers.
   const counterShown = $derived.by(() => {
     const target = interaction.counter;
-    if (!target || view.you.role !== 'player' || interaction.dragging) {
+    if (!target || view.you.role !== 'player' || interaction.dragging || touchMode.current) {
       return null;
     }
     const card = cardsById.get(target.card);
@@ -1091,16 +1355,17 @@
     return open ? contextContentOf(open.element) : null;
   });
 
-  /** The header of the menu: what the card or pile is, whose it is; none once it is gone. */
-  const contextHeader = $derived.by((): ContextHeader | null => {
-    const element = interaction.contextMenu?.element;
+  /** The header of a menu or an inspector: what the card or pile is, whose it is; none once it is gone. */
+  function headerOf(element: TableElement | undefined): ContextHeader | null {
     if (element?.kind === 'pile') {
       const pile = byId(piles).get(element.id);
       return pile ? pileHeader(pile, view) : null;
     }
     const card = element ? cardsById.get(element.id) : undefined;
     return card ? cardHeader(card, faceOf(card), view) : null;
-  });
+  }
+
+  const contextHeader = $derived(headerOf(interaction.contextMenu?.element));
 
   // A redraw that leaves its element without actions (an emptied pile, a card gone) closes it.
   $effect(() => {
@@ -1128,6 +1393,11 @@
    * shows its back clears the preview).
    */
   function openContextMenu(element: TableElement, at: Point): void {
+    // A touch screen has the inspector instead, a bottom sheet the finger reaches.
+    if (touchMode.current) {
+      openInspector(element);
+      return;
+    }
     if (contextContentOf(element) === null) {
       return;
     }
@@ -1143,16 +1413,25 @@
    * band or an arrow never gets here (interaction.swallowNextClick). Alt +
    * click pings the spot, and Ctrl + click is macOS's right click, which
    * onTableContextMenu handles. A token or a status has its − / + pill
-   * instead, which hovering it shows, or tapping it on touch.
+   * instead, which hovering it shows. In touch mode, a tap opens the
+   * inspector, a token's too, or in select mode toggles the card in the group.
    */
   function onTableClick(event: MouseEvent): void {
     if (event.altKey || event.ctrlKey || interaction.isLongTouchClick(event)) {
       return;
     }
-    if (event.target instanceof Element && event.target.closest('.surface [data-counter]')) {
+    const onCounter =
+      event.target instanceof Element && event.target.closest('.surface [data-counter]') !== null;
+    if (onCounter && !touchMode.current) {
       return;
     }
     const element = contextElementOf(event.target);
+    if (element && selecting) {
+      if (element.kind === 'card') {
+        toggleSelected(element.id);
+      }
+      return;
+    }
     if (element && !interaction.closedByPress(element)) {
       openContextMenu(element, { x: event.clientX, y: event.clientY });
     }
@@ -1196,6 +1475,396 @@
     runItem(item, element);
   }
 
+  // ---- The inspector (touch mode) ----
+
+  // The element whose inspector (CardSheet.svelte) is open: a table card or pile, which a tap opens
+  // in place of the context menu, or a card of the raised hand. Its own state, not the context
+  // menu's: the sheet is modal, and a modal lets go of the context menu (see below).
+  let inspected = $state.raw<TableElement | null>(null);
+  // How many times an inspector has opened: each opening draws a sheet of its own. The switch from
+  // a deck to the card revealed on it is no opening: the same sheet turns the card over in place.
+  let inspectorOpenings = $state(0);
+
+  // The inspector of a card in play offers Select, which enters select mode.
+  const SELECT_ENTRY: ContextAction = {
+    kind: 'action',
+    item: { id: 'select', label: 'Select', group: 0 },
+  };
+
+  /** What the inspector lists: the context menu's entries, Select for a card in play, or a hand card's actions. */
+  function inspectorContentOf(element: TableElement): ContextContent | null {
+    if (element.kind === 'hand') {
+      const entries = contextItems(element, handActions(element.id, view, sizeOf));
+      return entries.length > 0 ? { entries } : null;
+    }
+    const content = contextContentOf(element);
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    if (content === null || content.entries.length === 0 || !card || !isFree(card)) {
+      return content;
+    }
+    return { entries: [...content.entries, { kind: 'separator' }, SELECT_ENTRY] };
+  }
+
+  // From the current view, as the context menu's: a redraw updates the entries and the counters.
+  const inspectorContent = $derived.by((): ContextContent | null => {
+    void catalog;
+    return inspected ? inspectorContentOf(inspected) : null;
+  });
+
+  const inspectorHeader = $derived(inspected ? headerOf(inspected) : null);
+
+  // A Reveal run from a deck's inspector: the inspector stays on the deck and waits for the card
+  // revealed there (spec 3.1), until the server refuses the action of that id or LANDING_MS passes.
+  let awaitingReveal = $state.raw<{ pile: string; action: number } | null>(null);
+  let awaitingRevealTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function awaitReveal(pile: string, action: number): void {
+    awaitingReveal = { pile, action };
+    clearTimeout(awaitingRevealTimer);
+    awaitingRevealTimer = setTimeout(() => (awaitingReveal = null), LANDING_MS);
+  }
+
+  function stopAwaitingReveal(): void {
+    awaitingReveal = null;
+    clearTimeout(awaitingRevealTimer);
+  }
+
+  $effect(() => () => clearTimeout(awaitingRevealTimer));
+
+  // The view that shows a card revealed on the awaited deck switches the inspector to that card, in
+  // the same sheet, which turns the deck over to it (CardSheet.svelte). Declared before the effect
+  // below, which runs after it: the switch comes first.
+  $effect(() => {
+    const awaited = awaitingReveal;
+    if (awaited === null) {
+      return;
+    }
+    // The viewer closed the inspector, or opened another, while the reveal was on its way.
+    const stillOnDeck = inspected?.kind === 'pile' && inspected.id === awaited.pile;
+    if (!stillOnDeck || session.lastError?.id === awaited.action) {
+      untrack(stopAwaitingReveal);
+      return;
+    }
+    const revealed = cards.find((card) => card.zone === 'table' && card.onPile === awaited.pile);
+    if (revealed) {
+      untrack(() => {
+        stopAwaitingReveal();
+        inspected = { kind: 'card', id: revealed.id };
+      });
+    }
+  });
+
+  // A redraw that takes its element away, or leaves it without actions, closes the inspector.
+  $effect(() => {
+    if (inspected && (inspectorContent === null || !isPresent(inspected))) {
+      untrack(() => (inspected = null));
+    }
+  });
+
+  /** A back's image, as CardBack draws it; none when the theme draws the back itself. */
+  function backImages(back: TableCard['back']): string[] {
+    const url = backUrl(back);
+    return url ? [url] : [];
+  }
+
+  /** The face the inspector shows: the card's, its back when it lies face down, a pile's top face or back. */
+  function inspectorImages(element: TableElement): string[] {
+    if (element.kind === 'pile') {
+      const pile = byId(piles).get(element.id);
+      if (!pile) {
+        return [];
+      }
+      const top = topOf(pile);
+      if (top && !isHidden(top)) {
+        return faceOf(top)?.images ?? [];
+      }
+      return backImages(top?.back ?? pileBack(pile));
+    }
+    const card = cardsById.get(element.id);
+    if (!card) {
+      return [];
+    }
+    return isHidden(card) ? backImages(card.back) : (faceOf(card)?.images ?? []);
+  }
+
+  /** Whether the inspected card lies landscape: a face-down card or a pile shows a portrait back or top. */
+  function inspectorLandscape(element: TableElement): boolean {
+    const card = element.kind === 'pile' ? undefined : cardsById.get(element.id);
+    return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
+  }
+
+  /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile or a hand card. */
+  function inspectorCounters(element: TableElement): SheetCounter[] {
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    return card ? countersFor(card) : [];
+  }
+
+  /** The stack a table card belongs to, as the inspector's carousel draws it; none for a card on its own or a pile. */
+  function inspectorStack(element: TableElement): StackCard[] {
+    if (element.kind !== 'card') {
+      return [];
+    }
+    return stackCardsOf(element.id, cards).map((id) => {
+      const member: TableElement = { kind: 'card', id };
+      const header = headerOf(member);
+      return {
+        id,
+        name: header?.name ?? '',
+        images: inspectorImages(member),
+        landscape: inspectorLandscape(member),
+        counters: inspectorCounters(member),
+        scheme: header?.scheme ?? false,
+      };
+    });
+  }
+
+  /**
+   * Shows another card of the inspected card's stack in the inspector: no opening, the same sheet
+   * switches to it (CardSheet.svelte), as for a card revealed on a deck.
+   */
+  function inspectStackCard(id: string): void {
+    inspected = { kind: 'card', id };
+  }
+
+  /** Opens the element's inspector, unless it has nothing to show. */
+  function openInspector(element: TableElement): void {
+    if (modal.open || interaction.dragging !== null || inspectorContentOf(element) === null) {
+      return;
+    }
+    inspected = element;
+    inspectorOpenings += 1;
+  }
+
+  function openHandInspector(id: string): void {
+    openInspector({ kind: 'hand', id });
+  }
+
+  function closeInspector(): void {
+    inspected = null;
+  }
+
+  // The submenus of actionsFor whose entries add to a card's counters: the inspector stays open on
+  // them, and shows the new counter with its steppers.
+  const COUNTER_SUBMENUS: readonly string[] = ['tokens', 'statuses', 'modifiers'];
+
+  /** Whether the item is an entry of the inspector's token, status or modifier submenu. */
+  function addsCounter(item: ActionItem): boolean {
+    return (inspectorContent?.entries ?? []).some(
+      (entry) =>
+        entry.kind === 'submenu' &&
+        COUNTER_SUBMENUS.includes(entry.id) &&
+        entry.entries.some((sub) => sub.kind === 'action' && sub.item === item),
+    );
+  }
+
+  /**
+   * Whether the item is a table card's Flip (actionsFor's `flip`, a stage card's too): the inspector
+   * stays open and turns the card over in it (CardSheet.svelte). A card revealed on a deck that goes
+   * back into it, turned face down, leaves the table: the inspector closes then, as for any card
+   * that goes.
+   */
+  function flipsCard(item: ActionItem, element: TableElement): boolean {
+    return element.kind === 'card' && item.id === 'flip';
+  }
+
+  /** Whether the item is a deck's Reveal (actionsFor's `reveal`), run from that deck's inspector. */
+  function revealsFrom(item: ActionItem, element: TableElement): boolean {
+    return element.kind === 'pile' && item.id === 'reveal';
+  }
+
+  /**
+   * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
+   * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
+   * as for a stepper, and for a card's Flip, which it shows turning over. A deck's Reveal keeps it
+   * open too, and switches it to the revealed card once the view shows it. A hand card's Play and
+   * Discard send what their keys send (keys.ts).
+   */
+  function runInspectorItem(item: ActionItem): void {
+    const element = inspected;
+    if (element === null) {
+      return;
+    }
+    if (revealsFrom(item, element)) {
+      const action = runItem(item, element);
+      if (action !== null) {
+        awaitReveal(element.id, action);
+      }
+      return;
+    }
+    if (!addsCounter(item) && !flipsCard(item, element)) {
+      inspected = null;
+    }
+    if (item === SELECT_ENTRY.item) {
+      enterSelectMode(element.id);
+      return;
+    }
+    if (element.kind === 'hand') {
+      runHandItem(item);
+      return;
+    }
+    runItem(item, element);
+  }
+
+  /** Runs one of a hand card's actions (handActions): sends what its key sends (keys.ts). */
+  function runHandItem(item: ActionItem): void {
+    const result = item.run?.();
+    if (result && 'kind' in result) {
+      send(result, targetOfKey(result));
+      if (result.card !== undefined) {
+        watchLeavingHand(result.card);
+      }
+    }
+  }
+
+  /** A stepper of the inspector: sends what the token pill's − / + sends (stepCounter). */
+  function stepInspected(counter: SheetCounter, delta: -1 | 1): void {
+    if (inspected?.kind === 'card') {
+      act(
+        { kind: counter.kind, card: inspected.id, name: counter.name, delta },
+        { kind: 'card', id: inspected.id },
+      );
+    }
+  }
+
+  // ---- Select mode (touch mode) ----
+
+  // Touch has no rubber band nor Shift: in select mode, each tap on a table card adds it to the group
+  // or takes it out. Done or Escape leaves it; the group stays, to drag or act on.
+  let selectMode = $state(false);
+  const selecting = $derived(selectMode && touchMode.current);
+
+  /** Enters select mode, the card whose inspector offered it selected. */
+  function enterSelectMode(id: string): void {
+    selectMode = true;
+    const card = cardsById.get(id);
+    if (card && isFree(card) && !interaction.group.has(id)) {
+      interaction.setGroup(new Set([...interaction.group, id]));
+    }
+  }
+
+  function leaveSelectMode(): void {
+    selectMode = false;
+  }
+
+  /** A tap in select mode: the card joins the group, or leaves it. Only a free card can be in it. */
+  function toggleSelected(id: string): void {
+    const card = cardsById.get(id);
+    if (!card || !isFree(card)) {
+      return;
+    }
+    const ids = [...interaction.group];
+    const toggled = ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id];
+    interaction.setGroup(new Set(toggled));
+  }
+
+  // ---- The dock (dock mode) ----
+
+  // The selected deck, which the dock's hand button shows and opens; none for a spectator.
+  const dockDeck = $derived(selected === null ? undefined : seatDeck(view, selected));
+  const dockHand = $derived(selected === null ? [] : handOf(selected));
+  const dockColor = $derived(
+    playerColorVar(selected === null ? view.you.color : (seatColor(view, selected) ?? 0)),
+  );
+
+  // The viewer's own decks, which the hand sheet's hero selector switches between.
+  const ownEntries = $derived(pickerEntries.filter((entry) => own.includes(entry.seat)));
+
+  /**
+   * Whether the dock's hand button is the drop target of the drag, as DragLayer has it
+   * (dockHandTarget): for a hand card, which goes back there, and for what goes to a hand
+   * (goesToHand), every card of a group included.
+   */
+  const dockDropActive = $derived.by(() => {
+    const held = interaction.dragging;
+    if (!dockMode || !held) {
+      return false;
+    }
+    const from = sourceOf(held.element, view, held.card ?? undefined);
+    if (!from) {
+      return false;
+    }
+    if (from.kind === 'hand') {
+      return true;
+    }
+    const grouped =
+      from.kind === 'card' && interaction.group.has(from.card)
+        ? groupUnits(interaction.group, cards)
+        : [];
+    return goesToHand(from, grouped.length > 1 ? grouped : [], view);
+  });
+
+  // The sheets the dock opens: the selected deck's hand, the history.
+  let handSheetShown = $state(false);
+  let historyShown = $state(false);
+
+  // Out of dock mode (a phone turned into a tablet's size), the dock's sheets go with it.
+  $effect.pre(() => {
+    if (!dockMode) {
+      untrack(() => {
+        handSheetShown = false;
+        historyShown = false;
+      });
+    }
+  });
+
+  function openHandSheet(): void {
+    if (selected !== null && !modal.open) {
+      handSheetShown = true;
+    }
+  }
+
+  function closeHandSheet(): void {
+    handSheetShown = false;
+  }
+
+  // The hand card the viewer just played or discarded (hand sheet or inspector), and its seat,
+  // until the view shows it out of that hand. If it was the last card, the hand sheet closes: by
+  // then the card's rise has been measured from the carousel (motion.animate, before the view is
+  // drawn) and plays on above the sheet sliding away. Any other way the hand empties keeps it open.
+  let leavingHand = $state.raw<{ id: string; seat: number } | null>(null);
+
+  /** Notes a hand card the viewer sent away from its hand, for the effect below to watch. */
+  function watchLeavingHand(id: string): void {
+    const seat = own.find((s) => view.table?.hands?.[areaOf(s)]?.includes(id));
+    leavingHand = seat === undefined ? null : { id, seat };
+  }
+
+  $effect(() => {
+    const leaving = leavingHand;
+    if (leaving === null) {
+      return;
+    }
+    const hand = view.table?.hands?.[areaOf(leaving.seat)] ?? [];
+    if (hand.includes(leaving.id)) {
+      return;
+    }
+    untrack(() => {
+      leavingHand = null;
+      if (hand.length === 0 && selected === leaving.seat) {
+        closeHandSheet();
+      }
+    });
+  });
+
+  /** Play or Discard on a card of the hand sheet: what the inspector's entry sends (handActions). */
+  function runHandAction(id: string, action: 'play' | 'discard'): void {
+    const item = handActions(id, view, sizeOf).find((candidate) => candidate.id === action);
+    if (item && !item.disabled) {
+      runHandItem(item);
+    }
+  }
+
+  function openHistory(): void {
+    if (modal.open) {
+      return;
+    }
+    historyShown = true;
+  }
+
+  function closeHistory(): void {
+    historyShown = false;
+  }
+
   /** The "How many cards?" question being asked, if any. */
   let asking = $state<CountQuestion | null>(null);
 
@@ -1213,19 +1882,27 @@
     }
   });
 
-  /** Runs an action item on its element: the hovered one (a key), or the context menu's. */
-  function runItem(item: ActionItem, element: TableElement | null = interaction.hovered): void {
+  /**
+   * Runs an action item on its element: the hovered one (a key), or the context menu's. Returns the
+   * id of the action sent to the server, if one went out (session.act).
+   */
+  function runItem(
+    item: ActionItem,
+    element: TableElement | null = interaction.hovered,
+  ): number | null {
     if (!item.run || item.disabled || !element) {
-      return;
+      return null;
     }
     const result = item.run();
     if ('ask' in result) {
       asking = result.ask;
-    } else if ('local' in result) {
-      runLocal(result, element);
-    } else {
-      send(result, element);
+      return null;
     }
+    if ('local' in result) {
+      runLocal(result, element);
+      return null;
+    }
+    return send(result, element);
   }
 
   function runLocal(local: LocalAction, element: TableElement): void {
@@ -1259,12 +1936,12 @@
     }
   }
 
-  function send(action: Action, target: TableElement | null): void {
+  function send(action: Action, target: TableElement | null): number | null {
     // A new Look or Search opens its box as soon as its view arrives.
     if (action.kind === 'look' || action.kind === 'search') {
       closingView = false;
     }
-    act(action, target);
+    return act(action, target);
   }
 
   // ---- The card boxes ----
@@ -1426,6 +2103,16 @@
     if (target.closest('.surface .chip')) {
       return;
     }
+    // In select mode a tap toggles a card in the group (onTableClick), and nothing else: the press
+    // reaches neither the element, whose press would let go of the group (DragLayer), nor an empty
+    // spot's handling, which would clear it. A press on a selected card goes on: a hold drags the group.
+    if (selecting) {
+      const id = tableCardOf(target);
+      if (id === undefined || !interaction.group.has(id)) {
+        event.stopPropagation();
+        return;
+      }
+    }
     // Alt + click pings the spot (spec 5.8); spectators cannot ping.
     if (event.altKey && event.button === 0 && presenceLayer?.ping(event)) {
       event.preventDefault();
@@ -1579,6 +2266,12 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
+    // Escape leaves select mode and keeps the group, which the table's Escape would clear.
+    if (selecting && event.key === 'Escape' && !modal.open) {
+      event.preventDefault();
+      leaveSelectMode();
+      return;
+    }
     handleKey(event, {
       view,
       items: hoveredItems,
@@ -1647,9 +2340,13 @@
   /**
    * Zooms around a point of the screen, keeping the table point under it in
    * place. Without a point, zooms from the left edge, so the decks and
-   * identities stay in view.
+   * identities stay in view. Dock mode does not zoom, nor remember a zoom: a
+   * phone always shows its fit, and a pinch only moves the table about.
    */
   async function setZoom(wanted: number, pointX?: number, pointY?: number): Promise<void> {
+    if (dockMode) {
+      return;
+    }
     const from = zoom;
     const next = clampZoom(wanted, zoomMin);
     // The viewer chose it, even when it does not change: the table no longer fits its width.
@@ -1666,7 +2363,7 @@
     // What lies under the point now, in zoomed px of the surface (past the scroller's padding,
     // which keeps the top bar's room at the top on a small screen): the page is not redrawn
     // before the tick.
-    const paddingTop = SCROLL_PADDING + barStart;
+    const paddingTop = topPadding;
     const underX = wrap.scrollLeft + x - box.left - SCROLL_PADDING;
     const underY = wrap.scrollTop + y - box.top - paddingTop;
 
@@ -1679,6 +2376,24 @@
   // The wheel can zoom finer than the 10 % steps: it keeps its own target so
   // small trackpad moves add up instead of rounding away.
   let wheelTarget: number | null = null;
+
+  // What a double tap does not zoom on: an element of the table, which a tap acts on.
+  const NOT_EMPTY = '.card, .marker, [data-counter], .chip, button';
+
+  // Touch mode: two fingers pinch-zoom the table and pan it, and a double tap on an empty spot
+  // toggles the fit zoom and the readable one (touchZoom.ts). The zoom they choose is remembered,
+  // as the buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the
+  // table and the page itself never pinch-zooms.
+  const fingerZoom = touchZoom({
+    enabled: () => touchMode.current,
+    zoom: () => zoom,
+    fit: () => defaultZoom,
+    setZoom: (wanted, x, y) => {
+      wheelTarget = null;
+      void setZoom(wanted, x, y);
+    },
+    isEmptySpot: (target) => target instanceof Element && target.closest(NOT_EMPTY) === null,
+  });
 
   function zoomWithButtons(wanted: number): void {
     wheelTarget = null;
@@ -1716,15 +2431,39 @@
   bind:innerHeight={windowHeight}
 />
 
+<!--
+  The hand sheet's header: the hero selector to switch between the viewer's decks, or the one deck's
+  hero alone.
+-->
+{#snippet deckPicker()}
+  {#if ownEntries.length > 1 && selected !== null}
+    <HeroPicker
+      entries={ownEntries}
+      current={selected}
+      label="Hand shown"
+      compact
+      onpick={selectSeat}
+    />
+  {:else if dockDeck}
+    <span class="deck-avatar" style:--seat={dockColor} aria-hidden="true">
+      {#if dockDeck.heroImage}
+        <CardArt src={dockDeck.heroImage} aspect={1} />
+      {/if}
+    </span>
+  {/if}
+{/snippet}
+
 <!-- The zoom is set on the whole page, so a layer outside the table (a drag ghost) can follow it. -->
 <div
   class="app"
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
-  class:history-collapsed={historyCollapsed && !narrow.current}
+  class:history-collapsed={historyCollapsed && sidePanel}
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
+  class:dock-mode={dockMode}
+  class:dock-rail={dockRail}
   style:--z={zoom}
   style:--you={playerColorVar(view.you.color)}
   style:--edge="{TABLE_EDGE}px"
@@ -1733,6 +2472,7 @@
   style:--content-gutter="{SCROLL_PADDING}px"
   style:--bar-start="{barStart}px"
   style:--bar-room="{barRoom}px"
+  style:--table-bottom={dockMode ? `${bottomPadding}px` : undefined}
   bind:this={app}
 >
   <div class="top">
@@ -1746,7 +2486,8 @@
         ? { disabled: !canReadyAll, run: () => act({ kind: 'readyAll' }) }
         : undefined}
       scroller={wrap}
-      bind:hidden={barHidden}
+      autoHide={!dockMode}
+      bind:hidden={() => barHidden, (hidden) => (scrolledAway = hidden)}
     />
   </div>
 
@@ -1762,6 +2503,7 @@
     oncontextmenu={onTableContextMenu}
     onwheel={onWheel}
     onscroll={measureFocus}
+    {@attach fingerZoom}
   >
     <div class="table">
       <Surface
@@ -1777,12 +2519,14 @@
         {markers}
         markersMovable={view.you.role === 'player'}
         canDrag={(element) => sourceOf(element, view) !== null}
+        {shifts}
+        glide={shiftsGlide}
       />
       <!-- The arrows follow the cards while they move. -->
       <Arrows
         {view}
         root={app}
-        layout={[zoom, surface, rowMap, motion.frame]}
+        layout={[zoom, surface, tableMap, motion.frame]}
         raised={interaction.dragging !== null || interaction.landing !== null || motion.moving}
       />
     </div>
@@ -1793,12 +2537,12 @@
     {view}
     presence={session.presence}
     send={(fields) => session.sendPresence(fields)}
-    away={modal.open || handRaised}
+    away={modal.open || handRaised || handSheetShown}
     root={app}
     {zoom}
     {faceOf}
-    {rowMap}
-    layout={[surface, rowMap]}
+    {tableMap}
+    layout={[surface, tableMap]}
   />
 
   {#if interaction.band}
@@ -1820,51 +2564,57 @@
   <!--
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
     Undo floats there, left of the zoom control. On a small screen, both share one bar above the
-    resting hand.
+    resting hand. In dock mode the dock has Undo, and fingers zoom.
   -->
-  <div
-    class="corner"
-    class:floatbar={small.current}
-    bind:this={cornerBox}
-    bind:clientHeight={cornerHeight}
-    bind:offsetWidth={cornerWidth}
-  >
-    {#if narrow.current}
-      <div class="undo floatbar">
-        <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
-        <button
-          class="btn-ghost"
-          aria-label={UNDO_TIP}
-          data-tip={view.canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
-          aria-disabled={!view.canUndo}
-          onclick={() => {
-            if (view.canUndo) {
-              undo();
-            }
-          }}
-          {@attach pointerBlur}
-        >
-          <Icon name="undo" />
-        </button>
-      </div>
-      {#if small.current}
-        <span class="floatbar-sep" aria-hidden="true"></span>
+  {#if !dockMode}
+    <div
+      class="corner"
+      class:floatbar={small.current}
+      bind:this={cornerBox}
+      bind:clientHeight={cornerHeight}
+      bind:offsetWidth={cornerWidth}
+    >
+      {#if narrow.current}
+        <div class="undo floatbar">
+          <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+          <button
+            class="btn-ghost"
+            aria-label={UNDO_TIP}
+            data-tip={view.canUndo ? UNDO_TIP : NOTHING_TO_UNDO}
+            aria-disabled={!view.canUndo}
+            onclick={() => {
+              if (view.canUndo) {
+                undo();
+              }
+            }}
+            {@attach pointerBlur}
+          >
+            <Icon name="undo" />
+          </button>
+        </div>
+        {#if small.current}
+          <span class="floatbar-sep" aria-hidden="true"></span>
+        {/if}
       {/if}
-    {/if}
-    <!--
+      <!--
       Touch mode has no keyboard: no shortcuts button. The % label goes back to a phone's fit,
       or to 100 % on a wider screen.
     -->
-    <ZoomControl
-      {zoom}
-      onzoom={zoomWithButtons}
-      onfit={phone.current ? fitToWidth : undefined}
-      onkeys={touchMode.current ? undefined : toggleKeySheet}
-      keysShown={keySheetShown}
-      bind:keysButton
-    />
-  </div>
+      <ZoomControl
+        {zoom}
+        onzoom={zoomWithButtons}
+        onfit={phone.current ? fitToWidth : undefined}
+        onkeys={touchMode.current ? undefined : toggleKeySheet}
+        keysShown={keySheetShown}
+        bind:keysButton
+      />
+    </div>
+  {/if}
 
+  <!--
+    In dock mode too, compact, floating above the dock or right of the rail: there it is the only way
+    to pick the player shown in "Villain + player", and to switch decks without opening the hand.
+  -->
   {#if pickerShown && pickerCurrent !== null}
     <div class="seatpick">
       <HeroPicker
@@ -1888,33 +2638,83 @@
     />
   {/if}
 
-  <!-- The hands, clipped to the table's column: their backdrop reaches its edges and no further. -->
-  <div class="hands">
-    <!--
+  <!--
+    The hands, clipped to the table's column: their backdrop reaches its edges and no further. In
+    dock mode, the dock's hand button opens the hand in a sheet instead.
+  -->
+  {#if !dockMode}
+    <div class="hands">
+      <!--
       Keyed by place, not by seat: a single hand stays the same one as Q or the selector shows
       another deck's, so a hand pinned up by a tap stays up to read that one too.
     -->
-    {#each handSeats as seat, i (i)}
-      {@const cardSize = raisedCardOf(seat)}
-      <Hand
-        cards={handOf(seat)}
-        {faceOf}
-        {captionOf}
-        {cardSize}
-        restCardSize={baseHandCard}
-        restDrop={handRestDrop(baseHandCard, baseHandDrop, cardSize)}
-        {seat}
-        color={playerColorVar(seatColor(view, seat) ?? 0)}
-        label={handLabel(seat)}
-        active={seat === handSeat}
-        onactivate={() => selectSeat(seat)}
-        inset={handsRoom}
-        restPlace={restPlaces[i]}
-        hidden={handRaised && seat !== handSeat}
-        bind:open={handsOpen[i]}
-      />
-    {/each}
-  </div>
+      {#each handSeats as seat, i (i)}
+        {@const cardSize = raisedCardOf(seat)}
+        <Hand
+          cards={handOf(seat)}
+          {faceOf}
+          {captionOf}
+          {cardSize}
+          restCardSize={baseHandCard}
+          restDrop={handRestDrop(baseHandCard, baseHandDrop, cardSize)}
+          {seat}
+          color={playerColorVar(seatColor(view, seat) ?? 0)}
+          label={handLabel(seat)}
+          active={seat === handSeat}
+          onactivate={() => selectSeat(seat)}
+          inset={handsRoom}
+          restPlace={restPlaces[i]}
+          hidden={handRaised && seat !== handSeat}
+          onopen={touchMode.current ? openHandInspector : undefined}
+          bind:open={handsOpen[i]}
+        />
+      {/each}
+    </div>
+  {/if}
+
+  {#if dockMode}
+    <Dock
+      handCount={dockHand.length}
+      minis={dockHand.slice(0, 4).map((card) => faceOf(card)?.images ?? [])}
+      avatar={dockDeck?.heroImage ? [dockDeck.heroImage] : null}
+      heroName={dockDeck?.heroName ?? ''}
+      color={dockColor}
+      canUndo={view.canUndo ?? false}
+      dropActive={dockDropActive}
+      landscape={dockRail}
+      showHand={selected !== null}
+      onhand={openHandSheet}
+      onundo={undo}
+      onhistory={openHistory}
+    />
+    <!-- The safe areas under the dock and over the table, measured (safeBottom, safeTop). -->
+    <div class="safe-bottom" aria-hidden="true" bind:clientHeight={safeBottom}></div>
+    <div class="safe-top" aria-hidden="true" bind:clientHeight={safeTop}></div>
+  {/if}
+
+  {#if handSheetShown && selected !== null}
+    <HandSheet
+      cards={dockHand}
+      {faceOf}
+      seat={selected}
+      area={areaOf(selected)}
+      landscape={dockRail}
+      picker={deckPicker}
+      onplay={(id) => runHandAction(id, 'play')}
+      ondiscard={(id) => runHandAction(id, 'discard')}
+      onclose={closeHandSheet}
+    />
+  {/if}
+
+  {#if historyShown}
+    <HistorySheet
+      log={view.log}
+      canUndo={view.canUndo ?? false}
+      onundo={undo}
+      onclose={closeHistory}
+      nameOf={historyName}
+    />
+  {/if}
 
   <Flights {faceOf} {captionOf} />
 
@@ -1924,22 +2724,18 @@
     root={app}
     {faceOf}
     {sizeOf}
-    {rowMap}
+    {tableMap}
+    drawnMap={shownDockView ?? tableMap}
     {selected}
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
+    onpreview={(preview) => (fedPreview = preview === null ? null : { preview, view })}
     lastError={session.lastError}
   />
 
   {#if arrowHintShown && wrap}
-    <ArrowHint
-      anchor={arrowSource}
-      text={touchMode.current ? ARROW_HINT_TOUCH : ARROW_HINT}
-      bounds={wrap}
-      {zoom}
-      version={view}
-    />
+    <ArrowHint anchor={arrowSource} text={ARROW_HINT} bounds={wrap} {zoom} version={view} />
   {/if}
 
   {#if interaction.contextMenu && contextHeader && contextContent && wrap}
@@ -1956,6 +2752,34 @@
         onclose={() => interaction.closeContextMenu()}
       />
     {/key}
+  {/if}
+
+  {#if inspected && inspectorHeader && inspectorContent}
+    <!-- Created afresh for each opening, as the menu: the focus it gives back is the one before it. -->
+    {#key inspectorOpenings}
+      <CardSheet
+        header={inspectorHeader}
+        entries={inspectorContent.entries}
+        note={inspectorContent.note}
+        images={inspectorImages(inspected)}
+        landscape={inspectorLandscape(inspected)}
+        counters={inspectorCounters(inspected)}
+        stack={inspectorStack(inspected)}
+        cardId={inspected.kind === 'card' ? inspected.id : undefined}
+        onrun={runInspectorItem}
+        onstep={stepInspected}
+        onpick={inspectStackCard}
+        onclose={closeInspector}
+      />
+    {/key}
+  {/if}
+
+  {#if selecting}
+    <div class="notice selectbar" role="group" aria-label="Select mode">
+      <span>{interaction.group.size} selected</span>
+      <span aria-hidden="true">·</span>
+      <button class="btn-ghost done" onclick={leaveSelectMode}>Done</button>
+    </div>
   {/if}
 
   {#if counterShown}
@@ -1999,7 +2823,7 @@
 
   <Tooltip />
 
-  {#if !narrow.current}
+  {#if sidePanel}
     <aside class="side" id="history-panel" aria-label="History">
       <SidePanel
         log={view.log}
@@ -2261,6 +3085,22 @@
     font-size: 13px;
   }
 
+  /* The select mode's pill (touch mode): a notice with its Done button, a finger's size. */
+  .selectbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 0 16px;
+  }
+
+  .selectbar .done {
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
   /*
     The hands' column: the table's, laid out as one cell for the hands and the veil, clipped across
     only. It takes no pointer and makes no stacking context: the hands and the veil stack with the
@@ -2294,6 +3134,21 @@
   */
   .app.compact .seatpick {
     margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
+  }
+
+  /*
+    Dock mode: just above the dock's bar (--table-bottom, its room above the safe area), on its left
+    edge. As the dock, under the top bar and the sheets.
+  */
+  .app.dock-mode .seatpick {
+    z-index: 30;
+    margin: 0 0 var(--table-bottom) calc(8px + env(safe-area-inset-left));
+  }
+
+  /* The rail: at the top of the table right of it, under the top bar (--bar-room, the notch included). */
+  .app.dock-rail .seatpick {
+    align-self: start;
+    margin: calc(var(--bar-room) + 8px) 0 0 8px;
   }
 
   /* As the zoom control: under the veil and the raised hand. */
@@ -2343,6 +3198,62 @@
     stroke-width: 2;
   }
 
+  /*
+    Dock mode: the top bar always shows, below the notch, its background behind the notch too; the
+    table keeps the room of both at its start (--bar-start). Over the table, as the bar itself
+    (TopBar.svelte, 100): positioned, or the scroller would cover its background.
+  */
+  .app.dock-mode .top {
+    position: relative;
+    z-index: 100;
+    padding-top: env(safe-area-inset-top);
+    background: var(--bg);
+  }
+
+  /* With the bar at the bottom, the bottom of the table scrolls out from under the dock. */
+  .app.dock-mode .table {
+    padding-bottom: var(--table-bottom);
+  }
+
+  /* The rail: the table, and all that floats over it, keep right of the rail and the notch. */
+  .app.dock-rail {
+    padding-left: calc(64px + env(safe-area-inset-left));
+  }
+
+  /* The safe area at the bottom of the screen, as tall as it is: measured, never seen. */
+  .safe-bottom {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: env(safe-area-inset-bottom);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* The safe area at the top of the screen, likewise. */
+  .safe-top {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: env(safe-area-inset-top);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* The one deck's hero in the hand sheet's header, ringed with its seat's colour. */
+  .deck-avatar {
+    flex: none;
+    position: relative;
+    width: 36px;
+    height: 36px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--seat);
+    box-shadow: 0 0 0 3px var(--seat);
+  }
+
   @media (max-width: 900px) {
     .app {
       grid-template-columns: minmax(0, 1fr);
@@ -2355,9 +3266,9 @@
   /*
     On a small screen the top bar floats over the top of the play area, which takes the window's
     whole height: sliding away, it shows the table under it, and nothing else moves. A short screen
-    wider than a narrow one (a large phone on its side) keeps the history column, which then runs
-    from the top of the window: the bar floats over the play area only, its icons on the play
-    area's edge.
+    wider than a narrow one (a short window with a mouse) keeps the history column, which then
+    runs from the top of the window: the bar floats over the play area only, its icons on the play
+    area's edge. Dock mode never has the column (below).
   */
   .app.compact {
     grid-template-rows: minmax(0, 1fr);
@@ -2379,6 +3290,19 @@
     .app.compact .top {
       --bar-gutter-end: 8px;
     }
+  }
+
+  /*
+    Dock mode has no history column at any width, even on a large phone on its side: the table
+    takes the window and the bar's icons sit close to the window's edge.
+  */
+  .app.dock-mode {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'table';
+  }
+
+  .app.dock-mode .top {
+    --bar-gutter-end: 8px;
   }
 
   /*

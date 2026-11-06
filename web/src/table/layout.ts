@@ -216,7 +216,7 @@ const HOME_KINDS: readonly PileKind[] = [
 ];
 
 /** The label a pile frames itself by: a scenario deck and its discard pile have a frame of their own. */
-function frameLabel(pile: PileView): string | undefined {
+export function frameLabel(pile: PileView): string | undefined {
   return pile.owner === -1 && pile.label ? pile.label : undefined;
 }
 
@@ -649,7 +649,7 @@ export function restingFanPositions(
 // about 18 further on each side: 40 lets two neighbours both be exhausted
 // without overlapping. The row is as high as a portrait card.
 const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
-const SLOT_GAP = 40;
+export const SLOT_GAP = 40;
 
 /**
  * The free slot for a played card, from the hand or from a pile box: the

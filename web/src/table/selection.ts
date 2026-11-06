@@ -3,10 +3,10 @@
 // sends. Pure helpers; Table.svelte draws the band and DragLayer.svelte drags
 // the group.
 
-import type { Action, CardView, View } from '../lib/types';
+import type { Action, CardView, Point, View } from '../lib/types';
 import { mainCardOf, pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
 import { TABLE_LIMIT } from './layout';
-import { ALL_ROWS, type RowMap } from './rows';
+import { ALL_TABLE, type TableMap } from './rows';
 
 /**
  * Mirrors maxCount in internal/game/action.go: the most cards one action
@@ -60,8 +60,8 @@ export function groupUnits(selected: ReadonlySet<string>, cards: readonly CardVi
  * the same pile, deck or hand. A group tucks under nothing: dropped over a
  * card, the lead moves there as over the table (DragLayer.svelte). The delta
  * is cut short so that every unit stays within the table, offsets kept. The
- * offsets are those drawn, through `rows`: a group across rows drawn closer
- * or further apart than they lie keeps its shape on the screen. One unit
+ * offsets are those drawn, through `map`: a group across rows drawn closer
+ * or further apart than they lie, or wrapped, keeps its shape on the screen. One unit
  * sends its own action; null when the drop does nothing for a group (a play,
  * a deal), moves nothing, or carries more units than the server takes in one
  * group.
@@ -71,12 +71,12 @@ export function groupAction(
   lead: string,
   single: Action,
   cards: readonly CardView[],
-  rows: RowMap = ALL_ROWS,
+  map: TableMap = ALL_TABLE,
 ): Action | null {
   let actions: Action[] | null;
   switch (single.kind) {
     case 'move':
-      actions = groupMoves(units, lead, single, cards, rows);
+      actions = groupMoves(units, lead, single, cards, map);
       break;
     case 'discard':
     case 'toPile':
@@ -99,44 +99,48 @@ export function groupAction(
 
 /**
  * Every unit moved by the lead's delta as drawn, cut short at the table's
- * edges; null when nothing moves. Across the width, drawn and table units are
- * the same; down the table, each unit lands on the height drawn at its drawn
- * height plus the delta, which only the rows drawn as they lie keep as a
- * table offset (rows.ts, spreadRows).
+ * edges; null when nothing moves. Each unit lands on the point drawn at its
+ * drawn corner plus the delta, which only a table drawn as it lies keeps as a
+ * table offset (rows.ts, spreadRows; dockLayout.ts).
  */
 function groupMoves(
   units: readonly string[],
   lead: string,
   single: Action,
   cards: readonly CardView[],
-  rows: RowMap,
+  map: TableMap,
 ): Action[] | null {
   const leadCard = cards.find((card) => card.id === lead);
   if (!leadCard || single.x === undefined || single.y === undefined) {
     return null;
   }
-  const leadDrawn = rows.toDisplay(leadCard.y);
-  const landingDrawn = rows.toDisplay(single.y);
+  const leadDrawn = map.toDisplay(leadCard, leadCard.id);
+  const landingDrawn = map.toDisplay({ x: single.x, y: single.y });
   if (leadDrawn === null || landingDrawn === null) {
     return null;
   }
-  const moved: { card: CardView; drawnY: number }[] = [];
+  const moved: { card: CardView; drawn: Point }[] = [];
   for (const id of units) {
     const card = cards.find((c) => c.id === id);
     // A unit is a card drawn on the table: one in a hidden row has left the group (pruneGroup).
-    const drawnY = card ? rows.toDisplay(card.y) : null;
-    if (!card || drawnY === null) {
+    const drawn = card ? map.toDisplay(card, card.id) : null;
+    if (!card || drawn === null) {
       return null;
     }
-    moved.push({ card, drawnY });
+    moved.push({ card, drawn });
   }
-  const xs = moved.map(({ card }) => card.x);
-  const drawnYs = moved.map(({ drawnY }) => drawnY);
-  // Mirrors the server's bounds: every corner within 0..TABLE_LIMIT. The table's top is drawn at 0.
-  const drawnLimit = rows.toDisplay(TABLE_LIMIT) ?? Infinity;
-  const dx = clamp(single.x - leadCard.x, -Math.min(...xs), TABLE_LIMIT - Math.max(...xs));
+  const drawnXs = moved.map(({ drawn }) => drawn.x);
+  const drawnYs = moved.map(({ drawn }) => drawn.y);
+  // Mirrors the server's bounds: every corner within 0..TABLE_LIMIT. The table's top-left corner
+  // is drawn at 0, and no width is drawn larger than it lies.
+  const drawnLimit = map.toDisplay({ x: 0, y: TABLE_LIMIT })?.y ?? Infinity;
+  const dx = clamp(
+    landingDrawn.x - leadDrawn.x,
+    -Math.min(...drawnXs),
+    TABLE_LIMIT - Math.max(...drawnXs),
+  );
   const dy = clamp(
-    landingDrawn - leadDrawn,
+    landingDrawn.y - leadDrawn.y,
     -Math.min(...drawnYs),
     drawnLimit - Math.max(...drawnYs),
   );
@@ -145,12 +149,10 @@ function groupMoves(
   }
   // Rounded to the unit, not snapped: the lead lands on its spot, snapped where it was dropped, and
   // the others keep their offsets to it, on the grid or not.
-  return moved.map(({ card, drawnY }) => ({
-    kind: 'move',
-    card: card.id,
-    x: card.x + dx,
-    y: Math.round(rows.toTable(drawnY + dy)),
-  }));
+  return moved.map(({ card, drawn }) => {
+    const spot = map.toTable({ x: drawn.x + dx, y: drawn.y + dy });
+    return { kind: 'move', card: card.id, x: Math.round(spot.x), y: Math.round(spot.y) };
+  });
 }
 
 function clamp(value: number, low: number, high: number): number {

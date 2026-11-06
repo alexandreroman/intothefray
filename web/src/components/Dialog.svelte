@@ -5,7 +5,8 @@
   click does nothing else. While it is shown, a modal counts as open (see
   modal.svelte.ts): the page does not scroll, the table keys, hover and drags
   stop. A wide box (the card boxes, the shortcuts sheet) draws its own heading
-  and spacing. The box is centred unless `at` places it.
+  and spacing. The box is centred unless `at` places it; a box that fills
+  takes the whole screen, within its safe areas (a card box on a phone).
 -->
 <script lang="ts">
   import { onDestroy, onMount, type Snippet } from 'svelte';
@@ -17,6 +18,7 @@
     oncancel,
     onkeydown,
     wide = false,
+    fill = false,
     at,
     width,
     describedby,
@@ -33,6 +35,8 @@
     onkeydown?: (event: KeyboardEvent) => void;
     /** The card boxes' size, as wide as the window allows, without padding. */
     wide?: boolean;
+    /** The box takes the whole screen, within its safe areas, with no margin. */
+    fill?: boolean;
     /** Where the box's top left corner goes, in px from the window's; centred without it. */
     at?: { top: number; left: number };
     /** A width of its own (any CSS length), rather than its kind's. */
@@ -142,6 +146,7 @@
 <!-- The backdrop is a pointer target only: the keyboard closes the dialog with Escape. -->
 <div
   class="backdrop"
+  class:fill
   role="presentation"
   onpointerdown={onBackdropPointerDown}
   onclick={onBackdropClick}
@@ -149,6 +154,7 @@
   <div
     class="box"
     class:wide
+    class:fill
     class:placed={at !== undefined}
     style:top={at ? `${at.top}px` : undefined}
     style:left={at ? `${at.left}px` : undefined}
@@ -205,6 +211,24 @@
     width: min(920px, 100%);
     max-height: 88vh;
     padding: 0;
+  }
+
+  /* A flex row rather than a grid: the box's size is then the backdrop's, never its content's. */
+  .backdrop.fill {
+    display: flex;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+  }
+
+  .box.fill {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .box.placed {

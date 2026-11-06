@@ -1,8 +1,12 @@
 import type { CardView, PileView, TableView, View } from '../lib/types';
 import {
   dealRecipient,
+  DROP_DWELL_MS,
+  DROP_MARGIN,
   dropAction,
+  dropKey,
   dropTarget,
+  goesToHand,
   handAreaOf,
   handBand,
   insertIndex,
@@ -11,11 +15,14 @@ import {
   pileTargets,
   sourceOf,
   stackOf,
+  SteadyDrop,
   tucks,
+  unshifted,
   type DragSource,
   type DropRect,
 } from './drag';
-import { spreadRows } from './rows';
+import { dockLayout, type DockItem } from './dockLayout';
+import { spreadRows, tableMapOf } from './rows';
 import { card, pile, playingView, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
@@ -163,7 +170,7 @@ describe('dropAction', () => {
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
     // "Villain + player" with the second of three players, rows as close as they go: the villain's
     // row drawn 270 high, its empty band from 210 squeezed into 60, then row 2 (600 to 820).
-    const rows = spreadRows(220, 3, 2);
+    const rows = tableMapOf(spreadRows(220, 3, 2));
     const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
     // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
     expect(yAt(267)).toBe(600);
@@ -174,6 +181,53 @@ describe('dropAction', () => {
     // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
     expect(yAt(486)).toBe(810);
     expect(yAt(2000)).toBe(810);
+  });
+
+  // Player 1's owner frame, around piles at 0 and 130: the grid of dock mode starts at its left.
+  const FRAME: DockItem = { id: 'frame', x: -10, y: 400, w: 262, h: 177, kind: 'frame' };
+
+  it('dropAction in dock mode inserts a card among the units of the row it is dropped on', () => {
+    // Player 1's row (top 380) at 0.6, wrapped at 400, on columns from its frame's left (−6), 91.2
+    // apart: c0 (the indent, 176.4) and c1 on the first line, its top 12, the cards 18 lower; c2
+    // and c3 on the second, from the first column, its top 12 + 118.2 (the frame) + 16 = 146.2,
+    // their slots' middles at 27.6 and 118.8. The drop spot is the card's drawn middle.
+    const cards: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
+      id: `c${i}`,
+      x,
+      y: 410,
+      w: 112,
+      h: 157,
+      kind: 'card',
+    }));
+    const items = [FRAME, ...cards];
+    const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
+    const spot = (corner: { x: number; y: number }) =>
+      map.insertAt({ x: corner.x + 33.6, y: corner.y + 47.1 }, 112);
+    const at = (x: number, y: number) =>
+      dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map, spot);
+
+    // Before c3, its middle at 83.6: between c2 (604..716) and c3 (756..868), 736 − 56.
+    expect(at(50, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
+    // Under the frame, left of c2's middle: before c2, (564 + 604) / 2 − 56 = 528, to 530.
+    expect(at(-30, 150)).toEqual({ kind: 'move', card: 'c', x: 530, y: 410 });
+    // Past c3: 40 past its right edge, 908, up to the grid.
+    expect(at(150, 150)).toEqual({ kind: 'move', card: 'c', x: 910, y: 410 });
+  });
+
+  it('dropAction in dock mode lays a marker where it is drawn, with the unit it lies past', () => {
+    const items: DockItem[] = [FRAME, { id: 'c0', x: 300, y: 410, w: 112, h: 157, kind: 'card' }];
+    const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
+    const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
+    const spot = () => ({ x: 0, y: 0 });
+
+    // With c0 (300, drawn 176.4, 30 under its row's 12 of name room): 300 + 73.6 / 0.6 = 422.7
+    // across, 410 + 20 / 0.6 = 443.3 down, on the grid.
+    expect(dropAction(token, TABLE, { x: 250, y: 50 }, DEAL_TO, map, spot)).toEqual({
+      kind: 'marker',
+      name: 'firstPlayer',
+      x: 420,
+      y: 440,
+    });
   });
 
   it('drop on card attaches', () => {
@@ -563,9 +617,37 @@ describe('pileTargets', () => {
     expect(targetsOf('up').map((t) => t.drop)).toEqual(['top', 'discard']);
   });
 
-  it('offers the encounter deck its discard pile only', () => {
-    const targets = pileTargets({ kind: 'encounter', pile: 'enc' }, view);
-    expect(targets.map((t) => t.pile)).toEqual(['encd']);
+  it('offers the encounter deck its discard pile, and itself, where a drop sends nothing', () => {
+    const encounter: DragSource = { kind: 'encounter', pile: 'enc' };
+    expect(pileTargets(encounter, view).map((t) => [t.pile, t.drop, t.label])).toEqual([
+      ['encd', 'discard', 'Discard'],
+      ['enc', 'return', 'Top of deck'],
+    ]);
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'enc',
+      drop: 'return',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(encounter, own, AT_ORIGIN, DEAL_TO)).toBeNull();
+  });
+
+  it('puts an encounter card from the table on top of the encounter deck, its home', () => {
+    const home: DropRect = {
+      kind: 'pile',
+      pile: 'enc',
+      drop: 'top',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    const minion: DragSource = { kind: 'card', card: 'minion', x: 0, y: 0 };
+    expect(dropAction(minion, home, AT_ORIGIN, DEAL_TO)).toEqual({
+      kind: 'toDeck',
+      card: 'minion',
+      where: 'top',
+      pile: 'enc',
+    });
   });
 });
 
@@ -613,6 +695,26 @@ describe('handAreaOf', () => {
     expect(handAreaOf({ kind: 'encounter', pile: 'encd' }, view)).toBeNull();
     const spectating = makeView({ cards: [card('mine')], spectator: true });
     expect(handAreaOf(TABLE_CARD, spectating)).toBeNull();
+  });
+});
+
+describe('goesToHand', () => {
+  const view = makeView({
+    cards: [card('mine'), card('also'), card('theirs', { owner: 1 }), card('h1', { zone: 'hand' })],
+  });
+  const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+
+  it('takes a card a hand takes, as handAreaOf has it, when no group is dragged', () => {
+    expect(goesToHand(tableCard('mine'), [], view)).toBe(true);
+    expect(goesToHand(tableCard('theirs'), [], view)).toBe(false);
+    expect(goesToHand({ kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' }, [], view)).toBe(
+      false,
+    );
+  });
+
+  it('takes a group only when every unit goes to a hand', () => {
+    expect(goesToHand(tableCard('mine'), ['mine', 'also'], view)).toBe(true);
+    expect(goesToHand(tableCard('mine'), ['mine', 'theirs'], view)).toBe(false);
   });
 });
 
@@ -709,9 +811,21 @@ describe("the top card of the viewer's deck", () => {
     expect(dropAction(deck, hand, AT_ORIGIN, DEAL_TO)).toEqual({ kind: 'draw', n: 1 });
   });
 
-  it('is discarded on its own discard pile only', () => {
+  it('sends nothing when dropped back on its deck', () => {
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'deck:p0',
+      drop: 'return',
+      label: 'Top of deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction(deck, own, AT_ORIGIN, DEAL_TO)).toBeNull();
+  });
+
+  it('is discarded on its own discard pile, and takes its own deck back', () => {
     expect(pileTargets(deck, view)).toEqual([
       { pile: 'disc:p0', drop: 'discard', label: 'Discard' },
+      { pile: 'deck:p0', drop: 'return', label: 'Top of deck' },
     ]);
     const discard: DropRect = {
       kind: 'pile',
@@ -841,7 +955,7 @@ describe('a player with two decks', () => {
     const targets = (drag: DragSource) => pileTargets(drag, view).map((t) => t.pile);
     expect(targets({ kind: 'card', card: 'second', x: 0, y: 0 })).toEqual(['deck:p1', 'disc:p1']);
     expect(targets({ kind: 'card', card: 'sams', x: 0, y: 0 })).toEqual(['disc:p2']);
-    expect(targets({ kind: 'deck', pile: 'deck:p1' })).toEqual(['disc:p1']);
+    expect(targets({ kind: 'deck', pile: 'deck:p1' })).toEqual(['disc:p1', 'deck:p1']);
   });
 });
 
@@ -969,8 +1083,21 @@ describe('side decks', () => {
       n: 1,
       pile: 'side:p0:0',
     });
-    expect(of(side)).toEqual([['sided:p0:0', 'discard', 'Discard']]);
-    expect(of({ kind: 'deck', pile: 'side:p0:1' })).toEqual([]);
+    expect(of(side)).toEqual([
+      ['sided:p0:0', 'discard', 'Discard'],
+      ['side:p0:0', 'return', 'Top of Invocation deck'],
+    ]);
+    expect(of({ kind: 'deck', pile: 'side:p0:1' })).toEqual([
+      ['side:p0:1', 'return', 'Top of Sense deck'],
+    ]);
+    const own: DropRect = {
+      kind: 'pile',
+      pile: 'side:p0:1',
+      drop: 'return',
+      label: 'Top of Sense deck',
+      rect: rect(0, 0, 1, 1),
+    };
+    expect(dropAction({ kind: 'deck', pile: 'side:p0:1' }, own, AT_ORIGIN, DEAL_TO)).toBeNull();
   });
 
   it('plays the top card of a side deck tucked under the card it is dropped on, in one action', () => {
@@ -1058,12 +1185,12 @@ describe('a scenario deck', () => {
   it('takes its own deck, where a drop leaves it, and discards to its own discard pile', () => {
     expect(pileTargets(weapons, view).map((t) => [t.pile, t.drop])).toEqual([
       ['sdisc:weapons', 'discard'],
-      ['sdeck:weapons', 'top'],
+      ['sdeck:weapons', 'return'],
     ]);
     const own: DropRect = {
       kind: 'pile',
       pile: 'sdeck:weapons',
-      drop: 'top',
+      drop: 'return',
       label: 'Top of deck',
       rect: rect(0, 0, 1, 1),
     };
@@ -1109,7 +1236,7 @@ describe('a scenario deck without a discard pile of its own', () => {
   it('discards its top card to the encounter discard pile, and takes its own deck', () => {
     expect(of(weapons)).toEqual([
       ['encd', 'discard'],
-      ['sdeck:weapons', 'top'],
+      ['sdeck:weapons', 'return'],
     ]);
     const discard: DropRect = {
       kind: 'pile',
@@ -1243,5 +1370,122 @@ describe('a deck takes any card of its owner', () => {
       where: 'top',
       pile: 'side:p0:0',
     });
+  });
+});
+
+describe('the drop the rows show in dock mode (spec 3.8)', () => {
+  // Player 1's row of four cards, drawn at 0.6 and wrapped at 400 (see dropAction in dock mode).
+  const FRAME: DockItem = { id: 'frame', x: -10, y: 400, w: 262, h: 157 + 20, kind: 'frame' };
+  const items: DockItem[] = [
+    FRAME,
+    ...[300, 452, 604, 756].map((x, i): DockItem => ({
+      id: `c${i}`,
+      x,
+      y: 410,
+      w: 112,
+      h: 157,
+      kind: 'card',
+    })),
+  ];
+  const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
+  /** A card's slot for its middle drawn at x, on the row's second line. */
+  const slotAt = (at: { x: number; y: number }) => map.insertAt({ x: at.x, y: at.y }, 112);
+  const keyOf = (spot: { x: number; y: number }) => `${spot.x},${spot.y}`;
+  const Y = 190;
+
+  /** The first drawn x, going right by a pixel, whose slot differs from the one at `from`. */
+  function boundaryFrom(from: number): number {
+    const first = keyOf(slotAt({ x: from, y: Y }));
+    for (let x = from; x < from + 400; x++) {
+      if (keyOf(slotAt({ x, y: Y })) !== first) {
+        return x;
+      }
+    }
+    throw new Error('no boundary');
+  }
+
+  it('keeps one slot while the pointer jitters by a pixel on the boundary between two', () => {
+    const boundary = boundaryFrom(0);
+    const jitter = [boundary - 1, boundary, boundary - 1, boundary + 1, boundary, boundary - 1];
+    // Under the pointer alone, the slot flips with each pixel.
+    expect(new Set(jitter.map((x) => keyOf(slotAt({ x, y: Y })))).size).toBe(2);
+
+    const steady = new SteadyDrop(keyOf);
+    const shown = jitter.map((x, frame) =>
+      keyOf(steady.settle({ x, y: Y }, DROP_MARGIN, frame * 16, slotAt)),
+    );
+    expect(new Set(shown)).toEqual(new Set([keyOf(slotAt({ x: boundary - 1, y: Y }))]));
+  });
+
+  it('shows the next slot once the pointer is a margin past the boundary', () => {
+    const boundary = boundaryFrom(0);
+    const steady = new SteadyDrop(keyOf);
+    steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 0, slotAt);
+
+    const within = steady.settle({ x: boundary + DROP_MARGIN - 2, y: Y }, DROP_MARGIN, 16, slotAt);
+    expect(keyOf(within)).toBe(keyOf(slotAt({ x: boundary - 1, y: Y })));
+    const past = steady.settle({ x: boundary + DROP_MARGIN, y: Y }, DROP_MARGIN, 32, slotAt);
+    expect(past).toEqual(slotAt({ x: boundary + DROP_MARGIN, y: Y }));
+    // Back to the boundary, then a pixel over it: the new slot holds in turn.
+    for (let x = boundary + DROP_MARGIN - 1; x >= boundary; x--) {
+      steady.settle({ x, y: Y }, DROP_MARGIN, 48, slotAt);
+    }
+    expect(steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 64, slotAt)).toEqual(past);
+  });
+
+  it('shows the slot under the pointer once it stays past the boundary 80 ms', () => {
+    const boundary = boundaryFrom(0);
+    const steady = new SteadyDrop(keyOf);
+    const before = steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 0, slotAt);
+    const over = { x: boundary + 1, y: Y };
+
+    expect(steady.settle(over, DROP_MARGIN, 100, slotAt)).toEqual(before);
+    expect(steady.waiting).toBe(true);
+    expect(steady.settle(over, DROP_MARGIN, 100 + DROP_DWELL_MS - 1, slotAt)).toEqual(before);
+    expect(steady.settle(over, DROP_MARGIN, 100 + DROP_DWELL_MS, slotAt)).toEqual(slotAt(over));
+    expect(steady.waiting).toBe(false);
+  });
+
+  it('drops in the slot shown, not the one under a pointer let go a pixel past it', () => {
+    const boundary = boundaryFrom(0);
+    // The drop a card dragged with its middle at a point sends, as DragLayer locates it.
+    const spot = (corner: { x: number; y: number }) =>
+      slotAt({ x: corner.x + 33.6, y: corner.y + 47.1 });
+    const dropAt = (middle: { x: number; y: number }) =>
+      dropAction(TABLE_CARD, TABLE, { x: middle.x - 33.6, y: middle.y - 47.1 }, DEAL_TO, map, spot);
+    const steady = new SteadyDrop((action: ReturnType<typeof dropAt>) => JSON.stringify(action));
+    const shown = steady.settle({ x: boundary - 1, y: Y }, DROP_MARGIN, 0, dropAt);
+
+    const letGo = { x: boundary + 1, y: Y };
+    expect(dropAt(letGo)).not.toEqual(shown);
+    expect(steady.settle(letGo, DROP_MARGIN, 16, dropAt)).toEqual(shown);
+  });
+
+  it('reads the cards where they lie, not where they make way for the drag', () => {
+    // A card drawn 91.2 right of where it lies at zoom 2, mid-way through its glide: at 45.6.
+    const drawn = rect(300, 100, 100, 140);
+    expect(unshifted(drawn, '45.6px 0px', 2)).toEqual(rect(208.8, 100, 100, 140));
+    expect(unshifted(drawn, '-10px 6px', 1)).toEqual(rect(310, 94, 100, 140));
+    expect(unshifted(drawn, '12px', 1)).toEqual(rect(288, 100, 100, 140));
+    expect(unshifted(drawn, 'none', 2)).toEqual(drawn);
+
+    // The pointer over the gap the card left as it made way drops on the table, not on that card.
+    const table: DropRect = { kind: 'table', rect: rect(0, 0, 1000, 800) };
+    const pushed: DropRect = { kind: 'card', card: 'other', z: 1, rect: drawn };
+    const lies: DropRect = { ...pushed, rect: unshifted(drawn, '91.2px 0px', 1) };
+    const pointer = { x: 380, y: 150 };
+    expect(dropTarget(pointer, [table, pushed])?.kind).toBe('card');
+    expect(dropTarget(pointer, [table, lies])?.kind).toBe('table');
+  });
+
+  it('keys a drop by what it lands on and what it sends, not by where it was measured', () => {
+    const onTable: DropRect = { kind: 'table', rect: rect(0, 0, 10, 10) };
+    const move = { kind: 'move', card: 'c', x: 40, y: 410 } as const;
+    expect(dropKey(onTable, move)).toBe(dropKey({ ...onTable, rect: rect(5, 5, 10, 10) }, move));
+    expect(dropKey(onTable, move)).not.toBe(dropKey(onTable, { ...move, x: 80 }));
+    const onCard: DropRect = { kind: 'card', card: 'other', z: 1, rect: rect(0, 0, 10, 10) };
+    const attach = { kind: 'attach', card: 'c', target: 'other' } as const;
+    expect(dropKey(onCard, attach)).not.toBe(dropKey(onTable, attach));
+    expect(dropKey(onTable, null)).not.toBe(dropKey(null, null));
   });
 });

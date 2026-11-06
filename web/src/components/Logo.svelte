@@ -2,7 +2,7 @@
   The Into the Fray logo: the mark (a card tilted and split by a fracture, with
   a spark) alone, or beside the "INTO THE / FRAY" wordmark, on one line for the
   top bars or on two for the home screen. The whole logo is one image named
-  "Into the Fray".
+  "Into the Fray". A place can hide the wordmark with --logo-words-display: none.
 -->
 <script lang="ts">
   /**
@@ -11,13 +11,21 @@
    */
   type Size = number | 'inherit';
 
-  type Props =
+  type Lockup =
     // The mark with the wordmark on one line, for the top bars: it has a size of its own.
     | { variant?: 'horizontal'; size?: Size }
     // The mark alone, or with the wordmark on two lines (home): each place sets its size.
     | { variant: 'stacked' | 'mark'; size: Size };
 
-  let { variant = 'horizontal', size }: Props = $props();
+  type Props = Lockup & {
+    /**
+     * Whether the mark shows its spark. By default it does when the mark is large enough, which
+     * a mark of inherited size is taken to be: a place that knows its mark stays small says so.
+     */
+    spark?: boolean;
+  };
+
+  let { variant = 'horizontal', size, spark: sparkWanted }: Props = $props();
 
   // The top bars' "FRAY", in pixels.
   const HORIZONTAL_SIZE = 28;
@@ -37,7 +45,7 @@
     fontSize === undefined ? `${MARK_RATIO[variant]}em` : fontSize * MARK_RATIO[variant],
   );
   // A mark of unknown size is taken as a large one, with its spark.
-  let spark = $derived(typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE);
+  let spark = $derived(sparkWanted ?? (typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE));
   // A small mark needs a wider fracture to show it.
   let offset = $derived(spark ? 1.6 : 1.8);
 </script>
@@ -116,8 +124,9 @@
     fill: var(--spark);
   }
 
+  /* A bar too narrow for the wordmark keeps the mark alone: --logo-words-display: none. */
   .words {
-    display: flex;
+    display: var(--logo-words-display, flex);
   }
 
   .into {

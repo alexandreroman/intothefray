@@ -1271,6 +1271,21 @@ describe('dragging from a pile', () => {
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'deal', area: 'p0', x: 520, y: 80 }, 0);
   });
 
+  it('sends nothing when the top card of the encounter deck is dropped back on it', async () => {
+    const { session } = await renderTable();
+    // The encounter deck lies at 20, 40 on the screen.
+    await press(placed('enc'), 70, 100);
+    await moveTo(80, 120);
+    expect(placed('enc').classList).toContain('drop-pile');
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+    expect(placed('enc').querySelector('.count')?.textContent).toBe('19');
+
+    await release(80, 120);
+    expect(session.act).not.toHaveBeenCalled();
+    expect(ghosts()).toEqual([]);
+    expect(placed('enc').querySelector('.count')?.textContent).toBe('20');
+  });
+
   it('deals the top card of the encounter deck face down where it lands', async () => {
     const { session } = await renderTable();
     await press(placed('enc'), 70, 100);
@@ -1366,6 +1381,19 @@ describe("dragging the top card of the viewer's deck", () => {
     expect(ghost?.style.left).toBe('414px');
     expect(ghost?.style.top).toBe('341.5px');
     expect(interaction.landing).toMatchObject({ tucks: true });
+  });
+
+  it('sends nothing when dropped back on its deck', async () => {
+    const { session } = await renderTable();
+    await press(placed('deck:p0'), 690, 410);
+    await moveTo(700, 430);
+    expect(placed('deck:p0').classList).toContain('drop-pile');
+    expect(screen.getByText('Top of deck')).toBeTruthy();
+
+    await release(700, 430);
+    expect(session.act).not.toHaveBeenCalled();
+    expect(ghosts()).toEqual([]);
+    expect(placed('deck:p0').querySelector('.count')?.textContent).toBe('30');
   });
 
   it('draws it when dropped on the hand, and discards it on the discard pile', async () => {
@@ -1521,7 +1549,7 @@ describe('dragging a scenario deck', () => {
     const { session } = await renderTable(weaponsView());
     await press(placed('sdeck:x'), 1010, 410);
     await moveTo(1000, 420);
-    expect(placed('sdeck:x').classList).not.toContain('drop-pile');
+    expect(placed('sdeck:x').classList).toContain('drop-pile');
     await release(1000, 420);
     expect(session.act).not.toHaveBeenCalled();
   });

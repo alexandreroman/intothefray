@@ -219,8 +219,6 @@ describe('TopBar', () => {
     await fireEvent(document, new Event('fullscreenchange'));
     const exit = screen.getByRole('button', { name: 'Exit fullscreen' });
     expect(exit.getAttribute('title')).toBe('Exit fullscreen');
-    // Narrow screens hide the Fullscreen button, except while it is active.
-    expect(exit.classList).toContain('fullscreen');
     expect(exit.classList).toContain('active');
 
     const exitFullscreen = vi.fn().mockResolvedValue(undefined);
@@ -364,6 +362,48 @@ describe('TopBar logo', () => {
     await fireEvent.click(screen.getByRole('link', { name: 'Into the Fray: home' }));
     expect(window.location.pathname).toBe('/');
     expect(route.current).toEqual({ name: 'home' });
+  });
+});
+
+describe('TopBar Fullscreen on a phone upright', () => {
+  // An iPhone 15 upright: narrower than 600px, so a mouse window there drops Fullscreen.
+  const UPRIGHT_PHONE = { width: 393, height: 852 };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('offers Fullscreen to a finger where the Fullscreen API exists', () => {
+    mockScreen({ ...UPRIGHT_PHONE, touch: true });
+    document.documentElement.requestFullscreen = vi.fn();
+    render(TopBar, { onend: () => {} });
+
+    expect(screen.getByRole('button', { name: 'Fullscreen' })).toBeTruthy();
+  });
+
+  it('drops Fullscreen from a mouse window as narrow', () => {
+    mockScreen(UPRIGHT_PHONE);
+    document.documentElement.requestFullscreen = vi.fn();
+    render(TopBar, { onend: () => {} });
+
+    expect(screen.queryByRole('button', { name: /fullscreen/i })).toBeNull();
+  });
+
+  it('keeps Exit fullscreen in a mouse window as narrow, as a way out', () => {
+    mockScreen(UPRIGHT_PHONE);
+    document.documentElement.requestFullscreen = vi.fn();
+    setFullscreenElement('fullscreenElement', document.documentElement);
+    render(TopBar, { onend: () => {} });
+
+    expect(screen.getByRole('button', { name: 'Exit fullscreen' })).toBeTruthy();
+  });
+
+  it('offers no Fullscreen to a finger without the Fullscreen API (iPhone Safari)', () => {
+    mockScreen({ ...UPRIGHT_PHONE, touch: true });
+    render(TopBar, { onend: () => {} });
+
+    expect(screen.queryByRole('button', { name: /fullscreen/i })).toBeNull();
   });
 });
 
@@ -524,6 +564,34 @@ describe('TopBar on scroll', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'End game' }));
 
     await scrollWindowTo(300);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
+  it('leaves hiding to the page when it does not hide by itself', async () => {
+    mockScreen(PHONE);
+    const { container, rerender } = render(TopBar, { autoHide: false, hidden: true });
+    expect(header(container).classList).toContain('hidden');
+
+    // A scroll up does not bring it back.
+    await scrollWindowTo(300);
+    await scrollWindowTo(100);
+    expect(header(container).classList).toContain('hidden');
+
+    // Shown by the page, a scroll down does not hide it.
+    await rerender({ hidden: false });
+    await scrollWindowTo(600);
+    await scrollWindowTo(900);
+    expect(header(container).classList).not.toContain('hidden');
+  });
+
+  it('comes back for keyboard focus when it does not hide by itself', async () => {
+    mockScreen(PHONE);
+    focusBy('keyboard');
+    const { container } = render(TopBar, { autoHide: false, hidden: true });
+
+    screen.getByRole('link', { name: 'Into the Fray: home' }).focus();
+    await tick();
+
     expect(header(container).classList).not.toContain('hidden');
   });
 

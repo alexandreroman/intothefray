@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
+import { DOCK_MODE_KEY } from './dockMode';
 import { interaction } from './interaction.svelte';
 import PileView from './PileView.svelte';
 import pileSource from './PileView.svelte?raw';
 import tableSource from './Table.svelte?raw';
-import type { CardView as TableCard, PackFace } from '../lib/types';
+import type { CardView as TableCard, PackFace, PileView as TablePile } from '../lib/types';
 import { card, pile } from './fixtures.testing';
 
 const ENCOUNTER_BACK = 'https://img.intothefray.xyz/assets/back-encounter.avif';
@@ -45,6 +46,7 @@ describe('PileView', () => {
     );
     const el = pileElement(container);
     expect(el.querySelector('.count')?.textContent).toBe('12');
+    expect(el.querySelector('.count')?.classList.contains('count-pill')).toBe(true);
     expect(el.style.left).toBe('120px');
     expect(el.style.top).toBe('20px');
     expect(el.style.width).toBe('112px');
@@ -155,5 +157,65 @@ describe('PileView', () => {
       interaction.reset();
       button.remove();
     }
+  });
+});
+
+describe('PileView in dock mode (small piles, spec 3.7)', () => {
+  // The discard pile as the table's projection draws it (dockLayout.ts): its corner at 74, 65.2.
+  const discard = pile('enc', { kind: 'encounterDiscard', x: 74, y: 65.2, count: 12 });
+
+  function renderPile(props: { pile: TablePile }, dock = true) {
+    return render(PileView, { props, context: new Map([[DOCK_MODE_KEY, { current: dock }]]) });
+  }
+
+  it('is drawn at 60 % from its drawn corner, as its hit and drop area, with its count', () => {
+    const { container } = renderPile({ pile: discard });
+
+    const el = pileElement(container);
+    const [left, top, width, height] = [
+      el.style.left,
+      el.style.top,
+      el.style.width,
+      el.style.height,
+    ].map(Number.parseFloat);
+    expect(left).toBeCloseTo(74, 6);
+    expect(top).toBeCloseTo(65.2, 6);
+    expect(width).toBeCloseTo(67.2, 6);
+    expect(height).toBeCloseTo(94.2, 6);
+    expect(el.classList.contains('scaled')).toBe(true);
+    expect(el.style.getPropertyValue('--scale')).toBe('0.6');
+    expect(el.querySelector('.count')?.textContent).toBe('12');
+  });
+
+  it('zooms what it draws by its scale, so that its back and face shrink alike', () => {
+    const rule = (selector: string) =>
+      new RegExp(`\\n {2}${selector} \\{([^}]*)\\}`).exec(pileSource)?.[1];
+    const inner = /\n {2}(\.card\.scaled > \.shade,[^{]*)\{([^}]*)\}/.exec(pileSource);
+    expect(inner?.[1]).toContain('.card.scaled > .art');
+    expect(inner?.[1]).toContain('.card.scaled > .slot');
+    expect(inner?.[2]).toContain('zoom: var(--scale);');
+    expect(rule('\\.card\\.scaled \\.count')).toMatch(
+      /font-size: max\(9px, 9px \/ var\(--z, 1\)\);/,
+    );
+    // Nothing is drawn smaller inside the element: the table's rings go round it as it is.
+    expect(pileSource).not.toMatch(/scale: 0\.6;/);
+    expect(pileSource).not.toMatch(/class:small/);
+  });
+
+  it('is drawn full size in its slot out of dock mode', () => {
+    const { container } = renderPile({ pile: discard }, false);
+
+    const el = pileElement(container);
+    expect(el.classList.contains('scaled')).toBe(false);
+    expect(el.style.left).toBe('74px');
+    expect(el.style.top).toBe('65.2px');
+    expect(el.style.width).toBe('112px');
+    expect(el.style.height).toBe('157px');
+  });
+
+  it('is drawn full size outside any table', () => {
+    const { container } = render(PileView, { pile: discard });
+
+    expect(pileElement(container).classList.contains('scaled')).toBe(false);
   });
 });

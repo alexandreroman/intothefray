@@ -8,12 +8,19 @@
   its way, as the pile draws it, and turns over once there. Then a card
   drawn flying from its pile to its slot in the viewer's hand; a card going
   into a hand the viewer does not see leaving its pile or its spot on the
-  table; and a card coming out of such a hand rising into its pile.
+  table; and a card coming out of such a hand rising into its pile. In dock
+  mode (spec 3.6) a copy flies at the size the table draws its cards and
+  piles at, and what it shows is zoomed alike; a card discarded or played
+  from the viewer's hand rises and fades out where it was seen: drawn as the
+  hand sheet or the inspector draws it, or, from the dock's hand button, as
+  the table does.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
+  import { dockMode } from './dockMode';
+  import { DOCK_SCALE } from './dockPiles';
   import { isHidden } from './face';
   import { cardBox, isLandscape } from './layout';
   import { motion } from './motion.svelte';
@@ -27,6 +34,17 @@
     /** The caption of a card's back (backCaption): its side deck's label, if any. */
     captionOf: (card: TableCard) => string | undefined;
   } = $props();
+
+  // A copy's box is the drawn box it was measured at: in dock mode, what it shows shrinks with it.
+  const dock = dockMode();
+
+  /** Whether a copy is drawn as the table draws its cards in dock mode: not one rising out of a sheet. */
+  function scaled(flight: (typeof motion.flights)[number]): boolean {
+    if (flight.kind === 'rise') {
+      return flight.zoomed;
+    }
+    return dock.current;
+  }
 </script>
 
 <!-- A card in a portrait slot, as a pile and the hand draw it: a landscape card is turned a quarter. -->
@@ -75,7 +93,10 @@
 {#each motion.flights as flight (flight.key)}
   <div
     class="fly"
+    class:scaled={scaled(flight)}
+    class:rise={flight.kind === 'rise'}
     aria-hidden="true"
+    style:--scale={scaled(flight) ? DOCK_SCALE : undefined}
     style:left="{flight.from.cx - flight.from.w / 2}px"
     style:top="{flight.from.cy - flight.from.h / 2}px"
     style:width="{flight.from.w}px"
@@ -95,6 +116,8 @@
           )}
         {/if}
       {/if}
+    {:else if flight.kind === 'rise'}
+      {@render (flight.portrait ? portrait : placed)(flight.card)}
     {:else if flight.kind === 'draw'}
       {@render portrait(flight.card)}
       {#if !flight.faceUp}
@@ -119,6 +142,24 @@
     pointer-events: none;
     transform-origin: center;
     filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+  }
+
+  /*
+    A card discarded or played from the hand in dock mode rises out of the sheet that showed it
+    (Sheet.svelte, 5500): over it, under the dialogs (5600).
+  */
+  .fly.rise {
+    z-index: 5550;
+  }
+
+  /*
+    Dock mode: the copy is the card's drawn box. What it shows is zoomed by the same scale, so that a
+    back's label and caption, the borders and the corners shrink with it; the percentages still fill
+    the box. A turning side is sized in px for an upright quarter turn: only what it holds is zoomed.
+  */
+  .fly.scaled > :global(*:not(.side)),
+  .fly.scaled > .side > :global(*) {
+    zoom: var(--scale);
   }
 
   .side {

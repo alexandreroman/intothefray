@@ -4,7 +4,6 @@ import Table from './Table.svelte';
 import menuSource from './ContextMenu.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
-import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import {
@@ -442,6 +441,8 @@ describe('the context menu', () => {
       count: '29',
       color: 'var(--villain)',
     });
+    // The piles' capsule, as every card count.
+    expect(menu.querySelector('.title .count')?.classList.contains('count-pill')).toBe(true);
   });
 
   it('starts an arrow from the card', async () => {
@@ -744,7 +745,7 @@ describe('opening the context menu with a click', () => {
     await click(placed('disc:p0'));
     expect(labels(contextMenu()!)).toEqual(['Browse…']);
     await fireEvent.click(menuItem(contextMenu()!, 'Browse…'));
-    expect(screen.getByRole('dialog', { name: "Alex's discard" })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: "Alex's discard, 1 card" })).toBeTruthy();
   });
 
   it("opens a selected card's own menu and keeps the selection; another card's clears it", async () => {
@@ -973,7 +974,9 @@ describe('what the menu runs', () => {
     await click(placed('v'));
 
     await fireEvent.click(menuItem(contextMenu()!, 'Change card…'));
-    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
+    expect(
+      screen.getByRole('dialog', { name: 'Villain: choose the card to show, 1 card' }),
+    ).toBeTruthy();
     expect(session.act).not.toHaveBeenCalled();
   });
 });
@@ -1056,17 +1059,6 @@ describe('the arrow mode', () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(interaction.hovered).toBeNull();
     expect(arrowHint()?.style.left).toBe('300px');
-  });
-
-  it('speaks of taps and no Esc key in touch mode', async () => {
-    mockScreen({ ...DESKTOP, touch: true });
-    await renderTable();
-    await click(placed('mine'), 120, 80, { pointerType: 'touch' });
-    await fireEvent.click(menuItem(contextMenu()!, 'Draw an arrow'));
-
-    expect(arrowHint()?.textContent).toBe(
-      'Tap the card to point at — tap an empty spot to cancel.',
-    );
   });
 
   it('shows no hint while a Shift + drag draws the arrow', async () => {

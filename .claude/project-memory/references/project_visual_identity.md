@@ -14,7 +14,11 @@ type: project
   (condensed black italic display, normal UI, semi-condensed caps labels).
 - The logo is a tilted card split by a fracture, with a yellow spark;
   `Logo.svelte` draws the mark, the horizontal and the stacked lockups.
-- Every app bar shows the full "INTO THE FRAY" wordmark.
+- Every app bar shows the full "INTO THE FRAY" wordmark. On a touch
+  screen too narrow for it (up to 600px wide), the wordmark scales down
+  to the room the bar's actions leave; below a 22px "FRAY" the mark shows
+  alone, as in the table bar with the view switch on a phone
+  (`TopBar.svelte`, `--logo-words-display` in `Logo.svelte`).
 - Comic cues stay sparse: slanted primary button, yellow narration
   captions, speech-bubble tooltips, halftone dots.
 - The primary button is a slanted red panel with 5px rounded corners.
@@ -33,4 +37,5 @@ type: project
 themed but modern and clean, original mark with no Marvel branding.
 
 **How to apply:** reuse the tokens and shared classes (`.btn-primary`,
-`.caption`, `.display`) for new UI; keep the full wordmark in bars.
+`.caption`, `.display`) for new UI; keep the full wordmark in bars
+wherever it fits.

@@ -29,6 +29,7 @@
   import { tick } from 'svelte';
   import CardArt from '../components/CardArt.svelte';
   import { pointerBlur } from '../lib/releaseFocus';
+  import './countPill.css';
 
   let {
     entries,
@@ -157,7 +158,7 @@
               <CardArt src={entry.image} aspect={1} />
             {/if}
           </span>
-          <span class="n">{entry.handCount}</span>
+          <span class="n count-pill">{entry.handCount}</span>
         </span>
         <span class="name"><span class="txt">{entry.name}</span></span>
       </button>
@@ -273,21 +274,13 @@
     filter: none;
   }
 
-  /* The hand size, top right of the avatar, over the ring. */
+  /* The hand size, in a pile's capsule (countPill.css), top right of the avatar, over the ring. */
   .n {
     position: absolute;
     right: -9px;
     top: -9px;
     z-index: 2;
-    min-width: 17px;
-    height: 17px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: var(--bg);
-    border: 1px solid var(--line-strong);
-    color: var(--text-soft);
-    font: 600 10px/15px var(--font);
-    text-align: center;
+    font-size: 10px;
   }
 
   /*

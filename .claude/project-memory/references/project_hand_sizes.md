@@ -36,6 +36,9 @@ type: project
   table has, so a table narrowed by the history panel counts as narrow.
   The resting hand keeps to the hands' room and looks the same at every
   width.
+- In dock mode the hand is not drawn as a fan: it opens from the dock as
+  a carousel sheet whose card is 64 % of its width (see
+  [[project_touch_phone_table]]). These sizes apply to the fan.
 
 **Why:** decided with the user: the raised hand is for
 reading cards, so it follows the preview's size, while the resting hand

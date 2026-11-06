@@ -8,10 +8,13 @@
   import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
+  import { dockCounterLayout, measureChipText, moreText, type Box } from './dockCounters';
+  import { dockMode } from './dockMode';
+  import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
-  import { cardBox } from './layout';
-  import { motion } from './motion.svelte';
+  import { cardBox, SLOT_GAP } from './layout';
+  import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 
   let {
     card,
@@ -20,6 +23,7 @@
     landed = false,
     draggable = false,
     caption,
+    shift,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
@@ -32,6 +36,8 @@
     draggable?: boolean;
     /** The caption of its back: the side deck it belongs to, when that deck has its own back. */
     caption?: string;
+    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside, as a translate. */
+    shift?: string;
   } = $props();
 
   // The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top.
@@ -44,6 +50,12 @@
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
   const landscape = $derived(!box.rotated && box.w > box.h);
+  // In dock mode (spec 3.6, 3.7) the card is drawn whole at a smaller scale, from its top-left
+  // corner, which the table hands already projected (dockLayout.ts). The element is the drawn box: it
+  // takes the presses and the drops, the rings go round it, it tilts about its middle and the flights
+  // measure it.
+  const dock = dockMode();
+  const drawn = $derived(dock.current ? dockCardBox(box) : box);
   // A hidden card has no face: it is not known to be a scheme.
   const scheme = $derived(!hidden && SCHEME_TYPES.includes(face?.type ?? ''));
   const hasToken = (k: TokenName) => (card.tokens?.[k] ?? 0) > 0;
@@ -54,23 +66,46 @@
   const statuses = $derived(STATUSES.filter(({ name }) => (card.status?.[name] ?? 0) > 0));
 
   /**
-   * What a status tab reads: "Tough", or "Tough ×2" for several. The count of Retaliate is its
-   * value, which always shows: "Retaliate 1".
+   * The number a status tab shows after its label: none for one, "×2" for several ("Tough ×2").
+   * The count of Retaliate is its value, which always shows: "Retaliate 1".
    */
-  function statusText(name: string, label: string, count: number): string {
+  function statusCount(name: string, count: number): string | null {
     if (name === 'retaliate') {
-      return `${label} ${count}`;
+      return `${count}`;
     }
-    return count > 1 ? `${label} ×${count}` : label;
+    return count > 1 ? `×${count}` : null;
   }
 
   // A modifier is signed: only 0 hides it.
   const modifiers = $derived(MODIFIERS.filter((name) => (card.mods?.[name] ?? 0) !== 0));
+  // In dock mode its counters take three regions of their own, at a fixed screen size
+  // (dockCounters.ts): their layer undoes the table's zoom, so that its px are screen px.
+  const zoom = $derived(dock.zoom ?? 1);
+  const dockCounters = $derived(
+    dock.current
+      ? dockCounterLayout({
+          width: drawn.w * zoom,
+          height: drawn.h * zoom,
+          // The gap to the neighbouring unit's slot (dockLayout.ts), where the modifiers may stand.
+          leftRoom: SLOT_GAP * DOCK_SCALE * zoom,
+          scheme,
+          counters: card,
+          measure: measureChipText,
+        })
+      : null,
+  );
+
+  function boxStyle(box: Box): string {
+    return `left: ${box.x}px; top: ${box.y}px; width: ${box.w}px; height: ${box.h}px`;
+  }
+
   const element = $derived({ kind: 'card', id: card.id } as const);
   // A ghost is a copy: only the card on the table shows that it is hovered.
   const hovered = $derived(!ghost && interaction.isHovered(element));
   // While dragged, the card on the table makes way for its ghost.
   const lifted = $derived(!ghost && interaction.isLifted(card.id));
+  // A finger held it still long enough (touch mode): it lifts in place, ready to be dragged.
+  const armed = $derived(!ghost && interaction.isArmed(element));
   // A drop would tuck the dragged card under this one, or go onto the pile this card is revealed on.
   const dropOn = $derived(ghost ? null : interaction.dropOn);
   const tuckTarget = $derived(dropOn?.kind === 'card' && dropOn.id === card.id);
@@ -110,7 +145,9 @@
   class:hovered
   class:land={landscape}
   class:scheme
+  class:scaled={dock.current}
   class:lifted
+  class:armed
   class:ghost
   class:landed
   class:grab={draggable && !ghost}
@@ -118,9 +155,13 @@
   class:drop-pile={pileTarget}
   style:left="{card.x}px"
   style:top="{card.y}px"
-  style:width="{box.w}px"
-  style:height="{box.h}px"
+  style:width="{drawn.w}px"
+  style:height="{drawn.h}px"
   style:z-index={card.z}
+  style:translate={shift}
+  style:--scale={dock.current ? DOCK_SCALE : undefined}
+  style:--lift-scale={armed ? LIFT_SCALE : undefined}
+  style:--lift-shade={armed ? LIFT_SHADE : undefined}
   onpointerenter={(event) => interaction.enter(element, event)}
   onpointerleave={() => {
     // Edge-on as it turns, the card slips from under the pointer, which still rests on it.
@@ -142,72 +183,136 @@
     />
   {/if}
 
-  {#if threatInCorner}
-    <div class="tokens top-right">
-      {#each threatTokens as k (k)}
-        {@render token(k)}
+  {#if dockCounters}
+    <div class="dock-counters" style:zoom={1 / zoom}>
+      {#each dockCounters.tokens.items as { name: k, count, box } (k)}
+        {@const target = { card: card.id, kind: 'token', name: k } as const}
+        <span
+          class="tok {k}"
+          class:hot={interaction.isCounter(target)}
+          style={boxStyle(box)}
+          data-counter="token:{k}"
+          role="presentation"
+          onpointerenter={(event) => interaction.enterCounter(target, event)}
+          onpointerleave={() => interaction.leaveCounter(target)}
+          >{#if k === 'acc'}<svg class="chevrons" viewBox="0 0 8 8" aria-hidden="true"
+              ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
+            >{/if}{count}</span
+        >
       {/each}
-    </div>
-  {/if}
+      {#if dockCounters.tokens.more}
+        <span class="tok more" style={boxStyle(dockCounters.tokens.more.box)}
+          >{moreText(dockCounters.tokens.more.hidden)}</span
+        >
+      {/if}
 
-  <!-- In the order the tokens pile up from the corner: damage, the threat row, counters. -->
-  {#if cornerTokens.length > 0 || threatInPile}
-    <div class="tokens bottom-right">
-      {#if hasToken('dmg')}
-        {@render token('dmg')}
-      {/if}
-      {#if threatInPile}
-        <div class="threat-row">
-          {#each threatTokens as k (k)}
-            {@render token(k)}
-          {/each}
-        </div>
-      {/if}
-      {#if hasToken('gen')}
-        {@render token('gen')}
-      {/if}
-    </div>
-  {/if}
-
-  {#if statuses.length > 0}
-    <div class="statuses">
-      {#each statuses as { name: k, label } (k)}
-        {@const n = card.status?.[k] ?? 0}
+      {#each dockCounters.statuses.items as { name: k, text, box } (k)}
         {@const target = { card: card.id, kind: 'status', name: k } as const}
         <span
           class="st {k}"
           class:hot={interaction.isCounter(target)}
+          style={boxStyle(box)}
           data-counter="status:{k}"
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter(target)}
-          >{#if k === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
-              ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
-                d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
-              /></svg
-            >{/if}{statusText(k, label, n)}</span
+          onpointerleave={() => interaction.leaveCounter(target)}>{text}</span
         >
       {/each}
-    </div>
-  {/if}
+      {#if dockCounters.statuses.more}
+        <span class="st more" style={boxStyle(dockCounters.statuses.more.box)}
+          >{moreText(dockCounters.statuses.more.hidden)}</span
+        >
+      {/if}
 
-  {#if modifiers.length > 0}
-    <div class="mods">
-      {#each modifiers as name (name)}
-        {@const n = card.mods?.[name] ?? 0}
+      {#each dockCounters.modifiers.items as { name, value, stat, box } (name)}
         {@const target = { card: card.id, kind: 'modifier', name } as const}
         <span
           class="st mod"
-          class:neg={n < 0}
+          class:neg={(card.mods?.[name] ?? 0) < 0}
           class:hot={interaction.isCounter(target)}
+          style={boxStyle(box)}
           data-counter="modifier:{name}"
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
           onpointerleave={() => interaction.leaveCounter(target)}
-          >{withSign(n)} {name.toUpperCase()}</span
+          ><span class="n">{value}</span> {stat}</span
         >
       {/each}
+      {#if dockCounters.modifiers.more}
+        <span class="st more" style={boxStyle(dockCounters.modifiers.more.box)}
+          >{moreText(dockCounters.modifiers.more.hidden)}</span
+        >
+      {/if}
     </div>
+  {:else}
+    {#if threatInCorner}
+      <div class="tokens top-right">
+        {#each threatTokens as k (k)}
+          {@render token(k)}
+        {/each}
+      </div>
+    {/if}
+
+    <!-- In the order the tokens pile up from the corner: damage, the threat row, counters. -->
+    {#if cornerTokens.length > 0 || threatInPile}
+      <div class="tokens bottom-right">
+        {#if hasToken('dmg')}
+          {@render token('dmg')}
+        {/if}
+        {#if threatInPile}
+          <div class="threat-row">
+            {#each threatTokens as k (k)}
+              {@render token(k)}
+            {/each}
+          </div>
+        {/if}
+        {#if hasToken('gen')}
+          {@render token('gen')}
+        {/if}
+      </div>
+    {/if}
+
+    {#if statuses.length > 0}
+      <div class="statuses">
+        {#each statuses as { name: k, label } (k)}
+          {@const count = statusCount(k, card.status?.[k] ?? 0)}
+          {@const target = { card: card.id, kind: 'status', name: k } as const}
+          <span
+            class="st {k}"
+            class:hot={interaction.isCounter(target)}
+            data-counter="status:{k}"
+            role="presentation"
+            onpointerenter={(event) => interaction.enterCounter(target, event)}
+            onpointerleave={() => interaction.leaveCounter(target)}
+            >{#if k === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
+                ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
+                  d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
+                /></svg
+              >{/if}{#if count === null}{label}{:else}{label}
+              <span class="n">{count}</span>{/if}</span
+          >
+        {/each}
+      </div>
+    {/if}
+
+    {#if modifiers.length > 0}
+      <div class="mods">
+        {#each modifiers as name (name)}
+          {@const n = card.mods?.[name] ?? 0}
+          {@const target = { card: card.id, kind: 'modifier', name } as const}
+          <span
+            class="st mod"
+            class:neg={n < 0}
+            class:hot={interaction.isCounter(target)}
+            data-counter="modifier:{name}"
+            role="presentation"
+            onpointerenter={(event) => interaction.enterCounter(target, event)}
+            onpointerleave={() => interaction.leaveCounter(target)}
+            ><span class="n">{withSign(n)}</span> {name.toUpperCase()}</span
+          >
+        {/each}
+      </div>
+    {/if}
   {/if}
 
   {#if selected}
@@ -227,6 +332,26 @@
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
+  }
+
+  /* In touch mode, a finger swiping over the card scrolls the table: only a hold drags it (spec 3.2). */
+  :global(.app.touch) .card {
+    touch-action: pan-x pan-y;
+  }
+
+  /*
+    A hold lifts it in place (.armed) only in touch mode, where it eases up and back down, let go without a move
+    or not. Pushed aside by a drag (dock mode, spec 3.8), it glides as the surface says (--shift-glide). A ghost
+    takes its own transition.
+  */
+  :global(.app.touch) .card:not(.ghost) {
+    transition:
+      scale 0.14s ease-out,
+      translate var(--shift-glide, 0s) ease-out;
+  }
+
+  :global(.app.touch) .card:not(.ghost) .shade {
+    transition: translate 0.14s ease-out;
   }
 
   /*
@@ -266,6 +391,15 @@
 
   .card.grab {
     cursor: grab;
+  }
+
+  /* Armed by a hold, held up in place as its ghost will be (--lift-scale, --lift-shade). */
+  .card.armed {
+    scale: var(--lift-scale);
+  }
+
+  .card.armed .shade {
+    translate: var(--lift-shade);
   }
 
   /*
@@ -631,6 +765,55 @@
   /* A penalty is in the Fray red. */
   .mod.neg {
     background: linear-gradient(var(--accent), var(--accent-deep));
+  }
+
+  /*
+    Dock mode (spec 3.6): the element is the card's drawn box, a fraction (--scale) of its footprint,
+    and what it draws is zoomed by the same scale, so that its face, its back and its shade shrink
+    alike; the percentages still fill the box.
+  */
+  .card.scaled > :global(*) {
+    zoom: var(--scale);
+  }
+
+  /*
+    Its counters are drawn at a fixed screen size instead, all their text at 11 px: their layer's
+    zoom (inline, 1 / the table's) undoes the table's, so that its px are screen px, and each
+    counter takes the box dockCounters.ts gives it, in three regions that never meet. The chips
+    are in the font that measured them: system-ui, weight 800, 75 % wide, no letter spacing.
+    Their boxes fit their whole text: nothing clips it.
+  */
+  .dock-counters {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .dock-counters > * {
+    position: absolute;
+    pointer-events: auto;
+  }
+
+  .dock-counters .tok {
+    font-size: 11px;
+  }
+
+  .dock-counters .st {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    white-space: pre;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0;
+    border-radius: 3px;
+  }
+
+  /* What does not fit: "+N", in grey. */
+  .dock-counters .st.more {
+    background: linear-gradient(#8a8f99, #50555f);
   }
 
   /* The small lock before the Locked label. */

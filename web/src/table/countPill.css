@@ -1,0 +1,20 @@
+/*
+  A count of cards: on a pile, on the dock's hand button and the hero selector's avatars, in the
+  hand sheet's header, beside a pile's name in the menu and the inspector, and after a card box's
+  title. One look for all, a pile's: a dark capsule with a thin edge and plain digits. It sticks
+  out of what it sits on, past that thing's shadow: it casts its own. Each place sets its position
+  and its font size, which the padding follows; a component's own rule, scoped, outranks this one.
+*/
+.count-pill {
+  padding: 0 0.67em;
+  background: #000c;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 2px 4px #0009;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+}

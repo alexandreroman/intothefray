@@ -7,10 +7,11 @@ type: project
 # Moving several cards as a group
 
 - Selection is a rubber band: a drag on an empty table spot (mouse or pen,
-  players only) selects the free table cards it touches. Touch keeps
-  native scrolling. Esc, a click on an empty spot, or a press on an
-  unselected card, a pile, a hand card or the token clears the selection;
-  it only holds cards drawn on the table.
+  players only) selects the free table cards it touches. On touch, the
+  inspector's Select enters select mode, where taps toggle table cards
+  (see [[project_touch_phone_table]]). Esc, a click on an empty spot, or a
+  press on an unselected card, a pile, a hand card or the token clears the
+  selection; it only holds cards drawn on the table.
 - Dragging a selected card carries every selected unit, relative positions
   intact, each stack following its top card (see [[project_stack_moves]]). It
   drops on the table (no tuck over a card), onto a pile valid for every card, or

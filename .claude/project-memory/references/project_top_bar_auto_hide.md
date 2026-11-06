@@ -11,6 +11,9 @@ type: project
   `web/src/lib/screen.ts` is its single source for scripts, shared with
   the table's small screen layout; other screens always show the bar. The
   items the bar drops follow the width only.
+- On a touch screen the bar shows Fullscreen at every width where the
+  browser has the Fullscreen API (iPhone Safari has none); a mouse window
+  up to 600px wide (`PHONE_QUERY`) drops it unless fullscreen is on.
 - On a compact screen the bar slides out of view (a transform, no layout
   change) once the content scrolls down by 10px past the bar's height.
 - It comes back on an upward scroll of 10px, near the top (within the bar's
@@ -22,6 +25,10 @@ type: project
   floats over the play area, and overlays at its top (the catalog notice,
   the preview) stay clear of it while it shows; larger screens give it its
   own row.
+- In dock mode (a small touch screen) the top bar is always visible,
+  never auto-hides and takes its own room above the table (right of the
+  rail on a phone on its side), below the notch (`autoHide={false}`; see
+  [[project_touch_phone_table]]).
 
 **Why:** decided with the user: a phone gains the bar's room
 for content while scrolling, and the bar is back as soon as it is needed.

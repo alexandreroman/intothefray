@@ -1,7 +1,9 @@
 import { createEvent, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
+import CardBox from './CardBox.svelte';
 import boxSource from './CardBox.svelte?raw';
+import { DOCK_MODE_KEY } from './dockMode';
 import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './boxes';
 import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
@@ -230,9 +232,14 @@ describe('CardBox', () => {
     await renderTable(makeView({ private: SEARCH }));
 
     const dialog = box();
-    expect(screen.getByRole('dialog', { name: 'Search Your deck (3 cards)' })).toBe(dialog);
-    // The count is dimmed.
-    expect(dialog.querySelector('.aside')?.textContent).toBe('(3 cards)');
+    // The count is read in words; shown, it is a pile's capsule after the title.
+    expect(screen.getByRole('dialog', { name: 'Search Your deck, 3 cards' })).toBe(dialog);
+    expect(dialog.querySelector('.mhead b')?.textContent?.trim()).toBe('Search Your deck');
+    const count = dialog.querySelector('.mhead .title .count');
+    expect(count?.classList.contains('count-pill')).toBe(true);
+    expect(count?.textContent).toBe('3');
+    expect(count?.getAttribute('aria-hidden')).toBe('true');
+    expect(dialog.querySelector('.mhead')?.textContent).not.toContain('(3 cards)');
     expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Backflip']);
     expect(tile('c1').textContent).toContain('#1');
     expect(tile('c3').textContent).toContain('#3');
@@ -291,7 +298,7 @@ describe('CardBox', () => {
     ];
     await renderTable(view);
 
-    expect(screen.getByRole('dialog', { name: 'Search Your Spider-Man deck (3 cards)' })).toBe(
+    expect(screen.getByRole('dialog', { name: 'Search Your Spider-Man deck, 3 cards' })).toBe(
       box(),
     );
   });
@@ -299,7 +306,8 @@ describe('CardBox', () => {
   it('look box titles the top count and closes with Close', async () => {
     const { session } = await renderTable(makeView({ private: LOOK }));
 
-    expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck, 3 cards' })).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('3');
     const close = within(box()).getByRole('button', { name: 'Close' });
     expect(close.classList.contains('btn-primary')).toBe(true);
     await fireEvent.click(close);
@@ -473,7 +481,11 @@ describe('CardBox', () => {
     await clickPlaced('v');
     await fireEvent.click(menuItem('Change card…'));
 
-    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
+    // The count is the stage's cards, not their faces.
+    expect(
+      screen.getByRole('dialog', { name: 'Villain: choose the card to show, 2 cards' }),
+    ).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('2');
     // Opening a box lets go of the table: its menu goes.
     expect(contextMenu()).toBeNull();
     expect(interaction.hovered).toBeNull();
@@ -531,7 +543,8 @@ describe('CardBox', () => {
     const drawn = cards.map((c) => (c.id === 'c2' ? { ...c, zone: 'hand' as const } : c));
     await rerender(makeView({ cards: drawn, private: { ...SEARCH, cards: ['c1', 'c3'] } }));
     expect(tileNames()).toEqual(['Web-Shooter', 'Backflip']);
-    expect(screen.getByRole('dialog', { name: 'Search Your deck (2 cards)' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Search Your deck, 2 cards' })).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('2');
     expect(contextMenu()).toBeNull();
 
     await rerender(makeView({ private: { ...SEARCH, cards: [] } }));
@@ -867,7 +880,8 @@ describe('CardBox', () => {
     expect(document.querySelector('.surface [data-id="vic"]')).toBeNull();
     await fireEvent.click(chip(-1, 'Victory display (1)'));
 
-    expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Victory display, 1 card' })).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('1');
     expect(tileNames()).toEqual(['Hard to Keep Down']);
     // Close is the main button of an out-of-play pile box.
     const close = within(box()).getByRole('button', { name: 'Close' });
@@ -976,7 +990,7 @@ describe('CardBox', () => {
     await clickPlaced('enc');
     expect(contextMenu()).toBeNull();
     await fireEvent.click(chip(-1, 'Victory display (1)'));
-    expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Victory display, 1 card' })).toBeTruthy();
   });
 
   it('spectator cannot open look', async () => {
@@ -1008,6 +1022,119 @@ describe('CardBox', () => {
     await clickPlaced('s');
     expect(contextMenu()).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+/** The declarations of a rule of the box's stylesheet. */
+function boxRule(selector: string): string {
+  const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
+  const pattern = new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`);
+  return pattern.exec(boxSource)?.[1] ?? '';
+}
+
+describe('CardBox in dock mode', () => {
+  /** The box of a pile of the fixture's view, on its own, in dock mode or not. */
+  function renderBox(pileId: string, mode: 'search' | 'browse', dock: boolean, view = makeView()) {
+    const shown = view.table!.piles.find((candidate) => candidate.id === pileId)!;
+    const faces = (code: string | undefined) => (code ? (infoOf(code)?.card.faces ?? []) : []);
+    render(CardBox, {
+      props: {
+        box: { kind: 'pile', pile: shown, mode, cards: shown.cards ?? DECK_TOP },
+        view,
+        facesOf: (shownCard: TableCard) => faces(shownCard.code),
+        sizeOf: () => 'std',
+        readOnly: false,
+        selected: 0,
+        act: () => 1,
+        lastError: null,
+        onclose: () => {},
+      },
+      context: new Map([[DOCK_MODE_KEY, { current: dock }]]),
+    });
+    return box();
+  }
+
+  it('fills the screen, within its safe areas', () => {
+    const dialog = renderBox('deck:p0', 'search', true, makeView({ private: SEARCH }));
+
+    expect(dialog.classList).toContain('fill');
+    // No width of its own: the screen's.
+    expect(dialog.style.width).toBe('');
+  });
+
+  it('keeps its size of a box outside dock mode', () => {
+    const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
+
+    expect(dialog.classList).not.toContain('fill');
+    expect(dialog.style.width).toBe('min(1200px, 100%)');
+  });
+
+  it('heads the box with one line: the title cut short, then the filter', () => {
+    const dialog = renderBox('deck:p0', 'search', true, makeView({ private: SEARCH }));
+
+    expect(dialog.querySelector('.mhead')?.classList).toContain('dock');
+    const head = boxRule('.mhead.dock');
+    expect(head).toContain('flex-wrap: nowrap;');
+    const title = boxRule('.mhead.dock b');
+    expect(title).toContain('text-overflow: ellipsis;');
+    expect(title).toContain('white-space: nowrap;');
+    // The title is cut, never the count after it, centred on the title's line.
+    const titled = boxRule('.mhead .title');
+    expect(titled).toContain('align-items: center;');
+    expect(titled).toContain('min-width: 0;');
+    expect(boxRule('.mhead .count')).toContain('flex: none;');
+    const filter = boxRule('.mhead.dock .filter');
+    expect(filter).toContain('flex: 1 1 0;');
+    expect(filter).toContain('height: 38px;');
+  });
+
+  it('fills the box with as many 104 px columns as fit', () => {
+    const dialog = renderBox('deck:p0', 'search', true, makeView({ private: SEARCH }));
+
+    expect(dialog.querySelector('.mgrid')?.classList).toContain('dock');
+    const grid = boxRule('.mgrid.dock');
+    expect(grid).toContain('--min-tile: 104px;');
+    expect(grid).toContain('flex: 1;');
+  });
+
+  it('lines its footer buttons up on one row, Close on the right, short labels keeping their names', () => {
+    const dialog = renderBox('deck:p0', 'search', true, makeView({ private: SEARCH }));
+
+    const keep = within(dialog).getByRole('button', { name: 'Close without shuffling' });
+    expect(keep.textContent?.trim()).toBe("Don't shuffle");
+    const shuffle = within(dialog).getByRole('button', { name: 'Shuffle & close' });
+    expect(shuffle.classList).toContain('btn-primary');
+    // Close, the way out, is the last one: on the right.
+    const buttons = [...dialog.querySelectorAll('.mfoot button')];
+    expect(buttons.at(-1)).toBe(shuffle);
+    expect(dialog.querySelector('.mfoot')?.classList).toContain('dock');
+    expect(boxRule('.mfoot.dock')).toContain('flex-wrap: nowrap;');
+    expect(boxRule('.mfoot.dock button')).toContain('height: 44px;');
+  });
+
+  it('shortens the shuffle in of a set-aside box, Close staying the main button', () => {
+    const view = makeView();
+    view.table!.piles.push(pile('saside', { kind: 'aside', count: 1, cards: ['q1'] }));
+    const dialog = renderBox('saside', 'browse', true, view);
+
+    const shuffleIn = within(dialog).getByRole('button', {
+      name: 'Shuffle into the encounter deck',
+    });
+    expect(shuffleIn.textContent?.trim()).toBe('Shuffle in');
+    const close = within(dialog).getByRole('button', { name: 'Close' });
+    expect(close.classList).toContain('btn-primary');
+    expect([...dialog.querySelectorAll('.mfoot button')].at(-1)).toBe(close);
+  });
+
+  it('shares the footer out evenly: a lone Close the whole width, two buttons half each', () => {
+    const dialog = renderBox('deck:p0', 'browse', true, makeView({ private: SEARCH }));
+
+    expect(within(dialog).getAllByRole('button', { name: 'Close' })).toHaveLength(1);
+    const button = boxRule('.mfoot.dock button');
+    expect(button).toContain('flex: 1 1 0;');
+    expect(button).toContain('white-space: nowrap;');
+    expect(button).toContain('text-overflow: ellipsis;');
+    expect(button).toContain('overflow: hidden;');
   });
 });
 

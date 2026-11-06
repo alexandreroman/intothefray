@@ -23,7 +23,7 @@ import {
 } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
-import { ALL_ROWS, type RowMap } from './rows';
+import { ALL_TABLE, ROW_LABEL_ROOM, type TableMap } from './rows';
 import { areaOf, isScenarioDeckId, isSideDeckId, ownSeats, PILE_ENCOUNTER } from './seats';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
@@ -59,15 +59,19 @@ export interface Rect {
 
 /**
  * What a drop onto a pile does: back on top of the deck, discarded, or put in
- * that pile.
+ * that pile. A deck's top card dropped back on its own deck returns there: the
+ * drop is outlined as any other, and sends nothing.
  */
-export type PileDrop = 'top' | 'discard' | 'pile';
+export type PileDrop = 'top' | 'discard' | 'pile' | 'return';
 
 /** Where a drop can land, with its box on the screen. */
 export type DropRect =
   /** A slot among the hand cards, for a hand card. */
   | { kind: 'hand'; index: number; rect: Rect }
-  /** The hand as a whole, for a table card going back to it. */
+  /**
+   * The hand as a whole, for a table card going back to it. In dock mode it is the dock's hand
+   * button, which also takes a hand card back: a drop there sends nothing.
+   */
   | { kind: 'toHand'; rect: Rect }
   /** The table itself, where it shows. */
   | { kind: 'table'; rect: Rect }
@@ -76,6 +80,14 @@ export type DropRect =
   | { kind: 'card'; card: string; z: number; rect: Rect };
 
 export type TableRect = Extract<DropRect, { kind: 'table' }>;
+
+/**
+ * Where a card dropped on the table goes, in table units, from the corner it
+ * is drawn at: in dock mode, its insertion among the units of a row (spec 3.7,
+ * dockLayout.ts insertAt), which knows the dragged card's size and what is
+ * dragged.
+ */
+export type DropSpot = (corner: Point) => Point;
 type PileRect = Extract<DropRect, { kind: 'pile' }>;
 type CardRect = Extract<DropRect, { kind: 'card' }>;
 
@@ -101,10 +113,6 @@ export type DragSource =
   | { kind: 'deck'; pile: string }
   /** A marker (the first player token, the active counter), from where it lies. */
   | { kind: 'marker'; name: MarkerName; x: number; y: number };
-
-// A row of the table starts this far above its owner's deck: the owner's name lies there.
-// It mirrors rowContentY in internal/game/setup.go.
-const ROW_LABEL_ROOM = 30;
 
 function snap(v: number): number {
   return Math.round(v / GRID) * GRID;
@@ -186,7 +194,10 @@ function topCardAt(point: Point, targets: DropRect[]): CardRect | null {
 /**
  * The action a drop sends: `at` is where the dragged card's top-left corner
  * is drawn, in table units, `dealTo` the player an encounter card dealt there
- * goes to (see dealRecipient), and `rows` where the view mode draws the rows.
+ * goes to (see dealRecipient), `map` where the view mode draws the table, and
+ * `spot` where a card dropped on the table goes, when the view mode places it
+ * itself (dock mode); without it, and for a marker, the corner snapped to the
+ * grid and mapped back to the table.
  * Null when nothing would change: no target, the spot it was taken from, or
  * its own place in the hand. A card revealed on a deck lies on that deck, so
  * dropped where it lies it goes back on top of the deck it lies on.
@@ -196,7 +207,8 @@ export function dropAction(
   target: DropRect | null,
   at: Point,
   dealTo: Area,
-  rows: RowMap = ALL_ROWS,
+  map: TableMap = ALL_TABLE,
+  spot?: DropSpot,
 ): Action | null {
   if (target === null) {
     return null;
@@ -205,7 +217,7 @@ export function dropAction(
   if (drag.kind === 'marker') {
     return target.kind === 'hand' || target.kind === 'toHand'
       ? null
-      : place(drag, at, dealTo, rows);
+      : place(drag, spotOf(at, map), dealTo);
   }
   switch (target.kind) {
     case 'hand':
@@ -217,7 +229,7 @@ export function dropAction(
     case 'card':
       return onCard(drag, target.card, dealTo);
     case 'table':
-      return place(drag, at, dealTo, rows);
+      return place(drag, spot ? withinTable(spot(at)) : spotOf(at, map), dealTo);
   }
 }
 
@@ -301,6 +313,8 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
     return drop === 'discard' ? { kind: 'discardTop', pile: drag.pile, n: 1 } : null;
   }
   switch (drop) {
+    case 'return':
+      return null;
     case 'top':
       return { kind: 'toDeck', card: drag.card, where: 'top', pile };
     case 'discard':
@@ -311,20 +325,26 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
 }
 
 /** Where a card whose corner is drawn at `at` lies on the table, on the grid. */
-function spotOf(at: Point, rows: RowMap): Point {
+function spotOf(at: Point, map: TableMap): Point {
   // Snapped where it is drawn, then mapped to the table: snapping after would
   // push a card drawn at the bottom of a row into the next, hidden, one. A row
   // that ends there keeps the card on its last height, taken down to the grid.
-  const onGrid = Math.floor(rows.toTable(snap(at.y)) / GRID) * GRID;
-  // Within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT.
+  // Across, a point drawn smaller (dock mode) comes back between two grid
+  // lines, and goes to the nearest one.
+  const spot = map.toTable({ x: snap(at.x), y: snap(at.y) });
+  return withinTable({ x: snap(spot.x), y: Math.floor(spot.y / GRID) * GRID });
+}
+
+/** A spot within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT. */
+function withinTable(spot: Point): Point {
   return {
-    x: Math.min(TABLE_LIMIT, Math.max(0, snap(at.x))),
-    y: Math.min(TABLE_LIMIT, Math.max(0, onGrid)),
+    x: Math.min(TABLE_LIMIT, Math.max(0, spot.x)),
+    y: Math.min(TABLE_LIMIT, Math.max(0, spot.y)),
   };
 }
 
-function place(drag: DragSource, at: Point, dealTo: Area, rows: RowMap): Action | null {
-  const { x, y } = spotOf(at, rows);
+/** The action that lays the dragged card or marker at a spot of the table. */
+function place(drag: DragSource, { x, y }: Point, dealTo: Area): Action | null {
   switch (drag.kind) {
     case 'card':
       // A card dropped where it lies does not move.
@@ -461,6 +481,22 @@ export function handAreaOf(drag: DragSource, view: View): Area | null {
   return areaOf(owner);
 }
 
+/**
+ * Whether a drop on a hand takes what is dragged: `units` are the units of a
+ * group drag (selection.ts, groupUnits), empty when one card or stack is
+ * dragged. Each card of a group goes to its owner's hand, which must be one of
+ * the viewer's (handAreaOf).
+ */
+export function goesToHand(drag: DragSource, units: readonly string[], view: View): boolean {
+  if (units.length === 0) {
+    return handAreaOf(drag, view) !== null;
+  }
+  return units.every((id) => {
+    const unit = sourceOf({ kind: 'card', id }, view);
+    return unit !== null && handAreaOf(unit, view) !== null;
+  });
+}
+
 /** A pile a drag can go onto, and what the drop does there. */
 export interface PileTarget {
   pile: string;
@@ -481,8 +517,8 @@ export interface PileTarget {
  * when it stays on the table. Move to ▾ offers its home deck only. The top
  * card of a deck goes to the pile that deck discards to (deckDiscardOf): a
  * player's deck to its discard pile, the encounter deck's to the encounter
- * discard pile, a side or scenario deck's to the pile it names. A scenario
- * deck's top card also takes its own deck, where a drop does nothing.
+ * discard pile, a side or scenario deck's to the pile it names. A deck's top
+ * card also takes its own deck, where a drop returns it and sends nothing.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -504,11 +540,9 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     if (discard !== null) {
       targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
     }
-    // A drop on the scenario deck itself does nothing (onPile): without this target, it would
-    // play the card at the deck's spot. Its label never shows.
-    if (deck.kind === 'scenarioDeck') {
-      targets.push({ pile: deck.id, drop: 'top', label: 'Top of deck' });
-    }
+    // A drop on the deck itself cancels the drag: without this target, it would deal or play the
+    // card at the deck's spot.
+    targets.push({ pile: deck.id, drop: 'return', label: `Top of ${deckName(deck)}` });
     return targets;
   }
 
@@ -622,4 +656,110 @@ export function isDownward(from: Point, to: Point): boolean {
 /** Where a card dragged at x slots in among the other hand cards, given their middles. */
 export function insertIndex(middles: number[], x: number): number {
   return middles.filter((middle) => middle < x).length;
+}
+
+/**
+ * Where an element drawn at `rect` on the screen lies without its `translate`: the computed style,
+ * "none" or "x [y]" in px of the surface, which `zoom` scales. In dock mode a drag draws the cards
+ * and piles it pushes aside with a translate (spec 3.8): the drop reads them where they lie, so that
+ * the cards gliding out of the way never move what the pointer is over.
+ */
+export function unshifted(rect: Rect, translate: string, zoom: number): Rect {
+  if (translate === 'none') {
+    return rect;
+  }
+  const [x = 0, y = 0] = translate.split(' ').map((length) => Number.parseFloat(length) || 0);
+  return {
+    left: rect.left - x * zoom,
+    top: rect.top - y * zoom,
+    right: rect.right - x * zoom,
+    bottom: rect.bottom - y * zoom,
+  };
+}
+
+/**
+ * What a drop lands on and the action it sends, as text: two drops alike land alike, wherever the
+ * screen measured their target.
+ */
+export function dropKey(target: DropRect | null, action: Action | null): string {
+  if (target === null) {
+    return 'none';
+  }
+  let on: string;
+  switch (target.kind) {
+    case 'hand':
+      on = `hand:${target.index}`;
+      break;
+    case 'pile':
+      on = `pile:${target.pile}:${target.drop}`;
+      break;
+    case 'card':
+      on = `card:${target.card}`;
+      break;
+    default:
+      on = target.kind;
+  }
+  return `${on} ${JSON.stringify(action)}`;
+}
+
+/**
+ * How far past the edge of the drop the rows show (dock mode, spec 3.8) the pointer goes before
+ * they show the next one, in drawn units: a quarter of a slot.
+ */
+export const DROP_MARGIN = 11;
+
+/** How long the pointer stays past that edge, if not by the margin, before the next drop shows. */
+export const DROP_DWELL_MS = 80;
+
+/**
+ * The drop the rows show during a drag in dock mode (spec 3.8), kept while the pointer wavers on
+ * its edge (hysteresis): a finger shaking by a pixel on the boundary between two slots would
+ * otherwise flip the cards making way back and forth. The next drop shows once the pointer is
+ * `margin` past the last point the shown one lay under it, or has stayed off it DROP_DWELL_MS. A
+ * drop let go is settled the same way: it lands where the rows show it.
+ */
+export class SteadyDrop<T> {
+  readonly #keyOf: (drop: T) => string;
+  /** The drop shown, with its key and the last point it lay under the pointer. */
+  #shown: { key: string; drop: T; at: Point } | null = null;
+  /** The other drop under the pointer, and since when, while the shown one holds. */
+  #pending: { key: string; since: number } | null = null;
+
+  constructor(keyOf: (drop: T) => string) {
+    this.#keyOf = keyOf;
+  }
+
+  /** Whether another drop lies under the pointer, which shows once it stays there long enough. */
+  get waiting(): boolean {
+    return this.#pending !== null;
+  }
+
+  /**
+   * The drop to show with the pointer at `at`, `now` in ms: `locate`'s there, unless the pointer is
+   * still within `margin` of where the shown one last lay under it and has not stayed off it
+   * DROP_DWELL_MS.
+   */
+  settle(at: Point, margin: number, now: number, locate: (at: Point) => T): T {
+    const drop = locate(at);
+    const key = this.#keyOf(drop);
+    const shown = this.#shown;
+    const near = shown !== null && Math.hypot(at.x - shown.at.x, at.y - shown.at.y) < margin;
+    if (shown !== null && key !== shown.key && near) {
+      if (this.#pending?.key !== key) {
+        this.#pending = { key, since: now };
+      }
+      if (now - this.#pending.since < DROP_DWELL_MS) {
+        return shown.drop;
+      }
+    }
+    this.#shown = { key, drop, at };
+    this.#pending = null;
+    return drop;
+  }
+
+  /** Forgets the drop shown: the next drag starts afresh. */
+  reset(): void {
+    this.#shown = null;
+    this.#pending = null;
+  }
 }

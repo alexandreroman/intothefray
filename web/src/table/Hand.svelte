@@ -54,6 +54,7 @@
     inset = { left: 0, right: 0 },
     restPlace,
     hidden = false,
+    onopen,
   }: {
     /** The hand, in its order. */
     cards: TableCard[];
@@ -96,6 +97,11 @@
     restPlace?: { offset: number; width: number };
     /** The other hand shown is raised over the room: this one fades out, and takes no pointer. */
     hidden?: boolean;
+    /**
+     * Opens the inspector of a card of the raised hand, which a tap does in touch mode (Table.svelte)
+     * instead of selecting it.
+     */
+    onopen?: (id: string) => void;
   } = $props();
 
   /** The cards in the given order, then any the order does not know (drawn meanwhile). */
@@ -294,8 +300,9 @@
    * A tap on a card; a mouse click does nothing here, hovering is enough.
    * The first tap only raises the hand: the fan spreads out as it rises, and
    * the card under the finger at rest is seldom the one wanted. In the raised
-   * hand, a tap selects a card, another one moves the selection, and a tap on
-   * the selected card lets go of it.
+   * hand, a tap opens the card's inspector (onopen) in touch mode; otherwise it
+   * selects a card, another one moves the selection, and a tap on the selected
+   * card lets go of it.
    */
   function tapped(id: string): void {
     if (modal.open) {
@@ -313,6 +320,10 @@
     pinned = true;
     open = true;
     if (!wasOpen) {
+      return;
+    }
+    if (onopen) {
+      onopen(id);
       return;
     }
     const element = { kind: 'hand', id } as const;

@@ -241,6 +241,8 @@
 
 <style>
   .home {
+    /* The side gutter of main and the footer. */
+    --gutter: 24px;
     position: relative;
     min-height: 100vh;
     display: flex;
@@ -272,7 +274,10 @@
     width: 100%;
     max-width: 1240px;
     margin: 0 auto;
-    padding: 72px 24px 40px;
+    padding-block: 72px 40px;
+    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
+    padding-inline: max(var(--gutter), env(safe-area-inset-left))
+      max(var(--gutter), env(safe-area-inset-right));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -765,7 +770,10 @@
     width: 100%;
     max-width: 1240px;
     margin: 0 auto;
-    padding: 20px 24px 28px;
+    /* The last line of the page stays clear of the home indicator. */
+    padding-block: 20px max(28px, env(safe-area-inset-bottom));
+    padding-inline: max(var(--gutter), env(safe-area-inset-left))
+      max(var(--gutter), env(safe-area-inset-right));
     font-size: 12px;
     color: var(--faint);
   }
@@ -791,12 +799,16 @@
   /* A phone: 16px gutters, and a smaller fan under the buttons. The top padding stays that of the
      column layout above. */
   @media (max-width: 640px) {
+    .home {
+      --gutter: 16px;
+    }
+
     main {
-      padding: 92px 16px 24px;
+      padding-block: 92px 24px;
     }
 
     footer {
-      padding: 16px 16px 24px;
+      padding-block: 16px max(24px, env(safe-area-inset-bottom));
     }
 
     .fan {

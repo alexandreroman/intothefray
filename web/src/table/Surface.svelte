@@ -3,7 +3,10 @@
   the dot grid, a framed box around each owner's deck and discard pile, with
   the chips opening that owner's out-of-play piles, the piles, the cards and
   the markers (the first player token, the active counter). The table scrolls
-  it both ways and zooms it as a whole.
+  it both ways and zooms it as a whole. In dock mode the frames show their
+  owner's avatar rather than the name, the chips right after it, a name that
+  shows kept within its frame's drawn width, and during a drag what it pushes
+  aside is drawn shifted from its place (spec 3.8).
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
@@ -11,9 +14,16 @@
 
   /** The frame around an owner's deck and discard pile, with the name above it. */
   export interface OwnerBox {
+    /** The frame as drawn: in dock mode, where the table's projection draws it, smaller. */
     frame: OwnerFrame;
     /** The player's name, "Villain", or the label of a scenario deck. */
     name: string;
+    /**
+     * The round avatar the name line shows in place of the name, in dock mode: the image of the hero's
+     * or the villain's face, null for a plain disc of the owner's colour. Absent where the line shows
+     * the name: out of dock mode, and on a scenario deck's frame.
+     */
+    avatar?: string | null;
     /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
     color: string;
     /** The tooltip: how many cards the player holds. */
@@ -21,9 +31,35 @@
     /** The owner's out-of-play piles, as chips at the right of the name line. */
     outOfPlay: OutOfPlayChip[];
   }
+
+  // The owner line's sizes in --lu (the style below): a chip, the gap between chips, the avatar, and
+  // the room between the avatar or the name and the chips; and the line's left inset, in drawn units.
+  const CHIP_WIDTH = 46;
+  const CHIP_GAP = 4;
+  const AVATAR = 22;
+  const CHIP_LEAD = 6;
+  const LINE_INSET = 6;
+
+  /**
+   * How far right of its frame's left edge an owner line reaches in dock mode, in drawn units, at a
+   * zoom: its avatar, or the name's inset, then --chip-lead and its chips. A name reaches no further
+   * on its own, cut to its frame's room before the chips (--name-fit). As the style draws it: --lu
+   * counter-scales the line far out, the avatar's ring is 2 screen px.
+   */
+  export function ownerLineWidth(line: { avatar: boolean; chips: number }, zoom: number): number {
+    const lu = Math.max(1, 11 / 12 / zoom);
+    const ring = 2 / zoom;
+    const lead = line.avatar ? LINE_INSET + AVATAR * lu + 2 * ring : LINE_INSET;
+    if (line.chips === 0) {
+      return line.avatar ? lead : 0;
+    }
+    const chips = line.chips * CHIP_WIDTH * lu + (line.chips - 1) * CHIP_GAP * lu;
+    return lead + CHIP_LEAD * lu + chips;
+  }
 </script>
 
 <script lang="ts">
+  import CardArt from '../components/CardArt.svelte';
   import Icon, { type IconName } from '../components/Icon.svelte';
   import type {
     MarkerName,
@@ -33,7 +69,11 @@
     PileView as Pile,
   } from '../lib/types';
   import { MARKERS } from '../lib/types';
+  import { prefersReducedMotion } from 'svelte/motion';
+  import { frameItemId, markerItemId } from './dockItems';
   import CardView from './CardView.svelte';
+  import { dockMode } from './dockMode';
+  import { DOCK_DOT_PITCH, DOCK_SCALE } from './dockPiles';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -52,6 +92,8 @@
     markers,
     markersMovable = false,
     canDrag = () => false,
+    shifts = new Map(),
+    glide = false,
   }: {
     /** The cards lying on the table. */
     cards: TableCard[];
@@ -75,7 +117,30 @@
     markersMovable?: boolean;
     /** Whether the viewer can drag that card or pile: the pointer says so (grab). */
     canDrag?: (element: TableElement) => boolean;
+    /**
+     * Dock mode only (spec 3.8): how far from its place each card, pile, frame and marker pushed
+     * aside by a drag is drawn, in drawn units, by id (dockItems.ts); none unless given.
+     */
+    shifts?: ReadonlyMap<string, Point>;
+    /** Whether a change of the shifts glides there, rather than jumping. */
+    glide?: boolean;
   } = $props();
+
+  // How long a shift glides; nothing glides under reduced motion.
+  const SHIFT_GLIDE = '180ms';
+
+  /** A shift as a translate, none for an item drawn in its place. */
+  function translateOf(id: string): string | undefined {
+    const shift = shifts.get(id);
+    return shift === undefined ? undefined : `${shift.x}px ${shift.y}px`;
+  }
+
+  // In dock mode (spec 3.7) the table hands every card, pile, frame and marker at the corner its
+  // projection draws it at (dockLayout.ts): the cards and piles draw themselves smaller from there
+  // (CardView, PileView), the markers too (MarkerToken); the name lines and the chips stay at full
+  // size. The dots lie further apart there (DOCK_DOT_PITCH), drawn.
+  const dock = dockMode();
+  const DOCK_DOTS = `${DOCK_DOT_PITCH * DOCK_SCALE}px ${DOCK_DOT_PITCH * DOCK_SCALE}px`;
 
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
@@ -104,20 +169,43 @@
 </script>
 
 <!-- Card z-indexes come from the server and can be negative: the surface isolates them. -->
-<div class="surface table-dots" style:width="{width}px" style:height="{height}px">
+<div
+  class="surface table-dots"
+  style:width="{width}px"
+  style:height="{height}px"
+  style:background-size={dock.current ? DOCK_DOTS : undefined}
+  style:--shift-glide={glide && !prefersReducedMotion.current ? SHIFT_GLIDE : undefined}
+>
   {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
+    {@const shift = translateOf(frameItemId(owner.frame))}
     <div
       class="ownerbox"
       data-owner={owner.frame.owner}
       data-tip={owner.tip}
       style:--owner={owner.color}
       style:--chips={owner.outOfPlay.length}
+      style:--frame-w="{owner.frame.w}px"
       style:left="{owner.frame.x}px"
       style:top="{owner.frame.y}px"
       style:width="{owner.frame.w}px"
       style:height="{owner.frame.h}px"
+      style:translate={shift}
     >
-      <span class="owner" use:overflowTip>{owner.name}</span>
+      {#if owner.avatar === undefined}
+        <span class="owner" class:fitted={dock.current} use:overflowTip>{owner.name}</span>
+      {:else}
+        <span
+          class="avatar"
+          class:empty={owner.avatar === null}
+          role="img"
+          aria-label={owner.name}
+          data-tip={owner.name}
+        >
+          {#if owner.avatar}
+            <CardArt src={owner.avatar} aspect={1} />
+          {/if}
+        </span>
+      {/if}
       {#if owner.tip}
         <!-- The tooltip is for the pointer: screen readers read the hand count here. -->
         <span class="sr-only">: {owner.tip}</span>
@@ -130,6 +218,8 @@
       -->
       <div
         class="chips"
+        class:after-avatar={dock.current && owner.avatar !== undefined}
+        class:after-name={dock.current && owner.avatar === undefined}
         role="group"
         aria-label="{owner.name}: out-of-play piles"
         data-owner={owner.frame.owner}
@@ -138,7 +228,12 @@
         style:--frame-w="{owner.frame.w}px"
         style:left="{owner.frame.x}px"
         style:top="{owner.frame.y}px"
+        style:translate={shift}
       >
+        {#if dock.current && owner.avatar === undefined}
+          <!-- The name's room, as wide as the name shows: the chips follow it. -->
+          <span class="name-room" aria-hidden="true">{owner.name}</span>
+        {/if}
         {#each owner.outOfPlay as chip (chip.pile)}
           <button
             type="button"
@@ -158,7 +253,13 @@
   {/each}
   {#each piles as pile (pile.id)}
     {@const top = topOf(pile)}
-    <PileView {pile} {top} face={faceOf(top)} draggable={canDrag({ kind: 'pile', id: pile.id })} />
+    <PileView
+      {pile}
+      {top}
+      face={faceOf(top)}
+      draggable={canDrag({ kind: 'pile', id: pile.id })}
+      shift={translateOf(pile.id)}
+    />
   {/each}
   {#each cards as card (card.id)}
     <CardView
@@ -166,6 +267,7 @@
       face={faceOf(card)}
       caption={captionOf(card)}
       draggable={canDrag({ kind: 'card', id: card.id })}
+      shift={translateOf(card.id)}
     />
   {/each}
   {#each MARKERS as name (name)}
@@ -178,6 +280,7 @@
         y={at.y}
         lifted={interaction.markersLiftedByOthers.has(name)}
         tip={markersMovable ? MARKER_TIPS[name] : undefined}
+        shift={translateOf(markerItemId(name))}
         onpointerenter={(event) => interaction.enterNothing(event)}
         onpointerdown={markersMovable
           ? (event) => interaction.press({ kind: 'marker', name }, event)
@@ -205,6 +308,16 @@
       row's cards.
     */
     --name-min: calc(56 * var(--lu));
+    /*
+      In dock mode, an owner's avatar in place of the name: the chips' height, in a ring of the
+      owner's colour 2 screen px wide. The room before the chips takes the frame's border, the
+      avatar's 4px of margin, the avatar and its ring.
+    */
+    --avatar: calc(22 * var(--lu));
+    --avatar-ring: calc(2px / var(--z, 1));
+    --avatar-room: calc(6px + var(--avatar) + 2 * var(--avatar-ring));
+    /* In dock mode, the room between an owner line's avatar (or name) and its chips. */
+    --chip-lead: calc(6 * var(--lu));
     position: relative;
     isolation: isolate;
     zoom: var(--z, 1);
@@ -217,6 +330,15 @@
     border: 2px solid color-mix(in srgb, var(--owner) 55%, transparent);
     border-radius: 12px;
     background: color-mix(in srgb, var(--owner) 6%, transparent);
+  }
+
+  /*
+    In dock mode a name line ends within its frame's drawn width (--frame-w): the name, from 6px
+    inside the frame's left edge (.owner, .name-room), takes what is left after --chip-lead and its
+    chips, down to nothing on a frame too narrow for them.
+  */
+  :is(.ownerbox, .chips) {
+    --name-fit: max(0px, var(--frame-w) - 6px - var(--chip-lead) - var(--chips) * var(--chip-room));
   }
 
   /*
@@ -236,6 +358,32 @@
     line-height: calc(14 * var(--lu));
     font-weight: 700;
     color: var(--owner);
+  }
+
+  /* In dock mode, a name line that shows its name (a scenario deck's) keeps within the drawn frame. */
+  .owner.fitted {
+    max-width: var(--name-fit);
+  }
+
+  /*
+    The avatar where the name starts, on the chips' line, from 30 to 8 units above the frame (the
+    name's offsets, see .owner); before a hero, a disc of the owner's colour, as the hero selector
+    draws it.
+  */
+  .avatar {
+    position: absolute;
+    left: calc(4px + var(--avatar-ring));
+    bottom: calc(100% + 2px + 8 * var(--lu));
+    width: var(--avatar);
+    height: var(--avatar);
+    overflow: hidden;
+    border-radius: 50%;
+    background: #000;
+    box-shadow: 0 0 0 var(--avatar-ring) var(--owner);
+  }
+
+  .avatar.empty {
+    background: var(--owner);
   }
 
   /*
@@ -261,6 +409,43 @@
     gap: var(--chip-gap);
     /* The room left of the chips stays the name's, an empty spot. */
     pointer-events: none;
+  }
+
+  /*
+    In dock mode the chips follow the avatar, --chip-lead to the right of its ring, from the left:
+    every owner line starts at its row's left edge, so the chips line up down the rows. A line
+    that shows its name (a scenario deck's) puts them right after the name (.name-room).
+  */
+  .chips.after-avatar,
+  .chips.after-name {
+    width: max-content;
+    justify-content: flex-start;
+  }
+
+  .chips.after-avatar {
+    padding-left: calc(var(--avatar-room) + var(--chip-lead));
+  }
+
+  /*
+    The room the name takes on its line, unseen: from where the name starts (.owner: 4px inside
+    the frame's 2-unit border), as wide as it shows, ellipsis included, then --chip-lead.
+  */
+  .name-room {
+    max-width: var(--name-fit);
+    margin: 0 calc(var(--chip-lead) - var(--chip-gap)) 0 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: calc(13 * var(--lu));
+    line-height: calc(22 * var(--lu));
+    font-weight: 700;
+    visibility: hidden;
+  }
+
+  /* Pushed aside by a drag (spec 3.8), the frame and its chips glide with its piles. */
+  .ownerbox,
+  .chips {
+    transition: translate var(--shift-glide, 0s) ease-out;
   }
 
   .chip {

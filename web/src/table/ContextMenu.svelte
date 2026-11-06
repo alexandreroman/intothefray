@@ -15,6 +15,7 @@
   import { onDestroy, onMount, tick, untrack } from 'svelte';
   import { lastPressByPointer } from '../components/modal.svelte';
   import { overflowTip } from '../lib/overflowTip';
+  import './countPill.css';
   import { keyLabel, type ActionItem } from './actions';
   import type {
     ContextAction,
@@ -401,7 +402,7 @@
     <div class="eyebrow" use:overflowTip>{header.eyebrow}</div>
     <div class="nameline">
       <span class="name" use:overflowTip>{header.name}</span>
-      {#if header.count !== undefined}<span class="count">{header.count}</span>{/if}
+      {#if header.count !== undefined}<span class="count count-pill">{header.count}</span>{/if}
     </div>
   </div>
   {#if note !== undefined}
@@ -652,18 +653,11 @@
     font-weight: 700;
   }
 
-  /* A pile's count: a small pill, its digits lined up as they change. */
+  /* A pile's count, in a pile's capsule (countPill.css), its digits lined up as they change. */
   .count {
     flex: none;
-    padding: 0 7px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    background: var(--panel);
-    color: var(--muted);
     font-size: 11px;
-    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    line-height: 18px;
   }
 
   /* The element's default action. */

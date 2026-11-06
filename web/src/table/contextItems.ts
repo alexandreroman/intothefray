@@ -131,7 +131,15 @@ export interface ContextHeader {
   color: string;
   /** The menu's accessible name, the header in one line: "Rhino, Villain, stage I", "Your deck, 34 cards". */
   label: string;
+  /**
+   * The card is a scheme, which the table draws its tokens on differently (CardView.svelte): the
+   * threat in the top right corner, the status tabs on the left edge. Left out for any other card.
+   */
+  scheme?: true;
 }
+
+/** The types of the schemes, whose tokens and tabs lie in their own places (CardView.svelte). */
+const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
 
 /**
  * The header of a card's menu, in its owner's colour: its type and stage over
@@ -149,15 +157,18 @@ export function cardHeader(card: CardView, face: PackFace | null, view: View): C
   }
   const type = typeLabel(face.type);
   const stage = stageLabel(face);
-  if (!stage) {
-    return { eyebrow: type, name: face.name, color, label: `${face.name}, ${type}` };
+  const header: ContextHeader = stage
+    ? {
+        eyebrow: `${type} · ${capitalize(stage)}`,
+        name: face.name,
+        color,
+        label: `${face.name}, ${type}, ${stage}`,
+      }
+    : { eyebrow: type, name: face.name, color, label: `${face.name}, ${type}` };
+  if (SCHEME_TYPES.includes(face.type)) {
+    header.scheme = true;
   }
-  return {
-    eyebrow: `${type} · ${capitalize(stage)}`,
-    name: face.name,
-    color,
-    label: `${face.name}, ${type}, ${stage}`,
-  };
+  return header;
 }
 
 /**

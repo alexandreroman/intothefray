@@ -78,17 +78,22 @@ type: project
   button offers Undo ("Undo last action").
 - Cards and piles act through their action menu (see
   [[project_action_bars]]).
-- While the viewer has not chosen a zoom (`itf-zoom`), screens ≤ 600 px
-  wide fit the content width (never above 100%) and wider screens show
-  100%, following the width live. The % button reads "Fit to width" at
+- While the viewer has not chosen a zoom (`itf-zoom`), a window up to
+  600 px wide fits its content plus one empty card slot (152 units) at its
+  right (never above 100%) and wider screens show 100%, following the
+  width live. The % button reads "Fit to width" at
   ≤ 600 px and "Back to 100%" (key 0) elsewhere. Minimum zoom 30% at
   ≤ 600 px wide, else 50%. Owner names and chips keep ≥ 11 px text at
   any zoom. At ≤ 600 px wide or ≤ 500 px tall, the zoom control (with
   the floating Undo when the history panel is hidden, ≤ 900 px wide)
   forms one bar at the bottom right above the resting hand, and hand
-  cards are sized from the window.
+  cards are sized from the window. Dock mode (a small touch screen) has
+  its own fixed zoom and no zoom control (see
+  [[project_touch_phone_table]]).
 - Touch mode (no hover, coarse pointer) shows no card preview and no
-  keyboard-shortcuts button; bar buttons are 44 px.
+  keyboard-shortcuts button; bar buttons are 44 px; a tap shows the card
+  in the inspector. Dock mode draws cards, piles and owner frames at
+  60 %, positions unchanged (see [[project_touch_phone_table]]).
 
 **Why:** decided with the user: players add cards as they play, so fixed
 things sit on the left and play grows right; one shared surface without

@@ -7,7 +7,13 @@
   measured on the screen and drag.ts decides what the drop sends. Once
   dropped, it stays drawn where it landed until the server answers. A card
   revealed on a deck is dragged as the table draws it: a side scheme turns
-  from the deck's portrait slot to lie landscape.
+  from the deck's portrait slot to lie landscape. In touch mode, a finger on
+  a table card, a pile or a marker must hold still for HOLD_MS before it
+  drags (spec 3.2): a quick swipe scrolls the table instead. In dock mode,
+  the rows show a drop on the table before it is let go (spec 3.8): this layer
+  feeds the table where the drop would put the card, once a frame at most,
+  and the table lays its rows out with the card there, pushing the others
+  aside.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -33,9 +39,13 @@
     dealRecipient,
     DECK_TOP_ID,
     DRAG_THRESHOLD,
+    DROP_DWELL_MS,
+    DROP_MARGIN,
     dropAction,
+    dropKey,
     dropTarget,
     ENCOUNTER_TOP_ID,
+    goesToHand,
     handAreaOf,
     handBand,
     insertIndex,
@@ -44,18 +54,25 @@
     pileTargets,
     sourceOf,
     stackOf,
+    SteadyDrop,
     tucks,
+    unshifted,
     type DragSource,
     type DropRect,
+    type DropSpot,
     type PileDrop,
     type Rect,
     type TableRect,
   } from './drag';
+  import { dockMode } from './dockMode';
+  import type { DockPreview } from './dockLayout';
+  import { dockCardBox } from './dockPiles';
   import { backCaption, isHidden, pileBack } from './face';
+  import { HOLD_MS } from './gestures';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
-  import { ALL_ROWS, drawnGap, type RowMap } from './rows';
+  import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
   import { groupAction, groupPileTargets, groupUnits } from './selection';
@@ -67,11 +84,13 @@
     root,
     faceOf,
     sizeOf,
-    rowMap = ALL_ROWS,
+    tableMap = ALL_TABLE,
+    drawnMap,
     selected,
     act,
     onhand,
     ondrag,
+    onpreview = () => {},
     lastError,
   }: {
     view: View;
@@ -80,8 +99,13 @@
     root: HTMLElement | undefined;
     faceOf: (card: TableCard | undefined) => PackFace | null;
     sizeOf: (card: TableCard) => Size;
-    /** Where the view mode draws the heights of the table (rows.ts). */
-    rowMap?: RowMap;
+    /** Where the view mode draws the points of the table (rows.ts, dockLayout.ts). */
+    tableMap?: TableMap;
+    /**
+     * Where the table is drawn, the drag's preview included (dock mode, spec 3.8): a drop lands
+     * where it shows the card. The tableMap unless given.
+     */
+    drawnMap?: TableMap;
     /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
     selected: number | null;
     /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
@@ -90,6 +114,11 @@
     onhand: (seat: number) => void;
     /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
     ondrag: (drag: PresenceDrag | null) => void;
+    /**
+     * Dock mode only (spec 3.8): the drop on the table the rows show before it is let go, null once
+     * there is none, the drag over or its drop answered.
+     */
+    onpreview?: (preview: DockPreview | null) => void;
     /** The session's last error, which names the action it refuses. */
     lastError: SessionError | null;
   } = $props();
@@ -124,6 +153,9 @@
   let handSize: { w: number; h: number } = { w: HAND_CARD.w, h: HAND_CARD.h };
   /** The sway of the ghosts: they lean with the pointer's horizontal speed (sway.ts). */
   const sway = new Sway();
+  // In dock mode (spec 3.6) the table draws its cards smaller, and so this layer draws the ghosts
+  // (CardView): the grab, the corner and the drop follow the drawn box.
+  const dock = dockMode();
   /** The frame that steps the sway next, 0 when it rests. */
   let swayFrame = 0;
   /**
@@ -133,10 +165,27 @@
   let rising = $state(false);
   /** The frame that ends the rise, 0 when none is pending. */
   let riseFrame = 0;
+  /** The preview the table was last fed (onpreview), and the one the next frame feeds it. */
+  let fedPreview: DockPreview | null = null;
+  let pendingPreview: DockPreview | null = null;
+  /** The frame that feeds the pending preview, 0 when none is pending. */
+  let previewFrame = 0;
+  /** The drop the rows show in dock mode, kept while the pointer wavers on its edge. */
+  const steady = new SteadyDrop<Located | null>((found) =>
+    dropKey(found?.target ?? null, found?.action ?? null),
+  );
+  /** The timer that shows the drop under a still pointer once it has stayed there, 0 when none. */
+  let dwellTimer = 0;
   /** The label above the drop target. */
   let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
     null,
   );
+
+  /** What a drop lands on, and the action it sends, null when nothing would change. */
+  interface Located {
+    target: DropRect;
+    action: Action | null;
+  }
 
   // The server relays no more cards in one drag: it mirrors maxDragCards in internal/server/presence.go.
   const MAX_DRAG_CARDS = 50;
@@ -145,7 +194,7 @@
   const HIDDEN_CARD = 'hidden-0';
 
   // The prototype's arrows in front of the labels.
-  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→' };
+  const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→', return: '↑' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
 
@@ -209,6 +258,14 @@
     });
   });
 
+  // With no drag and no drop waiting for the server, the rows show no drop: a cancelled drag, or one
+  // let go anywhere else, lets the cards it pushed aside back; an answered drop shows in the view.
+  $effect(() => {
+    if (held === null && waiting === null) {
+      untrack(() => feedPreview(null));
+    }
+  });
+
   // Pressing anything but a selected card lets go of the selection: what it
   // drags then is that alone.
   $effect(() => {
@@ -223,6 +280,26 @@
       });
     }
   });
+
+  // A touch press waiting for the hold arms once held for HOLD_MS, if what it holds can be dragged:
+  // a spectator's press, or one on an empty pile, stays a tap or a scroll.
+  $effect(() => {
+    const pressed = interaction.held;
+    if (!pressed || !interaction.awaitingHold) {
+      return;
+    }
+    const timer = setTimeout(() => armIfDraggable(pressed), HOLD_MS);
+    return () => clearTimeout(timer);
+  });
+
+  // Before any touch: a guard added only at a press could come too late for its touch.
+  $effect(() => interaction.guardScroll());
+
+  function armIfDraggable(pressed: Held): void {
+    if (sourceOf(pressed.element, view) !== null) {
+      interaction.arm();
+    }
+  }
 
   $effect(() => {
     const refused = lastError?.id;
@@ -243,6 +320,9 @@
     }
     const at = { x: event.clientX, y: event.clientY };
     if (!pressed.moved) {
+      if (interaction.awaitingHold && !followHold(pressed, event)) {
+        return;
+      }
       if (Math.hypot(at.x - pressed.start.x, at.y - pressed.start.y) < DRAG_THRESHOLD) {
         return;
       }
@@ -251,6 +331,11 @@
         // would make on the card is no tap either.
         interaction.letGo();
         interaction.swallowNextClick();
+        return;
+      }
+      if (isCarouselScroll(pressed, event, at)) {
+        // Not a drag: the browser scrolls the carousel under the finger (its pointercancel follows).
+        interaction.letGo();
         return;
       }
       const from = sourceOf(pressed.element, view);
@@ -272,6 +357,23 @@
     }
   }
 
+  /**
+   * Follows a touch press waiting for the hold, and tells whether this move may drag it. Past the
+   * slop before HOLD_MS, the finger scrolls the table: the press is let go, and the browser takes
+   * the finger over (its pointercancel follows). Held long enough, it arms, should the timer be late.
+   */
+  function followHold(pressed: Held, event: PointerEvent): boolean {
+    const phase = interaction.holdPhaseAt(event);
+    if (phase === 'scroll') {
+      interaction.letGo();
+      return false;
+    }
+    if (phase === 'armed') {
+      armIfDraggable(pressed);
+    }
+    return interaction.armed;
+  }
+
   /** A finger pushing a hand card down: a swipe that lowers the hand, not a drag of the card. */
   function isHandSwipe(pressed: Held, event: PointerEvent, at: Point): boolean {
     return (
@@ -279,6 +381,25 @@
       event.pointerType === 'touch' &&
       isDownward(pressed.start, at)
     );
+  }
+
+  /**
+   * A finger moving a card of the hand sheet's carousel other than mostly upwards: it scrolls the
+   * carousel, as it may already have before the browser took the finger over. Only an upward move
+   * drags the card out to the table; the fan has no carousel, and drags its cards sideways.
+   */
+  function isCarouselScroll(pressed: Held, event: PointerEvent, at: Point): boolean {
+    return (
+      pressed.element.kind === 'hand' &&
+      event.pointerType === 'touch' &&
+      interaction.inCarousel &&
+      !isUpward(pressed.start, at)
+    );
+  }
+
+  /** Whether the move from `from` to `to` goes mostly up. */
+  function isUpward(from: Point, to: Point): boolean {
+    return from.y - to.y > Math.abs(to.x - from.x);
   }
 
   function start(from: DragSource, pressedAt: Point): void {
@@ -351,6 +472,8 @@
   $effect(() => () => {
     stopSway();
     cancelAnimationFrame(riseFrame);
+    cancelAnimationFrame(previewFrame);
+    clearTimeout(dwellTimer);
   });
 
   /** Once drawn, the ghost of a card picked up off the deck's slot turns to lie landscape. */
@@ -394,7 +517,7 @@
     if (from.kind === 'card') {
       const card = cardsById.get(from.card);
       const surface = surfaceRect(root);
-      const corner = card && surface ? onScreen(card, surface) : null;
+      const corner = card && surface ? drawnCorner(card, surface) : null;
       if (card && corner) {
         const slot = slotOf(card);
         const held = {
@@ -434,6 +557,16 @@
     return { x: 0.5, y: 0.5 };
   }
 
+  /** Where a table card's top-left corner shows on the screen, drawn with its stack or its pile. */
+  function drawnCorner(card: TableCard, surface: Rect): Point | null {
+    return onScreen(card, surface, card.id);
+  }
+
+  /** The box a card is drawn at on the table: smaller in dock mode (spec 3.6). */
+  function drawn(box: Box): Box {
+    return dock.current ? dockCardBox(box) : box;
+  }
+
   /**
    * Where a hold on a deck's portrait slot holds the landscape card it shows,
    * as fractions of each box. The slot shows the card turned a quarter
@@ -446,7 +579,7 @@
 
   /** The box a table card has where it lies: a card revealed on a deck, the deck's portrait slot. */
   function slotOf(card: TableCard): Box {
-    return cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile });
+    return drawn(cardBox(sizeOf(card), { faceDown: card.faceDown, onPile: !!card.onPile }));
   }
 
   /**
@@ -466,14 +599,19 @@
     return { w, h: w * ratio };
   }
 
-  /** The box of the dragged card on the table, in table units. */
+  /** The box of the dragged card or marker on the table, in table units, as its ghost is drawn. */
   function boxOf(from: DragSource): Box {
     if (from.kind === 'marker') {
-      return {
+      return drawn({
         ...(from.name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX),
         rotated: false,
-      };
+      });
     }
+    return drawn(cardBoxOf(from));
+  }
+
+  /** The box of the dragged card at full size, in table units. */
+  function cardBoxOf(from: Exclude<DragSource, { kind: 'marker' }>): Box {
     if (from.kind === 'encounter' || from.kind === 'deck') {
       const shown = from.kind === 'deck' ? shownDeckTop(from.pile) : undefined;
       return shown ? cardBox(sizeOf(shown), {}) : cardBox('std', { faceDown: true });
@@ -490,16 +628,23 @@
     return cardBox(sizeOf(card), {});
   }
 
-  /** Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is hidden. */
-  function onScreen(point: Point, surface: Rect): Point | null {
-    const y = rowMap.toDisplay(point.y);
-    return y === null ? null : toScreen({ x: point.x, y }, surface, zoom);
+  /**
+   * Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is
+   * hidden; a spot of an item, named by its id, is drawn with that item.
+   */
+  function onScreen(
+    point: Point,
+    surface: Rect,
+    itemId?: string,
+    map: TableMap = tableMap,
+  ): Point | null {
+    const drawn = map.toDisplay(point, itemId);
+    return drawn === null ? null : toScreen(drawn, surface, zoom);
   }
 
   /** The spot of the table drawn at a point of the screen, whatever the view mode. */
   function onTable(at: Point, surface: Rect): Point {
-    const drawn = toTable(at, surface, zoom);
-    return { x: drawn.x, y: rowMap.toTable(drawn.y) };
+    return tableMap.toTable(toTable(at, surface, zoom));
   }
 
   /** The top-left corner of the dragged card at table size, on the screen. */
@@ -510,8 +655,9 @@
 
   /**
    * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
-   * places it, where it was let go when it tucks it into a stack, whose chain the server lays out:
-   * the next view slides it from there (animate.ts).
+   * places it, in the slot the rows opened for it in dock mode (spec 3.8), where it was let go when
+   * it tucks it into a stack, whose chain the server lays out: the next view slides it from there
+   * (animate.ts).
    */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
@@ -520,7 +666,12 @@
       return cornerOf(from, at);
     }
     // A placed card always lands in a shown row; the spot under the pointer covers any other case.
-    return onScreen(spot, surface) ?? cornerOf(from, at);
+    const preview = fedPreview;
+    const landed =
+      preview === null
+        ? onScreen(spot, surface)
+        : onScreen(spot, surface, preview.unitId, drawnMap ?? tableMap);
+    return landed ?? cornerOf(from, at);
   }
 
   /**
@@ -546,14 +697,27 @@
     if (first?.x === undefined || first.y === undefined || !moved || !lead) {
       return null;
     }
-    const landed = rowMap.toDisplay(first.y);
-    const y =
-      landed === null ? first.y : rowMap.toTable(landed + drawnGap(rowMap, moved.y, lead.y));
-    return { x: lead.x + first.x - moved.x, y };
+    // Where the first move lands as drawn, then the lead's drawn offset from the moved card.
+    const landed = tableMap.toDisplay({ x: first.x, y: first.y });
+    if (landed === null) {
+      return { x: lead.x + first.x - moved.x, y: first.y };
+    }
+    const offset = drawnDelta(tableMap, moved, lead);
+    return tableMap.toTable({ x: landed.x + offset.x, y: landed.y + offset.y });
   }
 
-  function placedRect(selector: string): DOMRect | undefined {
-    return root?.querySelector(selector)?.getBoundingClientRect();
+  /**
+   * Where a card or a pile on the surface lies on the screen, never shifted aside by the drag's
+   * preview (spec 3.8): a card gliding out of the way under the pointer would take the drop, the
+   * preview would go, the card glide back, and so on.
+   */
+  function placedRect(selector: string): Rect | undefined {
+    const element = root?.querySelector(selector);
+    if (!element) {
+      return undefined;
+    }
+    // The computed translate, not the style's: mid-glide, the card is drawn on its way there.
+    return unshifted(element.getBoundingClientRect(), getComputedStyle(element).translate, zoom);
   }
 
   /** Everything the dragged thing can be dropped on, measured on the screen. */
@@ -563,7 +727,12 @@
       return [];
     }
     const targets: DropRect[] = [];
-    if (from.kind === 'hand') {
+    if (dock.current) {
+      const button = dockHandTarget(from);
+      if (button) {
+        targets.push(button);
+      }
+    } else if (from.kind === 'hand') {
       // A hand card slots back into its own hand only, among its other cards.
       const hand = root.querySelector<HTMLElement>(`.hand[data-seat="${seatOf(from.area)}"]`);
       const others = cardRects(hand, from.card);
@@ -573,7 +742,7 @@
         index: insertIndex(middles, at.x),
         rect: handBand(others, under(hand, table), window.innerHeight),
       });
-    } else if (goesToHand(from)) {
+    } else if (goesToHand(from, units, view)) {
       // Any hand shown takes it, for its owner's hand; with no hand shown, the bottom of the table.
       const hands = [...root.querySelectorAll<HTMLElement>('.hand')];
       if (hands.length === 0) {
@@ -634,21 +803,20 @@
   }
 
   /**
-   * Whether a drop on the hand takes what is dragged: each card of a group
-   * goes to its owner's hand, which must be one of the viewer's.
+   * In dock mode the only hand on the screen is the dock's hand button (spec 3.4), and none of the
+   * table around it: it takes what goes to a hand, and a hand card dragged out of the carousel back
+   * to the hand, which sends nothing (dropAction). Null for anything else, or with no hand button.
    */
-  function goesToHand(from: DragSource): boolean {
-    if (units.length === 0) {
-      return handAreaOf(from, view) !== null;
+  function dockHandTarget(from: DragSource): DropRect | null {
+    if (from.kind !== 'hand' && !goesToHand(from, units, view)) {
+      return null;
     }
-    return units.every((id) => {
-      const unit = sourceOf({ kind: 'card', id }, view);
-      return unit !== null && handAreaOf(unit, view) !== null;
-    });
+    const button = root?.querySelector('.dock .handbtn')?.getBoundingClientRect();
+    return button ? { kind: 'toHand', rect: button } : null;
   }
 
   /** What a drop at the pointer lands on, and the action it sends, null when nothing. */
-  function locate(from: DragSource, at: Point): { target: DropRect; action: Action | null } | null {
+  function locate(from: DragSource, at: Point): Located | null {
     const target = dropTarget(at, targetsFor(from, at));
     if (!target || selected === null) {
       return null;
@@ -662,8 +830,108 @@
     // A group tucks under nothing: over a card, it moves there as over the table.
     const onto: DropRect =
       units.length > 0 && target.kind === 'card' ? { kind: 'table', rect: target.rect } : target;
-    const single = dropAction(from, onto, spot, dealTo, rowMap);
+    const single = dropAction(from, onto, spot, dealTo, tableMap, dockSpotOf(from));
     return { target, action: grouped(from, single) };
+  }
+
+  /**
+   * What a drop at the pointer lands on, as the rows show it in dock mode (spec 3.8): the drop shown
+   * holds until the pointer is DROP_MARGIN drawn units past where it last lay under it, or has
+   * stayed off it DROP_DWELL_MS. Elsewhere, and for what the rows show no drop of, what lies under the pointer.
+   */
+  function settledAt(from: DragSource, at: Point): Located | null {
+    if (tableMap.insertAt === undefined || from.kind === 'marker' || units.length > 0) {
+      return locate(from, at);
+    }
+    clearTimeout(dwellTimer);
+    dwellTimer = 0;
+    const found = steady.settle(at, DROP_MARGIN * zoom, performance.now(), (point) =>
+      locate(from, point),
+    );
+    if (steady.waiting) {
+      // The pointer may stay put past the edge: the drop under it shows all the same.
+      dwellTimer = window.setTimeout(aim, DROP_DWELL_MS);
+    }
+    return found;
+  }
+
+  /**
+   * In dock mode (spec 3.7), where a card dropped on the table goes: among the units of the row
+   * its ghost's middle is drawn in, the dragged cards left out. None elsewhere, nor for a marker.
+   */
+  function dockSpotOf(from: DragSource): DropSpot | undefined {
+    const insertAt = tableMap.insertAt?.bind(tableMap);
+    if (insertAt === undefined || from.kind === 'marker') {
+      return undefined;
+    }
+    const ghost = boxOf(from);
+    const width = cardBoxOf(from).w;
+    const dragged = new Set(interaction.dragging?.lifted ?? []);
+    return (corner) =>
+      insertAt({ x: corner.x + ghost.w / 2, y: corner.y + ghost.h / 2 }, width, dragged);
+  }
+
+  /**
+   * In dock mode (spec 3.8), the drop the rows show before it is let go: the dragged card where the
+   * drop would put it, the same spot as the drop sends. None for a drop anywhere but on the table,
+   * one that tucks the card into a stack or would not move it, a group, a marker, and elsewhere.
+   */
+  function previewOf(from: DragSource, found: Located | null): DockPreview | null {
+    if (tableMap.insertAt === undefined || from.kind === 'marker' || units.length > 0) {
+      return null;
+    }
+    const action = found?.action;
+    if (found?.target.kind !== 'table' || !action) {
+      return null;
+    }
+    const spot = spotOf(from, action);
+    if (spot === null) {
+      return null;
+    }
+    const box = cardBoxOf(from);
+    return { unitId: previewIdOf(from), insertAt: spot, size: { w: box.w, h: box.h } };
+  }
+
+  /** The id the dragged card goes by on the table, its ghost's: a deck's unknown top card the deck's stand-in. */
+  function previewIdOf(from: Exclude<DragSource, { kind: 'marker' }>): string {
+    switch (from.kind) {
+      case 'encounter':
+        return ENCOUNTER_TOP.id;
+      case 'deck':
+        return shownDeckTop(from.pile)?.id ?? DECK_TOP.id;
+      default:
+        return from.card;
+    }
+  }
+
+  /**
+   * Feeds the table the preview at the next frame, however often the pointer moves: the table lays
+   * its rows out once a frame at most. None feeds it at once: the cards pushed aside go back.
+   */
+  function feedPreview(next: DockPreview | null): void {
+    pendingPreview = next;
+    if (next === null) {
+      flushPreview();
+    } else if (previewFrame === 0) {
+      previewFrame = requestAnimationFrame(flushPreview);
+    }
+  }
+
+  /** Feeds the table the pending preview now, when it differs from the one it shows. */
+  function flushPreview(): void {
+    cancelAnimationFrame(previewFrame);
+    previewFrame = 0;
+    if (!samePreview(pendingPreview, fedPreview)) {
+      fedPreview = pendingPreview;
+      onpreview(fedPreview);
+    }
+  }
+
+  function samePreview(a: DockPreview | null, b: DockPreview | null): boolean {
+    if (a === null || b === null) {
+      return a === b;
+    }
+    return a.unitId === b.unitId && a.insertAt.x === b.insertAt.x && a.insertAt.y === b.insertAt.y;
   }
 
   /**
@@ -674,7 +942,7 @@
     if (single === null || units.length === 0 || from.kind !== 'card') {
       return single;
     }
-    return groupAction(units, from.card, single, cards, rowMap);
+    return groupAction(units, from.card, single, cards, tableMap);
   }
 
   /** Outlines and labels what the drop would land on, and opens the gap in the hand. */
@@ -682,10 +950,13 @@
     if (!source || !pointer) {
       return;
     }
-    const found = locate(source, pointer);
+    const found = settledAt(source, pointer);
+    feedPreview(previewOf(source, found));
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
-    // Only what a drop would change is outlined: not the pile a card came from.
-    const target = found?.action ? found.target : null;
+    // Only what a drop would change is outlined: not the pile a card came from. A deck's top card
+    // dropped back on its deck is the exception: that drop is a target, which cancels the drag.
+    const returns = found?.target.kind === 'pile' && found.target.drop === 'return';
+    const target = found && (found.action || returns) ? found.target : null;
     const handArea = handAreaOf(source, view);
     if (target?.kind === 'toHand' && handArea) {
       const label = { glyph: HAND_GLYPH, text: handName(handArea), tuck: false };
@@ -731,13 +1002,20 @@
       return;
     }
     if (!pressed.moved) {
-      // A tap or a click, not a drag: its click opens the action menu, or selects a hand card on touch.
+      // Armed, then let go without a move: a hold, which opens nothing. Otherwise a tap or a click,
+      // not a drag: its click opens the action menu, or selects a hand card on touch.
+      if (interaction.armed) {
+        interaction.swallowNextClick();
+      }
       interaction.letGo();
       return;
     }
     const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
-    const found = isStillThere(pressed, from) ? locate(from, at) : null;
+    // The drop lands where the rows show it: in the slot they open for its card.
+    const found = isStillThere(pressed, from) ? settledAt(from, at) : null;
+    pendingPreview = from && found ? previewOf(from, found) : null;
+    flushPreview();
     end();
     // The click this release fires is the end of the drag, not a tap on what lies there.
     interaction.swallowNextClick();
@@ -790,6 +1068,9 @@
   /** The drag is over: dropped, or cancelled. */
   function end(): void {
     interaction.letGo();
+    clearTimeout(dwellTimer);
+    dwellTimer = 0;
+    steady.reset();
     units = [];
     pointer = null;
     hint = null;
@@ -885,9 +1166,11 @@
     // deck it is revealed on, a card lies as the table draws it (boxOf).
     return lifted.flatMap((id) => {
       const k = cardsById.get(id);
-      return k
-        ? [{ ...k, x: x + k.x - card.x, y: y + drawnGap(rowMap, card.y, k.y), onPile: undefined }]
-        : [];
+      if (!k) {
+        return [];
+      }
+      const offset = drawnDelta(tableMap, card, k);
+      return [{ ...k, x: x + offset.x, y: y + offset.y, onPile: undefined }];
     });
   }
 
@@ -946,7 +1229,15 @@
   });
 </script>
 
-<svelte:window onpointermove={onMove} onpointerup={onUp} onpointercancel={onCancel} />
+<!-- The capture phase counts the fingers down before any press they begin, whatever stops the event later. -->
+<svelte:window
+  onpointerdowncapture={(event) => interaction.fingerDown(event)}
+  onpointerupcapture={(event) => interaction.fingerUp(event)}
+  onpointercancelcapture={(event) => interaction.fingerUp(event)}
+  onpointermove={onMove}
+  onpointerup={onUp}
+  onpointercancel={onCancel}
+/>
 
 <!--
   The ghosts repeat what is dragged, for the eyes only, held up off the table (--lift-scale,

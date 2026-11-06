@@ -19,6 +19,7 @@ import {
   type Zone,
 } from '../lib/types';
 import { decksOf, discardPileOf, homeDeckOf, sideLabel } from './actions';
+import { markerItemId } from './dockItems';
 import { stackOf } from './drag';
 import { isHidden } from './face';
 import type { Landing } from './interaction.svelte';
@@ -283,6 +284,72 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
     }
   }
   return inPileOrder(anims, after);
+}
+
+/** Where the dock layout draws an item of the table (dockLayout.ts itemBox): a card by its id, a marker by markerItemId. */
+export type DrawnAt = (id: string) => Point | null;
+
+// What a card may also play while the flow slides it: neither moves it.
+const BESIDE_A_SLIDE: ReadonlySet<Anim['kind']> = new Set(['tilt', 'glow']);
+
+/**
+ * Dock mode's changes to a view's animations (spec 3.7). Its rows flow: a
+ * card or a marker the view leaves where it lay on the table may be drawn
+ * elsewhere, as cards come into its row or leave it, before it or beside it.
+ * It slides there, as a moved card does, unless it already travels or turns
+ * over; the motion measures where it shows (motion.svelte.ts). The viewer's
+ * own drop on the table lies where the flow puts it, not under its ghost: it
+ * slides there from its ghost rather than settle.
+ */
+export function dockMotions(
+  anims: readonly Anim[],
+  before: TableView,
+  after: TableView,
+  drawn: { before: DrawnAt; after: DrawnAt },
+): Anim[] {
+  const previous = new Map(before.cards.map((card) => [card.id, card]));
+  const result = anims.map((anim): Anim => {
+    if (anim.kind !== 'settle') {
+      return anim;
+    }
+    if (anim.fromPile !== undefined) {
+      return { kind: 'enter', id: anim.id, fromPile: anim.fromPile, dropped: true };
+    }
+    const now = after.cards.find((card) => card.id === anim.id);
+    const was = previous.get(anim.id) ?? now;
+    if (now === undefined || was === undefined) {
+      return anim;
+    }
+    return { kind: 'move', id: anim.id, from: spotOf(was), to: spotOf(now), dropped: true };
+  });
+
+  const busy = new Set<string>();
+  for (const anim of result) {
+    if ('id' in anim && !BESIDE_A_SLIDE.has(anim.kind)) {
+      busy.add(anim.id);
+    }
+  }
+  const drawnElsewhere = (id: string) => {
+    const from = drawn.before(id);
+    const to = drawn.after(id);
+    return from !== null && to !== null && (from.x !== to.x || from.y !== to.y);
+  };
+  for (const card of after.cards) {
+    const was = previous.get(card.id);
+    const stays = was?.zone === 'table' && card.zone === 'table';
+    if (stays && !busy.has(card.id) && drawnElsewhere(card.id)) {
+      result.push({ kind: 'move', id: card.id, from: spotOf(was), to: spotOf(card) });
+    }
+  }
+  for (const name of MARKERS) {
+    const was = markerPoint(before, name);
+    const now = markerPoint(after, name);
+    const moves = result.some((anim) => anim.kind === 'marker' && anim.name === name);
+    if (was && now && !moves && drawnElsewhere(markerItemId(name))) {
+      result.push({ kind: 'marker', name, from: was, to: now });
+    }
+  }
+  return result;
 }
 
 /**

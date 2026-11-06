@@ -3,6 +3,7 @@ import { releaseFocus } from '../lib/releaseFocus';
 import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
 import type { Rect } from './drag';
+import { holdPhase } from './gestures';
 import { isFree } from './selection';
 
 /** How long the hover and the preview stay after the pointer leaves their element. */
@@ -85,6 +86,17 @@ interface ContextMenuAt {
   at: { x: number; y: number };
 }
 
+/** Where a touch press waiting for the hold stands (gestures.ts). */
+export type HoldPhase = ReturnType<typeof holdPhase>;
+
+/** One string per pressable element, to tell whether two of them are the same. */
+function keyOf(element: Pressable): string {
+  return element.kind === 'marker' ? `marker:${element.name}` : `${element.kind}:${element.id}`;
+}
+
+/** How long the device buzzes as a hold arms, in ms. */
+const ARM_BUZZ_MS = 10;
+
 /** What hovering an element does to the side preview. */
 export type PreviewChange = 'show' | 'clear';
 
@@ -149,6 +161,11 @@ class TableInteraction {
 
   /** The element pressed or dragged, if any. */
   held = $state.raw<Held | null>(null);
+  /**
+   * A touch press on a table card, a pile or a marker, in touch mode, was held still for HOLD_MS
+   * (spec 3.2): it shows lifted, and moves drag it, until it is let go.
+   */
+  armed = $state(false);
   /** What the dragged element would be dropped on, outlined. */
   dropOn = $state.raw<DropOn | null>(null);
   /** Where the dragged hand card would slot back in, while it is over the hand. */
@@ -175,6 +192,18 @@ class TableInteraction {
   #touchMode = false;
   // When the current press began: the timeStamp of its event.
   #pressedAt = 0;
+  // The press is a touch in touch mode on a table card, a pile or a marker: it waits for the hold
+  // before it may drag, and a move past the slop meanwhile scrolls the table instead (spec 3.2).
+  #awaitingHold = $state(false);
+  // When the press waiting for the hold began: the timeStamp of its pointerdown.
+  #holdStart = 0;
+  // What the press waiting for the hold touched, which keeps the page from scrolling once armed.
+  #scrollGuarded: EventTarget | null = null;
+  // The press began on a card of a carousel (HandSheet.svelte, data-carousel): a finger moving sideways on it
+  // scrolls the carousel, and only a mostly upward move drags the card.
+  #inCarousel = false;
+  // The fingers down, by pointer id: two or more are a pinch, which no press outlives.
+  #touches = new Set<number>();
   // The click that ends a drag, or that picks an arrow's target, is not a click on what lies there.
   #swallowClick = false;
   // The element whose context menu was open as the current press began: the press closes it
@@ -293,16 +322,52 @@ class TableInteraction {
     return this.held?.moved ? this.held : null;
   }
 
+  /**
+   * To call on every pointerdown, in the capture phase of the window, before the press it may
+   * begin: counts the fingers down. A second finger makes a pinch, which lets go of a press not yet
+   * dragged, armed or not: a finger resting on a card while the other zooms neither holds nor drags it.
+   */
+  fingerDown(event: PointerEvent): void {
+    if (event.pointerType !== 'touch') {
+      return;
+    }
+    // The primary touch is the first finger down: one still counted lost its pointerup.
+    if (event.isPrimary) {
+      this.#touches.clear();
+    }
+    this.#touches.add(event.pointerId);
+    if (this.#pinching() && this.held !== null && !this.held.moved) {
+      this.letGo();
+    }
+  }
+
+  /** To call on every pointerup and pointercancel, in the capture phase of the window. */
+  fingerUp(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      this.#touches.delete(event.pointerId);
+    }
+  }
+
+  /** Two fingers or more are down. */
+  #pinching(): boolean {
+    return this.#touches.size >= 2;
+  }
+
   /** A press on a card, a pile, a hand card or a marker, with the main button or a finger. */
   press(element: Pressable, event: PointerEvent): void {
     // A second finger does not take over a drag; a dialog freezes the table.
     if (event.button !== 0 || this.dragging !== null || modal.open) {
       return;
     }
+    // A finger of a pinch presses nothing.
+    if (event.pointerType === 'touch' && this.#pinching()) {
+      return;
+    }
     // No text selection or native image drag: the press may become our drag.
     // That keeps the focus where it was, on a control the table lets go of.
     event.preventDefault();
     releaseFocus(event.currentTarget);
+    this.#endHold();
     this.held = {
       element,
       pointerId: event.pointerId,
@@ -311,6 +376,88 @@ class TableInteraction {
       card: null,
       lifted: [],
     };
+    // A hand card drags at once: there is nothing to scroll under it.
+    this.#awaitingHold =
+      this.#touchMode && event.pointerType === 'touch' && element.kind !== 'hand';
+    this.#holdStart = event.timeStamp;
+    const target = event.currentTarget;
+    this.#inCarousel = target instanceof Element && target.closest('[data-carousel]') !== null;
+    if (this.#awaitingHold && event.target !== null) {
+      // The window's guard (guardScroll) misses the touchmoves of a touched element no longer in
+      // the page (a pile whose last card is dragged out draws its empty slot instead): they target
+      // that element, and no longer bubble up to the window. This one, on that element, stops them.
+      this.#scrollGuarded = event.target;
+      this.#scrollGuarded.addEventListener('touchmove', this.#preventScroll, { passive: false });
+    }
+  }
+
+  /** Whether the press began on a card of a carousel (HandSheet.svelte), which scrolls sideways. */
+  get inCarousel(): boolean {
+    return this.#inCarousel;
+  }
+
+  /** Whether the press waits for the hold before it may drag (touch mode, spec 3.2). */
+  get awaitingHold(): boolean {
+    return this.#awaitingHold;
+  }
+
+  /** Where the press waiting for the hold stands as the pointer moves there: waiting, armed, or a scroll. */
+  holdPhaseAt(event: PointerEvent): HoldPhase {
+    const start = this.held?.start ?? { x: event.clientX, y: event.clientY };
+    const distance = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+    return holdPhase(event.timeStamp - this.#holdStart, distance);
+  }
+
+  /**
+   * The press waiting for the hold was held long enough: it lifts, the device buzzes where it
+   * can, and from now on moves drag it, the page kept from scrolling under the finger.
+   */
+  arm(): void {
+    if (!this.#awaitingHold || this.#pinching()) {
+      return;
+    }
+    this.#awaitingHold = false;
+    this.armed = true;
+    // Safari has no vibrate.
+    if ('vibrate' in navigator) {
+      navigator.vibrate(ARM_BUZZ_MS);
+    }
+  }
+
+  /** Whether a hold armed that element: it shows lifted in place until it is dragged or let go. */
+  isArmed(element: Pressable): boolean {
+    const pressed = this.held;
+    return (
+      this.armed && pressed !== null && !pressed.moved && keyOf(pressed.element) === keyOf(element)
+    );
+  }
+
+  /**
+   * Keeps the page from scrolling under a touch press once its hold armed it: to call when the
+   * table shows, and to undo with the function returned when it goes. On the window, for good,
+   * not on the element touched at the press: Chrome decides whether the moves of a touch may be
+   * cancelled where its first move lands, so a finger that leaves the card at once would find no
+   * guard there, scroll the page and cancel the drag. Passive: false, else it cannot stop it.
+   */
+  guardScroll(): () => void {
+    window.addEventListener('touchmove', this.#preventScroll, { passive: false });
+    return () => window.removeEventListener('touchmove', this.#preventScroll);
+  }
+
+  // Bound once, so that the very listener added is the one removed.
+  #preventScroll = (event: Event): void => {
+    // An uncancelable move (a scroll the browser already started) only earns a console warning.
+    if (this.armed && event.cancelable) {
+      event.preventDefault();
+    }
+  };
+
+  /** The press no longer waits for the hold, nor stays armed. */
+  #endHold(): void {
+    this.#awaitingHold = false;
+    this.armed = false;
+    this.#scrollGuarded?.removeEventListener('touchmove', this.#preventScroll);
+    this.#scrollGuarded = null;
   }
 
   /** The press turned into a drag: the token pill goes. */
@@ -429,6 +576,7 @@ class TableInteraction {
 
   /** The press or the drag is over: dropped, or cancelled. */
   letGo(): void {
+    this.#endHold();
     this.held = null;
     this.dropOn = null;
     this.handGap = null;
@@ -759,6 +907,8 @@ class TableInteraction {
     this.#drawnAt = { x: NaN, y: NaN };
     this.#pointerType = 'mouse';
     this.#pressedAt = 0;
+    this.#inCarousel = false;
+    this.#touches.clear();
   }
 
   /** A hand card is never previewed: the raised hand shows it large enough. Nothing is, in touch mode. */
