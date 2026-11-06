@@ -128,10 +128,12 @@ const GROUP_LEAVE = 2;
 const GROUP_POINT = 3;
 
 // Groups of a pile, in menu order: its main action (Draw, Reveal), the ways to
-// look at its cards, then the rarer actions (Discard X, Shuffle).
+// look at its cards, the rarer actions (Discard 1, Discard X), then a deck's
+// Shuffle on its own, apart from the entries that move cards.
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
 const GROUP_MORE = 2;
+const GROUP_SHUFFLE = 3;
 
 const SEPARATOR: ActionItem = { id: 'sep', label: '-', group: 0 };
 
@@ -927,7 +929,8 @@ export function handActions(
 
 /**
  * Every pile's actions have the same order, a separator between the groups:
- * the main action, the ways to look at the cards, then the rarer actions.
+ * the main action, the ways to look at the cards, the rarer actions, then a
+ * deck's Shuffle.
  */
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
@@ -1138,7 +1141,7 @@ function shuffleItem(pile: PileView): ActionItem {
     id: 'shuffle',
     label: 'Shuffle',
     key: KEYS.shuffle,
-    group: GROUP_MORE,
+    group: GROUP_SHUFFLE,
     run: () => ({ kind: 'shuffle', pile: pile.id }),
   };
 }

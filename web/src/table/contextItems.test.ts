@@ -247,7 +247,7 @@ describe('contextItems', () => {
     expect(submenu(entries, 'Move to')).toMatchObject({ disabled: true, reason });
   });
 
-  it('shows the own deck flat, its rarer actions as their own group', () => {
+  it('shows the own deck flat, its rarer actions as their own group, then Shuffle', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'deck:p0' }))).toEqual([
       '*Draw 1 [W]',
       'Draw X [⇧W]',
@@ -258,6 +258,7 @@ describe('contextItems', () => {
       '---',
       'Discard 1 [X]',
       'Discard X [⇧X]',
+      '---',
       'Shuffle [U]',
     ]);
   });
@@ -271,8 +272,19 @@ describe('contextItems', () => {
       '---',
       'Discard 1 [X]',
       'Discard X [⇧X]',
+      '---',
       'Shuffle [U]',
     ]);
+  });
+
+  it('sets Shuffle apart from the other entries of the own deck and the encounter deck', () => {
+    for (const id of ['deck:p0', 'enc']) {
+      const entries = texts(entriesFor({ kind: 'pile', id }));
+      const shuffle = entries.indexOf('Shuffle [U]');
+
+      expect(shuffle).toBe(entries.length - 1);
+      expect(entries[shuffle - 1]).toBe('---');
+    }
   });
 
   it('starts a discard pile with Search', () => {
@@ -295,6 +307,7 @@ describe('contextItems', () => {
       '---',
       'Discard 1 [X]',
       'Discard X [⇧X]',
+      '---',
       'Shuffle [U]',
     ]);
     expect(texts(entriesFor({ kind: 'pile', id: 'side:p0:1' }))).toEqual([

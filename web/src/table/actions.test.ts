@@ -710,7 +710,8 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
     expect(items.some((it) => it.reason !== undefined)).toBe(false);
     const draw = item(items, 'draw1');
@@ -845,7 +846,8 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
     const reveal = item(items, 'reveal');
     expect(reveal).toMatchObject({ label: 'Reveal', key: 'R', default: true });
@@ -1040,7 +1042,8 @@ describe('a player with two decks', () => {
     expect(groups(deck)).toEqual([
       ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
 
     const move = menuOf(itemsFor({ kind: 'card', id: 'second' }, view, TWO_DECKS), 'moveTo');
@@ -1123,7 +1126,8 @@ describe('side decks', () => {
     expect(groups(items)).toEqual([
       ['draw1', 'drawN'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
     expect(actionOf(item(items, 'draw1'))).toEqual({ kind: 'draw', n: 1, pile: 'side:p0:0' });
     const drawN = item(items, 'drawN').run?.();

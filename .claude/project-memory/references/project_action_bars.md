@@ -37,9 +37,10 @@ type: project
   Ready. A card whose face is unknown (face down, not in the catalog)
   keeps Exhaust (`canExhaust` in actions.ts).
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W), Reveal (R) │ Top X
-  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U);
-  encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X,
-  Shuffle; discard pile Search │ Shuffle into deck. Dragging the top of
+  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X) │ Shuffle (U);
+  encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X │
+  Shuffle; discard pile Search │ Shuffle into deck. Shuffle is always
+  its own last group (`GROUP_SHUFFLE`). Dragging the top of
   an own deck (or the encounter deck) onto its discard pile discards it,
   as Discard 1 does. A deck's top card dropped back on its own deck
   cancels the drag: the deck is outlined as a target and nothing is sent.
