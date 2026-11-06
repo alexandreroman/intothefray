@@ -23,7 +23,7 @@ import {
 } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { GRID, TABLE_LIMIT } from './layout';
-import { ALL_TABLE, rowHeight, rowOf, rowTop, type TableMap } from './rows';
+import { ALL_TABLE, ROW_LABEL_ROOM, type TableMap } from './rows';
 import { areaOf, isScenarioDeckId, isSideDeckId, ownSeats, PILE_ENCOUNTER } from './seats';
 
 /** A press turns into a drag once the pointer has moved this far, in screen pixels. */
@@ -79,6 +79,14 @@ export type DropRect =
   | { kind: 'card'; card: string; z: number; rect: Rect };
 
 export type TableRect = Extract<DropRect, { kind: 'table' }>;
+
+/**
+ * Where a card dropped on the table goes, in table units, from the corner it
+ * is drawn at: in dock mode, its insertion among the units of a row (spec 3.7,
+ * dockLayout.ts insertAt), which knows the dragged card's size and what is
+ * dragged.
+ */
+export type DropSpot = (corner: Point) => Point;
 type PileRect = Extract<DropRect, { kind: 'pile' }>;
 type CardRect = Extract<DropRect, { kind: 'card' }>;
 
@@ -104,10 +112,6 @@ export type DragSource =
   | { kind: 'deck'; pile: string }
   /** A marker (the first player token, the active counter), from where it lies. */
   | { kind: 'marker'; name: MarkerName; x: number; y: number };
-
-// A row of the table starts this far above its owner's deck: the owner's name lies there.
-// It mirrors rowContentY in internal/game/setup.go.
-const ROW_LABEL_ROOM = 30;
 
 function snap(v: number): number {
   return Math.round(v / GRID) * GRID;
@@ -190,7 +194,9 @@ function topCardAt(point: Point, targets: DropRect[]): CardRect | null {
  * The action a drop sends: `at` is where the dragged card's top-left corner
  * is drawn, in table units, `dealTo` the player an encounter card dealt there
  * goes to (see dealRecipient), `map` where the view mode draws the table, and
- * `grid` the grid a drop on the table snaps to, in table units.
+ * `spot` where a card dropped on the table goes, when the view mode places it
+ * itself (dock mode); without it, and for a marker, the corner snapped to the
+ * grid and mapped back to the table.
  * Null when nothing would change: no target, the spot it was taken from, or
  * its own place in the hand. A card revealed on a deck lies on that deck, so
  * dropped where it lies it goes back on top of the deck it lies on.
@@ -201,7 +207,7 @@ export function dropAction(
   at: Point,
   dealTo: Area,
   map: TableMap = ALL_TABLE,
-  grid: number = GRID,
+  spot?: DropSpot,
 ): Action | null {
   if (target === null) {
     return null;
@@ -210,7 +216,7 @@ export function dropAction(
   if (drag.kind === 'marker') {
     return target.kind === 'hand' || target.kind === 'toHand'
       ? null
-      : place(drag, at, dealTo, map, grid);
+      : place(drag, spotOf(at, map), dealTo);
   }
   switch (target.kind) {
     case 'hand':
@@ -222,7 +228,7 @@ export function dropAction(
     case 'card':
       return onCard(drag, target.card, dealTo);
     case 'table':
-      return place(drag, at, dealTo, map, grid);
+      return place(drag, spot ? withinTable(spot(at)) : spotOf(at, map), dealTo);
   }
 }
 
@@ -316,54 +322,26 @@ function onPile(drag: CardSource, pile: string, drop: PileDrop): Action | null {
 }
 
 /** Where a card whose corner is drawn at `at` lies on the table, on the grid. */
-function spotOf(at: Point, map: TableMap, grid: number): Point {
-  if (grid !== GRID) {
-    return onCoarseGrid(map.toTable(at), grid);
-  }
+function spotOf(at: Point, map: TableMap): Point {
   // Snapped where it is drawn, then mapped to the table: snapping after would
   // push a card drawn at the bottom of a row into the next, hidden, one. A row
   // that ends there keeps the card on its last height, taken down to the grid.
   // Across, a point drawn smaller (dock mode) comes back between two grid
   // lines, and goes to the nearest one.
   const spot = map.toTable({ x: snap(at.x), y: snap(at.y) });
-  const onGrid = Math.floor(spot.y / GRID) * GRID;
-  // Within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT.
+  return withinTable({ x: snap(spot.x), y: Math.floor(spot.y / GRID) * GRID });
+}
+
+/** A spot within the server's bounds: never off the top or left edge, nor past TABLE_LIMIT. */
+function withinTable(spot: Point): Point {
   return {
-    x: Math.min(TABLE_LIMIT, Math.max(0, snap(spot.x))),
-    y: Math.min(TABLE_LIMIT, Math.max(0, onGrid)),
+    x: Math.min(TABLE_LIMIT, Math.max(0, spot.x)),
+    y: Math.min(TABLE_LIMIT, Math.max(0, spot.y)),
   };
 }
 
-/**
- * A point of the table on a grid coarser than GRID (dock mode), mapped there
- * first: across on multiples of the grid; down on lines the grid apart from
- * where the row's cards lie (ROW_LABEL_ROOM below its top), within the row.
- * Both stay multiples of GRID, which the server takes.
- */
-function onCoarseGrid(spot: Point, grid: number): Point {
-  const row = rowOf(spot.y);
-  const top = rowTop(row);
-  const firstLine = top + ROW_LABEL_ROOM;
-  let y = firstLine + Math.round((spot.y - firstLine) / grid) * grid;
-  if (y < top) {
-    y += grid;
-  } else if (y >= top + rowHeight(row)) {
-    y -= grid;
-  }
-  return {
-    x: Math.min(TABLE_LIMIT, Math.max(0, Math.round(spot.x / grid) * grid)),
-    y: Math.min(TABLE_LIMIT, Math.max(0, y)),
-  };
-}
-
-function place(
-  drag: DragSource,
-  at: Point,
-  dealTo: Area,
-  map: TableMap,
-  grid: number,
-): Action | null {
-  const { x, y } = spotOf(at, map, grid);
+/** The action that lays the dragged card or marker at a spot of the table. */
+function place(drag: DragSource, { x, y }: Point, dealTo: Area): Action | null {
   switch (drag.kind) {
     case 'card':
       // A card dropped where it lies does not move.

@@ -3,7 +3,9 @@ import { dockFitWidth, dockLayout, type DockItem, type DockLayoutInput } from '.
 
 // Every expected value below is worked out by hand, in drawn units (table units × 0.6). The rooms
 // are set in each test: a 10-unit name room above a row's lines, a 10-unit gap under each line and
-// a 20-unit gap under each row.
+// a 20-unit gap under each row. A portrait card is drawn 67.2 × 94.2, the gap between two units 24
+// (40 × 0.6): a slot every 91.2. On a row's first line the units lie 18 under its top (30 × 0.6,
+// where the setup puts a row's cards), on its other lines at their top.
 const ROOMS = { nameRoom: 10, lineGap: 10, rowGap: 20 };
 
 function card(id: string, x: number, y: number, more: Partial<DockItem> = {}): DockItem {
@@ -44,10 +46,17 @@ function expectPoint(
   expect(point.y).toBeCloseTo(expected.y, 6);
 }
 
+/** A drawn portrait card's box at a corner. */
+function cardAt(x: number, y: number): Placement {
+  return { x, y, w: 67.2, h: 94.2 };
+}
+
 // Player 1's row (table top 380): the owner frame around the deck and the discard, the identity at
 // 300, then played cards 152 apart (a card and a 40 gap). Drawn: the frame at x −6, the deck at 0,
-// the discard at 78, the identity at 180 (the indent); cards are 67.2 × 94.2, 18 below their
-// line's top, the frame 12 below it and 106.2 high (its line holds 118.2 of content).
+// the discard at 78, the identity at 180 (the indent: past the frame's right edge, 252, and a gap,
+// (252 + 40) × 0.6 = 175.2); the frame 12 below the first line's top and 106.2 high, so that the
+// first line holds 118.2 of content. Its top is 10, the second line's 10 + 118.2 + 10 = 138.2, the
+// third's 138.2 + 94.2 + 10 = 242.4.
 const PLAYER_PILES: DockItem[] = [
   frame('frame', -10, 400, 262, 177),
   pile('deck', 0, 410, { anchor: 'frame' }),
@@ -55,7 +64,7 @@ const PLAYER_PILES: DockItem[] = [
   card('identity', 300, 410),
 ];
 
-/** Played cards c1, c2, … at 452, 604, 756, … (drawn 271.2, 362.4, 453.6, 544.8, 636, 727.2, 818.4, 909.6). */
+/** Played cards c1, c2, … at 452, 604, 756, 908, 1060, 1212, 1364, … */
 function played(count: number): DockItem[] {
   return Array.from({ length: count }, (_, i) => card(`c${i + 1}`, 452 + 152 * i, 410));
 }
@@ -69,8 +78,8 @@ function playerRow(
 }
 
 describe('dockLayout', () => {
-  it('draws a row that fits the wrap width at 0.6 of the table, nothing moved', () => {
-    // The villain's row alone, without a name room: every box is the table's, scaled.
+  it('draws a row that fits the wrap width at 0.6, its units a gap apart, the landscape one as wide as it is', () => {
+    // The villain's row alone, without a name room.
     const layout = dockLayout({
       items: [
         frame('frame', -10, 20, 262, 177),
@@ -87,16 +96,18 @@ describe('dockLayout', () => {
     });
 
     expectBox(layout.itemBox('frame'), { x: -6, y: 12, w: 157.2, h: 106.2 });
-    expectBox(layout.itemBox('deck'), { x: 0, y: 18, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('discard'), { x: 78, y: 18, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('villain'), { x: 180, y: 18, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('scheme'), { x: 276, y: 18, w: 94.2, h: 67.2 });
-    expectPoint(layout.toDisplay({ x: 500, y: 100 }), { x: 300, y: 60 });
+    expectBox(layout.itemBox('deck'), cardAt(0, 18));
+    expectBox(layout.itemBox('discard'), cardAt(78, 18));
+    expectBox(layout.itemBox('villain'), cardAt(180, 18));
+    // One gap past the villain's 247.2, not 48 × 0.6 as on the table.
+    expectBox(layout.itemBox('scheme'), { x: 271.2, y: 18, w: 94.2, h: 67.2 });
     expect(layout.indent(0)).toBeCloseTo(180, 6);
     expect(layout.rowTop(0)).toBe(0);
-    // The frame's 118.2 of content, a 10 line gap and a 20 row gap.
-    expect(layout.rowHeight(0)).toBeCloseTo(148.2, 6);
-    expect(layout.height).toBeCloseTo(148.2, 6);
+    // The frame's 118.2 of content and a 10 line gap; the empty slot, at 389.4, fits the first
+    // line, and an empty second line of a card's height and a gap, 104.2; a 20 row gap.
+    expect(layout.rowHeight(0)).toBeCloseTo(252.4, 6);
+    expect(layout.height).toBeCloseTo(252.4, 6);
+    expect(layout.width).toBeCloseTo(389.4 + 67.2, 6);
   });
 
   it('takes another scale', () => {
@@ -108,88 +119,153 @@ describe('dockLayout', () => {
       ...ROOMS,
     });
 
+    // 30 × 0.5 under the line's top, 10.
     expectBox(layout.itemBox('a'), { x: 150, y: 25, w: 56, h: 78.5 });
   });
 
   it('wraps a long row onto a second line, from the indent', () => {
-    // Line width 500 − 180 − 67.2 = 252.8: line 0 ends at 432.8.
+    // c3 would end at 453.6 + 67.2 = 520.8, past 500.
     const layout = dockLayout(playerRow(4, 500));
 
-    expectBox(layout.itemBox('c1'), { x: 271.2, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c2'), { x: 362.4, y: 28, w: 67.2, h: 94.2 });
-    // Line 1 starts 128.2 below line 0 (118.2 + 10): its top at 138.2.
-    expectBox(layout.itemBox('c3'), { x: 200.8, y: 156.2, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c4'), { x: 292, y: 156.2, w: 67.2, h: 94.2 });
-    // 10 + 128.2 + (112.2 + 10) + 20.
-    expect(layout.rowHeight(1)).toBeCloseTo(280.4, 6);
-    expect(layout.height).toBeCloseTo(280.4, 6);
+    expectBox(layout.itemBox('c1'), cardAt(271.2, 28));
+    expectBox(layout.itemBox('c2'), cardAt(362.4, 28));
+    expectBox(layout.itemBox('c3'), cardAt(180, 138.2));
+    expectBox(layout.itemBox('c4'), cardAt(271.2, 138.2));
+    // 10 + (118.2 + 10) + (94.2 + 10) + 20: the empty slot fits after c4, at 362.4.
+    expect(layout.rowHeight(1)).toBeCloseTo(262.4, 6);
+    expect(layout.height).toBeCloseTo(262.4, 6);
   });
 
   it('wraps a longer row onto three lines', () => {
     const layout = dockLayout(playerRow(7, 500));
 
-    expectBox(layout.itemBox('c5'), { x: 383.2, y: 156.2, w: 67.2, h: 94.2 });
-    // Line 2 starts at 138.2 + 122.2 = 260.4, drawn 2 × 252.8 left of the table's scaled x.
-    expectBox(layout.itemBox('c6'), { x: 221.6, y: 278.4, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c7'), { x: 312.8, y: 278.4, w: 67.2, h: 94.2 });
-    expect(layout.rowHeight(1)).toBeCloseTo(402.6, 6);
+    expectBox(layout.itemBox('c5'), cardAt(362.4, 138.2));
+    expectBox(layout.itemBox('c6'), cardAt(180, 242.4));
+    expectBox(layout.itemBox('c7'), cardAt(271.2, 242.4));
+    expect(layout.rowHeight(1)).toBeCloseTo(366.6, 6);
   });
 
-  it('never splits a stack: its tucked cards take the main card’s line', () => {
+  it('draws a row with a hole and a moved card evenly, every unit at the top of its line', () => {
+    const layout = dockLayout({
+      items: [
+        ...PLAYER_PILES,
+        card('c1', 452, 410),
+        // A hole before c2; c3 lies lower, c4 far right.
+        card('c2', 900, 410),
+        card('c3', 950, 470),
+        card('c4', 1400, 410),
+      ],
+      rows: [1],
+      wrapWidth: 600,
+      ...ROOMS,
+    });
+
+    expectBox(layout.itemBox('c1'), cardAt(271.2, 28));
+    expectBox(layout.itemBox('c2'), cardAt(362.4, 28));
+    expectBox(layout.itemBox('c3'), cardAt(453.6, 28));
+    // It would end at 544.8 + 67.2 = 612, past 600.
+    expectBox(layout.itemBox('c4'), cardAt(180, 138.2));
+    // Content-sized: 10 + 128.2 + 104.2 + 20, nothing of the 220-unit band of the table.
+    expect(layout.rowHeight(1)).toBeCloseTo(262.4, 6);
+  });
+
+  it('orders units by x, then y, then id', () => {
+    const layout = dockLayout({
+      items: [
+        card('b', 452, 410),
+        card('a', 452, 410),
+        card('low', 452, 450),
+        card('first', 300, 500),
+      ],
+      rows: [1],
+      wrapWidth: 1000,
+      ...ROOMS,
+    });
+
+    expectBox(layout.itemBox('first'), cardAt(180, 28));
+    expectBox(layout.itemBox('a'), cardAt(271.2, 28));
+    expectBox(layout.itemBox('b'), cardAt(362.4, 28));
+    expectBox(layout.itemBox('low'), cardAt(453.6, 28));
+  });
+
+  it('moves a stack as one unit, as wide and high as its cards, never split', () => {
+    // The stack: main at 700, tucked cards 10 right and 20 down each, 132 × 197 in all, drawn
+    // 79.2 × 118.2. At 271.2 it would end at 350.4, past 340: it starts the second line.
     const layout = dockLayout({
       items: [
         ...PLAYER_PILES,
         card('main', 700, 410),
-        // 720 × 0.6 = 432 is still on line 0, but 740 × 0.6 = 444 is past its end, 432.8.
-        card('t1', 720, 430, { anchor: 'main' }),
-        card('t2', 740, 450, { anchor: 'main' }),
-        card('next', 760, 410),
+        card('t1', 710, 430, { anchor: 'main' }),
+        card('t2', 720, 450, { anchor: 'main' }),
+        card('next', 900, 410),
       ],
       rows: [1],
-      wrapWidth: 500,
+      wrapWidth: 340,
       ...ROOMS,
     });
 
-    expectBox(layout.itemBox('main'), { x: 420, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('t1'), { x: 432, y: 40, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('t2'), { x: 444, y: 52, w: 67.2, h: 94.2 });
-    // The stack's lowest card makes line 0 (70 + 157) × 0.6 = 136.2 high, line 1 starts at 156.2.
-    expectBox(layout.itemBox('next'), { x: 203.2, y: 174.2, w: 67.2, h: 94.2 });
-    // A point of the tucked card follows its line when its id is given, else the line its x falls in.
-    expectPoint(layout.toDisplay({ x: 750, y: 480 }, 't2'), { x: 450, y: 70 });
-    expectPoint(layout.toDisplay({ x: 750, y: 480 }), { x: 197.2, y: 216.2 });
+    expectBox(layout.itemBox('main'), cardAt(180, 138.2));
+    expectBox(layout.itemBox('t1'), cardAt(186, 150.2));
+    expectBox(layout.itemBox('t2'), cardAt(192, 162.2));
+    // Past the stack, 180 + 79.2 + 24 = 283.2, it would end at 350.4: on the third line, whose top
+    // is 138.2 + 118.2 + 10.
+    expectBox(layout.itemBox('next'), cardAt(180, 266.4));
+    // A point of a tucked card follows its stack.
+    expectPoint(layout.toDisplay({ x: 730, y: 480 }, 't2'), { x: 198, y: 180.2 });
   });
 
-  it('keeps a marker by its card on line 2, though its own x is on line 3', () => {
+  it("gives an exhausted card a slot as wide as its tilt, and a row's first unit its box at the indent", () => {
+    // Turned 15°, a portrait card spans 112 cos 15° + 157 sin 15° across, about its middle.
+    const turned = 112 * Math.cos(Math.PI / 12) + 157 * Math.sin(Math.PI / 12);
+    const reach = ((turned - 112) / 2) * 0.6;
     const layout = dockLayout({
-      ...playerRow(8, 500),
-      // 1668 × 0.6 = 1000.8, past line 2's end (938.4); its card c8 is drawn at 404 on line 2.
       items: [
-        ...playerRow(8, 500).items,
-        { id: 'token', x: 1668, y: 450, w: 84, h: 70, kind: 'marker', anchor: 'c8' },
+        ...PLAYER_PILES.slice(0, 3),
+        card('identity', 300, 410, { exhausted: true }),
+        card('c1', 452, 410, { exhausted: true }),
+        card('c2', 604, 410),
       ],
+      rows: [1],
+      wrapWidth: 1000,
+      ...ROOMS,
     });
 
-    expectBox(layout.itemBox('c8'), { x: 404, y: 278.4, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('token'), { x: 495.2, y: 302.4, w: 50.4, h: 42 });
-    // Three lines, and a fourth for the row's empty slot: the token ends line 2 past its end.
-    expect(layout.rowHeight(1)).toBeCloseTo(402.6 + 122.2, 6);
+    expectBox(layout.itemBox('identity'), cardAt(180, 28));
+    // The identity's slot ends at 180 + 67.2 + reach; c1's starts a gap later and its box a reach
+    // further.
+    const c1Slot = 180 + 67.2 + reach + 24;
+    expectBox(layout.itemBox('c1'), cardAt(c1Slot + reach, 28));
+    expectBox(layout.itemBox('c2'), cardAt(c1Slot + turned * 0.6 + 24, 28));
+  });
+
+  it('keeps a marker by its card, and draws it at 0.6', () => {
+    // The token, 40 past c7's right edge (1476), makes c7's unit 1600 − 1364 = 236 wide, 141.6
+    // drawn: it still fits the third line, from 271.2 to 412.8.
+    const items = [
+      ...playerRow(7, 500).items,
+      { id: 'token', x: 1516, y: 450, w: 84, h: 70, kind: 'marker' as const, anchor: 'c7' },
+    ];
+    const layout = dockLayout({ ...playerRow(7, 500), items });
+
+    expectBox(layout.itemBox('c7'), cardAt(271.2, 242.4));
+    expectBox(layout.itemBox('token'), { x: 362.4, y: 266.4, w: 50.4, h: 42 });
+    // The empty slot, at 436.8, would end past 500: a fourth line of a card's height holds it.
+    expect(layout.rowHeight(1)).toBeCloseTo(366.6 + 104.2, 6);
   });
 
   it('keeps the frames and piles left of the indent on line 0, at their scaled place', () => {
-    // Line width 400 − 180 − 67.2 = 152.8: line 0 ends at 332.8.
     const layout = dockLayout(playerRow(3, 400));
 
     expectBox(layout.itemBox('frame'), { x: -6, y: 22, w: 157.2, h: 106.2 });
-    expectBox(layout.itemBox('deck'), { x: 0, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('discard'), { x: 78, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('identity'), { x: 180, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c1'), { x: 271.2, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c2'), { x: 209.6, y: 156.2, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c3'), { x: 300.8, y: 156.2, w: 67.2, h: 94.2 });
+    expectBox(layout.itemBox('deck'), cardAt(0, 28));
+    expectBox(layout.itemBox('discard'), cardAt(78, 28));
+    expectBox(layout.itemBox('identity'), cardAt(180, 28));
+    expectBox(layout.itemBox('c1'), cardAt(271.2, 28));
+    expectBox(layout.itemBox('c2'), cardAt(180, 138.2));
+    expectBox(layout.itemBox('c3'), cardAt(271.2, 138.2));
   });
 
-  it('keeps a row of piles alone on one line, its indent 0', () => {
+  it('keeps the piles of a row alone on its first line, its indent 0, its empty slot past the frame', () => {
     const layout = dockLayout({
       items: PLAYER_PILES.slice(0, 3),
       rows: [1],
@@ -198,11 +274,14 @@ describe('dockLayout', () => {
     });
 
     expect(layout.indent(1)).toBe(0);
-    expectBox(layout.itemBox('discard'), { x: 78, y: 28, w: 67.2, h: 94.2 });
-    expect(layout.rowHeight(1)).toBeCloseTo(158.2, 6);
+    expectBox(layout.itemBox('discard'), cardAt(78, 28));
+    // Its first line, and the empty second one.
+    expect(layout.rowHeight(1)).toBeCloseTo(262.4, 6);
+    // The slot from (252 + 40) × 0.6 = 175.2 to 242.4.
+    expect(layout.width).toBeCloseTo(242.4, 6);
   });
 
-  it('wraps a scenario deck frame past the indent of the villain row like a card, its piles with it', () => {
+  it('flows a scenario deck frame past the indent of the villain row as one unit with its piles', () => {
     const layout = dockLayout({
       items: [
         frame('encounter', -10, 20, 262, 177),
@@ -214,7 +293,7 @@ describe('dockLayout', () => {
         pile('crew1-discard', 400, 30, { w: 80, h: 112, anchor: 'crew1' }),
         card('villain1', 540, 30),
         card('scheme', 700, 30, { w: 157, h: 112 }),
-        // The next villain's scenario deck, in the middle of the row.
+        // The next villain's scenario deck, in the middle of the row: 200 × 132, drawn 120 × 79.2.
         frame('crew2', 900, 20, 200, 132),
         pile('crew2-deck', 910, 30, { w: 80, h: 112, anchor: 'crew2' }),
         pile('crew2-discard', 1010, 30, { w: 80, h: 112, anchor: 'crew2' }),
@@ -225,22 +304,19 @@ describe('dockLayout', () => {
       ...ROOMS,
     });
 
-    // Indent 324 (villain 1); the widest card is the landscape scheme, 94.2: line width
-    // 550 − 324 − 94.2 = 131.8, so lines start at 455.8, 587.6 and 719.4 in scaled x.
+    // Indent 324 (villain 1, past crew1's frame and a gap: (490 + 40) × 0.6 = 318).
     expect(layout.indent(0)).toBeCloseTo(324, 6);
     expectBox(layout.itemBox('crew1'), { x: 174, y: 22, w: 120, h: 79.2 });
     expectBox(layout.itemBox('crew1-discard'), { x: 240, y: 28, w: 48, h: 67.2 });
-    expectBox(layout.itemBox('villain1'), { x: 324, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('scheme'), { x: 420, y: 28, w: 94.2, h: 67.2 });
-    // crew2 at 540 is on line 1 (top 138.2); its discard at 606 would be on line 2 alone.
-    expectBox(layout.itemBox('crew2'), { x: 408.2, y: 150.2, w: 120, h: 79.2 });
-    expectBox(layout.itemBox('crew2-deck'), { x: 414.2, y: 156.2, w: 48, h: 67.2 });
-    expectBox(layout.itemBox('crew2-discard'), { x: 474.2, y: 156.2, w: 48, h: 67.2 });
-    // Line 1 holds 91.2 of content (the frame): line 2 starts at 138.2 + 101.2 = 239.4.
-    expectBox(layout.itemBox('villain2'), { x: 432.4, y: 257.4, w: 67.2, h: 94.2 });
-    // 10 + 128.2 + 101.2 + 122.2 + 20, and a line of 122.2 for the row's empty slot: villain2
-    // ends line 2 past its end.
-    expect(layout.height).toBeCloseTo(381.6 + 122.2, 6);
+    expectBox(layout.itemBox('villain1'), cardAt(324, 28));
+    expectBox(layout.itemBox('scheme'), { x: 415.2, y: 28, w: 94.2, h: 67.2 });
+    // crew2 at 533.4 would end at 653.4: the second line, its piles with it, the frame at the top.
+    expectBox(layout.itemBox('crew2'), { x: 324, y: 138.2, w: 120, h: 79.2 });
+    expectBox(layout.itemBox('crew2-deck'), { x: 330, y: 144.2, w: 48, h: 67.2 });
+    expectBox(layout.itemBox('crew2-discard'), { x: 390, y: 144.2, w: 48, h: 67.2 });
+    expectBox(layout.itemBox('villain2'), cardAt(468, 138.2));
+    // 10 + 128.2 + 104.2 + 20, and a third line of 104.2 for the empty slot (559.2 is past 550).
+    expect(layout.height).toBeCloseTo(262.4 + 104.2, 6);
   });
 
   it('stacks the shown rows only in the focus view', () => {
@@ -259,29 +335,31 @@ describe('dockLayout', () => {
       ...ROOMS,
     });
 
+    // Each row two lines tall: 10 + 128.2 + 104.2 + 20.
     expect(layout.rowTop(0)).toBe(0);
-    expect(layout.rowHeight(0)).toBeCloseTo(158.2, 6);
-    expect(layout.rowTop(2)).toBeCloseTo(158.2, 6);
+    expect(layout.rowHeight(0)).toBeCloseTo(262.4, 6);
+    expect(layout.rowTop(2)).toBeCloseTo(262.4, 6);
     expect(layout.rowTop(1)).toBeNull();
     expect(layout.itemBox('p1-deck')).toBeNull();
-    expectBox(layout.itemBox('p2-frame'), { x: -6, y: 180.2, w: 157.2, h: 106.2 });
-    expectBox(layout.itemBox('p2-identity'), { x: 180, y: 186.2, w: 67.2, h: 94.2 });
-    expectPoint(layout.toDisplay({ x: 500, y: 700 }), { x: 300, y: 228.2 });
+    expectBox(layout.itemBox('p2-frame'), { x: -6, y: 284.4, w: 157.2, h: 106.2 });
+    expectBox(layout.itemBox('p2-identity'), cardAt(180, 290.4));
+    // A point of row 2 is drawn with the unit it lies past: the identity, 70 under its top.
+    expectPoint(layout.toDisplay({ x: 500, y: 700 }), { x: 300, y: 332.4 });
     expect(layout.toDisplay({ x: 500, y: 500 })).toBeNull();
-    expect(layout.height).toBeCloseTo(316.4, 6);
+    expect(layout.height).toBeCloseTo(524.8, 6);
   });
 
   it('brings a drawn point on every line back to the table, and there again', () => {
     const layout = dockLayout(playerRow(7, 500));
     const points = [
-      // Line 0, left of the indent: over the piles.
+      // Line 0, left of the identity: over the piles, scaled back.
       { drawn: { x: 50, y: 60 }, table: { x: 83.333333, y: 463.333333 } },
-      // Line 0, 1 and 2 past the indent: scaled x 250, 180 + 252.8 + 70 and 180 + 505.6 + 220.
+      // Line 0, with the identity: 250 / 0.6, 410 + (60 − 28) / 0.6.
       { drawn: { x: 250, y: 60 }, table: { x: 416.666667, y: 463.333333 } },
-      { drawn: { x: 250, y: 200 }, table: { x: 838, y: 483 } },
-      { drawn: { x: 400, y: 300 }, table: { x: 1509.333333, y: 446 } },
-      // Past the end of the last line, which runs on: scaled x 180 + 505.6 + 300.
-      { drawn: { x: 480, y: 300 }, table: { x: 1642.666667, y: 446 } },
+      // Line 1, with c4 (908, drawn 271.2): 908 + 28.8 / 0.6, 410 + 61.8 / 0.6.
+      { drawn: { x: 300, y: 200 }, table: { x: 956, y: 513 } },
+      // Line 2, past c7 (1364, drawn 271.2): 1364 + 208.8 / 0.6, 410 + 57.6 / 0.6.
+      { drawn: { x: 480, y: 300 }, table: { x: 1712, y: 506 } },
     ];
 
     for (const { drawn, table } of points) {
@@ -290,41 +368,37 @@ describe('dockLayout', () => {
     }
   });
 
-  it('counts a drop left of the indent on a wrapped line at the indent', () => {
-    const layout = dockLayout(playerRow(7, 500));
-    const table = layout.toTable({ x: 100, y: 200 });
-
-    // Scaled x 180 + 252.8 = 432.8: the first spot of line 1.
-    expectPoint(table, { x: 721.333333, y: 483 });
-    expectPoint(layout.toDisplay(table), { x: 180, y: 200 });
-  });
-
-  it('counts a point below the table in the last line, within its row, and one above in line 0', () => {
+  it('counts a point below the table in the last line, and one above in line 0, within the row', () => {
     const layout = dockLayout(playerRow(7, 500));
 
-    // Scaled x 180 + 505.6 + 70; the height kept on the row's last unit, 380 + 219.
-    expectPoint(layout.toTable({ x: 250, y: 1000 }), { x: 1259.333333, y: 599 });
+    // With c6 (1212, drawn 180): 1212 + 70 / 0.6, the height kept on the row's last unit, 380 + 219.
+    expectPoint(layout.toTable({ x: 250, y: 1000 }), { x: 1328.666667, y: 599 });
     expectPoint(layout.toTable({ x: 250, y: -50 }), { x: 416.666667, y: 380 });
   });
 
-  it('puts one card on each line when the wrap width is narrower than a card', () => {
-    // The line width stays one card wide, 67.2: c1, c2 and c3 go on lines 1, 2 and 4.
-    const layout = dockLayout(playerRow(3, 50));
+  it('puts one unit on each line when the wrap width is narrower than a card', () => {
+    const layout = dockLayout(playerRow(2, 50));
 
-    expectBox(layout.itemBox('identity'), { x: 180, y: 28, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c1'), { x: 204, y: 156.2, w: 67.2, h: 94.2 });
-    expectBox(layout.itemBox('c2'), { x: 228, y: 278.4, w: 67.2, h: 94.2 });
-    // Line 3 holds nothing: only its 10 gap, so line 4 starts at 382.6 + 10.
-    expectBox(layout.itemBox('c3'), { x: 184.8, y: 410.6, w: 67.2, h: 94.2 });
-    // 10 + 128.2 + 122.2 + 122.2 + 10 + 122.2 + 20, and a line of 122.2 for the row's empty slot.
-    expect(layout.height).toBeCloseTo(534.8 + 122.2, 6);
+    expectBox(layout.itemBox('identity'), cardAt(180, 28));
+    expectBox(layout.itemBox('c1'), cardAt(180, 138.2));
+    expectBox(layout.itemBox('c2'), cardAt(180, 242.4));
+    // 10 + 128.2 + 104.2 + 104.2 + 20, and a line of 104.2 for the empty slot.
+    expect(layout.height).toBeCloseTo(366.6 + 104.2, 6);
+  });
+
+  it('keeps a row whose units fit its first line two lines tall, the second one empty', () => {
+    const layout = dockLayout(playerRow(2, 1000));
+
+    expectBox(layout.itemBox('c2'), cardAt(362.4, 28));
+    // 10 + 128.2, then an empty line of a card's height, 94.2 + 10, and the row gap.
+    expect(layout.rowHeight(1)).toBeCloseTo(262.4, 6);
   });
 
   it('knows no unknown item', () => {
     const layout = dockLayout(playerRow(1, 500));
 
     expect(layout.itemBox('nope')).toBeNull();
-    // An unknown id falls back to the line the point's x falls in.
+    // An unknown id is drawn with the unit its point lies past: c1, at 452.
     expectPoint(layout.toDisplay({ x: 500, y: 450 }, 'nope'), { x: 300, y: 52 });
   });
 
@@ -333,56 +407,8 @@ describe('dockLayout', () => {
   });
 });
 
-describe('the empty slot at the end of each row', () => {
-  // Line width 500 − 180 − 67.2 = 252.8: each line ends at 432.8 for a card's left edge. A slot is
-  // a drawn card and a drawn gap, 67.2 + 24.
-
-  it('lies past the last item of the last line when it starts before the line ends', () => {
-    const layout = dockLayout(playerRow(4, 500));
-
-    // c4 ends at 292 + 67.2 = 359.2: the slot starts at 383.2, right after c4 on the table
-    // (908 + 112 + 40 = 1060).
-    expectPoint(layout.toTable({ x: 383.2, y: 156.2 }), { x: 1060, y: 410 });
-    expectPoint(layout.toDisplay({ x: 1060, y: 410 }), { x: 383.2, y: 156.2 });
-    // No line of its own: 10 + 128.2 + 122.2 + 20.
-    expect(layout.rowHeight(1)).toBeCloseTo(280.4, 6);
-    // As wide as the slot reaches: 383.2 + 67.2.
-    expect(layout.width).toBeCloseTo(450.4, 6);
-  });
-
-  it('takes a new line when the last line is full, past the last item on the table', () => {
-    // c5 (1060) is drawn at 383.2 on line 1 and ends at 450.4: the slot would start at 474.4,
-    // past the line's end. A third line holds it, its top at 260.4, as high as a card's line.
-    const layout = dockLayout(playerRow(5, 500));
-
-    expect(layout.rowHeight(1)).toBeCloseTo(10 + 128.2 + 122.2 + 122.2 + 20, 6);
-    // The slot, drawn at (1060 + 112 + 40) × 0.6 − 2 × 252.8 = 221.6, is right after c5.
-    expectPoint(layout.toTable({ x: 221.6, y: 278.4 }), { x: 1212, y: 410 });
-    expectPoint(layout.toDisplay({ x: 1212, y: 410 }), { x: 221.6, y: 278.4 });
-    // Left of the slot on its line counts at the slot: never under the last item.
-    expectPoint(layout.toTable({ x: 180, y: 278.4 }), { x: 1212, y: 410 });
-    expectPoint(layout.toTable({ x: 300, y: 300 }), {
-      x: (300 + 505.6) / 0.6,
-      y: 380 + 39.6 / 0.6,
-    });
-  });
-
-  it('lies past the last item of a row that does not wrap', () => {
-    const layout = dockLayout({
-      items: PLAYER_PILES.slice(0, 3),
-      rows: [1],
-      wrapWidth: 100,
-      ...ROOMS,
-    });
-
-    // The frame ends at 151.2: the slot from 175.2 to 242.4, 40 past the frame on the table.
-    expect(layout.width).toBeCloseTo(242.4, 6);
-    expectPoint(layout.toTable({ x: 175.2, y: 28 }), { x: 292, y: 410 });
-  });
-});
-
 describe('dockLayout at an infinite wrap width', () => {
-  it('wraps nothing: every item scaled where it lies, and back', () => {
+  it('wraps nothing: every unit on the first line, a slot apart', () => {
     const layout = dockLayout({
       items: [...PLAYER_PILES, ...played(8)],
       rows: [1],
@@ -390,9 +416,110 @@ describe('dockLayout at an infinite wrap width', () => {
       ...ROOMS,
     });
 
-    // c8 at 452 + 152 × 7 = 1516, drawn 909.6 on the first line, 18 below its top.
-    expectBox(layout.itemBox('c8'), { x: 909.6, y: 28, w: 67.2, h: 94.2 });
+    // c8 is the ninth unit: 180 + 8 × 91.2.
+    expectBox(layout.itemBox('c8'), cardAt(909.6, 28));
     expectPoint(layout.toTable({ x: 909.6, y: 28 }), { x: 1516, y: 410 });
+  });
+});
+
+describe('a drop on a row of dock mode (insertAt)', () => {
+  // playerRow(4, 500): the identity, c1 and c2 on line 0, their slots' middles at 213.6, 304.8 and
+  // 396; c3 and c4 on line 1, at 213.6 and 304.8, the empty slot after c4. On the table, c1 runs
+  // 452..564, c2 604..716, c3 756..868, c4 908..1020. A portrait card is 112 wide.
+  const layout = () => dockLayout(playerRow(4, 500));
+
+  it('goes between the two units around it: the middle of their gap, on the grid, at the first one’s y', () => {
+    // Before c2: (564 + 604) / 2 − 56 = 528, to 530.
+    expect(layout().insertAt({ x: 350, y: 60 }, 112)).toEqual({ x: 530, y: 410 });
+    // A landscape card: 584 − 78.5 = 505.5, to 510.
+    expect(layout().insertAt({ x: 350, y: 60 }, 157)).toEqual({ x: 510, y: 410 });
+  });
+
+  it("goes after a line's last unit, before the next line's first", () => {
+    // Between c2 and c3: (716 + 756) / 2 − 56 = 680.
+    expect(layout().insertAt({ x: 450, y: 60 }, 112)).toEqual({ x: 680, y: 410 });
+    // Left of the indent on line 1: before its first unit, c3, the same spot.
+    expect(layout().insertAt({ x: 100, y: 200 }, 112)).toEqual({ x: 680, y: 410 });
+  });
+
+  it('goes after the last unit, or in the empty slot, 40 past its right edge at the row’s card y', () => {
+    expect(layout().insertAt({ x: 340, y: 160 }, 112)).toEqual({ x: 1060, y: 410 });
+    expect(layout().insertAt({ x: 396, y: 180 }, 112)).toEqual({ x: 1060, y: 410 });
+  });
+
+  it('goes before the first unit when dropped left of the indent', () => {
+    // Between the frame's right edge (252) and the identity (300): 276 − 56 = 220, at the row's y.
+    expect(layout().insertAt({ x: 50, y: 60 }, 112)).toEqual({ x: 220, y: 410 });
+  });
+
+  it('leaves the dragged units out, and keeps a card dropped back in its own place where it lies', () => {
+    const c1 = new Set(['c1']);
+    // Past c2 without c1: between c2 and c3.
+    expect(layout().insertAt({ x: 450, y: 60 }, 112, c1)).toEqual({ x: 680, y: 410 });
+    // Between the identity and c2, where c1 lies: its own spot.
+    expect(layout().insertAt({ x: 300, y: 60 }, 112, c1)).toEqual({ x: 452, y: 410 });
+  });
+
+  it('goes after the last unit when dropped anywhere on the empty second line of a short row', () => {
+    // playerRow(2, 1000): the identity, c1 and c2 on the first line; the second, from 138.2, empty.
+    // After c2 (604..716): 756, up to the grid.
+    const short = dockLayout(playerRow(2, 1000));
+
+    expect(short.insertAt({ x: 300, y: 180 }, 112)).toEqual({ x: 760, y: 410 });
+    expect(short.insertAt({ x: 50, y: 180 }, 112)).toEqual({ x: 760, y: 410 });
+  });
+
+  it('goes into the row it is dropped on', () => {
+    // The villain row (its first line 10 to 128.2, its empty second line to 242.4), then player
+    // 1's row from 262.4, its first line from 272.4.
+    const twoRows = dockLayout({
+      items: [frame('encounter', -10, 20, 262, 177), card('villain', 300, 30), ...PLAYER_PILES],
+      rows: [0, 1],
+      wrapWidth: 500,
+      ...ROOMS,
+    });
+
+    // Past the villain (300..412): 412 + 40, up to the grid, at the villain row's card y.
+    expect(twoRows.insertAt({ x: 300, y: 60 }, 112)).toEqual({ x: 460, y: 30 });
+    // On the villain row's empty second line: after its last unit too.
+    expect(twoRows.insertAt({ x: 100, y: 200 }, 112)).toEqual({ x: 460, y: 30 });
+    // Past the identity in player 1's row.
+    expect(twoRows.insertAt({ x: 300, y: 320 }, 112)).toEqual({ x: 460, y: 410 });
+  });
+
+  it('measures a stack by all its cards', () => {
+    const stacked = dockLayout({
+      items: [
+        ...PLAYER_PILES,
+        card('main', 452, 410),
+        card('tucked', 472, 450, { anchor: 'main' }),
+        card('next', 700, 410),
+      ],
+      rows: [1],
+      wrapWidth: 1000,
+      ...ROOMS,
+    });
+
+    // The stack's slot runs 271.2..350.4, its middle 310.8; next's from 374.4, its middle 408.
+    // Between the stack's right edge (584) and next: (584 + 700) / 2 − 56 = 586, to 590.
+    expect(stacked.insertAt({ x: 380, y: 60 }, 112)).toEqual({ x: 590, y: 410 });
+    // The tucked card dragged away: the stack ends at 564, (564 + 700) / 2 − 56 = 576, to 580.
+    expect(stacked.insertAt({ x: 380, y: 60 }, 112, new Set(['tucked']))).toEqual({
+      x: 580,
+      y: 410,
+    });
+  });
+
+  it('stays strictly between two units with no grid line between them', () => {
+    const close = dockLayout({
+      items: [...PLAYER_PILES, card('a', 452, 410), card('b', 455, 410)],
+      rows: [1],
+      wrapWidth: 1000,
+      ...ROOMS,
+    });
+
+    // Before b: at a's x, a grid line lower, so that it sorts after a and before b.
+    expect(close.insertAt({ x: 380, y: 60 }, 112)).toEqual({ x: 452, y: 420 });
   });
 });
 

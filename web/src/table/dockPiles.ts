@@ -6,10 +6,11 @@
 export const DOCK_SCALE = 0.6;
 
 /**
- * The grid a drop on the table snaps to in dock mode, in table units: coarser than the 10-unit
- * GRID (layout.ts), so that a finger places cards in line with less care.
+ * How far apart the table's dots lie in dock mode, in table units: four times the 10-unit GRID
+ * (layout.ts), so that the dots stay apart on the smaller table. Drops do not snap to it: a drop
+ * on a row is an insertion among its cards (dockLayout.ts).
  */
-export const DOCK_GRID = 40;
+export const DOCK_DOT_PITCH = 40;
 
 /** A box on the table, in table units. */
 export interface Placement {

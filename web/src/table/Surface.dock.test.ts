@@ -7,6 +7,7 @@ import { DOCK_MODE_KEY } from './dockMode';
 import { pile } from './fixtures.testing';
 import { ownerFrames } from './layout';
 import Surface, { type OwnerBox } from './Surface.svelte';
+import type { ComponentProps } from 'svelte';
 import surfaceSource from './Surface.svelte?raw';
 
 const PILES: TablePile[] = [
@@ -35,7 +36,7 @@ const DRAWN_OWNERS: OwnerBox[] = [
   },
 ];
 
-function renderSurface(dock: boolean) {
+function renderSurface(dock: boolean, markers: SurfaceProps['markers'] = {}) {
   return render(Surface, {
     props: {
       cards: [],
@@ -47,11 +48,13 @@ function renderSurface(dock: boolean) {
       onbrowse: () => {},
       width: 1000,
       height: 1000,
-      markers: {},
+      markers,
     },
     context: new Map([[DOCK_MODE_KEY, { current: dock }]]),
   });
 }
+
+type SurfaceProps = ComponentProps<typeof Surface>;
 
 function element(container: HTMLElement, selector: string): HTMLElement {
   const found = container.querySelector<HTMLElement>(selector);
@@ -94,6 +97,19 @@ describe('Surface in dock mode', () => {
     expect(chips.style.getPropertyValue('--frame-w')).toBe('262px');
   });
 
+  it('draws the markers at 60 % from their drawn corner, their art zoomed with them', () => {
+    const { container } = renderSurface(true, {
+      firstPlayer: { x: 300, y: 40 },
+      active: { x: 200, y: 140 },
+    });
+
+    const token = element(container, '.marker[data-marker="firstPlayer"]');
+    expectPlaced(token, [300, 40, 50.4, 42]);
+    expect(token.classList).toContain('scaled');
+    expect(token.style.getPropertyValue('--scale')).toBe('0.6');
+    expectPlaced(element(container, '.marker[data-marker="active"]'), [200, 140, 42, 42]);
+  });
+
   it('lets the owner name use up to the full-size frame width', () => {
     const { container } = renderSurface(true);
 
@@ -114,5 +130,14 @@ describe('Surface out of dock mode', () => {
     expectPlaced(element(container, '.pile[data-id="encounter"]'), [0, 70, 112, 157]);
     expectPlaced(element(container, '.pile[data-id="encounterDiscard"]'), [130, 70, 112, 157]);
     expect(element(container, '.chips').style.getPropertyValue('--frame-w')).toBe('262px');
+  });
+
+  it('draws the markers full size', () => {
+    const { container } = renderSurface(false, { firstPlayer: { x: 460, y: 450 } });
+
+    const token = element(container, '.marker[data-marker="firstPlayer"]');
+    expectPlaced(token, [460, 450, 84, 70]);
+    expect(token.classList).not.toContain('scaled');
+    expect(token.style.getPropertyValue('--scale')).toBe('');
   });
 });

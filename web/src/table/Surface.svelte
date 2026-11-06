@@ -41,7 +41,7 @@
   import { MARKERS } from '../lib/types';
   import CardView from './CardView.svelte';
   import { dockMode } from './dockMode';
-  import { DOCK_GRID, DOCK_SCALE } from './dockPiles';
+  import { DOCK_DOT_PITCH, DOCK_SCALE } from './dockPiles';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -87,10 +87,10 @@
 
   // In dock mode (spec 3.7) the table hands every card, pile, frame and marker at the corner its
   // projection draws it at (dockLayout.ts): the cards and piles draw themselves smaller from there
-  // (CardView, PileView), the name lines and the chips stay at full size. The dots show the grid a
-  // drop snaps to there, drawn (DOCK_GRID).
+  // (CardView, PileView), the markers too (MarkerToken); the name lines and the chips stay at full
+  // size. The dots lie further apart there (DOCK_DOT_PITCH), drawn.
   const dock = dockMode();
-  const DOCK_DOTS = `${DOCK_GRID * DOCK_SCALE}px ${DOCK_GRID * DOCK_SCALE}px`;
+  const DOCK_DOTS = `${DOCK_DOT_PITCH * DOCK_SCALE}px ${DOCK_DOT_PITCH * DOCK_SCALE}px`;
 
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',

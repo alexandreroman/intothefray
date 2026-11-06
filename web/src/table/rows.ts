@@ -20,6 +20,13 @@ export const VILLAIN_ROW_HEIGHT = 380;
 /** The height of a player's row, in table units: row r ≥ 1 covers [380 + 220·(r−1), 380 + 220·r). */
 export const ROW_HEIGHT = 220;
 
+/**
+ * How far below the top of its row the setup lays a row's cards and piles, in
+ * table units: the owner's name lies above them. It mirrors rowContentY in
+ * internal/game/setup.go.
+ */
+export const ROW_LABEL_ROOM = 30;
+
 export type ViewMode = 'all' | 'focus';
 
 const VIEW_KEY = 'itf-view';
@@ -61,6 +68,12 @@ export interface TableMap {
   toDisplay(p: Point, itemId?: string): Point | null;
   /** The point of the table drawn at a point of the surface. */
   toTable(p: Point): Point;
+  /**
+   * Dock mode only (dockLayout.ts): where a card `width` table units wide,
+   * dropped with its middle drawn at `p`, goes among the units of its row,
+   * those of `exclude` left out.
+   */
+  insertAt?(p: Point, width: number, exclude?: ReadonlySet<string>): Point;
 }
 
 /** The map of rows drawn where `rows` draws their heights, every width drawn as it is. */

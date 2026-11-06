@@ -178,10 +178,10 @@ describe('dropAction', () => {
     expect(yAt(2000)).toBe(810);
   });
 
-  it('dropAction on a wrapped line of dock mode sends the table point the layout draws there', () => {
-    // Player 1's row (top 380) at 0.6, wrapped at 400: the identity drawn at 180 (the indent), the
-    // lines 152.8 wide (400 − 180 − a 67.2 card); c2 and c3 wrap to the second line, whose top is
-    // 134.2 (a 12 name room, then the first line: 112.2 of cards and a 10 gap).
+  it('dropAction in dock mode inserts a card among the units of the row it is dropped on', () => {
+    // Player 1's row (top 380) at 0.6, wrapped at 400: c0 (the indent, 180) and c1 on the first
+    // line, its top 12, the cards 18 lower; c2 and c3 on the second, its top 12 + 112.2 + 16 =
+    // 140.2, their slots' middles at 213.6 and 304.8. The drop spot is the card's drawn middle.
     const items: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
       id: `c${i}`,
       x,
@@ -191,36 +191,32 @@ describe('dropAction', () => {
       kind: 'card',
     }));
     const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
-    const at = (x: number, y: number) => dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map);
-    // (250 + 152.8) / 0.6 = 671.3 across, 380 + (150 − 134.2) / 0.6 = 406.3 down: on the grid.
-    expect(at(250, 150)).toEqual({ kind: 'move', card: 'c', x: 670, y: 400 });
-    // Left of the indent on a wrapped line: at the indent, (180 + 152.8) / 0.6 = 554.7.
-    expect(at(100, 150)).toEqual({ kind: 'move', card: 'c', x: 550, y: 400 });
-    // On the first line, the drawn point scaled back: 250 / 0.6 = 416.7, 380 + 38 / 0.6 = 443.3.
-    expect(at(250, 50)).toEqual({ kind: 'move', card: 'c', x: 420, y: 440 });
+    const spot = (corner: { x: number; y: number }) =>
+      map.insertAt({ x: corner.x + 33.6, y: corner.y + 47.1 }, 112);
+    const at = (x: number, y: number) =>
+      dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map, spot);
+
+    // Before c3, its middle at 283.6: between c2 (604..716) and c3 (756..868), 736 − 56.
+    expect(at(250, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
+    // Left of the indent on the second line: before c2, (564 + 604) / 2 − 56 = 528, to 530.
+    expect(at(100, 150)).toEqual({ kind: 'move', card: 'c', x: 530, y: 410 });
+    // Past c3: 40 past its right edge, 908, up to the grid.
+    expect(at(300, 150)).toEqual({ kind: 'move', card: 'c', x: 910, y: 410 });
   });
 
-  it('dropAction in dock mode snaps on its 40-unit grid, after mapping the point to the table', () => {
-    const items: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
-      id: `c${i}`,
-      x,
-      y: 410,
-      w: 112,
-      h: 157,
-      kind: 'card',
-    }));
+  it('dropAction in dock mode lays a marker where it is drawn, with the unit it lies past', () => {
+    const items: DockItem[] = [{ id: 'c0', x: 300, y: 410, w: 112, h: 157, kind: 'card' }];
     const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
-    const at = (x: number, y: number) => dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map, 40);
-    // 671.3 across goes to 680; 406.3 down to the row's first line, 410 (30 under its top, 380).
-    expect(at(250, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
-    // 416.7 to 400, 443.3 to 450 on the first line.
-    expect(at(250, 50)).toEqual({ kind: 'move', card: 'c', x: 400, y: 450 });
-    // Never into the next row: 599, the row's last unit, goes to its last line, 570.
-    expect(at(250, 1000)).toMatchObject({ y: 570 });
-    // The same point on the 10-unit grid, as on a desktop.
-    expect(dropAction(TABLE_CARD, TABLE, { x: 250, y: 150 }, DEAL_TO, map)).toMatchObject({
-      x: 670,
-      y: 400,
+    const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
+    const spot = () => ({ x: 0, y: 0 });
+
+    // With c0 (drawn 180, 30 under its row's 12 of name room): 250 / 0.6 = 416.7 across,
+    // 410 + 20 / 0.6 = 443.3 down, on the grid.
+    expect(dropAction(token, TABLE, { x: 250, y: 50 }, DEAL_TO, map, spot)).toEqual({
+      kind: 'marker',
+      name: 'firstPlayer',
+      x: 420,
+      y: 440,
     });
   });
 

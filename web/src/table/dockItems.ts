@@ -77,6 +77,7 @@ export function dockItems(table: DockTable): DockItem[] {
       h: box.h,
       kind: 'card',
       anchor: card.parent ?? card.onPile,
+      exhausted: card.exhausted,
     };
   });
   const frames = table.frames.map((frame): DockItem => ({

@@ -369,9 +369,18 @@ describe('a drop on the dock', () => {
   const BAR_BUTTON = domRect(8, PHONE.height - 68, 220, 60);
   const RAIL_BUTTON = domRect(8, 8, 48, 72);
 
-  /** Drags the card with the mouse from its place to that point, and lets go there. */
-  async function dragTo(id: string, x: number, y: number): Promise<void> {
-    await fireEvent.pointerDown(placed(id), { clientX: 310, clientY: 310, pointerType: 'mouse' });
+  /** Drags the card with the mouse from its place (pressed at `from`) to that point. */
+  async function dragTo(
+    id: string,
+    x: number,
+    y: number,
+    from = { x: 310, y: 310 },
+  ): Promise<void> {
+    await fireEvent.pointerDown(placed(id), {
+      clientX: from.x,
+      clientY: from.y,
+      pointerType: 'mouse',
+    });
     await fireEvent.pointerMove(window, { clientX: x, clientY: y - 40, buttons: 1 });
     await fireEvent.pointerMove(window, { clientX: x, clientY: y, buttons: 1 });
   }
@@ -418,8 +427,14 @@ describe('a drop on the dock', () => {
     measure(PHONE, BAR_BUTTON);
     const { session } = await renderTable();
 
-    // Over the bottom middle of the table, but right of the hand button.
-    await dragTo('mine', 300, PHONE.height - 100);
+    // Pressed in its middle, let go over the bottom middle of the table, right of the hand button:
+    // past the last unit of its row (the deck's frame), not back in its own place.
+    const box = placed('mine').style;
+    const middle = {
+      x: Number.parseFloat(box.left) + Number.parseFloat(box.width) / 2,
+      y: Number.parseFloat(box.top) + Number.parseFloat(box.height) / 2,
+    };
+    await dragTo('mine', 300, PHONE.height - 100, middle);
     expect(handButton().classList).toContain('drop');
     await fireEvent.pointerUp(window, { clientX: 300, clientY: PHONE.height - 100 });
 
@@ -674,9 +689,10 @@ describe('small cards and small piles in dock mode', () => {
     const mine = placed('mine', '.card');
     expect(mine.classList).toContain('scaled');
     const box = boxOf(mine);
-    // Unmeasured, nothing wraps: 300 × 0.6 across, under the villain row's 12 units of name room.
-    expect(box.x).toBeCloseTo(180, 6);
-    expect(box.y).toBeCloseTo(12 + 180, 6);
+    // The villain at 0, then mine one slot (a 67.2 card and a 24 gap) further, at the top of the
+    // villain row's first line: 18 under its 12 units of name room, though it lies 300 lower.
+    expect(box.x).toBeCloseTo(91.2, 6);
+    expect(box.y).toBeCloseTo(12 + 18, 6);
     expect(box.w).toBeCloseTo(67.2, 6);
     expect(box.h).toBeCloseTo(94.2, 6);
     expect(placed('v', '.card').querySelector('img')?.getAttribute('alt')).toBe('Rhino');
@@ -699,45 +715,42 @@ describe('small cards and small piles in dock mode', () => {
     expect(top.h).toBeCloseTo(pileBox.h, 6);
   });
 
-  it('drags a ghost at 60 %, held where it was pressed, and drops the card at its top-left', async () => {
+  it('drags a ghost at 60 %, held where it was pressed, and drops the card among the units', async () => {
     mockScreen(PHONE);
     measure(PHONE);
-    const { session } = await renderTable();
+    const view = makeView();
+    // Past the deck's frame (590..922), drawn one slot after it.
+    view.table!.cards.push(card('far', { x: 1200, y: 0 }));
+    // No first player token, which would flow between them.
+    view.table!.firstPlayer = undefined;
+    const { session } = await renderTable(view);
     const z = zoom();
-    // Pressed in the middle of the card as drawn.
+    // Pressed in the middle of the card as drawn (124.8, 77.1), moved to 360, 177 drawn: on the
+    // villain row's empty second line (its first ends at 12 + 124.2 + 16 = 152.2).
     const at = boxOf(placed('mine'));
     const pressed = { x: (at.x + 33.6) * z, y: (at.y + 47.1) * z };
+    const to = { x: 360 * z, y: 177.1 * z };
     await fireEvent.pointerDown(placed('mine'), {
       clientX: pressed.x,
       clientY: pressed.y,
       pointerType: 'mouse',
     });
-    await fireEvent.pointerMove(window, {
-      clientX: pressed.x - 40,
-      clientY: pressed.y,
-      buttons: 1,
-    });
-    await fireEvent.pointerMove(window, {
-      clientX: pressed.x - 80,
-      clientY: pressed.y,
-      buttons: 1,
-    });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y, buttons: 1 });
 
     const drawn = boxOf(ghost()!);
     expect(drawn.w).toBeCloseTo(67.2, 6);
     expect(drawn.h).toBeCloseTo(94.2, 6);
-    // Still held by its middle: the ghost moved with the pointer, 80 px to the left.
-    expect(drawn.x).toBeCloseTo(at.x - 80 / z, 4);
-    expect(drawn.y).toBeCloseTo(at.y, 4);
+    // Still held by its middle: the ghost moved with the pointer.
+    expect(drawn.x).toBeCloseTo(360 - 33.6, 4);
+    expect(drawn.y).toBeCloseTo(130, 4);
 
-    await fireEvent.pointerUp(window, { clientX: pressed.x - 80, clientY: pressed.y });
-    const [action] = vi.mocked(session.act).mock.calls.at(-1)!;
-    expect(action).toMatchObject({ kind: 'move', card: 'mine' });
-    // Its top-left corner as drawn, brought back to the table's scale (no wrap: the scroller is
-    // unmeasured), on dock mode's 40-unit grid.
-    expect(action.x).toBe(Math.round(drawn.x / 0.6 / 40) * 40);
-    // Not moved up or down: 300 is on the villain row's line 310 (30 + 7 × 40) give or take.
-    expect(action.y).toBe(310);
+    await fireEvent.pointerUp(window, { clientX: to.x, clientY: to.y });
+    // After the row's last unit, far (1200..1312): 40 past it, up to the grid, at the row's card y.
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'mine', x: 1360, y: 30 },
+      0,
+    );
   });
 
   it("holds a deck's top card by the middle of its 60 % ghost", async () => {
@@ -868,9 +881,12 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
 
   // The fit: both rows' indent (the villain and the identity at 300, drawn 180) and three slots of
   // a 67.2 card and a 24 gap, 453.6, in 390 − 2 × 24 − 12 = 330 px: 72 %. The rows wrap at
-  // (390 − 48) / 0.72 = 475: the lines are 475 − 180 − 67.2 = 227.8 wide. The villain's row is
-  // 12 + 118.2 (its frame, from 20 to 197) + 10 + 20 = 160.2 high; Alex's row starts there, its
-  // first line 12 lower, at 172.2, 128.2 high (the frame again), the next lines 122.2.
+  // (390 − 48) / 0.72 = 475: the identity, c1 and c2 fit the first line (180, 271.2, 362.4), c3 to
+  // c5 the second, c6 and c7 the third, then the empty slot (362.4). The villain's row is 12 +
+  // 118.2 (its frame, from 20 to 197) + 16, then an empty second line (94.2 + 16), + 20 = 276.4
+  // high; Alex's row starts there, its first line 12 lower, at 288.4, its cards 18 under it
+  // (306.4); the second line at 288.4 + 118.2 + 16 = 422.6, the third at 422.6 + 94.2 + 16 =
+  // 532.8, their cards at their top.
 
   it('fits the widest indent and three cards in the width by default, never above 100 %', async () => {
     mockScreen(PHONE);
@@ -884,15 +900,14 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     mockScreen(PHONE);
     await renderTable(busyView());
 
-    // The identity and the two first cards (drawn 276, 372) on the first line, 18 under its top.
-    expectAt('id', 180, 190.2);
-    expectAt('c2', 372, 190.2);
-    // c3 and c4 (drawn 468, 564) one line width left, on the second line (top 300.4).
-    expectAt('c3', 468 - 227.8, 318.4);
-    expectAt('c4', 564 - 227.8, 318.4);
-    // The seventh card (drawn 852) on the third line (top 422.6).
-    expectAt('c7', 852 - 2 * 227.8, 440.6);
-    // The villain's row is not wrapped: its piles and Rhino lie where they lie, at 0.6.
+    // The identity and the two first cards on the first line, a slot apart.
+    expectAt('id', 180, 306.4);
+    expectAt('c2', 362.4, 306.4);
+    // c3 and c4 from the indent on the second line, c7 on the third.
+    expectAt('c3', 180, 422.6);
+    expectAt('c4', 271.2, 422.6);
+    expectAt('c7', 271.2, 532.8);
+    // The villain's row holds one line: its piles and Rhino at 0.6.
     expectAt('v', 180, 30);
     for (const id of ['id', ...PLAYED]) {
       const box = drawnBox(placed(id, '.card'));
@@ -905,21 +920,23 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await renderTable(busyView());
 
     const frame = drawnBox(document.querySelector<HTMLElement>('.ownerbox[data-owner="0"]')!);
-    // The frame from −10, 400 (262 × 177): drawn at −6, 160.2 + 12 + 12.
+    // The frame from −10, 400 (262 × 177): drawn at −6, 276.4 + 12 + 12.
     expect(frame.x).toBeCloseTo(-6, 4);
-    expect(frame.y).toBeCloseTo(184.2, 4);
+    expect(frame.y).toBeCloseTo(300.4, 4);
     expect(frame.w).toBeCloseTo(157.2, 4);
     const discard = drawnBox(placed('discard:p0', '.pile'));
     expect(discard.x).toBeCloseTo(78, 4);
-    expect(discard.y).toBeCloseTo(190.2, 4);
+    expect(discard.y).toBeCloseTo(306.4, 4);
   });
 
   it('keeps a stack together on its main card’s line', async () => {
     mockScreen(PHONE);
-    // Tucked under c2 though it lies past the wrap: drawn with c2, 6 right and 12 down.
+    // Tucked under c2, 100 right and 20 down: the stack, 212 wide (127.2 drawn), would end past
+    // 475 on the first line. Both start the second, the upgrade 60 right of c2 and 12 down.
     await renderTable(busyView([card('up', { x: 720, y: 430, parent: 'c2' })]));
 
-    expectAt('up', 720 * 0.6, 190.2 + 12);
+    expectAt('c2', 180, 422.6);
+    expectAt('up', 240, 434.6);
   });
 
   it('makes the surface as high as the drawn rows, and as wide as what shows', async () => {
@@ -928,9 +945,8 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await renderTable(busyView());
 
     const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
-    // 160.2 + 12 + 128.2 + 2 × 122.2 + 20, and a line of 122.2 for the row's empty slot: c7 ends
-    // its line at 463.6, too far right for a slot. Rounded up.
-    expect(surface.style.height).toBe('687px');
+    // 276.4 + 12 + 134.2 + 2 × 110.2 + 20 = 663, as high as the rows' content, rounded up.
+    expect(surface.style.height).toBe('663px');
     expect(surface.style.width).toBe('475px');
   });
 
@@ -946,14 +962,14 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await renderTable(view);
 
     expect(document.querySelector('.surface .card[data-id="theirs"]')).toBeNull();
-    expectAt('id', 180, 190.2);
+    expectAt('id', 180, 306.4);
   });
 
-  it('drops a card on a wrapped line at the table point the projection gives back', async () => {
-    mockScreen(PHONE);
-    const { session } = await renderTable(busyView());
-    // jsdom lays nothing out: every element of the surface measures where its style puts it, at
-    // the zoom, the surface from the window's corner, the dock's hand button off the screen.
+  /**
+   * jsdom lays nothing out: every element of the surface measures where its style puts it, at the
+   * zoom, the surface from the window's corner, the dock's hand button off the screen.
+   */
+  function measureDrawn(): void {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
@@ -968,12 +984,15 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
       const box = drawnBox(this as HTMLElement);
       return domRect(box.x * z, box.y * z, box.w * z, box.h * z);
     });
+  }
+
+  /** Drags a card by its middle and lets it go with its middle at that drawn point. */
+  async function dragMiddleTo(id: string, x: number, y: number): Promise<void> {
     const z = shownZoom();
-    const from = drawnBox(placed('c1', '.card'));
+    const from = drawnBox(placed(id, '.card'));
     const pressed = { x: (from.x + from.w / 2) * z, y: (from.y + from.h / 2) * z };
-    // Its corner to 420, 330: on the second line, right of c4, which ends at 403.4.
-    const to = { x: (420 + from.w / 2) * z, y: (330 + from.h / 2) * z };
-    await fireEvent.pointerDown(placed('c1'), {
+    const to = { x: x * z, y: y * z };
+    await fireEvent.pointerDown(placed(id), {
       clientX: pressed.x,
       clientY: pressed.y,
       pointerType: 'mouse',
@@ -981,50 +1000,69 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y - 40, buttons: 1 });
     await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y, buttons: 1 });
     await fireEvent.pointerUp(window, { clientX: to.x, clientY: to.y });
+  }
 
-    // (420 + 227.8) / 0.6 = 1079.7 across, 380 + (330 − 300.4) / 0.6 = 429.3 down: on the 40-unit
-    // grid of the row, whose lines start at 410.
+  it('moves a card dropped between two cards of a wrapped line between them on the table', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    measureDrawn();
+
+    // In the gap between c4 (271.2..338.4) and c5 on the second line: before c5, whose slot's
+    // middle (396) lies right of it. c4 runs 940..1052 on the table, c5 1100..1212: c1 goes to
+    // (1052 + 1100) / 2 − 56 = 1020, at c4's y.
+    await dragMiddleTo('c1', 350, 470);
+
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'move', card: 'c1', x: 1080, y: 410 },
+      { kind: 'move', card: 'c1', x: 1020, y: 410 },
       0,
     );
   });
 
-  it("drops a card in a row's empty slot right after its last card", async () => {
+  it("moves a card dropped in a row's empty slot right after its last card", async () => {
     mockScreen(PHONE);
     const { session } = await renderTable(busyView());
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
-      this: Element,
-    ) {
-      const z = shownZoom();
-      if (this.closest('.handbtn')) {
-        return domRect(-100, -100, 0, 0);
-      }
-      const inSurface = this.closest('.surface') !== null && !this.classList.contains('surface');
-      if (!inSurface) {
-        return domRect(0, 0, PHONE.width, PHONE.height);
-      }
-      const box = drawnBox(this as HTMLElement);
-      return domRect(box.x * z, box.y * z, box.w * z, box.h * z);
-    });
-    const z = shownZoom();
-    const from = drawnBox(placed('c1', '.card'));
-    const pressed = { x: (from.x + from.w / 2) * z, y: (from.y + from.h / 2) * z };
-    // c7 (1420) ends the third line at 463.6: the slot lies alone on a fourth line (top 544.8),
-    // at (1420 + 112 + 40) × 0.6 − 3 × 227.8 = 259.8. Let go with the corner at 200, left of it.
-    const to = { x: (200 + from.w / 2) * z, y: (562.8 + from.h / 2) * z };
-    await fireEvent.pointerDown(placed('c1'), {
-      clientX: pressed.x,
-      clientY: pressed.y,
-      pointerType: 'mouse',
-    });
-    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y - 40, buttons: 1 });
-    await fireEvent.pointerMove(window, { clientX: to.x, clientY: to.y, buttons: 1 });
-    await fireEvent.pointerUp(window, { clientX: to.x, clientY: to.y });
+    measureDrawn();
 
-    // At the slot, 1572, on the 40-unit grid: 1560, past c7's end (1532), in its row.
+    // The slot follows c7 on the third line, from 362.4: c1 goes 40 past c7's right edge (1532),
+    // up to the grid, at the row's card y.
+    await dragMiddleTo('c1', 396, 580);
+
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'move', card: 'c1', x: 1560, y: 410 },
+      { kind: 'move', card: 'c1', x: 1580, y: 410 },
+      0,
+    );
+  });
+
+  it('moves a card dropped left of the identity before it, and one dropped back in its place nowhere', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    measureDrawn();
+
+    // Left of the first line's identity, under the frame: between the frame's right edge (252)
+    // and the identity (300), 276 − 56 = 220.
+    await dragMiddleTo('c2', 165, 410);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'move', card: 'c2', x: 220, y: 410 }, 0);
+
+    // c3 let go between c2's slot and c4's: where it lies already, nothing sent.
+    vi.mocked(session.act).mockClear();
+    await dragMiddleTo('c3', 213.6, 470);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it("plays a card into another row the same way: past the villain's last card", async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    measureDrawn();
+
+    // In the villain row, right of Rhino (300..412 on the table), or anywhere on its empty second
+    // line (from 146.2 to 256.4).
+    await dragMiddleTo('c1', 300, 80);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'move', card: 'c1', x: 460, y: 30 }, 0);
+    vi.mocked(session.act).mockClear();
+    await dragMiddleTo('c2', 60, 200);
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'c2', x: 460, y: 30 },
       0,
     );
   });

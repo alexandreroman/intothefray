@@ -2,11 +2,14 @@
   A marker of the table (spec 5.8): the first player token (FirstPlayerArt.svelte)
   or the active counter (ActiveCounterArt.svelte), placed in table units. It lies
   on the table, or in the drag layer while it is dragged or waits for the server
-  after a drop, or in the presence layer while another player drags it.
+  after a drop, or in the presence layer while another player drags it. In dock
+  mode it is drawn smaller, as the table's cards are.
 -->
 <script lang="ts">
   import type { MarkerName } from '../lib/types';
   import ActiveCounterArt from './ActiveCounterArt.svelte';
+  import { dockMode } from './dockMode';
+  import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import FirstPlayerArt from './FirstPlayerArt.svelte';
   import { interaction } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, FIRST_PLAYER_BOX } from './layout';
@@ -34,7 +37,11 @@
     onpointerdown?: (event: PointerEvent) => void;
   } = $props();
 
-  const box = $derived(name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX);
+  // In dock mode (spec 3.7) the marker is drawn at DOCK_SCALE from its corner, which the table
+  // hands already projected (dockLayout.ts), its art zoomed with it.
+  const dock = dockMode();
+  const fullBox = $derived(name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX);
+  const box = $derived(dock.current ? dockCardBox(fullBox) : fullBox);
   // A finger held it still long enough (touch mode): it is picked up in place, ready to be dragged.
   const armed = $derived(!ghost && interaction.isArmed({ kind: 'marker', name }));
 </script>
@@ -46,6 +53,7 @@
   class:lifted
   class:armed
   class:movable={tip !== undefined}
+  class:scaled={dock.current}
   role="presentation"
   data-tip={tip}
   {onpointerenter}
@@ -54,6 +62,7 @@
   style:top="{y}px"
   style:width="{box.w}px"
   style:height="{box.h}px"
+  style:--scale={dock.current ? DOCK_SCALE : undefined}
 >
   {#if name === 'active'}
     <ActiveCounterArt />
@@ -75,6 +84,11 @@
   /* In touch mode, a finger swiping over the marker scrolls the table: only a hold drags it (spec 3.2). */
   :global(.app.touch) .marker {
     touch-action: pan-x pan-y;
+  }
+
+  /* Dock mode: the element is the marker's drawn box, and its art is zoomed by the same scale. */
+  .marker.scaled > :global(*) {
+    zoom: var(--scale);
   }
 
   .marker.movable {

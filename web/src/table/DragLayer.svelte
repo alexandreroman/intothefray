@@ -50,23 +50,17 @@
     tucks,
     type DragSource,
     type DropRect,
+    type DropSpot,
     type PileDrop,
     type Rect,
     type TableRect,
   } from './drag';
   import { dockMode } from './dockMode';
-  import { DOCK_GRID, dockCardBox } from './dockPiles';
+  import { dockCardBox } from './dockPiles';
   import { backCaption, isHidden, pileBack } from './face';
   import { HOLD_MS } from './gestures';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
-  import {
-    ACTIVE_COUNTER_BOX,
-    cardBox,
-    FIRST_PLAYER_BOX,
-    GRID,
-    HAND_CARD,
-    type Box,
-  } from './layout';
+  import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
@@ -553,13 +547,13 @@
     return { w, h: w * ratio };
   }
 
-  /** The box of the dragged card on the table, in table units, as its ghost is drawn. */
+  /** The box of the dragged card or marker on the table, in table units, as its ghost is drawn. */
   function boxOf(from: DragSource): Box {
     if (from.kind === 'marker') {
-      return {
+      return drawn({
         ...(from.name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX),
         rotated: false,
-      };
+      });
     }
     return drawn(cardBoxOf(from));
   }
@@ -763,10 +757,24 @@
     // A group tucks under nothing: over a card, it moves there as over the table.
     const onto: DropRect =
       units.length > 0 && target.kind === 'card' ? { kind: 'table', rect: target.rect } : target;
-    // A finger on a phone places cards on a coarser grid (spec 3.7).
-    const grid = dock.current ? DOCK_GRID : GRID;
-    const single = dropAction(from, onto, spot, dealTo, tableMap, grid);
+    const single = dropAction(from, onto, spot, dealTo, tableMap, dockSpotOf(from));
     return { target, action: grouped(from, single) };
+  }
+
+  /**
+   * In dock mode (spec 3.7), where a card dropped on the table goes: among the units of the row
+   * its ghost's middle is drawn in, the dragged cards left out. None elsewhere, nor for a marker.
+   */
+  function dockSpotOf(from: DragSource): DropSpot | undefined {
+    const insertAt = tableMap.insertAt?.bind(tableMap);
+    if (insertAt === undefined || from.kind === 'marker') {
+      return undefined;
+    }
+    const ghost = boxOf(from);
+    const width = cardBoxOf(from).w;
+    const dragged = new Set(interaction.dragging?.lifted ?? []);
+    return (corner) =>
+      insertAt({ x: corner.x + ghost.w / 2, y: corner.y + ghost.h / 2 }, width, dragged);
   }
 
   /**

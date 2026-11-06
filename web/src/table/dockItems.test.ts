@@ -42,6 +42,18 @@ describe('dockItems', () => {
     expect(byId.get('revealed')?.anchor).toBe('deck:p0');
   });
 
+  it('tells an exhausted card, whose slot is as wide as its tilt', () => {
+    const t = table();
+    const items = dockItems({
+      ...t,
+      cards: t.cards.map((c) => (c.id === 'ally' ? { ...c, exhausted: true } : c)),
+    });
+    const byId = new Map(items.map((item) => [item.id, item]));
+
+    expect(byId.get('ally')?.exhausted).toBe(true);
+    expect(byId.get('identity')?.exhausted).toBeFalsy();
+  });
+
   it('lays out each pile with its owner frame, the frame at its own box', () => {
     const t = table();
     const items = dockItems(t);

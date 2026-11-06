@@ -40,7 +40,7 @@
     View,
   } from '../lib/types';
   import { MARKERS, markerPoint } from '../lib/types';
-  import { diffViews, MAX_APART_MS } from './animate';
+  import { diffViews, dockMotions, MAX_APART_MS } from './animate';
   import {
     actionsFor,
     counterName,
@@ -971,17 +971,34 @@
   // The view the table was last drawn from: the next one is animated from it.
   // svelte-ignore state_referenced_locally
   let drawnView = view;
+  // In dock mode, the layout it was last drawn with: its rows flow, and a card the next view leaves
+  // where it lay may be drawn elsewhere (dockMotions). Kept up to date as the screen changes too.
+  let drawnDock: DockLayout | null = null;
+  $effect.pre(() => {
+    const layout = dockView;
+    const shown = view;
+    untrack(() => {
+      if (shown === drawnView) {
+        drawnDock = layout;
+      }
+    });
+  });
 
   // Before the new view is drawn, while the cards still show where they were.
   // The viewer's own drop (DragLayer's landing, which ends with this view)
   // already lies where it went on the table or in the hand; onto a pile, it
   // flies there from its landed ghost, still drawn now, and into a stack, it
-  // slides from that ghost to its spot in the chain.
+  // slides from that ghost to its spot in the chain. In dock mode the rows
+  // flow: a drop slides from its ghost to its slot, and the cards it pushes
+  // along slide too (dockMotions).
   $effect.pre(() => {
     const next = view;
     untrack(() => {
       const prev = drawnView;
       drawnView = next;
+      const before = drawnDock;
+      const after = dockView;
+      drawnDock = after;
       if (prev === next) {
         return;
       }
@@ -991,7 +1008,13 @@
         void tick().then(rehoverUnderPointer);
         return;
       }
-      const anims = diffViews(prev, next, interaction.landing ?? undefined);
+      let anims = diffViews(prev, next, interaction.landing ?? undefined);
+      if (before !== null && after !== null && prev.table && next.table) {
+        anims = dockMotions(anims, prev.table, next.table, {
+          before: (id) => before.itemBox(id),
+          after: (id) => after.itemBox(id),
+        });
+      }
       void motion
         .animate(app, anims, { before: prev.table, after: next.table }, zoom)
         .then(async () => {
