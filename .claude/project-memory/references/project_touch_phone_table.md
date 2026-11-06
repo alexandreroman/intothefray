@@ -76,7 +76,8 @@ type: project
     table screen.
   - Card boxes do not focus their filter, so no keyboard pops up.
   - No card preview and no keyboard-shortcuts button (the keys still
-    work); the top bar's buttons are 44 px high (`TopBar.svelte`).
+    work); the top bar's buttons are 44 px high (`TopBar.svelte`), the
+    hero selector's step arrows 44 px wide.
 - Tablets (touch mode off dock mode) keep the desktop layout, fitted to a
   finger:
   - The inspector follows the screen's orientation (`SIDEWAYS_QUERY`,
@@ -117,8 +118,7 @@ type: project
     [[project_hand_sizes]]).
   - The history panel's buttons and the card box's footer and filter are
     44 px high, and the hero selector's avatars have 44 px hit areas, the
-    avatars drawn at their own size, and the hero selector's step arrow
-    is 44 px wide (`.app.tablet`).
+    avatars drawn at their own size (`.app.tablet`).
 - Dock mode (phones):
   - A dock (`Dock.svelte`) at the bottom, or a 64 px rail on the left on
     a phone on its side, holds the hand button (hero avatar, mini cards,
