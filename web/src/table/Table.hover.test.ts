@@ -234,7 +234,7 @@ describe('hovering the table', () => {
 
 describe('a tap on touch', () => {
   it("in touch mode, opens a card's inspector with its menu's entries, which stays, and previews nothing", async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     vi.useFakeTimers();
@@ -257,7 +257,7 @@ describe('a tap on touch', () => {
   });
 
   it('in touch mode, opens the inspectors of piles and previews nothing', async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable();
     await tap(placed('disc:p0'));
@@ -487,7 +487,7 @@ describe('tokens and statuses', () => {
   });
 
   it("a tap on a token opens its card's inspector, shows no pill, and stays once the finger lifts", async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
@@ -505,7 +505,7 @@ describe('tokens and statuses', () => {
   });
 
   it("the inspector stays through steps in its token pills, a status's included", async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
@@ -535,7 +535,7 @@ describe('tokens and statuses', () => {
   });
 
   it("a tap on the card off its tokens opens the same inspector, and closing it lets the card's hover go", async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     vi.useFakeTimers();
@@ -553,7 +553,7 @@ describe('tokens and statuses', () => {
   });
 
   it("the inspector's token goes with the table's, and the inspector stays with its card", async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { rerender } = await renderTable(viewWithCounters());
     await tap(placed('mine'), counter('mine', 'token:dmg'));
@@ -565,7 +565,7 @@ describe('tokens and statuses', () => {
   });
 
   it('Escape closes the inspector a tap on a token opened', async () => {
-    // Touch mode (touch.ts), before the table is drawn.
+    // Touch mode (TOUCH_MODE_QUERY), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(viewWithCounters());
     await tap(placed('mine'), counter('mine', 'token:dmg'));

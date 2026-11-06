@@ -64,9 +64,9 @@
 - [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; a deck takes any card of its owner
 - [Stage change carry-over](references/project_stage_carry_over.md) — villain keeps all but damage, main scheme only acceleration
 - [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); not offered as modulars
-- [Action menu organisation](references/project_action_bars.md) — click opens the action menu; hand plays by drag and keys; out-of-play chips; touch: inspector sheet
+- [Action menu organisation](references/project_action_bars.md) — click opens the menu; hand by drag and keys; chips; touch: inspector sheet
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
-- [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down, back on scroll up
+- [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down; not in dock mode
 - [Every change of place animates](references/project_card_move_animations.md) — cards travel, turn, tilt; lift 1.06, drag sway ±6°, settle on drop
 - [Presence message budget](references/project_presence_budget.md) — none while alone; 150 ms throttle, 3-unit dead zone, events at once
 - [Deployment architecture](references/project_deployment.md) — Pages behind the Cloudflare proxy, VPS at api.intothefray.xyz; CI deploys all
@@ -96,8 +96,8 @@
 - [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
 - [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only
 - [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome; (hover: hover)
-- [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists games being played; Home capsule
-- [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
+- [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists live games; Home capsule
+- [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() (dialogs, modal sheets) locks html scroll; offset kept
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
 - [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold, pinch; tablet inspector follows orientation; phone dock
 - [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector: .count-pill

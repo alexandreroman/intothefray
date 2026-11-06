@@ -1,4 +1,4 @@
-// The compact, wrapped phone layout (spec 3.7): dock mode draws the table through one projection,
+// The compact, wrapped phone layout: dock mode draws the table through one projection,
 // from table units to drawn units, and back for drops. Everything is drawn at DOCK_SCALE. Each row
 // keeps its owner frames and piles at their scaled place on its first line; past them, its units (a
 // card with everything that travels with it, or a frame with its piles) flow in their order on the
@@ -18,7 +18,7 @@
 // A frame takes, in its row, the wider of its drawn width and its owner line's (lineWidths): the line
 // above it starts at its left edge, and what follows it starts past both, on a half column, so that
 // no owner line runs over the next frame or a card.
-// During a drag the rows show the drop before it is let go (spec 3.8): laid out with the dragged
+// During a drag the rows show the drop before it is let go: laid out with the dragged
 // card where the drop would put it, as if it lay there already, the units after it pushed along
 // and the slot it left closed up.
 
@@ -27,13 +27,13 @@ import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
 import { ROW_LABEL_ROOM, rowHeight, rowOf, rowTop } from './rows';
 
 /** The room above a row's lines for its owner names, in drawn units. */
-export const DOCK_NAME_ROOM = 12;
+const DOCK_NAME_ROOM = 12;
 
 /** The gap under each line of a row, in drawn units: room for an exhausted card's corners. */
-export const DOCK_LINE_GAP = 16;
+const DOCK_LINE_GAP = 16;
 
 /** The gap under each row, in drawn units. */
-export const DOCK_ROW_GAP = 20;
+const DOCK_ROW_GAP = 20;
 
 /** Something drawn on the table, in table units. */
 export interface DockItem {
@@ -55,7 +55,7 @@ export interface DockItem {
 }
 
 /**
- * A drag the layout shows as if dropped (spec 3.8): the dragged card where the drop would put it on
+ * A drag the layout shows as if dropped: the dragged card where the drop would put it on
  * the table, with everything that travels with it, out of the unit it was part of.
  */
 export interface DockPreview {
@@ -77,8 +77,6 @@ export interface DockLayoutInput {
   seatRows?: readonly number[];
   /** The width a row wraps at, in drawn units. */
   wrapWidth: number;
-  /** Drawn units per table unit: DOCK_SCALE unless given. */
-  scale?: number;
   rowGap?: number;
   lineGap?: number;
   nameRoom?: number;
@@ -234,12 +232,54 @@ function travelsWith(item: DockItem, id: string, byId: ReadonlyMap<string, DockI
   return false;
 }
 
+// A marker lies by a card when its box comes at most this close to the card's, in table units: the
+// first player token starts 40 right of its identity, the active counter 23 under its villain.
+const MARKER_REACH = 60;
+
+/** How far apart two boxes lie: the widest gap between them along either axis, 0 when they overlap. */
+function gapBetween(a: DockItem, b: DockItem): number {
+  return Math.max(0, b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
+}
+
+/**
+ * The card a marker lies by, which it travels with: the closest one within reach, the leftmost of
+ * those as close; none else.
+ */
+export function markerAnchor(marker: DockItem, cards: readonly DockItem[]): string | undefined {
+  let found: DockItem | undefined;
+  let foundGap = Infinity;
+  for (const card of cards) {
+    const gap = gapBetween(marker, card);
+    if (gap > MARKER_REACH) {
+      continue;
+    }
+    if (gap < foundGap || (gap === foundGap && card.x < (found?.x ?? Infinity))) {
+      found = card;
+      foundGap = gap;
+    }
+  }
+  return found?.id;
+}
+
 /**
  * The items as they would lie once the previewed drag is dropped: the dragged card at its new
- * corner, on its own (its anchor dropped), and what travels with it moved by as much; a card not on
- * the table yet added there.
+ * corner, on its own (its anchor dropped), and the cards that travel with it moved by as much; a
+ * card not on the table yet added there. A marker stays where it lies, since a drop never moves
+ * one, and lies by the card closest to it then.
  */
 function previewItems(items: readonly DockItem[], preview: DockPreview): DockItem[] {
+  const moved = movedItems(items, preview);
+  const cards = moved.filter((item) => item.kind === 'card');
+  return moved.map((item) => {
+    if (item.kind !== 'marker') {
+      return item;
+    }
+    return { ...item, anchor: markerAnchor(item, cards) };
+  });
+}
+
+/** The items with the previewed card and the cards that travel with it moved; the markers left where they lie. */
+function movedItems(items: readonly DockItem[], preview: DockPreview): DockItem[] {
   const byId = new Map(items.map((item) => [item.id, item]));
   const dragged = byId.get(preview.unitId);
   const { x, y } = preview.insertAt;
@@ -257,7 +297,7 @@ function previewItems(items: readonly DockItem[], preview: DockPreview): DockIte
     if (item === dragged) {
       return { ...item, x, y, anchor: undefined };
     }
-    if (travelsWith(item, dragged.id, byId)) {
+    if (item.kind !== 'marker' && travelsWith(item, dragged.id, byId)) {
       return { ...item, x: item.x + dx, y: item.y + dy };
     }
     return item;
@@ -507,7 +547,7 @@ const MIN_LINES = 2;
 const FIT_SLOTS = 3;
 
 /**
- * The drawn width the default zoom brings into view (spec 3.7): the widest
+ * The drawn width the default zoom brings into view: the widest
  * indent of the shown rows and three card slots past it, each a drawn
  * portrait card and the drawn gap between units. It does not depend on the
  * wrap width, which the zoom sets.
@@ -516,8 +556,8 @@ export function dockFitWidth(
   items: readonly DockItem[],
   rows: readonly number[],
   seatRows: readonly number[] = [],
-  scale = DOCK_SCALE,
 ): number {
+  const scale = DOCK_SCALE;
   const splits = [...groupsByRow(items, rows, seatRows).values()].map((groups) => splitRow(groups));
   const grid = gridOf(splits, scale);
   const indents = splits.map((split) =>
@@ -581,7 +621,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   if (input.rows.length === 0) {
     throw new Error('dockLayout needs at least one row to show');
   }
-  const scale = input.scale ?? DOCK_SCALE;
+  const scale = DOCK_SCALE;
   const nameRoom = input.nameRoom ?? DOCK_NAME_ROOM;
   const lineGap = input.lineGap ?? DOCK_LINE_GAP;
   const rowGap = input.rowGap ?? DOCK_ROW_GAP;
@@ -877,7 +917,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
 const SHIFT_EPSILON = 1e-3;
 
 /**
- * How far from where `base` draws them `preview` draws the items of `ids` (spec 3.8), in drawn
+ * How far from where `base` draws them `preview` draws the items of `ids`, in drawn
  * units: only those it draws elsewhere, and only those both draw.
  */
 export function dockShifts(

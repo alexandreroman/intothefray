@@ -665,10 +665,12 @@ describe('CardSheet', () => {
     });
 
     it('upright, puts the card on top, centred, at most 42 % of the screen high', () => {
-      const top = rule('.inspector.dock .top');
+      const top = rule('.inspector.dock:not(.beside) .top');
       expect(top).toContain('flex-direction: column;');
       expect(top).toContain('align-items: center;');
-      expect(rule('.inspector.dock .face')).toContain(
+      expect(rule('.inspector.dock:not(.beside) .visual')).toContain('width: 100%;');
+      expect(rule('.inspector.dock .visual')).toContain('align-items: center;');
+      expect(rule('.inspector.dock:not(.beside) .visual > .face')).toContain(
         'width: min(100%, calc(42dvh * var(--face-ratio)));',
       );
       expect(rule('.face')).toContain('--face-ratio: 5 / 7;');
@@ -699,17 +701,18 @@ describe('CardSheet', () => {
     });
 
     it('on its side, keeps the card the whole sheet high beside a column that scrolls', () => {
-      const side = block('@media (max-height: 500px)');
-      expect(ruleIn(side, '.inspector.dock .top')).toContain('flex-direction: row;');
+      // Side by side, as beside a tablet's card: the upright rules leave it alone.
+      expect(rule('.top')).not.toContain('flex-direction');
+      expect(rule('.inspector.dock .visual')).not.toContain('width');
       // The card and its column as high as the sheet's room less the gutter under them.
-      const dock = ruleIn(side, '.inspector.dock');
+      const dock = rule('.inspector.dock.beside');
       expect(dock).toContain('--card-room: calc(var(--sheet-room) - var(--gutter) + 12px);');
       expect(dock).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
       expect(dock).toContain('--landscape-w: calc(var(--sheet-room) * 7 / 5);');
-      const face = ruleIn(side, '.inspector.dock .face');
+      const face = rule('.inspector.beside .visual > .face');
       expect(face).toContain('height: var(--card-room);');
-      expect(face).toContain('width: auto;');
-      const column = ruleIn(side, '.inspector.dock .side');
+      expect(face).not.toContain('width');
+      const column = rule('.inspector.beside .side');
       expect(column).toContain('max-height: var(--card-room);');
       expect(column).toContain('overflow-y: auto;');
     });
@@ -851,17 +854,28 @@ describe('CardSheet', () => {
         expect(inspectorClasses()).not.toContain('land');
         expect(screen.getByRole('dialog').classList).not.toContain('fit');
       });
+
+      it.each([
+        ['on its side', LANDSCAPE_PHONE, true],
+        ['upright', PHONE, false],
+      ])('on a phone %s, lays the column beside the card: %s', (_, screenSize, beside) => {
+        mockScreen(screenSize);
+        renderSheet({ dock: true });
+
+        expect(inspectorClasses().contains('beside')).toBe(beside);
+      });
     });
 
     it('makes a portrait card as high as the room, at most 460 px and 70 % of the screen', () => {
       expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
       const tablet = rule('.inspector.tablet');
+      expect(tablet).toContain('--card-room: var(--sheet-room);');
       expect(tablet).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
       expect(tablet).toContain('--land-room: calc(var(--sheet-room) * 3 / 4);');
       expect(tablet).toContain('--landscape-w: var(--land-room);');
       // The sheet pads its bottom by 14 px (Sheet.svelte), its sides not at all.
       expect(tablet).toContain('padding: 0 var(--gutter) calc(var(--gutter) - 14px);');
-      expect(rule('.inspector.beside .visual > .face')).toContain('height: var(--sheet-room);');
+      expect(rule('.inspector.beside .visual > .face')).toContain('height: var(--card-room);');
       // Side by side: the face beside its column.
       expect(rule('.top')).not.toContain('flex-direction');
     });
@@ -872,15 +886,11 @@ describe('CardSheet', () => {
       expect(rule('.inspector.beside .visual.stacked + .side')).toContain(
         'padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));',
       );
-      const onItsSide = block('@media (max-height: 500px)');
-      expect(ruleIn(onItsSide, '.inspector.dock .visual.stacked + .side')).toContain(
-        'padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));',
-      );
     });
 
     it("sizes a portrait stack's carousel as a phone on its side does", () => {
       const stacked = rule('.inspector.beside .visual.stacked');
-      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));');
+      expect(stacked).toContain('--slide-h: calc(var(--card-room) - var(--carousel-chrome));');
       expect(stacked).toContain('width: calc(var(--slide-h) * 5 / 7 + 88px);');
       expect(rule('.inspector')).toContain('--carousel-chrome: 38px;');
     });
@@ -888,7 +898,7 @@ describe('CardSheet', () => {
     it('keeps the column beside a portrait card at most as high as it, the only part that scrolls', () => {
       const column = rule('.inspector.beside .side');
       expect(column).toContain('align-self: stretch;');
-      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('max-height: var(--card-room);');
       expect(column).toContain('overflow-y: auto;');
       expect(column).toContain('overscroll-behavior: contain;');
       expect(rule('.side')).toContain('container-type: inline-size;');
@@ -903,19 +913,14 @@ describe('CardSheet', () => {
       expect(rule(firsts)).toContain('margin-top: auto;');
       expect(rule(lasts)).toContain('margin-bottom: auto;');
       expect(rule('.inspector.beside .side')).not.toContain('justify-content');
-      const onItsSide = block('@media (max-height: 500px)');
-      expect(ruleIn(onItsSide, '.inspector.dock .side')).toContain('align-self: stretch;');
-      const dockFirsts = firsts.replaceAll('beside', 'dock').replace('\n  ', '\n    ');
-      const dockLasts = lasts.replaceAll('beside', 'dock').replace('\n  ', '\n    ');
-      expect(ruleIn(onItsSide, dockFirsts)).toContain('margin-top: auto;');
-      expect(ruleIn(onItsSide, dockLasts)).toContain('margin-bottom: auto;');
+      expect(rule('.inspector.dock .side')).toContain('align-self: stretch;');
       // Under the card (dock mode upright, a tablet upright's scheme), the column needs no margin.
       expect(rule('.inspector.column .side')).not.toContain('margin');
     });
 
     it('on its side, lays a landscape card as wide as the room beside a column of about 340 px', () => {
       expect(rule('.inspector.beside.land')).toContain('--landscape-w: var(--sheet-room);');
-      const face = rule('.inspector.beside .visual > .face.land');
+      const face = rule('.inspector.tablet.beside .visual > .face.land');
       expect(face).toContain('width: var(--sheet-room);');
       expect(face).toContain('height: auto;');
       // Top-aligned beside its column, which keeps its width rather than growing.
@@ -924,7 +929,7 @@ describe('CardSheet', () => {
       expect(column).toContain('width: 340px;');
       expect(column).toContain('flex: 0 1 auto;');
       // At most as high as the room, scrolling past it, as beside a portrait card.
-      expect(rule('.inspector.beside .side')).toContain('max-height: var(--sheet-room);');
+      expect(rule('.inspector.beside .side')).toContain('max-height: var(--card-room);');
       const stacked = rule('.inspector.beside.land .visual.stacked');
       expect(stacked).toContain('--slide-h: calc(var(--sheet-room) * 5 / 7);');
       expect(stacked).toContain('--slide-max: 100%;');
@@ -1025,7 +1030,7 @@ describe('CardSheet', () => {
     });
   });
 
-  describe('the stack of the card (F-U15)', () => {
+  describe('the stack of the card', () => {
     it('shows the stack in a carousel in place of the card, the main card first and centred', () => {
       renderSheet({ stack: STACK, cardId: 'rhino' });
 
@@ -1308,9 +1313,9 @@ describe('CardSheet', () => {
     });
 
     it('keeps the centred card at the size of a card alone, upright and on its side', () => {
-      expect(rule('.inspector.dock .visual.stacked')).toContain('--slide-h: 42dvh;');
-      const side = block('@media (max-height: 500px)');
-      expect(ruleIn(side, '.inspector.dock .visual.stacked')).toContain(
+      expect(rule('.inspector.dock:not(.beside) .visual.stacked')).toContain('--slide-h: 42dvh;');
+      expect(rule('.inspector.dock .visual.stacked')).toContain('--slide-max: 80%;');
+      expect(rule('.inspector.beside .visual.stacked')).toContain(
         '--slide-h: calc(var(--card-room) - var(--carousel-chrome));',
       );
     });
@@ -1446,7 +1451,7 @@ describe('CardSheet', () => {
       expect(rule('.row:active:not(:disabled)')).toContain('background-color: var(--hover);');
     });
 
-    describe('switching to another card of the stack (F-U15)', () => {
+    describe('switching to another card of the stack', () => {
       /** The other card's entries: Discard gone, so that a row leaves as the sheet switches. */
       const ARMOR_ENTRIES = ENTRIES.filter((entry) => entry !== ENTRIES[3]);
 
@@ -1567,7 +1572,7 @@ describe('CardSheet', () => {
       });
     });
 
-    describe('turning the card over (F-U9)', () => {
+    describe('turning the card over', () => {
       const TURNED: ContextHeader = {
         ...HEADER,
         name: 'Rhino II',

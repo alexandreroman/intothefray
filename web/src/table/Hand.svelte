@@ -1057,7 +1057,7 @@
     on the hand's bottom padding line, and a tilted end card moves in as far as the fan's room
     takes, so that the whole card shows in the window wherever its slot (touchPop, layout.ts).
   */
-  :global(.app.touch:not(.dock-mode)) .hcard.locked .fan {
+  :global(.app.tablet) .hcard.locked .fan {
     transform: translate(var(--touch-pop-x), var(--touch-pop-y)) rotate(var(--rot))
       scale(var(--touch-pop-scale));
   }

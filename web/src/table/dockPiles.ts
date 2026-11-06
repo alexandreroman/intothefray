@@ -1,4 +1,4 @@
-// Small cards and small piles in dock mode (spec 3.6, 3.7): every table card and pile is drawn
+// Small cards and small piles in dock mode: every table card and pile is drawn
 // scaled from its top-left corner, which the table's projection places (dockLayout.ts). Only the
 // drawing changes: the positions the server holds stay as they are.
 
@@ -21,6 +21,6 @@ export interface Placement {
 }
 
 /** A table card's or pile's box as dock mode draws it, from its own top-left corner: its size scaled. */
-export function dockCardBox<T extends { w: number; h: number }>(box: T, scale = DOCK_SCALE): T {
-  return { ...box, w: box.w * scale, h: box.h * scale };
+export function dockCardBox<T extends { w: number; h: number }>(box: T): T {
+  return { ...box, w: box.w * DOCK_SCALE, h: box.h * DOCK_SCALE };
 }

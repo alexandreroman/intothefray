@@ -3,7 +3,7 @@ import { releaseFocus } from '../lib/releaseFocus';
 import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
 import type { Rect } from './drag';
-import { holdPhase } from './gestures';
+import { holdPhase, type HoldPhase } from './gestures';
 import { isFree } from './selection';
 
 /** How long the hover and the preview stay after the pointer leaves their element. */
@@ -86,9 +86,6 @@ interface ContextMenuAt {
   at: { x: number; y: number };
 }
 
-/** Where a touch press waiting for the hold stands (gestures.ts). */
-export type HoldPhase = ReturnType<typeof holdPhase>;
-
 /** One string per pressable element, to tell whether two of them are the same. */
 function keyOf(element: Pressable): string {
   return element.kind === 'marker' ? `marker:${element.name}` : `${element.kind}:${element.id}`;
@@ -162,8 +159,8 @@ class TableInteraction {
   /** The element pressed or dragged, if any. */
   held = $state.raw<Held | null>(null);
   /**
-   * A touch press on a table card, a pile or a marker, in touch mode, was held still for HOLD_MS
-   * (spec 3.2): it shows lifted, and moves drag it, until it is let go.
+   * A press of a finger or a pen on a table card, a pile or a marker, in touch mode, was held still
+   * for HOLD_MS: it shows lifted, and moves drag it, until it is let go.
    */
   armed = $state(false);
   /** What the dragged element would be dropped on, outlined. */
@@ -188,12 +185,13 @@ class TableInteraction {
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
-  // Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen.
+  // Touch mode (TOUCH_MODE_QUERY): nothing is ever previewed. The table keeps it in step with the screen.
   #touchMode = false;
   // When the current press began: the timeStamp of its event.
   #pressedAt = 0;
-  // The press is a touch in touch mode on a table card, a pile or a marker: it waits for the hold
-  // before it may drag, and a move past the slop meanwhile scrolls the table instead (spec 3.2).
+  // The press is a finger or a pen in touch mode on a table card, a pile or a marker: it waits for
+  // the hold before it may drag, and a move past the slop meanwhile scrolls the table instead.
+  // Both, as the browser pans under them there (touch-action: pan-x pan-y).
   #awaitingHold = $state(false);
   // When the press waiting for the hold began: the timeStamp of its pointerdown.
   #holdStart = 0;
@@ -378,7 +376,7 @@ class TableInteraction {
     };
     // A hand card drags at once: there is nothing to scroll under it.
     this.#awaitingHold =
-      this.#touchMode && event.pointerType === 'touch' && element.kind !== 'hand';
+      this.#touchMode && event.pointerType !== 'mouse' && element.kind !== 'hand';
     this.#holdStart = event.timeStamp;
     const target = event.currentTarget;
     this.#inCarousel = target instanceof Element && target.closest('[data-carousel]') !== null;
@@ -396,7 +394,7 @@ class TableInteraction {
     return this.#inCarousel;
   }
 
-  /** Whether the press waits for the hold before it may drag (touch mode, spec 3.2). */
+  /** Whether the press waits for the hold before it may drag (touch mode). */
   get awaitingHold(): boolean {
     return this.#awaitingHold;
   }

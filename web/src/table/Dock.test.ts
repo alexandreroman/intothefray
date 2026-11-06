@@ -45,7 +45,7 @@ describe('Dock', () => {
     expect(p.onhistory).toHaveBeenCalledOnce();
   });
 
-  it('holds the hand button, Undo and History, and no menu button (F-U1)', () => {
+  it('holds the hand button, Undo and History, and no menu button', () => {
     render(Dock, props());
     const names = screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'));
     expect(names).toEqual(['Hand · 5, Rocket Raccoon', UNDO_TIP, 'History']);
@@ -77,7 +77,7 @@ describe('Dock', () => {
   });
 
   it.each([false, true])(
-    'keeps the History button a plain icon, with no unread count (landscape %s, F-U14)',
+    'keeps the History button a plain icon, with no unread count (landscape %s)',
     (landscape) => {
       render(Dock, props({ landscape }));
       const history = screen.getByRole('button', { name: 'History' });

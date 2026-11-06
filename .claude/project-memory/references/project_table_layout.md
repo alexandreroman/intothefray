@@ -102,10 +102,8 @@ type: project
   cards are sized from the window. Dock mode (a small touch screen) has
   its own fixed zoom and no zoom control (see
   [[project_touch_phone_table]]).
-- Touch mode (no hover, coarse pointer) shows no card preview and no
-  keyboard-shortcuts button; bar buttons are 44 px; a tap shows the card
-  in the inspector. Dock mode draws cards, piles and owner frames at
-  60 %, positions unchanged (see [[project_touch_phone_table]]).
+- Touch screens and phones adapt this layout (see
+  [[project_touch_phone_table]]).
 
 **Why:** decided with the user: players add cards as they play, so fixed
 things sit on the left and play grows right; one shared surface without

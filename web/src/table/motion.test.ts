@@ -1,4 +1,4 @@
-// A card discarded or played from the viewer's hand in dock mode (spec 3.4, 5.5): the hand is not
+// A card discarded or played from the viewer's hand in dock mode (spec 5.5): the hand is not
 // drawn on the table, so the card does not fly across it. Where the viewer saw it (the hand sheet's
 // carousel, or else the dock's hand button), a copy rises and fades out; the pile
 // shows a discarded card at once.
@@ -178,6 +178,28 @@ describe('a card discarded from the hand in dock mode', () => {
         zoomed: true,
       },
     ]);
+  });
+
+  it("rises from the hand sheet when it goes to its side deck's discard pile", async () => {
+    // Invocation's side deck has a discard pile of its own: Discard sends its cards there.
+    const app = page(true);
+    handSheet(app);
+    const sideDiscard: PileView = { ...DISCARD, id: 'sided:p0:0', kind: 'sideDiscard' };
+    const before = table([card('a', { zone: 'hand' })], [DECK, DISCARD, sideDiscard]);
+    const after = table(
+      [card('a', { zone: 'pile' })],
+      [DECK, DISCARD, { ...sideDiscard, count: 1, cards: ['a'] }],
+    );
+
+    await motion.animate(
+      app,
+      [{ kind: 'fly', id: 'a', toPile: 'sided:p0:0' }],
+      { before, after },
+      ZOOM,
+    );
+
+    expect(motion.flights).toMatchObject([{ kind: 'rise', card: { id: 'a' }, zoomed: false }]);
+    expect(motion.flying.has('a')).toBe(false);
   });
 
   it('several cards discarded together rise one after the other', async () => {

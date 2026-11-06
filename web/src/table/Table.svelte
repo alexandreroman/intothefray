@@ -4,7 +4,7 @@
   slim strip. The preview of the hovered card floats in a corner of the play
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
   control, unless it would hide the whole hovered element there, and never
-  the hero selector's corner; touch mode previews nothing (touch.ts). On a
+  the hero selector's corner; touch mode previews nothing (lib/screen.ts). On a
   narrow screen and in dock mode there is no side column: the dock, or on a
   tablet a History button in the bottom right corner, opens the history in a
   sheet.
@@ -26,7 +26,13 @@
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
   import { pointerBlur } from '../lib/releaseFocus';
-  import { NARROW_SCREEN_QUERY, PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
+  import {
+    NARROW_SCREEN_QUERY,
+    PHONE_QUERY,
+    SHORT_SCREEN_QUERY,
+    SMALL_SCREEN_QUERY,
+    TOUCH_MODE_QUERY,
+  } from '../lib/screen';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -82,7 +88,7 @@
     type DockPreview,
   } from './dockLayout';
   import { setDockMode } from './dockMode';
-  import { DRAG_THRESHOLD, goesToHand, intersect, sourceOf, type Rect } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, takesHandDrop, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
@@ -147,7 +153,7 @@
     seatPlayer,
   } from './seats';
   import { tableCard, tablePile } from './screen';
-  import { cardsInBand, groupUnits, isFree } from './selection';
+  import { cardsInBand, dragUnits, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -162,7 +168,6 @@
   import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
   import Surface, { ownerLineWidth, type OwnerBox } from './Surface.svelte';
   import { backUrl } from './theme';
-  import { TOUCH_MODE_QUERY } from './touch';
   import { touchZoom } from './touchZoom';
   import ZoomControl from './ZoomControl.svelte';
   import {
@@ -490,7 +495,7 @@
   });
 
   /**
-   * The avatar an owner's frame shows in place of its name in dock mode (F-U13): the hero's, the
+   * The avatar an owner's frame shows in place of its name in dock mode: the hero's, the
    * current villain's on the villain's frame; none on a scenario deck's frame, which keeps its name.
    */
   function frameAvatar(frame: OwnerFrame): string | null | undefined {
@@ -532,23 +537,25 @@
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
   // The short case of a small screen (SMALL_SCREEN_QUERY): a phone on its side.
-  const short = new MediaQuery('(max-height: 500px)');
+  const short = new MediaQuery(SHORT_SCREEN_QUERY);
 
-  // Dock mode, a phone held either way on a touch screen (spec 3.4): the dock (Dock.svelte) stands in
+  // Dock mode, a phone held either way on a touch screen: the dock (Dock.svelte) stands in
   // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the
   // history in bottom sheets; the hero selector floats beside it. A mouse or a pen never sees it, at
   // any width.
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
+  // A tablet: touch mode outside dock mode. The `.app` element carries it as the `tablet` class.
+  const tablet = $derived(touchMode.current && !dockMode);
   // The history column beside the table: none on a narrow screen, nor in dock mode at any width,
   // where the dock's History button opens the history sheet.
   const sidePanel = $derived(!narrow.current && !dockMode);
   // A tablet without the history column (touch mode on a narrow screen, not dock mode): a History
-  // button beside the floating Undo opens the history sheet dock mode uses (spec 2.2), as a finger
+  // button beside the floating Undo opens the history sheet dock mode uses, as a finger
   // has no other way to read the history. A mouse window keeps its corner as it is.
-  const historySheetMode = $derived(touchMode.current && narrow.current && !dockMode);
-  // The cards and piles below read it too: small cards and small piles (spec 3.6).
+  const historySheetMode = $derived(tablet && narrow.current);
+  // The cards and piles below read it too: small cards and small piles.
   setDockMode({
     get current() {
       return dockMode;
@@ -573,7 +580,7 @@
 
   // On a small screen the top bar floats over the play area (TopBar): the table starts below it, and
   // what floats at the top of the play area keeps clear of it while it shows. Off dock mode it slides
-  // away as the table scrolls down; in dock mode it always shows (spec 3.4).
+  // away as the table scrolls down; in dock mode it always shows.
   let scrolledAway = $state(false);
   const barHidden = $derived(scrolledAway && !dockMode);
   // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
@@ -604,8 +611,8 @@
     }
     return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
   });
-  // A small screen drops its cards by the same share as a wide one. So does a narrow touch screen
-  // (spec 2.3): there the resting strip is the target a finger taps to raise the hand, and the
+  // A small screen drops its cards by the same share as a wide one. So does a narrow touch screen:
+  // there the resting strip is the target a finger taps to raise the hand, and the
   // desktop drop would leave only 36 px of its smaller cards showing. A mouse raises the hand by
   // hovering it, so a narrow mouse window keeps the desktop drop.
   const baseHandDrop = $derived(
@@ -649,10 +656,10 @@
   // On a tablet (touch mode outside dock mode) the villain's row is drawn at its full height: a row of
   // cards fits between the villain's cards and the first player's row, where a finger lays them. A
   // window short of height scrolls. Elsewhere the villain's row takes rowPitch's default minimum.
-  const minVillain = $derived(touchMode.current && !dockMode ? VILLAIN_ROW_HEIGHT : undefined);
+  const minVillain = $derived(tablet ? VILLAIN_ROW_HEIGHT : undefined);
   // A finger is less precise than a mouse: on a tablet, drops snap to a coarser grid, which the rows
   // and the dots follow (grid.ts).
-  const snapGrid = $derived(touchMode.current && !dockMode ? TABLET_GRID : FINE_GRID);
+  const snapGrid = $derived(tablet ? TABLET_GRID : FINE_GRID);
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
@@ -664,7 +671,7 @@
   );
   const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow, minVillain));
 
-  // ---- Dock mode's compact, wrapped table (spec 3.7) ----
+  // ---- Dock mode's compact, wrapped table ----
 
   // In dock mode the table is drawn through one projection (dockLayout.ts): the desktop layout at
   // DOCK_SCALE, each row wrapped at the visible width, the rows stacked by their drawn height.
@@ -721,7 +728,7 @@
   /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
   const tableMap: TableMap = $derived(dockView ?? tableMapOf(rowMap));
 
-  // ---- A drop shown before it is let go (spec 3.8) ----
+  // ---- A drop shown before it is let go ----
 
   // During a drag in dock mode, the rows are drawn as if the dragged card lay where the drop would
   // put it (DragLayer feeds it): the units after it pushed along, the slot it left closed up. The
@@ -798,8 +805,8 @@
   const widthFit = $derived(
     fitZoom(fittedWidth, scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM, zoomMin),
   );
-  // In dock mode the fit brings the widest row's indent and three card slots past it into view
-  // (spec 3.7): the rows wrap at the width that shows and the table scrolls down.
+  // In dock mode the fit brings the widest row's indent and three card slots past it into view:
+  // the rows wrap at the width that shows and the table scrolls down.
   const dockFit = $derived(
     fitZoom(
       dockFitWidth(dockTableItems, dockShownRows, seatRows),
@@ -931,7 +938,7 @@
     raisedHandCard(
       baseHandCard,
       { w: scrollerWidth, h: windowHeight },
-      { small: small.current, tablet: touchMode.current && !dockMode },
+      { small: small.current, tablet },
     ),
   );
 
@@ -1292,7 +1299,7 @@
 
   // ---- The arrow mode's hint ----
 
-  // Arrows are drawn with a mouse: touch mode offers none (spec 3.1).
+  // Arrows are drawn with a mouse: touch mode offers none.
   const ARROW_HINT = 'Click the card to point at — Esc or a click on an empty spot to cancel.';
 
   // Above the card the arrow starts from, until the arrow is drawn or cancelled, whatever the
@@ -1541,7 +1548,7 @@
   }
 
   // A Reveal run from a deck's inspector: the inspector stays on the deck and waits for the card
-  // revealed there (spec 3.1), until the server refuses the action of that id or LANDING_MS passes.
+  // revealed there, until the server refuses the action of that id or LANDING_MS passes.
   let awaitingReveal = $state.raw<{ pile: string; action: number } | null>(null);
   let awaitingRevealTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -1804,9 +1811,8 @@
   const ownEntries = $derived(pickerEntries.filter((entry) => own.includes(entry.seat)));
 
   /**
-   * Whether the dock's hand button is the drop target of the drag, as DragLayer has it
-   * (dockHandTarget): for a hand card, which goes back there, and for what goes to a hand
-   * (goesToHand), every card of a group included.
+   * Whether the dock's hand button is the drop target of the drag, by the rule DragLayer follows
+   * (takesHandDrop).
    */
   const dockDropActive = $derived.by(() => {
     const held = interaction.dragging;
@@ -1817,14 +1823,8 @@
     if (!from) {
       return false;
     }
-    if (from.kind === 'hand') {
-      return true;
-    }
-    const grouped =
-      from.kind === 'card' && interaction.group.has(from.card)
-        ? groupUnits(interaction.group, cards)
-        : [];
-    return goesToHand(from, grouped.length > 1 ? grouped : [], view);
+    const units = from.kind === 'card' ? dragUnits(from.card, interaction.group, cards) : [];
+    return takesHandDrop(from, units, view);
   });
 
   // The sheets the dock opens: the selected deck's hand, the history. The corner's History button
@@ -2429,13 +2429,12 @@
   const NOT_EMPTY = '.card, .marker, [data-counter], .chip, button';
 
   // Touch mode: two fingers pinch-zoom the table and pan it, and a double tap on an empty spot
-  // toggles the fit zoom and the readable one (touchZoom.ts). The zoom they choose is remembered,
-  // as the buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the
-  // table and the page itself never pinch-zooms.
+  // toggles between 100 % and 150 % (touchZoom.ts). The zoom they choose is remembered, as the
+  // buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the table and
+  // the page itself never pinch-zooms.
   const fingerZoom = touchZoom({
     enabled: () => touchMode.current,
     zoom: () => zoom,
-    fit: () => defaultZoom,
     setZoom: (wanted, x, y) => {
       wheelTarget = null;
       void setZoom(wanted, x, y);
@@ -2512,6 +2511,7 @@
   class:touch={touchMode.current}
   class:dock-mode={dockMode}
   class:dock-rail={dockRail}
+  class:tablet
   style:--z={zoom}
   style:--you={playerColorVar(view.you.color)}
   style:--edge="{TABLE_EDGE}px"
@@ -2615,7 +2615,7 @@
     Undo floats there, left of the zoom control. On a tablet (historySheetMode), History shares
     Undo's bar, as in the dock: it opens the history sheet. On a small screen, Undo and the zoom
     control share one bar above the resting hand. In dock mode the dock has Undo and History, and
-    fingers zoom.
+    the zoom is fixed (setZoom).
   -->
   {#if !dockMode}
     <div
@@ -2737,7 +2737,7 @@
   {#if dockMode}
     <Dock
       handCount={dockHand.length}
-      minis={dockHand.slice(0, 4).map((card) => faceOf(card)?.images ?? [])}
+      minis={dockHand.map((card) => faceOf(card)?.images ?? [])}
       avatar={dockDeck?.heroImage ? [dockDeck.heroImage] : null}
       heroName={dockDeck?.heroName ?? ''}
       color={dockColor}
@@ -2972,9 +2972,15 @@
     grid-template-columns: minmax(0, 1fr) 44px;
   }
 
-  /* The bar's icons sit close to the window's edge, over the side panel, not the play area. */
+  /*
+    The bar's icons sit close to the window's edge, over the side panel, not the play area. The
+    table pads by the side safe areas itself (dock mode, below; elsewhere they are 0): the bar
+    adds none of its own.
+  */
   .top {
     --bar-gutter-end: 8px;
+    --bar-inset-left: 0px;
+    --bar-inset-right: 0px;
     grid-area: top;
   }
 
@@ -3363,11 +3369,14 @@
 
   /*
     Dock mode has no history column at any width, even on a large phone on its side: the table
-    takes the window and the bar's icons sit close to the window's edge.
+    takes the window and the bar's icons sit close to the window's edge. On a notched phone on its
+    side, the table and its bar keep clear of the right safe area (0 upright), the icons 8px from
+    its edge; the rail keeps clear of the left one (.app.dock-rail).
   */
   .app.dock-mode {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: 'table';
+    padding-right: env(safe-area-inset-right);
   }
 
   .app.dock-mode .top {

@@ -49,12 +49,6 @@ export interface RowMap {
   toTable(y: number): number;
 }
 
-/** Every height drawn where it is: the default of the components that draw the table, and of tests. */
-export const ALL_ROWS: RowMap = {
-  toDisplay: (y) => y,
-  toTable: (y) => y,
-};
-
 /**
  * Where points of the table are drawn, in drawn units of the surface, and
  * back: the one map every layer that draws the table or reads a point of it
@@ -89,7 +83,10 @@ export function tableMapOf(rows: RowMap): TableMap {
 }
 
 /** Every point drawn where it is: the default of the components that draw the table, and of tests. */
-export const ALL_TABLE: TableMap = tableMapOf(ALL_ROWS);
+export const ALL_TABLE: TableMap = tableMapOf({
+  toDisplay: (y) => y,
+  toTable: (y) => y,
+});
 
 /** The height of the top of a row of the table. */
 export function rowTop(row: number): number {

@@ -123,7 +123,7 @@
   } = $props();
 
   const dock = dockMode();
-  /** A phone on its side: in dock mode, the column lies beside the card (the @media rule below). */
+  /** A phone on its side: in dock mode, the column lies beside the card (layoutOf). */
   const short = new MediaQuery(SHORT_SCREEN_QUERY);
   /** A tablet on its side: a landscape card lies beside its column too (layoutOf). */
   const sideways = new MediaQuery(SIDEWAYS_QUERY);
@@ -189,14 +189,15 @@
   let measureWidth = $state<number | null>(null);
 
   /**
-   * The classes of the inspector's layout for a side: dock mode's on a phone; on a tablet, the column
-   * beside a portrait card; beside a landscape one on a tablet on its side ('land': the sheet fits
-   * its content), under it on a tablet upright. A stack follows its main card, so that a swipe never
-   * changes the layout; the main card shown follows the side, which may have just turned.
+   * The classes of the inspector's layout for a side: dock mode's on a phone, the column beside the
+   * card on a phone on its side; on a tablet, the column beside a portrait card; beside a landscape
+   * one on a tablet on its side ('land': the sheet fits its content), under it on a tablet upright.
+   * A stack follows its main card, so that a swipe never changes the layout; the main card shown
+   * follows the side, which may have just turned.
    */
   function layoutOf(of: Side): string[] {
     if (dock.current) {
-      return ['dock'];
+      return short.current ? ['dock', 'beside'] : ['dock'];
     }
     const main = stack.length > 1 ? stack[0] : undefined;
     const landscape = main === undefined || main.id === of.cardId ? of.landscape : main.landscape;
@@ -216,7 +217,7 @@
    * side, or a tablet beside a portrait card. Under the card, the sheet's height follows the column.
    */
   function columnBesideCard(of: Side): boolean {
-    return dock.current ? short.current : layoutOf(of).includes('beside');
+    return layoutOf(of).includes('beside');
   }
 
   /** What tells one face from another: a new array of the same images is the same face. */
@@ -584,7 +585,7 @@
 <!-- The main page of the entries: the first group as large buttons, the others as rows. -->
 {#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
   {#if parts.main.length > 0}
-    <div class="main-grid" {@attach buttonGrid()}>
+    <div class="main-grid" {@attach buttonGrid}>
       {#each parts.main as entry (entry.item.id)}
         <button
           type="button"
@@ -1202,11 +1203,9 @@
   }
 
   /*
-    Dock mode upright: the card on top, centred, as wide as the sheet allows
-    while it stays at most 42 % of the screen high; the note and the
-    entries full width under it. The
-    sheet pads them and scrolls the whole (Sheet.svelte), if it must. A face
-    is at most as wide as the sheet, which pads its edges by 12 px.
+    Dock mode upright: the card's width, as wide as the sheet allows while it stays at most 42 % of the
+    screen high (.inspector.dock.beside sizes it for a phone on its side). A face is at most as wide as
+    the sheet, which pads its edges by 12 px.
   */
   .inspector.dock {
     --portrait-w: min(100dvw - 24px, 42dvh * 5 / 7);
@@ -1214,26 +1213,14 @@
     padding: 0 calc(var(--gutter) - 12px) calc(var(--gutter) - 12px);
   }
 
-  .inspector.dock .top {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* The face centred in a full-width column, or the stack's carousel across it. */
+  /* The face centred in its column, or the stack's carousel across it, its cards at most 80 % wide. */
   .inspector.dock .visual {
-    width: 100%;
     align-items: center;
   }
 
   .inspector.dock .visual.stacked {
-    --slide-h: 42dvh;
     --slide-max: 80%;
-    width: 100%;
     align-items: stretch;
-  }
-
-  .inspector.dock .face {
-    width: min(100%, calc(42dvh * var(--face-ratio)));
   }
 
   .inspector.dock .side {
@@ -1241,68 +1228,46 @@
   }
 
   /*
-    A phone on its side: two columns, the card as high as the sheet, as wide as
-    its aspect makes it, on the left, and the rest on its right. Only the
-    column scrolls, once its content is higher than the room the sheet has.
-    --card-room: their height, the sheet's room less the gutter under them.
+    Dock mode upright: the card on top, centred, at most 42 % of the screen high; the note and the
+    entries full width under it. The sheet pads them and scrolls the whole (Sheet.svelte), if it
+    must.
   */
-  @media (max-height: 500px) {
-    .inspector.dock {
-      --card-room: calc(var(--sheet-room) - var(--gutter) + 12px);
-      --portrait-w: calc(var(--sheet-room) * 5 / 7);
-      --landscape-w: calc(var(--sheet-room) * 7 / 5);
-    }
+  .inspector.dock:not(.beside) .top {
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .inspector.dock .top {
-      flex-direction: row;
-      align-items: flex-start;
-    }
+  .inspector.dock:not(.beside) .visual {
+    width: 100%;
+  }
 
-    /* The column as wide as the face. */
-    .inspector.dock .visual {
-      width: auto;
-    }
+  .inspector.dock:not(.beside) .visual.stacked {
+    --slide-h: 42dvh;
+  }
 
-    /* The carousel as high as the sheet; as wide as a card with 44 px on each side for its neighbours. */
-    .inspector.dock .visual.stacked {
-      --slide-h: calc(var(--card-room) - var(--carousel-chrome));
-      width: calc(var(--slide-h) * 5 / 7 + 88px);
-    }
+  .inspector.dock:not(.beside) .visual > .face {
+    width: min(100%, calc(42dvh * var(--face-ratio)));
+  }
 
-    .inspector.dock .face {
-      width: auto;
-      height: var(--card-room);
-    }
-
-    /* Centred on the card, as beside a tablet's card (see .inspector.beside .side). */
-    .inspector.dock .side {
-      align-self: stretch;
-      max-height: var(--card-room);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
-    .inspector.dock .side > :first-child,
-    .inspector.dock .pages.held > .page > :first-child {
-      margin-top: auto;
-    }
-
-    .inspector.dock .side > :last-child,
-    .inspector.dock .pages.held > .page > :last-child {
-      margin-bottom: auto;
-    }
-
-    .inspector.dock .visual.stacked + .side {
-      padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));
-    }
+  /*
+    A phone on its side (layoutOf), laid out beside its card as a tablet's portrait card is (see
+    .inspector.beside): the card and its column as high as the sheet's room less the gutter under
+    them.
+  */
+  .inspector.dock.beside {
+    --card-room: calc(var(--sheet-room) - var(--gutter) + 12px);
+    --portrait-w: calc(var(--sheet-room) * 5 / 7);
+    --landscape-w: calc(var(--sheet-room) * 7 / 5);
   }
 
   /*
     A tablet, in a wide sheet (Sheet.svelte). --sheet-room: at most 460 px and 70 % of the screen,
-    the height of a portrait card. --land-room: three quarters of it, the width of a landscape one.
+    the height of a portrait card, and of the card beside its column. --land-room: three quarters
+    of it, the width of a landscape one.
   */
   .inspector.tablet {
     --sheet-room: min(460px, 70dvh);
+    --card-room: var(--sheet-room);
     --land-room: calc(var(--sheet-room) * 3 / 4);
     --portrait-w: calc(var(--sheet-room) * 5 / 7);
     --landscape-w: var(--land-room);
@@ -1310,17 +1275,18 @@
   }
 
   /*
-    Beside a portrait card: laid out as a phone on its side, the card as high as the room, its
-    column at most as high and the only part that scrolls. The carousel's cards as high as the room
+    Beside its column, on a phone on its side and beside a tablet's portrait card: two columns, the
+    card as high as --card-room, as wide as its aspect makes it, on the left, and the rest on its
+    right, at most as high and the only part that scrolls. The carousel's cards as high as the room
     less its chrome, 44 px on each side for the neighbours.
   */
   .inspector.beside .visual.stacked {
-    --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
+    --slide-h: calc(var(--card-room) - var(--carousel-chrome));
     width: calc(var(--slide-h) * 5 / 7 + 88px);
   }
 
   .inspector.beside .visual > .face {
-    height: var(--sheet-room);
+    height: var(--card-room);
   }
 
   /*
@@ -1331,7 +1297,7 @@
   */
   .inspector.beside .side {
     align-self: stretch;
-    max-height: var(--sheet-room);
+    max-height: var(--card-room);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -1365,7 +1331,7 @@
     --landscape-w: var(--sheet-room);
   }
 
-  .inspector.beside .visual > .face.land {
+  .inspector.tablet.beside .visual > .face.land {
     width: var(--sheet-room);
     height: auto;
   }

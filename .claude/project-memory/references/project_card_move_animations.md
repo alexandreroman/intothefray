@@ -113,4 +113,3 @@ table cards, no box-shadow animation; see [[project_card_paint_cost]]).
 `tilt`, `turnIn`, `reveal`, `shuffle`, `marker`, `glow`, `settle`), the existing
 timing constants and `LIFT_SCALE` / `LIFT_SHADE` for a card held up. Reduced
 motion keeps only the change glow and the static lift of a drag ghost.
-Spec 5.5 ("Every change of place animates") holds the rule.

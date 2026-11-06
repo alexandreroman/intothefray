@@ -16,6 +16,7 @@ import {
   sourceOf,
   stackOf,
   SteadyDrop,
+  takesHandDrop,
   tucks,
   unshifted,
   type DragSource,
@@ -754,6 +755,30 @@ describe('goesToHand', () => {
   });
 });
 
+describe('takesHandDrop', () => {
+  const view = makeView({
+    cards: [card('mine'), card('also'), card('theirs', { owner: 1 }), card('h1', { zone: 'hand' })],
+  });
+  const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+
+  it('takes a hand card back, which goesToHand alone does not', () => {
+    const handCard: DragSource = { kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' };
+    expect(takesHandDrop(handCard, [], view)).toBe(true);
+    expect(goesToHand(handCard, [], view)).toBe(false);
+  });
+
+  it('takes what goes to a hand, one card or a whole group', () => {
+    expect(takesHandDrop(tableCard('mine'), [], view)).toBe(true);
+    expect(takesHandDrop(tableCard('theirs'), [], view)).toBe(false);
+    expect(takesHandDrop(tableCard('mine'), ['mine', 'also'], view)).toBe(true);
+    expect(takesHandDrop(tableCard('mine'), ['mine', 'theirs'], view)).toBe(false);
+  });
+
+  it('takes nothing from a pile or the encounter deck', () => {
+    expect(takesHandDrop({ kind: 'encounter', pile: 'encd' }, [], view)).toBe(false);
+  });
+});
+
 describe('stackOf', () => {
   // A chain: r, then c1 tucked under it, c2 under c1, c3 under c2; a card in a pile is left out.
   const chain = [
@@ -1409,7 +1434,7 @@ describe('a deck takes any card of its owner', () => {
   });
 });
 
-describe('the drop the rows show in dock mode (spec 3.8)', () => {
+describe('the drop the rows show in dock mode', () => {
   // Player 1's row of four cards, drawn at 0.6 and wrapped at 400 (see dropAction in dock mode).
   const FRAME: DockItem = { id: 'frame', x: -10, y: 460, w: 262, h: 157 + 20, kind: 'frame' };
   const items: DockItem[] = [

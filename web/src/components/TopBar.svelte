@@ -8,8 +8,7 @@
   import { overflowTip } from '../lib/overflowTip';
   import { pointerBlur } from '../lib/releaseFocus';
   import { ScrollAutoHide, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
-  import { PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
-  import { TOUCH_MODE_QUERY } from '../table/touch';
+  import { PHONE_QUERY, SMALL_SCREEN_QUERY, TOUCH_MODE_QUERY } from '../lib/screen';
   import {
     canFullscreen,
     isFullscreen,
@@ -265,7 +264,9 @@
   /*
    * The bar follows the screen's content column: its first and last items line up with the
    * column's edges. Each screen sets the column's width and gutter on its root element, and
-   * may give the end its own gutter.
+   * may give the end its own gutter. On a notched phone on its side, either edge keeps clear of
+   * the side safe area as the content does, unless the screen pads by it already and sets
+   * --bar-inset-left and --bar-inset-right (the table).
    */
   .bar {
     display: flex;
@@ -274,7 +275,14 @@
     height: 100%;
     max-width: var(--content-max, none);
     margin: 0 auto;
-    padding-inline: var(--content-gutter, 24px) var(--bar-gutter-end, var(--content-gutter, 24px));
+    padding-inline: max(
+        var(--content-gutter, 24px),
+        var(--bar-inset-left, env(safe-area-inset-left))
+      )
+      max(
+        var(--bar-gutter-end, var(--content-gutter, 24px)),
+        var(--bar-inset-right, env(safe-area-inset-right))
+      );
   }
 
   /*
@@ -376,7 +384,7 @@
     display: block;
   }
 
-  /* A finger needs taller targets: touch mode (TOUCH_MODE_QUERY, table/touch). */
+  /* A finger needs taller targets: touch mode (TOUCH_MODE_QUERY, lib/screen). */
   @media (hover: none) and (pointer: coarse) {
     .actions {
       --segmented-height: 44px;

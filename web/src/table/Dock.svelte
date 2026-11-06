@@ -30,7 +30,7 @@
     onhistory,
   }: {
     handCount: number;
-    /** The image URLs of the first cards of the hand, as CardFace takes them; four at most show. */
+    /** The image URLs of the hand's cards, in order, as CardFace takes them; the first four show. */
     minis: string[][];
     /** The image URLs of the current deck's hero, or null before a hero is chosen. */
     avatar: string[] | null;

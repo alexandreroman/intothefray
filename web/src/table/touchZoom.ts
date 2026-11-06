@@ -1,6 +1,6 @@
-// Zoom with the fingers on the table scroller (spec 3.3): two fingers pinch-zoom around their midpoint and pan
-// with it, and a double tap on an empty spot toggles between the fit zoom and the readable zoom. The page itself
-// never pinch-zooms: iOS's gesturestart is prevented.
+// Zoom with the fingers on the table scroller: two fingers pinch-zoom around their midpoint and pan
+// with it, and a double tap on an empty spot toggles between the readable zoom (100 %) and the close-up one
+// (150 %). The page itself never pinch-zooms: iOS's gesturestart is prevented.
 
 import type { Attachment } from 'svelte/attachments';
 import { doubleTapZoom, HOLD_SLOP, isDoubleTap, pinchZoom, type Tap } from './gestures';
@@ -11,8 +11,6 @@ export type TouchZoomOptions = {
   enabled: () => boolean;
   /** The current zoom. */
   zoom: () => number;
-  /** The zoom that fits the table's width. */
-  fit: () => number;
   /** Zooms to `zoom` (clamped), keeping what lies under the screen point (x, y) in place. */
   setZoom: (zoom: number, x: number, y: number) => void;
   /** Whether a touch on `target` is on an empty spot of the table, where a double tap zooms. */
@@ -135,7 +133,7 @@ export function touchZoom(options: TouchZoomOptions): Attachment<HTMLElement> {
       // No click follows the double tap: it zoomed, and does nothing else.
       event.preventDefault();
       lastTap = null;
-      options.setZoom(doubleTapZoom(options.zoom(), options.fit()), next.x, next.y);
+      options.setZoom(doubleTapZoom(options.zoom()), next.x, next.y);
     }
 
     function onGestureStart(event: Event): void {

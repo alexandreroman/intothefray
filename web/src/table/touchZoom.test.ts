@@ -2,12 +2,11 @@ import { touchZoom, type TouchZoomOptions } from './touchZoom';
 
 type Point = { x: number; y: number };
 
-/** Options with a zoom and a fit zoom, a spy for setZoom, and every spot empty unless told otherwise. */
+/** Options with a zoom, a spy for setZoom, and every spot empty unless told otherwise. */
 function options(overrides: Partial<TouchZoomOptions> = {}): TouchZoomOptions {
   return {
     enabled: () => true,
     zoom: () => 0.5,
-    fit: () => 0.5,
     setZoom: vi.fn(),
     isEmptySpot: () => true,
     ...overrides,
@@ -152,13 +151,13 @@ describe('touchZoom pinch', () => {
 
 describe('touchZoom double tap', () => {
   it('toggles the zoom around the tapped point on an empty spot', () => {
-    const opts = options({ zoom: () => 0.53, fit: () => 0.53 });
+    const opts = options({ zoom: () => 1 });
     const { scroller } = attach(opts);
 
     tap(scroller, { x: 10, y: 10 }, 0);
     const second = tap(scroller, { x: 20, y: 18 }, 200);
 
-    expect(opts.setZoom).toHaveBeenCalledExactlyOnceWith(1, 20, 18);
+    expect(opts.setZoom).toHaveBeenCalledExactlyOnceWith(1.5, 20, 18);
     expect(second.defaultPrevented).toBe(true);
   });
 

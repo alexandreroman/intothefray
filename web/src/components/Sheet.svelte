@@ -11,7 +11,7 @@
   (the inspector's on a tablet) at most 760 px, and never nearer than 16 px to
   the window's sides; a wide one that fits its content is as wide as the
   content lays itself out, within the same 16 px. In dock
-  mode (a phone, spec 3.4) it spans the whole width and may take the whole
+  mode (a phone) it spans the whole width and may take the whole
   height but the top safe area; its content decides its height below that,
   and reads the room it has in --sheet-room.
   The swipe: a mouse or a pen drags the handle down; a finger drags the whole
@@ -369,18 +369,20 @@
     touchSwipe = null;
   }
 
-  // Not passive, as Svelte's touch handlers are: the sheet prevents the moves of the finger that
-  // drags it, and the end of that drag.
+  // The moves and the end of a touch are not passive, as Svelte's touch handlers are: the sheet
+  // prevents the moves of the finger that drags it, and the end of that drag. Its start and its
+  // cancel prevent nothing, and stay passive so as not to hold up the browser's scroll.
   onMount(() => {
     if (!panel) {
       return;
     }
-    const options = { passive: false };
+    const passive = { passive: true };
+    const blocking = { passive: false };
     const removers = [
-      on(panel, 'touchstart', onTouchStart, options),
-      on(panel, 'touchmove', onTouchMove, options),
-      on(panel, 'touchend', onTouchEnd, options),
-      on(panel, 'touchcancel', onTouchCancel, options),
+      on(panel, 'touchstart', onTouchStart, passive),
+      on(panel, 'touchmove', onTouchMove, blocking),
+      on(panel, 'touchend', onTouchEnd, blocking),
+      on(panel, 'touchcancel', onTouchCancel, passive),
     ];
     return () => {
       for (const remove of removers) {

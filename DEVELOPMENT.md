@@ -168,6 +168,20 @@ chrome --headless=new --disable-gpu --hide-scrollbars \
 `--window-size=180,180`. The pages load the Archivo font from Google
 Fonts, so render them online.
 
+`touch-icon.html` also gives the web app manifest's icons,
+`public/icon-192.png` and `public/icon-512.png`: the same 180×180 page,
+scaled by the device pixel ratio:
+
+```bash
+cd web
+for size in 192 512; do
+  chrome --headless=new --disable-gpu --hide-scrollbars \
+    --window-size=180,180 \
+    --force-device-scale-factor="$(echo "scale=6; $size/180" | bc)" \
+    --screenshot="public/icon-$size.png" "file://$PWD/images/touch-icon.html"
+done
+```
+
 `web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`,
 where crawlers look for a favicon by default; the pages declare
 `favicon.svg` only. After a change to `favicon.svg`, render it again with

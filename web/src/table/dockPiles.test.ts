@@ -11,9 +11,9 @@ describe('dockCardBox', () => {
   });
 
   it('keeps what else the box tells, a landscape card turned on its pile', () => {
-    expect(dockCardBox({ w: 112, h: 157, rotated: true }, 0.5)).toEqual({
-      w: 56,
-      h: 78.5,
+    expect(dockCardBox({ w: 112, h: 157, rotated: true })).toEqual({
+      w: 112 * 0.6,
+      h: 157 * 0.6,
       rotated: true,
     });
   });

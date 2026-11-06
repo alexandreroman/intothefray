@@ -1,4 +1,4 @@
-// Dock mode (spec 3.4), as the table's cards and piles read it: Table.svelte knows it from the
+// Dock mode, as the table's cards and piles read it: Table.svelte knows it from the
 // screen and hands it down through a context, so the components between them (Surface, the drag
 // and presence layers) need not pass it on.
 

@@ -25,7 +25,6 @@
   import type { CardView as TableCard, PackFace } from '../lib/types';
   import CardFace from './CardFace.svelte';
   import './countPill.css';
-  import { dockMode } from './dockMode';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
 
@@ -56,8 +55,6 @@
     ondiscard: (id: string) => void;
     onclose: () => void;
   } = $props();
-
-  const dock = dockMode();
 
   let carousel: HTMLElement | undefined = $state();
 
@@ -102,7 +99,7 @@
 </script>
 
 <!-- Not modal: a modal sheet would freeze the table, and no press on a card could become a drag. -->
-<Sheet label="Your hand" modal={false} dock={dock.current} {onclose}>
+<Sheet label="Your hand" modal={false} dock {onclose}>
   <div class="body" class:landscape>
     <header>
       {@render picker?.()}

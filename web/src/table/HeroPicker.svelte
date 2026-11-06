@@ -198,6 +198,11 @@
     color: var(--text-soft);
   }
 
+  /* A finger needs a 44 px target: the arrow, as tall as the bar buttons, is as wide too. */
+  :global(.app.touch) .step {
+    min-width: var(--bar-button);
+  }
+
   .heroes {
     --avatar: 34px;
     --spacing: 20px;
@@ -243,7 +248,7 @@
     far round on every side. The spacing between avatars leaves room for it without overlapping
     the next one's; dock mode (a phone) and a mouse keep the avatar alone.
   */
-  :global(.app.touch:not(.dock-mode)) .swatch::before {
+  :global(.app.tablet) .swatch::before {
     content: '';
     position: absolute;
     inset: calc((var(--avatar) - 44px) / 2);

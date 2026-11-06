@@ -23,7 +23,7 @@ import {
 } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { FINE_GRID, floorTo, snapTo, type SnapGrid } from './grid';
-import { TABLE_LIMIT } from './layout';
+import { isDiscardPile, TABLE_LIMIT } from './layout';
 import { ALL_TABLE, ROW_LABEL_ROOM, type TableMap } from './rows';
 import { areaOf, isScenarioDeckId, isSideDeckId, ownSeats, PILE_ENCOUNTER } from './seats';
 
@@ -84,8 +84,8 @@ export type TableRect = Extract<DropRect, { kind: 'table' }>;
 
 /**
  * Where a card dropped on the table goes, in table units, from the corner it
- * is drawn at: in dock mode, its insertion among the units of a row (spec 3.7,
- * dockLayout.ts insertAt), which knows the dragged card's size and what is
+ * is drawn at: in dock mode, its insertion among the units of a row
+ * (dockLayout.ts insertAt), which knows the dragged card's size and what is
  * dragged.
  */
 export type DropSpot = (corner: Point) => Point;
@@ -443,11 +443,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
         return { kind: 'deck', pile: pile.id };
       }
       // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
-      const open =
-        pile.kind === 'discard' ||
-        pile.kind === 'encounterDiscard' ||
-        pile.kind === 'sideDiscard' ||
-        pile.kind === 'scenarioDiscard';
+      const open = isDiscardPile(pile.kind);
       const card = taken ?? pile.cards?.at(-1);
       const inPile = card !== undefined && (pile.cards ?? []).includes(card);
       return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
@@ -494,6 +490,15 @@ export function goesToHand(drag: DragSource, units: readonly string[], view: Vie
     const unit = sourceOf({ kind: 'card', id }, view);
     return unit !== null && handAreaOf(unit, view) !== null;
   });
+}
+
+/**
+ * Whether the dock's hand button takes what is dragged: a hand card, which goes back to its hand
+ * and sends nothing, or what goes to a hand (goesToHand). `units` are the units of a group drag
+ * (selection.ts, dragUnits), empty when one card or stack is dragged.
+ */
+export function takesHandDrop(drag: DragSource, units: readonly string[], view: View): boolean {
+  return drag.kind === 'hand' || goesToHand(drag, units, view);
 }
 
 /** A pile a drag can go onto, and what the drop does there. */
@@ -660,7 +665,7 @@ export function insertIndex(middles: number[], x: number): number {
 /**
  * Where an element drawn at `rect` on the screen lies without its `translate`: the computed style,
  * "none" or "x [y]" in px of the surface, which `zoom` scales. In dock mode a drag draws the cards
- * and piles it pushes aside with a translate (spec 3.8): the drop reads them where they lie, so that
+ * and piles it pushes aside with a translate: the drop reads them where they lie, so that
  * the cards gliding out of the way never move what the pointer is over.
  */
 export function unshifted(rect: Rect, translate: string, zoom: number): Rect {
@@ -702,7 +707,7 @@ export function dropKey(target: DropRect | null, action: Action | null): string 
 }
 
 /**
- * How far past the edge of the drop the rows show (dock mode, spec 3.8) the pointer goes before
+ * How far past the edge of the drop the rows show (dock mode) the pointer goes before
  * they show the next one, in drawn units: a quarter of a slot.
  */
 export const DROP_MARGIN = 11;
@@ -711,7 +716,7 @@ export const DROP_MARGIN = 11;
 export const DROP_DWELL_MS = 80;
 
 /**
- * The drop the rows show during a drag in dock mode (spec 3.8), kept while the pointer wavers on
+ * The drop the rows show during a drag in dock mode, kept while the pointer wavers on
  * its edge (hysteresis): a finger shaking by a pixel on the boundary between two slots would
  * otherwise flip the cards making way back and forth. The next drop shows once the pointer is
  * `margin` past the last point the shown one lay under it, or has stayed off it DROP_DWELL_MS. A

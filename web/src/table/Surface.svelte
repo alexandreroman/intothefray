@@ -6,7 +6,7 @@
   it both ways and zooms it as a whole. In dock mode the frames show their
   owner's avatar rather than the name, the chips right after it, a name that
   shows kept within its frame's drawn width, and during a drag what it pushes
-  aside is drawn shifted from its place (spec 3.8).
+  aside is drawn shifted from its place.
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
@@ -120,7 +120,7 @@
     /** Whether the viewer can drag that card or pile: the pointer says so (grab). */
     canDrag?: (element: TableElement) => boolean;
     /**
-     * Dock mode only (spec 3.8): how far from its place each card, pile, frame and marker pushed
+     * Dock mode only: how far from its place each card, pile, frame and marker pushed
      * aside by a drag is drawn, in drawn units, by id (dockItems.ts); none unless given.
      */
     shifts?: ReadonlyMap<string, Point>;
@@ -139,7 +139,7 @@
     return shift === undefined ? undefined : `${shift.x}px ${shift.y}px`;
   }
 
-  // In dock mode (spec 3.7) the table hands every card, pile, frame and marker at the corner its
+  // In dock mode the table hands every card, pile, frame and marker at the corner its
   // projection draws it at (dockLayout.ts): the cards and piles draw themselves smaller from there
   // (CardView, PileView), the markers too (MarkerToken); the name lines and the chips stay at full
   // size. The dots lie further apart there (DOCK_DOT_PITCH), drawn.
@@ -451,7 +451,7 @@
     visibility: hidden;
   }
 
-  /* Pushed aside by a drag (spec 3.8), the frame and its chips glide with its piles. */
+  /* Pushed aside by a drag, the frame and its chips glide with its piles. */
   .ownerbox,
   .chips {
     transition: translate var(--shift-glide, 0s) ease-out;

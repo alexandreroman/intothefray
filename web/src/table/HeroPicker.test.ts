@@ -147,6 +147,12 @@ describe('HeroPicker', () => {
     expect(onpick).toHaveBeenLastCalledWith(0);
   });
 
+  it('gives the previous and next buttons a 44 px wide target on touch, as tall as the bar buttons', () => {
+    // jsdom applies no stylesheet: the rules themselves are checked.
+    expect(rule(':global(.app.touch) .step')).toMatch(/min-width: var\(--bar-button\);/);
+    expect(rule('.step')).not.toMatch(/min-width/);
+  });
+
   it('shows the hand size of each entry in its badge', () => {
     renderPicker([SPIDER_MAN, ANT_MAN, KIM], 0);
 

@@ -1,5 +1,5 @@
 // Where dock mode draws a table card's tokens, statuses and modifiers. The card is small there
-// (DOCK_SCALE) while its numbers keep 11 screen px (spec 3.6), so the desktop corner pile and edge
+// (DOCK_SCALE) while its numbers keep 11 screen px, so the desktop corner pile and edge
 // tabs would cover one another: each group gets a region of its own instead, inside the card.
 //
 // - The tokens stand in a column along the right edge, discs touching: bottom-up from the corner,
@@ -21,7 +21,7 @@ import type { CardView } from '../lib/types';
 import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
 
 /** The font size of every number, status initial and modifier: the readable floor on a phone. */
-export const NUMBER_PX = 11;
+const NUMBER_PX = 11;
 
 /** A token's diameter: its number with a rim around it. */
 const DISC = 16.5;

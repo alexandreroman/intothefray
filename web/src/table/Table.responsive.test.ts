@@ -781,7 +781,7 @@ describe('Table labels when zoomed out', () => {
   });
 
   it('hands the chips the frame width, so that a line too narrow far out goes on past the frame', () => {
-    // A mouse: dock mode's phone fit never zooms this far out (spec 3.7).
+    // A mouse: dock mode's phone fit never zooms this far out.
     mockScreen(PHONE_MOUSE);
     mockScrollerWidth(390);
     const { container } = render(Table, { session: fakeSession(), view: makeWideView() });
