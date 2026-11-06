@@ -2737,7 +2737,7 @@
   {#if dockMode}
     <Dock
       handCount={dockHand.length}
-      minis={dockHand.slice(0, 4).map((card) => faceOf(card)?.images ?? [])}
+      minis={dockHand.map((card) => faceOf(card)?.images ?? [])}
       avatar={dockDeck?.heroImage ? [dockDeck.heroImage] : null}
       heroName={dockDeck?.heroName ?? ''}
       color={dockColor}
