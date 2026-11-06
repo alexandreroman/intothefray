@@ -11,6 +11,8 @@ import {
   HAND_PADDING,
   HAND_REST_SCALE,
   restingFanPositions,
+  TOUCH_POP_SCALE,
+  touchPop,
 } from './layout';
 import { motion } from './motion.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
@@ -360,14 +362,48 @@ describe('Hand', () => {
     }
   });
 
-  it('pops the hovered card up, 1.3 times as large, keeping its tilt', () => {
+  it('pops the hovered card up, 1.3 times as large, keeping its tilt, but in touch mode', () => {
     const pop =
-      /\n {2}\.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
+      /\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
         handSource,
       )?.[1];
     expect(pop).toMatch(
       /transform: translateY\(calc\(var\(--ty\) - 31px\)\) rotate\(var\(--rot\)\) scale\(1\.3\);/,
     );
+    // A finger hovers nothing: no hovered card comes forward in touch mode either.
+    expect(handSource).toMatch(
+      /\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover,\n {2}\.hcard\.kept,\n {2}\.hcard\.locked \{\s*z-index: 60;/,
+    );
+  });
+
+  it('pops a card selected on a tablet less, to where touchPop puts it, tilted as on its slot', () => {
+    const pop =
+      /\n {2}:global\(\.app\.touch:not\(\.dock-mode\)\) \.hcard\.locked \.fan \{([^}]*)\}/.exec(
+        handSource,
+      )?.[1];
+    expect(pop).toMatch(
+      /transform: translate\(var\(--touch-pop-x\), var\(--touch-pop-y\)\) rotate\(var\(--rot\)\)\s+scale\(var\(--touch-pop-scale\)\);/,
+    );
+
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(860);
+    const card = { w: 286, h: 400 };
+    const six = Array.from({ length: 6 }, (_, i) => handCard(`s${i}`, '01003'));
+    render(Hand, { cards: six, faceOf, captionOf, seat: 0, cardSize: card, open: true });
+
+    expect(handList().style.getPropertyValue('--touch-pop-scale')).toBe(`${TOUCH_POP_SCALE}`);
+    // The fan's room: the hand's width less its side padding, from its middle.
+    const room = { left: -412, right: 412 };
+    const slots = filledFanPositions(6, 824, card);
+    handCards().forEach((item, i) => {
+      const pop = touchPop(slots[i]!, card, room);
+      expect(item.style.getPropertyValue('--touch-pop-x')).toBe(`${pop.x}px`);
+      expect(item.style.getPropertyValue('--touch-pop-y')).toBe(`${pop.y}px`);
+    });
+    // The end cards move in; the middle ones stay on their slots.
+    expect(
+      Number.parseFloat(handCards()[0]!.style.getPropertyValue('--touch-pop-x')),
+    ).toBeGreaterThan(0);
+    expect(handCards()[2]!.style.getPropertyValue('--touch-pop-x')).toBe('0px');
   });
 
   it('keeps a card popped under it, down to the bottom of the screen; the gap slot has no foot', () => {

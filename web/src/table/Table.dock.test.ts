@@ -280,10 +280,10 @@ describe('the hero selector in dock mode', () => {
       seated('Sam', 1, [{ area: 'p1', heroName: 'Ant-Man', heroImage: 'ant.png', handCount: 0 }]),
     );
     const table = view.table!;
-    table.cards = table.cards.map((c) => (c.id === 'mine' ? { ...c, y: 410 } : c));
-    table.piles = table.piles.map((p) => ({ ...p, y: 410 }));
-    table.cards.push(card('sams', { owner: 1, x: 300, y: 630 }));
-    table.piles.push(pile('deck:p1', { owner: 1, x: 600, y: 630 }));
+    table.cards = table.cards.map((c) => (c.id === 'mine' ? { ...c, y: 470 } : c));
+    table.piles = table.piles.map((p) => ({ ...p, y: 470 }));
+    table.cards.push(card('sams', { owner: 1, x: 300, y: 690 }));
+    table.piles.push(pile('deck:p1', { owner: 1, x: 600, y: 690 }));
     return view;
   }
 
@@ -954,16 +954,16 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     const view = makeView();
     view.table!.cards = [
       card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
-      card('id', { x: 300, y: 410 }),
-      ...PLAYED.map((id, i) => card(id, { x: 460 + 160 * i, y: 410 })),
+      card('id', { x: 300, y: 470 }),
+      ...PLAYED.map((id, i) => card(id, { x: 460 + 160 * i, y: 470 })),
       ...extra,
       ...view.table!.cards.filter((c) => c.zone === 'hand'),
     ];
     view.table!.piles = [
       pile('encounter', { kind: 'encounter', owner: -1, x: 0, y: 30 }),
       pile('encounterDiscard', { kind: 'encounterDiscard', owner: -1, x: 130, y: 30 }),
-      pile('deck:p0', { owner: 0, x: 0, y: 410 }),
-      pile('discard:p0', { kind: 'discard', owner: 0, x: 130, y: 410 }),
+      pile('deck:p0', { owner: 0, x: 0, y: 470 }),
+      pile('discard:p0', { kind: 'discard', owner: 0, x: 130, y: 470 }),
     ];
     // One hero: no first player token.
     view.table!.firstPlayer = undefined;
@@ -1119,7 +1119,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     // Tucked under c2, 100 right and 20 down: the stack, 212 wide (127.2 drawn), would end past
     // 468.5 on the first line. Both start the second at its left edge, the upgrade 60 right of c2 and
     // 12 down.
-    await renderTable(busyView([card('up', { x: 720, y: 430, parent: 'c2' })]));
+    await renderTable(busyView([card('up', { x: 720, y: 490, parent: 'c2' })]));
 
     expectAt('c2', -6, 422.6);
     expectAt('up', 54, 434.6);
@@ -1139,12 +1139,12 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
   it('shows the villain row and the chosen player row right under it in "Villain + player"', async () => {
     mockScreen(PHONE);
     saveViewMode('focus');
-    const view = busyView([card('theirs', { owner: 1, x: 300, y: 630 })]);
+    const view = busyView([card('theirs', { owner: 1, x: 300, y: 690 })]);
     const twoDecks = makeView({ twoDecks: true });
     view.players = twoDecks.players;
     view.you = twoDecks.you;
     view.table!.hands = twoDecks.table!.hands;
-    view.table!.piles.push(pile('deck:p1', { owner: 1, x: 0, y: 630 }));
+    view.table!.piles.push(pile('deck:p1', { owner: 1, x: 0, y: 690 }));
     await renderTable(view);
 
     expect(document.querySelector('.surface .card[data-id="theirs"]')).toBeNull();
@@ -1199,7 +1199,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await dragMiddleTo('c1', 160, 470);
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'move', card: 'c1', x: 1020, y: 410 },
+      { kind: 'move', card: 'c1', x: 1020, y: 470 },
       0,
     );
   });
@@ -1214,7 +1214,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await dragMiddleTo('c1', 30, 580);
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'move', card: 'c1', x: 1580, y: 410 },
+      { kind: 'move', card: 'c1', x: 1580, y: 470 },
       0,
     );
   });
@@ -1227,7 +1227,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     // Left of the first line's identity, under the frame: between the frame's right edge (252)
     // and the identity (300), 276 − 56 = 220.
     await dragMiddleTo('c2', 165, 410);
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'move', card: 'c2', x: 220, y: 410 }, 0);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'move', card: 'c2', x: 220, y: 470 }, 0);
 
     // c3 let go under the frame, left of c4's middle on the second line: between c2 and c4, where
     // it lies already, nothing sent.
@@ -1334,7 +1334,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await tick();
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'move', card: 'c7', x: 540, y: 410 },
+      { kind: 'move', card: 'c7', x: 540, y: 470 },
       0,
     );
     expectShift('c2', -364.8, 116.2);
@@ -1380,13 +1380,23 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(surface.style.backgroundSize).toBe('24px 24px');
   });
 
-  it('keeps the 10-unit dots on a touch tablet', async () => {
+  it("draws the dots of a touch tablet's 20-unit grid, a card's corner on it between four dots", async () => {
     mockScreen(TOUCH_TABLET);
     await renderTable(busyView());
 
-    expect(document.querySelector<HTMLElement>('.tablewrap .surface')!.style.backgroundSize).toBe(
-      '',
-    );
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    expect(surface.style.backgroundSize).toBe('20px 20px');
+    // Its lines lie 10 past every 20 down: the cells, a dot in the middle of each, start there.
+    expect(surface.style.backgroundPosition).toBe('0px 10px');
+  });
+
+  it('keeps the 10-unit dots with a mouse on the same screen', async () => {
+    mockScreen({ ...TOUCH_TABLET, touch: false });
+    await renderTable(busyView());
+
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    expect(surface.style.backgroundSize).toBe('10px 10px');
+    expect(surface.style.backgroundPosition).toBe('0px 0px');
   });
 });
 

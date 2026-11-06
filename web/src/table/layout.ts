@@ -394,6 +394,9 @@ const PREVIEW_BORDER = 1;
 /** The raised hand's cards are this share of the preview's card. */
 const RAISED_HAND_SHARE = 0.8;
 
+/** On a tablet, where the raised hand stays out of the table's way, they are this share of it. */
+const TABLET_RAISED_HAND_SHARE = 0.65;
+
 /**
  * The width of the portrait card the preview shows, in px, from the table
  * area's width (`area.w`) and the window's height (`area.h`), as .peek's CSS
@@ -408,16 +411,20 @@ export function previewCardWidth(area: { w: number; h: number }): number {
 
 /**
  * A card of the raised hand, in px: 80 % of the preview's card (see
- * previewCardWidth for `area`), never smaller than the base card the resting
- * hand shows, and on a small screen never so tall that the raised hand takes
- * more than half the window's height.
+ * previewCardWidth for `area`), 65 % on a tablet (a touch screen outside dock
+ * mode), never smaller than the base card the resting hand shows, and on a
+ * small screen never so tall that the raised hand takes more than half the
+ * window's height. The preview's card, kept 200 px shorter than the window,
+ * leaves room enough for a tablet's selected card to pop whole in the window
+ * (touchPop).
  */
 export function raisedHandCard(
   base: { w: number; h: number },
   area: { w: number; h: number },
-  opts: { small: boolean },
+  opts: { small: boolean; tablet: boolean },
 ): { w: number; h: number } {
-  let w = Math.round(RAISED_HAND_SHARE * previewCardWidth(area));
+  const share = opts.tablet ? TABLET_RAISED_HAND_SHARE : RAISED_HAND_SHARE;
+  let w = Math.round(share * previewCardWidth(area));
   if (opts.small) {
     w = Math.min(w, Math.floor(halfHeightCardWidth(area.h)));
   }
@@ -425,6 +432,46 @@ export function raisedHandCard(
     return base;
   }
   return { w, h: Math.round(w * HAND_CARD_RATIO) };
+}
+
+/**
+ * How much larger a hand card selected on a tablet pops: Hand.svelte draws it
+ * at this scale. A finger hovers nothing, so only that card pops; a mouse or a
+ * pen pops the hovered card at 1.3.
+ */
+export const TOUCH_POP_SCALE = 1.15;
+
+/**
+ * Where a hand card selected on a tablet pops to, in px: the translation
+ * Hand.svelte draws it at, popped at TOUCH_POP_SCALE and tilted as on `slot`,
+ * in place of its sag on the arc. Its lowest corner then rests on the hand's
+ * bottom padding line, as the bottom edge of the middle card at rest does,
+ * whatever its slot: the whole card shows above the window's bottom edge, the
+ * sagging end cards included. Across, it moves only as far as it takes to
+ * keep within `room`, the raised fan's (in px from the hand's middle, as
+ * `slot.x`): popped, a tilted end card reaches past it.
+ */
+export function touchPop(
+  slot: FanSlot,
+  card: { w: number; h: number },
+  room: { left: number; right: number },
+): { x: number; y: number } {
+  const angle = toRadians(slot.angle);
+  // The card turns and scales about a point this far below its bottom edge (FAN_PIVOT).
+  const pivotDrop = (FAN_PIVOT - 1) * card.h;
+  // Popped and tilted, its lowest corner, a bottom one, lies this far below that point.
+  const lowestCorner =
+    TOUCH_POP_SCALE * ((card.w / 2) * Math.abs(Math.sin(angle)) - pivotDrop * Math.cos(angle));
+  // Scaled about its pivot, the popped card is drawn as a larger card on the same slot would be.
+  const popped = { w: TOUCH_POP_SCALE * card.w, h: TOUCH_POP_SCALE * card.h };
+  const reach = fanExtent([slot], popped);
+  let x = 0;
+  if (reach.left < room.left) {
+    x = room.left - reach.left;
+  } else if (reach.right > room.right) {
+    x = room.right - reach.right;
+  }
+  return { x, y: -pivotDrop - lowestCorner };
 }
 
 /**
@@ -651,6 +698,9 @@ export function restingFanPositions(
 const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
 export const SLOT_GAP = 40;
 
+/** What the free slot of a row depends on: what lies on the table. */
+type SlotTable = Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>;
+
 /**
  * The free slot for a played card, from the hand or from a pile box: the
  * first spot of the player's row, from its deck on, where the card, as wide as
@@ -666,16 +716,49 @@ export const SLOT_GAP = 40;
  */
 export function freeSlot(
   played: CardView,
-  table: Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>,
+  table: SlotTable,
   seat: number,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const { cards, piles, firstPlayer, active } = table;
   // Played from the hand or explicitly from a pile, a card lands face up (applyPlay, internal/game/apply.go).
   const width = cardBox(sizeOf(played), { faceDown: false }).w;
-  const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
-  const start = deck?.x ?? 0;
-  const y = deck?.y ?? 0;
+  const deck = table.piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
+  return slotInRow(width, { x: deck?.x ?? 0, y: deck?.y ?? 0 }, table, sizeOf);
+}
+
+/**
+ * Where a card taken off its stack goes (the inspector's Detach): in the row of
+ * its stack, as a played card lands in a player's row (freeSlot), the spots
+ * tried starting from the stack's main card, `host`, so that the card lands
+ * past the stack, or in the first hole wide enough after it. The card lies as
+ * it shows, face down or not; it is not in its own way.
+ */
+export function detachSlot(
+  detached: CardView,
+  host: CardView,
+  table: SlotTable,
+  sizeOf: (card: CardView) => Size,
+): { x: number; y: number } {
+  const width = cardBox(sizeOf(detached), { faceDown: detached.faceDown }).w;
+  const others = { ...table, cards: table.cards.filter((card) => card.id !== detached.id) };
+  return slotInRow(width, { x: host.x, y: host.y }, others, sizeOf);
+}
+
+/**
+ * The first spot of the row starting at `start`, from its x on, where a card
+ * that wide keeps SLOT_GAP free on each side: the start itself, or SLOT_GAP
+ * past the right edge of a thing in the row, taken up to the grid, from left
+ * to right. Every table card and pile reaching into the row, as high as a
+ * portrait card, is in the way, and so is every marker the table has.
+ */
+function slotInRow(
+  width: number,
+  start: { x: number; y: number },
+  table: SlotTable,
+  sizeOf: (card: CardView) => Size,
+): { x: number; y: number } {
+  const { cards, piles, firstPlayer, active } = table;
+  const { y } = start;
   const markers = [
     ...(firstPlayer ? [{ id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX }] : []),
     ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
@@ -690,8 +773,8 @@ export function freeSlot(
     });
   const pastItems = items
     .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
-    .filter((x) => x >= start);
-  const candidates = [start, ...pastItems].sort((a, b) => a - b);
+    .filter((x) => x >= start.x);
+  const candidates = [start.x, ...pastItems].sort((a, b) => a - b);
   // The last spot lies past every item, so there is always a free one.
   return { x: candidates.find(isFree) ?? Math.max(...candidates), y };
 }

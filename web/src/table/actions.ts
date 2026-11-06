@@ -6,8 +6,8 @@
 import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
-import { stackOf } from './drag';
-import { freeSlot, isOutOfPlay } from './layout';
+import { mainCardOf, stackOf } from './drag';
+import { detachSlot, freeSlot, isOutOfPlay } from './layout';
 import {
   areaOf,
   asideId,
@@ -118,9 +118,9 @@ export const KEYS = {
   play: 'P',
 } as const;
 
-// Groups of a card in play, in menu order: Exhaust and Flip (or the stage
-// choice) turn the card, the token, status and modifier submenus mark it,
-// Discard and Move to take it away.
+// Groups of a card in play, in menu order: Exhaust (none on a villain or a
+// scheme) and Flip (or the stage choice) turn the card, the token, status and
+// modifier submenus mark it, Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -128,10 +128,12 @@ const GROUP_LEAVE = 2;
 const GROUP_POINT = 3;
 
 // Groups of a pile, in menu order: its main action (Draw, Reveal), the ways to
-// look at its cards, then the rarer actions (Discard X, Shuffle).
+// look at its cards, the rarer actions (Discard 1, Discard X), then a deck's
+// Shuffle on its own, apart from the entries that move cards.
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
 const GROUP_MORE = 2;
+const GROUP_SHUFFLE = 3;
 
 const SEPARATOR: ActionItem = { id: 'sep', label: '-', group: 0 };
 
@@ -220,12 +222,25 @@ export function counterName(kind: CounterKind, name: string): string {
   return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
 }
 
-/** What every builder needs to know: the table, the viewer's own seats and the language of card names. */
+/**
+ * What a touch screen's inspector offers beyond the menu and the keys: Detach,
+ * which a mouse or a pen does by dragging the card off its stack. The card
+ * sizes place the detached card in its row.
+ */
+export interface TouchOptions {
+  sizeOf: (card: CardView) => Size;
+}
+
+/**
+ * What every builder needs to know: the table, the viewer's own seats, the language of card names,
+ * and on a touch screen its options.
+ */
 interface Context {
   view: View;
   table: TableView;
   seats: number[];
   lang: Lang;
+  touch?: TouchOptions;
 }
 
 /**
@@ -234,13 +249,15 @@ interface Context {
  * actions are handActions'), empty piles and elements no longer on the
  * table get nothing, nor does a viewer of an unknown token. Spectators only
  * look: see spectatorActions. On a card of the selected group, Discard and
- * Move to take the whole group (spec 2).
+ * Move to take the whole group (spec 2). With `touch`, for a touch screen's
+ * inspector, a tucked card offers Detach too.
  */
 export function actionsFor(
   el: TableElement,
   view: View,
   lang: Lang,
   group?: ReadonlySet<string>,
+  touch?: TouchOptions,
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];
@@ -252,7 +269,7 @@ export function actionsFor(
   if (seats.length === 0) {
     return [];
   }
-  const context: Context = { view, table: view.table, seats, lang };
+  const context: Context = { view, table: view.table, seats, lang, touch };
 
   switch (el.kind) {
     case 'card': {
@@ -330,10 +347,11 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
   // or modifiers (the server refuses it, inPlayCard), and its owner draws it from there. It takes
   // tokens, which count on it where it lies.
   const revealed = card.onPile !== undefined;
+  const exhausts = !revealed && canExhaust(card);
   const items: ActionItem[] = [];
-  if (!revealed) {
+  if (exhausts) {
     items.push(exhaustItem(card));
-  } else if (drawsRevealed(card, context)) {
+  } else if (revealed && drawsRevealed(card, context)) {
     items.push(drawRevealedItem(card));
   }
   const stage = context.table.stages.find((s) => s.current === card.id);
@@ -345,6 +363,14 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
     items.push(stageItem());
   } else if (canFlip(card)) {
     items.push(flipItem(card));
+  }
+  // Without Exhaust, a card in play makes its first turning action the default: Flip or Change card….
+  const firstTurn = items.find((item) => item.group === GROUP_TURN);
+  if (!revealed && !exhausts && firstTurn) {
+    firstTurn.default = true;
+  }
+  if (context.touch && card.parent !== undefined && !revealed) {
+    items.push(detachItem(card, context.table, context.touch.sizeOf));
   }
   items.push(counterMenu(card, 'token'));
   if (!revealed) {
@@ -374,6 +400,27 @@ function drawRevealedItem(card: CardView): ActionItem {
     group: GROUP_TURN,
     run: () => ({ kind: 'draw', n: 1, pile: card.onPile }),
   };
+}
+
+/** The card types that never exhaust in the game: the villain and the schemes. */
+const UNEXHAUSTED_TYPES: readonly string[] = [
+  'villain',
+  'main_scheme',
+  'side_scheme',
+  'player_side_scheme',
+];
+
+/**
+ * Whether the card offers Exhaust (or Ready): a villain or a scheme does not, unless it is
+ * somehow exhausted already, so that it can always be readied. A card whose face the viewer
+ * does not know (face down, or not in the catalog yet) keeps it.
+ */
+function canExhaust(card: CardView): boolean {
+  if (card.exhausted || card.faceDown || !card.code) {
+    return true;
+  }
+  const face = knownCard(card.code)?.card.faces[card.face];
+  return !face || !UNEXHAUSTED_TYPES.includes(face.type);
 }
 
 function exhaustItem(card: CardView): ActionItem {
@@ -448,6 +495,25 @@ function flipItem(card: CardView): ActionItem {
     group: GROUP_TURN,
     // The server picks the face the card ends on (resolveFlip).
     run: () => ({ kind: 'flip', card: card.id }),
+  };
+}
+
+/**
+ * Detach takes a tucked card off its stack, alone, which closes up (applyDetach, internal/game): on
+ * a touch screen, where the card lies mostly covered, it stands for the drag off the stack. The
+ * card goes to the first free spot of its stack's row past the stack (detachSlot). No key: a
+ * keyboard comes with a mouse, which drags the card.
+ */
+function detachItem(card: CardView, table: TableView, sizeOf: TouchOptions['sizeOf']): ActionItem {
+  return {
+    id: 'detach',
+    label: 'Detach',
+    group: GROUP_TURN,
+    run: () => {
+      const host = mainCardOf(card, table.cards);
+      const { x, y } = detachSlot(card, host, table, sizeOf);
+      return { kind: 'detach', card: card.id, x, y };
+    },
   };
 }
 
@@ -848,13 +914,13 @@ function hasPile(table: TableView, id: string): boolean {
 
 // ---- Hand cards ----
 
-// Groups of a hand card, in inspector order: Play, then Discard.
+// Groups of a hand card, in the order of the dock's hand sheet: Play, then Discard.
 const GROUP_PLAY = 0;
 const GROUP_DISCARD = 1;
 
 /**
  * The actions on a card of one of the viewer's own hands, as its keys run
- * them (keys.ts) and the touch inspector lists them: Play, to the first free
+ * them (keys.ts) and the dock's hand sheet lists them: Play, to the first free
  * slot of its deck's row (freeSlot), and Discard, disabled for a side deck's
  * card without a discard pile. Nothing for any other card, nor for a
  * spectator. The desktop has no hand card menu: actionsFor gives them none.
@@ -900,7 +966,8 @@ export function handActions(
 
 /**
  * Every pile's actions have the same order, a separator between the groups:
- * the main action, the ways to look at the cards, then the rarer actions.
+ * the main action, the ways to look at the cards, the rarer actions, then a
+ * deck's Shuffle.
  */
 function pileActions(pile: PileView, context: Context): ActionItem[] | { text: string } {
   // Shared piles have no owner (-1).
@@ -1111,7 +1178,7 @@ function shuffleItem(pile: PileView): ActionItem {
     id: 'shuffle',
     label: 'Shuffle',
     key: KEYS.shuffle,
-    group: GROUP_MORE,
+    group: GROUP_SHUFFLE,
     run: () => ({ kind: 'shuffle', pile: pile.id }),
   };
 }

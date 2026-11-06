@@ -306,6 +306,13 @@
     stroke-width: 2;
   }
 
+  /* A tablet: a finger needs 44 px targets; the collapsed strip is that wide, its 1 px border included
+     (Table.svelte). */
+  :global(.app.touch:not(.dock-mode)) :is(.toggle, .strip-undo button) {
+    width: 44px;
+    height: 44px;
+  }
+
   .log {
     /* A hovered line, and the full text of a truncated one, which must look the same. */
     --line-hover: #49c6ff14;
@@ -332,8 +339,10 @@
     cursor: pointer;
   }
 
-  .e:hover {
-    background: var(--line-hover);
+  @media (hover: hover) {
+    .e:hover {
+      background: var(--line-hover);
+    }
   }
 
   .e.new {
@@ -412,6 +421,11 @@
     padding: 0 14px;
     background: var(--panel);
     font-size: 13px;
+  }
+
+  /* A tablet: a finger needs a 44 px target. */
+  :global(.app.touch:not(.dock-mode)) .undo button {
+    height: 44px;
   }
 
   .undo :global(svg) {

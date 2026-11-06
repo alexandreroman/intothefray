@@ -555,7 +555,7 @@ func TestSetupPlayers(t *testing.T) {
 
 	for seat := range 2 {
 		area := PlayerArea(seat)
-		rowY := 410 + 220*seat
+		rowY := 470 + 220*seat
 		if hand := table.Hands[area]; hand == nil || len(hand) != 0 {
 			t.Errorf("%s hand = %v, want empty and non-nil", area, hand)
 		}
@@ -603,7 +603,7 @@ func TestSetupPlayers(t *testing.T) {
 		t.Fatalf("identity cards = %d, want 2", len(identities))
 	}
 	for _, identity := range identities {
-		rowY := 410 + 220*identity.Owner
+		rowY := 470 + 220*identity.Owner
 		if identity.Code != "01001" || identity.Face != 1 || identity.Zone != ZoneTable ||
 			identity.X != 300 || identity.Y != rowY ||
 			identity.Home != "deck:"+string(PlayerArea(identity.Owner)) {
@@ -613,7 +613,7 @@ func TestSetupPlayers(t *testing.T) {
 
 	// The first player token lies right of the identity of the first player,
 	// seat 0, centred on its height to the nearest grid line.
-	if want := (Point{X: 460, Y: 450}); table.FirstPlayer == nil || *table.FirstPlayer != want {
+	if want := (Point{X: 460, Y: 510}); table.FirstPlayer == nil || *table.FirstPlayer != want {
 		t.Errorf("first player = %v, want %+v", table.FirstPlayer, want)
 	}
 }
@@ -955,8 +955,9 @@ func faceHeight(t *testing.T, cat *pack.Catalog, c *Card) int {
 
 func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
 	const pileHeight = 157
-	// About 1.2 portrait card heights (157 each), the first player's row on the 10-unit grid.
-	const wantGap = 193
+	// About 1.6 portrait card heights (157 each), room for a row of cards, the first player's row on
+	// the 10-unit grid.
+	const wantGap = 253
 
 	cat := newCatalog(t)
 	for _, players := range []int{1, 2} {

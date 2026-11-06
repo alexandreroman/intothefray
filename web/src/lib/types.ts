@@ -335,6 +335,7 @@ export function hostName(view: View): string {
 export type ActionKind =
   | 'move'
   | 'attach'
+  | 'detach' // a tucked card taken off its stack, alone, to `x`, `y`
   | 'toHand'
   | 'toDeck'
   | 'discard'

@@ -18,6 +18,9 @@ function holds(feature: string, on: TestScreen): boolean {
       return on.width <= Number.parseFloat(value);
     case 'max-height':
       return on.height <= Number.parseFloat(value);
+    case 'orientation':
+      // As CSS has it: a square screen is portrait.
+      return value === (on.width > on.height ? 'landscape' : 'portrait');
     case 'hover':
       return value === (on.touch ? 'none' : 'hover');
     case 'pointer':

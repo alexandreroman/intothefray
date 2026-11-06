@@ -7,7 +7,10 @@
   gives the focus back to its opener, closed by the pointer, to the page.
   A sheet that is not modal (the hand's) leaves the table live, so that a
   press inside it can start a drag onto the table, and the page unlocked.
-  Above 600 px wide, the panel is at most 480 px wide and centred. In dock
+  Above 600 px wide, the panel is at most 480 px wide and centred; a wide one
+  (the inspector's on a tablet) at most 760 px, and never nearer than 16 px to
+  the window's sides; a wide one that fits its content is as wide as the
+  content lays itself out, within the same 16 px. In dock
   mode (a phone, spec 3.4) it spans the whole width and may take the whole
   height but the top safe area; its content decides its height below that,
   and reads the room it has in --sheet-room.
@@ -50,6 +53,8 @@
     maxHeight = '92%',
     modal = true,
     dock = false,
+    wide = false,
+    fit = false,
     children,
   }: {
     /** The sheet's accessible name. */
@@ -61,6 +66,10 @@
     modal?: boolean;
     /** A phone's sheet (dock mode): the whole screen is its room; maxHeight does not apply. */
     dock?: boolean;
+    /** Outside dock mode, a panel of up to 760 px wide rather than 480 px, for content laid out side by side. */
+    wide?: boolean;
+    /** A wide panel as wide as its content, up to the window less 16 px a side, rather than 760 px at most. */
+    fit?: boolean;
     children: Snippet;
   } = $props();
 
@@ -400,6 +409,8 @@
 <div
   class="sheet"
   class:dock
+  class:wide={wide && !dock}
+  class:fit={wide && fit && !dock}
   class:dragging
   role="dialog"
   aria-modal={modal}
@@ -461,6 +472,16 @@
     .sheet {
       max-width: 480px;
       margin-inline: auto;
+    }
+
+    .sheet.wide {
+      max-width: min(760px, calc(100% - 32px));
+    }
+
+    /* Centred by its auto margins, as the content's own width. */
+    .sheet.wide.fit {
+      width: fit-content;
+      max-width: calc(100% - 32px);
     }
   }
 

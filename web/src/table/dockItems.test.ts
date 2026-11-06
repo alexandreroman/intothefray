@@ -2,23 +2,23 @@ import { dockItems, dockRows, frameItemId, markerItemId, type DockTable } from '
 import { card, pile } from './fixtures.testing';
 import { ownerFrames } from './layout';
 
-// Player 1's row (table top 380): the deck and discard in their frame, the identity at 300, the
+// Player 1's row (table top 440): the deck and discard in their frame, the identity at 300, the
 // first player token 40 past it, a played card 40 past the token with an upgrade tucked under it.
 function table(extra: Partial<DockTable> = {}): DockTable {
   const piles = [
-    pile('deck:p0', { owner: 0, x: 0, y: 410 }),
-    pile('discard:p0', { kind: 'discard', owner: 0, x: 130, y: 410 }),
+    pile('deck:p0', { owner: 0, x: 0, y: 470 }),
+    pile('discard:p0', { kind: 'discard', owner: 0, x: 130, y: 470 }),
   ];
   return {
     cards: [
-      card('identity', { x: 300, y: 410 }),
-      card('ally', { x: 576, y: 410 }),
-      card('upgrade', { x: 586, y: 430, parent: 'ally' }),
-      card('revealed', { x: 0, y: 410, onPile: 'deck:p0' }),
+      card('identity', { x: 300, y: 470 }),
+      card('ally', { x: 576, y: 470 }),
+      card('upgrade', { x: 586, y: 490, parent: 'ally' }),
+      card('revealed', { x: 0, y: 470, onPile: 'deck:p0' }),
     ],
     piles,
     frames: ownerFrames(piles),
-    markers: { firstPlayer: { x: 452, y: 450 } },
+    markers: { firstPlayer: { x: 452, y: 510 } },
     sizeOf: () => 'std',
     ...extra,
   };
@@ -32,7 +32,7 @@ describe('dockItems', () => {
     expect(byId.get('identity')).toEqual({
       id: 'identity',
       x: 300,
-      y: 410,
+      y: 470,
       w: 112,
       h: 157,
       kind: 'card',
@@ -93,9 +93,9 @@ describe('dockRows', () => {
       table({
         cards: [
           card('villain', { x: 300, y: 30 }),
-          card('far', { x: 300, y: 1300 }),
+          card('far', { x: 300, y: 1360 }),
           // Tucked far down, but drawn with its main card in the villain's row.
-          card('tucked', { x: 310, y: 900, parent: 'villain' }),
+          card('tucked', { x: 310, y: 960, parent: 'villain' }),
         ],
       }),
     );
@@ -104,7 +104,7 @@ describe('dockRows', () => {
   });
 
   it('folds a row of no seat into the last seat row above it, and shows every seat row', () => {
-    const items = dockItems(table({ cards: [card('fury', { x: 300, y: 700 })] }));
+    const items = dockItems(table({ cards: [card('fury', { x: 300, y: 760 })] }));
 
     // A one-player game: Fury, in row 2, shows in player 1's row.
     expect(dockRows(items, undefined, [1])).toEqual([0, 1]);

@@ -102,8 +102,10 @@
     cursor: grab;
   }
 
-  .marker.movable:hover {
-    transform: scale(1.06);
+  @media (hover: hover) {
+    .marker.movable:hover {
+      transform: scale(1.06);
+    }
   }
 
   .marker.lifted {

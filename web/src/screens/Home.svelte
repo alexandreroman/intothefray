@@ -491,15 +491,21 @@
     color: var(--text-soft);
   }
 
-  .banner .open:hover {
-    background: none;
-    color: var(--text);
-  }
-
-  .banner .open:hover .title,
   .banner .open:focus-visible .title {
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .banner .open:hover {
+      background: none;
+      color: var(--text);
+    }
+
+    .banner .open:hover .title {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
   }
 
   .banner .label {

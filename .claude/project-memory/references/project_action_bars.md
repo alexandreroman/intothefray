@@ -31,10 +31,22 @@ type: project
   submenu, then "Draw an arrow" for a card in play. Each entry that has
   a key shows it (the modifier entries have none); a refused one is
   greyed with its reason.
+- Detach is a touch inspector entry only, for a tucked card in play: in
+  the first group right after the default and Flip (a large button), no
+  key; a mouse or a pen drags the card off its stack instead. The
+  inspector passes `TouchOptions` (`sizeOf`) to `actionsFor`, which adds
+  it; the mouse menu and the keys call `actionsFor` without them. Never
+  for spectators. See [[project_stack_moves]].
+- A villain, a main scheme, a side scheme and a player side scheme never
+  offer Exhaust (menu, E key, inspector): their default is Flip when they
+  have one, else "Change card…". One already exhausted still offers
+  Ready. A card whose face is unknown (face down, not in the catalog)
+  keeps Exhaust (`canExhaust` in actions.ts).
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W), Reveal (R) │ Top X
-  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U);
-  encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X,
-  Shuffle; discard pile Search │ Shuffle into deck. Dragging the top of
+  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X) │ Shuffle (U);
+  encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X │
+  Shuffle; discard pile Search │ Shuffle into deck. Shuffle is always
+  its own last group (`GROUP_SHUFFLE`). Dragging the top of
   an own deck (or the encounter deck) onto its discard pile discards it,
   as Discard 1 does. A deck's top card dropped back on its own deck
   cancels the drag: the deck is outlined as a target and nothing is sent.
@@ -61,8 +73,9 @@ type: project
   and keeps the group selection.
 - Hand cards are played by dragging, P, and X or Backspace to discard. On
   touch, a tap on the lowered hand raises and pins it; a tap on a card then
-  opens its inspector (Play, Discard, from `handActions`); a tap on the
-  table, Esc, a downward swipe, a drop on the table or a dialog lowers it.
+  lifts it to read it (a hand card plays and discards by drag and drop);
+  a tap on the table, Esc, a downward swipe, a drop on the
+  table or a dialog lowers it.
   In dock mode the hand is a carousel sheet (see
   [[project_touch_phone_table]]).
 - Tokens come from the submenus, the keys and the token pill.

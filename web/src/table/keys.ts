@@ -244,7 +244,7 @@ function removeOne(adds: CounterAction, table: KeyTable): boolean {
 /**
  * P plays a card of the hand to the first free slot of its deck's row, X or
  * Backspace discards it, as they discard a card in play: the items of
- * handActions, which the touch inspector lists too.
+ * handActions, which the dock's hand sheet lists too.
  */
 function handKey(key: string, id: string, table: KeyTable): boolean {
   const item = findItem(handActions(id, table.view, table.sizeOf), key, false);

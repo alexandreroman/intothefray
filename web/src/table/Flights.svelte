@@ -12,8 +12,8 @@
   mode (spec 3.6) a copy flies at the size the table draws its cards and
   piles at, and what it shows is zoomed alike; a card discarded or played
   from the viewer's hand rises and fades out where it was seen: drawn as the
-  hand sheet or the inspector draws it, or, from the dock's hand button, as
-  the table does.
+  hand sheet draws it (a landscape card turned a quarter), at the table's
+  zoom from the dock's hand button.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
@@ -117,7 +117,7 @@
         {/if}
       {/if}
     {:else if flight.kind === 'rise'}
-      {@render (flight.portrait ? portrait : placed)(flight.card)}
+      {@render portrait(flight.card)}
     {:else if flight.kind === 'draw'}
       {@render portrait(flight.card)}
       {#if !flight.faceUp}

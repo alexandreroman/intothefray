@@ -69,6 +69,7 @@
   import { dockCardBox } from './dockPiles';
   import { backCaption, isHidden, pileBack } from './face';
   import { HOLD_MS } from './gestures';
+  import { FINE_GRID, type SnapGrid } from './grid';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
   import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
@@ -86,6 +87,7 @@
     sizeOf,
     tableMap = ALL_TABLE,
     drawnMap,
+    grid = FINE_GRID,
     selected,
     act,
     onhand,
@@ -106,6 +108,8 @@
      * where it shows the card. The tableMap unless given.
      */
     drawnMap?: TableMap;
+    /** The grid a drop on the table snaps to (grid.ts): the fine one unless given. */
+    grid?: SnapGrid;
     /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
     selected: number | null;
     /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
@@ -830,7 +834,7 @@
     // A group tucks under nothing: over a card, it moves there as over the table.
     const onto: DropRect =
       units.length > 0 && target.kind === 'card' ? { kind: 'table', rect: target.rect } : target;
-    const single = dropAction(from, onto, spot, dealTo, tableMap, dockSpotOf(from));
+    const single = dropAction(from, onto, spot, dealTo, tableMap, dockSpotOf(from), grid);
     return { target, action: grouped(from, single) };
   }
 

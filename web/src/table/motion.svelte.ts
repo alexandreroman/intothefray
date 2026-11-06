@@ -226,14 +226,13 @@ interface ArriveFlight extends UnseenHandFlight {
 
 /**
  * A copy of a card discarded or played from the viewer's hand in dock mode, rising and fading out
- * where the viewer saw it (riseOrigin): its pile shows it at once, or the table at its spot.
+ * where the viewer saw it (riseOrigin): its pile shows it at once, or the table at its spot. Its
+ * face shows as the hand sheet and the dock draw it, a landscape card turned a quarter.
  */
 interface RiseFlight extends FlightBase {
   kind: 'rise';
   /** The card as it was in the hand. */
   card: CardView;
-  /** Its face shows as the hand sheet draws it, a landscape card turned a quarter; else as the inspector does. */
-  portrait: boolean;
   /** It starts on the dock's hand button as a card the table draws: what it shows is zoomed alike. */
   zoomed: boolean;
 }
@@ -253,8 +252,6 @@ const ownGhost = (id: string) => `${OWN_GHOST}[data-id="${CSS.escape(id)}"]`;
 const pilePlace = (id: string) => `${tablePile(id)}, .surface .chip[data-pile="${CSS.escape(id)}"]`;
 /** The chip that stands for an out-of-play pile, on its owner's frame (Surface.svelte). */
 const PILE_CHIP = '.surface .chip[data-pile]';
-/** The card the inspector shows (CardSheet.svelte), not the hidden copy measuring a new side. */
-const INSPECTOR_FACE = '.inspector:not(.measure) .face';
 /** The hand button of the dock (Dock.svelte), where the hand opens in dock mode. */
 const DOCK_HAND_BUTTON = '.dock .handbtn';
 const tableMarker = (name: MarkerName) => `.surface .marker[data-marker="${name}"]`;
@@ -410,8 +407,8 @@ function tableCardOn(element: HTMLElement, zoom: number, dock: boolean): Measure
 }
 
 /**
- * Whether a card leaves the viewer's hand in dock mode by an action of the hand sheet or the
- * inspector, not a drop: discarded, or played onto the table. It rises where the viewer saw it
+ * Whether a card leaves the viewer's hand in dock mode by an action, as the hand sheet's, not a
+ * drop: discarded, or played onto the table. It rises where the viewer saw it
  * (RiseFlight). A drop flies or slides from its ghost, which the viewer saw let go, as anywhere
  * else.
  */
@@ -439,27 +436,22 @@ function risesAway(
 
 /**
  * Where a card discarded or played from the viewer's hand in dock mode rises from: its card in the
- * hand sheet's carousel; else the inspector's card, which shows it (the viewer's hand card leaves
- * from nowhere else but a drop); else, with neither open, a card the table draws on the dock's
- * hand button. The inspector closes as Discard runs, and is still there while it slides away: the
- * copy rises from where the card was.
+ * hand sheet's carousel, whose Play and Discard send it; else, with the sheet shut (the card sent
+ * another way, as by an undo), a card the table draws on the dock's hand button. The sheet is still
+ * there as it slides away: the copy rises from where the card was.
  */
 function riseOrigin(
   root: HTMLElement,
   id: string,
   zoom: number,
-): Pick<RiseFlight, 'from' | 'portrait' | 'zoomed'> | null {
+): Pick<RiseFlight, 'from' | 'zoomed'> | null {
   const inSheet = root.querySelector<HTMLElement>(handCard(id));
   if (inSheet) {
-    return { from: measure(inSheet, zoom), portrait: true, zoomed: false };
-  }
-  const inInspector = root.querySelector<HTMLElement>(INSPECTOR_FACE);
-  if (inInspector) {
-    return { from: measure(inInspector, zoom), portrait: false, zoomed: false };
+    return { from: measure(inSheet, zoom), zoomed: false };
   }
   const button = root.querySelector<HTMLElement>(DOCK_HAND_BUTTON);
   if (button) {
-    return { from: tableCardOn(button, zoom, true), portrait: true, zoomed: true };
+    return { from: tableCardOn(button, zoom, true), zoomed: true };
   }
   return null;
 }
@@ -946,7 +938,7 @@ class TableMotion {
     }
     // A card discarded or played from the viewer's hand in dock mode rises where the viewer saw it (riseOrigin).
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const rising = new Map<string, Pick<RiseFlight, 'from' | 'portrait' | 'zoomed'>>();
+    const rising = new Map<string, Pick<RiseFlight, 'from' | 'zoomed'>>();
     for (const anim of shown) {
       if (!root || !risesAway(root, anim, tables)) {
         continue;

@@ -2263,15 +2263,15 @@ describe('dockMotions', () => {
   });
 
   it('slides a marker drawn elsewhere with the card it lies by', () => {
-    const before = view({ firstPlayer: { x: 460, y: 450 } });
-    const after = view({ firstPlayer: { x: 460, y: 450 } });
+    const before = view({ firstPlayer: { x: 460, y: 510 } });
+    const after = view({ firstPlayer: { x: 460, y: 510 } });
     const anims = dockMotions([], before.table!, after.table!, {
       before: drawnAt({ 'marker:firstPlayer': { x: 276, y: 52 } }),
       after: drawnAt({ 'marker:firstPlayer': { x: 300, y: 52 } }),
     });
 
     expect(anims).toEqual([
-      { kind: 'marker', name: 'firstPlayer', from: { x: 460, y: 450 }, to: { x: 460, y: 450 } },
+      { kind: 'marker', name: 'firstPlayer', from: { x: 460, y: 510 }, to: { x: 460, y: 510 } },
     ]);
   });
 });

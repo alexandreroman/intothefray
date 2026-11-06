@@ -12,6 +12,7 @@
     | 'check'
     | 'arrow-right'
     | 'undo'
+    | 'history'
     | 'ready-all'
     | 'trophy'
     | 'hourglass'
@@ -77,6 +78,10 @@
     <!-- A hooked arrow going back. -->
     <path d="M9 14L4 9l5-5" />
     <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+  {:else if name === 'history'}
+    <!-- A clock face. -->
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.5V12l3 2" />
   {:else if name === 'ready-all'}
     <!--
       Exhaust the other way round: the card tilted to the right as exhausted (faint, dashed) turns

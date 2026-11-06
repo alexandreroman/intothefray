@@ -496,9 +496,11 @@
       text-decoration-color 0.12s;
   }
 
-  .about-link:hover {
-    color: var(--text);
-    text-decoration-color: currentColor;
+  @media (hover: hover) {
+    .about-link:hover {
+      color: var(--text);
+      text-decoration-color: currentColor;
+    }
   }
 
   .about-link:focus-visible {

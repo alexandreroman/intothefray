@@ -85,28 +85,29 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01097': [{ name: 'The Break-In!', type: 'main_scheme', size: 'land' }],
   '01001': [{ name: 'Spider-Man', type: 'hero' }],
   '01010': [{ name: 'Giant form', type: 'hero', size: 'dstd' }],
+  '01147': [{ name: 'Hydra Mercenary', type: 'minion' }],
 };
 
 const infoOf = infoFrom(FACES);
 
 /**
  * Rhino with two players; the viewer is Sam, seated second (p1). As the setup
- * lays them out: the villain's row at the top, Alex's row from 380, then
- * Sam's from 600, each starting with its deck and discard pile.
+ * lays them out: the villain's row at the top, Alex's row from 440, then
+ * Sam's from 660, each starting with its deck and discard pile.
  */
 function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View {
   const cards = extra.cards ?? [
     card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
     card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
-    card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
-    card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
+    card('a', { code: '01001', owner: 0, x: 300, y: 470 }),
+    card('b', { code: '01001', owner: 1, x: 300, y: 690 }),
     card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
   ];
   const piles = extra.piles ?? [
     pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-    pile('d0', { owner: 0, x: 0, y: 410 }),
-    pile('d1', { owner: 1, x: 0, y: 630 }),
-    pile('x1', { kind: 'discard', owner: 1, x: 130, y: 630, count: 0 }),
+    pile('d0', { owner: 0, x: 0, y: 470 }),
+    pile('d1', { owner: 1, x: 0, y: 690 }),
+    pile('x1', { kind: 'discard', owner: 1, x: 130, y: 690, count: 0 }),
   ];
   return playingView({
     you: { role: 'player', name: 'Sam', color: 1, host: false, areas: ['p1'] },
@@ -182,12 +183,12 @@ function withOutOfPlay(view: View): View {
   view.table!.piles.push(
     pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
     pile('saside', { kind: 'aside', x: 0, y: 30, count: 0, cards: [] }),
-    pile('aside:p0', { kind: 'aside', owner: 0, x: 0, y: 410, count: 1, cards: ['q3'] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, x: 0, y: 470, count: 1, cards: ['q3'] }),
     pile('aside:p1', {
       kind: 'aside',
       owner: 1,
       x: 0,
-      y: 630,
+      y: 690,
       count: 3,
       cards: ['q4', 'q5', 'q6'],
     }),
@@ -231,7 +232,7 @@ describe('Table', () => {
       [...surface().querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
     expect(ids(':scope > .card:not(.pile)')).toEqual(['v', 's', 'a', 'b']);
     expect(ids(':scope > .pile')).toEqual(['enc', 'd0', 'd1', 'x1']);
-    // Sam's card lies 30 into the third row (from 600). jsdom's table shows no height, so the rows are
+    // Sam's card lies 30 into the third row (from 660). jsdom's table shows no height, so the rows are
     // drawn as close as they go: the villain's 270 high, a player's 220 (spreadRows).
     expect(surface().querySelector('[data-id="b"]')?.getAttribute('style')).toContain('top: 520px');
   });
@@ -279,7 +280,7 @@ describe('Table', () => {
       '6 cards in hand',
       '5 cards in hand',
     ]);
-    // Around Sam's deck (0, 630) and discard pile (130, 630), drawn at 520, 10 units off their edges.
+    // Around Sam's deck (0, 690) and discard pile (130, 690), drawn at 520, 10 units off their edges.
     const sam = boxes[2]!;
     expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
       '-10px',
@@ -294,7 +295,7 @@ describe('Table', () => {
     view.table?.piles.push(
       pile('vic', { kind: 'victory', x: 0, y: 30, count: 2, cards: ['q1', 'q2'] }),
       pile('saside', { kind: 'aside', x: 0, y: 30, count: 0 }),
-      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 630, count: 0 }),
+      pile('aside:p1', { kind: 'aside', owner: 1, x: 0, y: 690, count: 0 }),
     );
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
@@ -604,13 +605,13 @@ describe('Table', () => {
           kind: 'sideDeck',
           owner: 1,
           x: 260,
-          y: 630,
+          y: 690,
           count: 5,
           label: 'Invocation',
           topFaceUp: true,
           cards: ['i'],
         }),
-        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 390, y: 630, count: 5, label: 'Sense' }),
+        pile('side:p1:1', { kind: 'sideDeck', owner: 1, x: 390, y: 690, count: 5, label: 'Sense' }),
       ],
     });
     render(Table, { session: fakeSession(), view });
@@ -625,16 +626,16 @@ describe('Table', () => {
     const view = makeView({
       cards: [
         card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
-        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 630 }),
+        card('l', { owner: 1, home: 'side:p1:0', faceDown: true, x: 700, y: 690 }),
         // Its deck is not on the table: its back has no caption.
-        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 630 }),
+        card('g', { owner: 1, home: 'side:p1:9', faceDown: true, x: 900, y: 690 }),
       ],
       piles: [
         pile('side:p1:0', {
           kind: 'sideDeck',
           owner: 1,
           x: 260,
-          y: 630,
+          y: 690,
           count: 2,
           label: 'Labor',
           back: 'player',
@@ -666,13 +667,13 @@ describe('Table', () => {
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-        pile('d0', { owner: 0, x: 0, y: 410 }),
-        pile('d1', { owner: 1, x: 0, y: 630 }),
+        pile('d0', { owner: 0, x: 0, y: 470 }),
+        pile('d1', { owner: 1, x: 0, y: 690 }),
         pile('side:p1:0', {
           kind: 'sideDeck',
           owner: 1,
           x: 260,
-          y: 630,
+          y: 690,
           count: 2,
           label: 'Labor',
           back: 'player',
@@ -1245,12 +1246,12 @@ describe('Table view modes', () => {
     const view = makeView({
       cards: [
         card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
-        card('b', { code: '01001', owner: 1, x: 300, y: 410 }),
+        card('b', { code: '01001', owner: 1, x: 300, y: 470 }),
         card('h', { code: '01001', owner: 1, zone: 'hand', x: 0, y: 0 }),
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-        pile('d1', { owner: 1, x: 0, y: 410 }),
+        pile('d1', { owner: 1, x: 0, y: 470 }),
       ],
     });
     render(Table, { session: fakeSession(), view });
@@ -1318,7 +1319,7 @@ describe('Table view modes', () => {
       online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 850 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 910 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1347,7 +1348,7 @@ describe('Table view modes', () => {
       online: true,
       decks: [{ area: 'p2', ready: true, handCount: 0 }],
     });
-    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 850 }));
+    view.table!.piles.push(pile('d2', { owner: 2, x: 0, y: 910 }));
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1419,19 +1420,19 @@ describe('Table view modes', () => {
     render(Table, { session, view: makeView() });
     await catalogLoaded();
 
-    // Sam's identity lies at 300, 630 on the table, drawn at 300, 300.
+    // Sam's identity lies at 300, 690 on the table, drawn at 300, 300.
     const sam = surface().querySelector<HTMLElement>('[data-id="b"]')!;
     await fireEvent.pointerDown(sam, { clientX: 340, clientY: 340, pointerType: 'mouse' });
     await fireEvent.pointerMove(window, { clientX: 440, clientY: 390, buttons: 1 });
     await fireEvent.pointerUp(window, { clientX: 440, clientY: 390 });
 
-    // Its corner drawn at 400, 350: 400, 680 on the table.
+    // Its corner drawn at 400, 350: 400, 740 on the table.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       {
         kind: 'move',
         card: 'b',
         x: 400,
-        y: 680,
+        y: 740,
       },
       1,
     );
@@ -1449,17 +1450,19 @@ describe('several decks', () => {
       cards: [
         card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
-        card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
-        card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
-        card('c', { code: '01001', owner: 2, x: 300, y: 850 }),
+        // A shared card that exhausts, unlike the villain and the scheme.
+        card('m', { code: '01147', owner: -1, back: 'encounter', x: 620, y: 30 }),
+        card('a', { code: '01001', owner: 0, x: 300, y: 470 }),
+        card('b', { code: '01001', owner: 1, x: 300, y: 690 }),
+        card('c', { code: '01001', owner: 2, x: 300, y: 910 }),
         card('h0', { code: '01001', owner: 0, zone: 'hand' }),
         card('h1', { code: '01094', owner: 1, zone: 'hand' }),
       ],
       piles: [
         pile('enc', { kind: 'encounter', x: 0, y: 30 }),
-        pile('d0', { owner: 0, x: 0, y: 410 }),
-        pile('d1', { owner: 1, x: 0, y: 630 }),
-        pile('d2', { owner: 2, x: 0, y: 850 }),
+        pile('d0', { owner: 0, x: 0, y: 470 }),
+        pile('d1', { owner: 1, x: 0, y: 690 }),
+        pile('d2', { owner: 2, x: 0, y: 910 }),
       ],
     });
     view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };
@@ -1725,9 +1728,9 @@ describe('several decks', () => {
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.keyDown(window, { key: 'q' });
 
-    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="m"]')!);
     await choose('Exhaust');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'm' }, 1);
   });
 
   it("credits an action on a shared card to the last own deck while another player's swatch is picked", async () => {
@@ -1738,9 +1741,9 @@ describe('several decks', () => {
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Sam · She-Hulk' }));
 
-    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="m"]')!);
     await choose('Exhaust');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 's' }, 1);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'm' }, 1);
   });
 
   it('credits a box action on an own card of a shared pile to the card', async () => {
@@ -1871,9 +1874,9 @@ describe('several decks', () => {
       expect(antMan.classList).not.toContain('open');
       expect(spiderMan.classList).not.toContain('hidden');
 
-      await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+      await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="m"]')!);
       await choose('Exhaust');
-      expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+      expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'm' }, 1);
     } finally {
       vi.restoreAllMocks();
     }
@@ -2001,7 +2004,7 @@ describe('a selected group', () => {
   /** Sam's two cards on the table, both selected. */
   async function renderGroup() {
     const view = makeView();
-    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 460, y: 630, z: 2 }));
+    view.table!.cards.push(card('b2', { code: '01001', owner: 1, x: 460, y: 690, z: 2 }));
     const session = fakeSession();
     render(Table, { session, view });
     await catalogLoaded();

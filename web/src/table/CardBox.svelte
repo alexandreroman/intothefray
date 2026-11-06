@@ -1011,6 +1011,18 @@
   }
 
   /*
+    A tablet: a finger needs 44 px targets, the footer's buttons, the main one with them, and the
+    filter. Dock mode (a phone) has its own sizes below.
+  */
+  :global(.app.touch:not(.dock-mode)) .mfoot button {
+    height: 44px;
+  }
+
+  :global(.app.touch:not(.dock-mode)) .mhead .filter {
+    height: 44px;
+  }
+
+  /*
     Dock mode: the box fills the screen (Dialog.svelte). The header holds one
     line, the title cut short before the filter; the grid takes the room left,
     with as many columns of 104 px tiles at least as fit; the footer buttons

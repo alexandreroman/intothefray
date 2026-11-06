@@ -4,6 +4,13 @@ import CardSheet from './CardSheet.svelte';
 import sheetSource from './CardSheet.svelte?raw';
 import countersSource from './CardCounters.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
+import {
+  LANDSCAPE_PHONE,
+  mockScreen,
+  PHONE,
+  resizeScreen,
+  type TestScreen,
+} from '../lib/screen.testing';
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
@@ -25,6 +32,23 @@ const HEADER: ContextHeader = {
   name: 'Rhino',
   color: '#a66bff',
   label: 'Rhino, Villain, stage I',
+};
+
+/** A pile's header: the sheet's accessible name gives its kind and count. */
+const DECK_HEADER: ContextHeader = {
+  eyebrow: 'Villain',
+  name: 'Encounter deck',
+  count: 29,
+  color: '#a66bff',
+  label: 'Encounter deck, 29 cards',
+};
+
+/** A face-down card's header (contextItems.cardHeader). */
+const FACE_DOWN_HEADER: ContextHeader = {
+  eyebrow: 'Face down',
+  name: 'Face-down card',
+  color: '#a66bff',
+  label: 'Face-down card',
 };
 
 function item(id: string, extra: Partial<ActionItem> = {}): ActionItem {
@@ -91,6 +115,7 @@ function renderSheet(
     stack?: StackCard[];
     cardId?: string;
     header?: ContextHeader;
+    images?: string[];
     landscape?: boolean;
   } = {},
 ) {
@@ -103,11 +128,12 @@ function renderSheet(
       header: props.header ?? HEADER,
       entries: props.entries ?? ENTRIES,
       note: props.note,
-      images: ['rhino.png'],
+      images: props.images ?? ['rhino.png'],
       landscape: props.landscape,
       counters: props.counters ?? [],
       stack: props.stack,
-      cardId: props.cardId,
+      // Rhino, a table card, unless the test says otherwise: an undefined cardId is a pile.
+      cardId: 'cardId' in props ? props.cardId : 'rhino',
       onrun,
       onstep,
       onpick,
@@ -131,6 +157,11 @@ const ARMOR_HEADER: ContextHeader = {
   color: '#a66bff',
   label: 'Armored Rhino, Attachment',
 };
+
+/** A tablet on its side, with a finger: neither dock mode nor a phone on its side. */
+const TOUCH_TABLET: TestScreen = { width: 1180, height: 820, touch: true };
+/** The same tablet upright. */
+const TOUCH_TABLET_UPRIGHT: TestScreen = { width: 820, height: 1180, touch: true };
 
 /** The strip of the stack under the card, if shown. */
 /** The carousel of the stack in place of the card, if shown. */
@@ -194,64 +225,30 @@ function side(): HTMLElement {
 }
 
 describe('CardSheet', () => {
-  it('centres the name, with a pile count beside it, and room around them', () => {
-    expect(rule('.nameline')).toContain('justify-content: center;');
-    // Room above and below the name, and on its sides, so that a long name never meets an edge.
-    expect(rule('.nameline')).toContain('padding: 10px 12px;');
-    expect(rule('.name')).toContain('text-align: center;');
-  });
+  it.each([
+    ['a card', HEADER, 'rhino', 'Rhino, Villain, stage I'],
+    ['a face-down card', FACE_DOWN_HEADER, 'rhino', 'Face-down card'],
+    ['a pile', DECK_HEADER, undefined, 'Encounter deck, 29 cards'],
+  ])(
+    'draws no title line for %s, the sheet named by its whole header',
+    (_, header, cardId, label) => {
+      renderSheet({ header, cardId });
 
-  it('cuts a long name on one line with an ellipsis, the count kept whole beside it', () => {
-    const name = rule('.name');
-    expect(name).toContain('min-width: 0;');
-    expect(name).toContain('overflow: hidden;');
-    expect(name).toContain('text-overflow: ellipsis;');
-    expect(name).toContain('white-space: nowrap;');
-    expect(name).not.toContain('overflow-wrap');
-    expect(rule('.count')).toContain('flex: none;');
-  });
+      // What it is, its type, stage, owner or count, is heard in the sheet's name, not shown.
+      const sheet = screen.getByRole('dialog', { name: label });
+      expect(within(sheet).queryByText(header.name)).toBeNull();
+      expect(within(sheet).queryByText(header.eyebrow)).toBeNull();
+      expect(within(sheet).queryByText('29')).toBeNull();
+      // The column starts with the main buttons.
+      expect(side().firstElementChild?.classList).toContain('pages');
+    },
+  );
 
-  it('shows a cut name whole in a tooltip (overflowTip)', async () => {
-    renderSheet();
-    const name = document.querySelector<HTMLElement>('.inspector .name')!;
-    // jsdom lays nothing out: the name is wider than its box.
-    Object.defineProperty(name, 'scrollWidth', { configurable: true, value: 300 });
-    Object.defineProperty(name, 'clientWidth', { configurable: true, value: 120 });
-
-    await fireEvent.pointerOver(name);
-
-    expect(name.dataset.tip).toBe('Rhino');
-  });
-
-  it('is a dialog named by its whole header, showing the card face and the name alone', () => {
+  it('shows the card face, named for screen readers', () => {
     renderSheet();
 
-    // The type, stage and owner are heard in its name, not shown: no eyebrow line takes room.
     const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
     expect(within(sheet).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('rhino.png');
-    expect(within(sheet).getByText('Rhino', { selector: '.name' })).toBeTruthy();
-    expect(within(sheet).queryByText('Villain · Stage I')).toBeNull();
-    expect(sheet.querySelector('.eyebrow')).toBeNull();
-  });
-
-  it("shows a pile's count", () => {
-    render(CardSheet, {
-      header: {
-        eyebrow: 'Villain',
-        name: 'Encounter deck',
-        count: 29,
-        color: '#a66bff',
-        label: 'Encounter deck',
-      },
-      entries: ENTRIES,
-      images: [],
-      counters: [],
-      onrun: vi.fn(),
-      onstep: vi.fn(),
-      onclose: vi.fn(),
-    });
-
-    expect(screen.getByText('29')).toBeTruthy();
   });
 
   it('runs a main action without closing itself', async () => {
@@ -626,14 +623,13 @@ describe('CardSheet', () => {
   });
 
   describe('in dock mode', () => {
-    it('puts every entry in the column with the header, the counters on the card', () => {
+    it('puts every entry in the column, the counters on the card', () => {
       renderSheet({ dock: true, counters: [DAMAGE], note: undefined });
 
       const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
       expect(sheet.classList).toContain('dock');
       expect(document.querySelector('.inspector')?.classList).toContain('dock');
       const column = side();
-      expect(within(column).getByText('Rhino', { selector: '.name' })).toBeTruthy();
       expect(within(column).queryByRole('button', { name: 'Damage, 3' })).toBeNull();
       expect(screen.getByRole('button', { name: 'Damage, 3' }).closest('.face')).toBeTruthy();
       expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
@@ -641,6 +637,14 @@ describe('CardSheet', () => {
       expect(within(column).getByRole('button', { name: /Move to/ })).toBeTruthy();
       // The face and its column are all the sheet holds.
       expect(document.querySelector('.inspector')?.children).toHaveLength(1);
+    });
+
+    it('is not a wide sheet, nor laid out as a tablet', () => {
+      renderSheet({ dock: true });
+
+      const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
+      expect(sheet.classList).not.toContain('wide');
+      expect(document.querySelector('.inspector')?.classList).not.toContain('tablet');
     });
 
     it('shows a note in the column too', () => {
@@ -660,13 +664,6 @@ describe('CardSheet', () => {
       expect(within(column).queryByRole('button', { name: 'Exhaust' })).toBeNull();
     });
 
-    it('leaves the entries under the card outside dock mode', () => {
-      renderSheet({ dock: false });
-
-      expect(within(side()).queryByRole('button', { name: 'Exhaust' })).toBeNull();
-      expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
-    });
-
     it('upright, puts the card on top, centred, at most 42 % of the screen high', () => {
       const top = rule('.inspector.dock .top');
       expect(top).toContain('flex-direction: column;');
@@ -679,10 +676,24 @@ describe('CardSheet', () => {
       expect(rule('.face.land')).toContain('--face-ratio: 7 / 5;');
     });
 
+    it('keeps one gutter around the card and its column, the sheet padding its edges by 12 px', () => {
+      // The status tabs and modifier badges stand 6 table units out of the card (CardCounters).
+      const inspector = rule('.inspector');
+      expect(inspector).toContain(
+        '--overhang: max(var(--portrait-w) * 6 / 112, var(--landscape-w) * 6 / 157);',
+      );
+      expect(inspector).toContain('--gutter: calc(var(--overhang) + 12px);');
+      expect(rule('.top')).toContain('gap: var(--gutter);');
+      const dock = rule('.inspector.dock');
+      expect(dock).toContain('--portrait-w: min(100dvw - 24px, 42dvh * 5 / 7);');
+      expect(dock).toContain('--landscape-w: min(100dvw - 24px, 42dvh * 7 / 5);');
+      expect(dock).toContain('padding: 0 calc(var(--gutter) - 12px) calc(var(--gutter) - 12px);');
+    });
+
     it('upright, lays the header, the counters and the entries full width under the card', () => {
       const column = rule('.inspector.dock .side');
       expect(column).toContain('align-self: stretch;');
-      expect(column).toContain('container-type: inline-size;');
+      expect(rule('.side')).toContain('container-type: inline-size;');
       // The whole sheet scrolls (Sheet.svelte), not the column.
       expect(column).not.toContain('overflow-y');
     });
@@ -690,24 +701,270 @@ describe('CardSheet', () => {
     it('on its side, keeps the card the whole sheet high beside a column that scrolls', () => {
       const side = block('@media (max-height: 500px)');
       expect(ruleIn(side, '.inspector.dock .top')).toContain('flex-direction: row;');
+      // The card and its column as high as the sheet's room less the gutter under them.
+      const dock = ruleIn(side, '.inspector.dock');
+      expect(dock).toContain('--card-room: calc(var(--sheet-room) - var(--gutter) + 12px);');
+      expect(dock).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
+      expect(dock).toContain('--landscape-w: calc(var(--sheet-room) * 7 / 5);');
       const face = ruleIn(side, '.inspector.dock .face');
-      expect(face).toContain('height: var(--sheet-room);');
+      expect(face).toContain('height: var(--card-room);');
       expect(face).toContain('width: auto;');
       const column = ruleIn(side, '.inspector.dock .side');
-      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('max-height: var(--card-room);');
       expect(column).toContain('overflow-y: auto;');
     });
 
     it('makes every entry 44 px high, the main ones two per row in a wide column', () => {
-      expect(rule('.inspector.dock .main')).toContain('min-height: 44px;');
-      expect(rule('.inspector.dock .row')).toContain('min-height: 44px;');
-      expect(rule('.inspector.dock .main-grid')).toContain(
-        'grid-template-columns: minmax(0, 1fr);',
-      );
-      expect(rule('.inspector.dock .main-grid', 4)).toContain(
-        'grid-template-columns: repeat(2, minmax(0, 1fr));',
-      );
+      expect(rule('.main')).toContain('min-height: 44px;');
+      expect(rule('.row')).toContain('min-height: 44px;');
+      expect(rule('.main-grid')).toContain('grid-template-columns: minmax(0, 1fr);');
+      expect(rule('.main-grid', 4)).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
       expect(sheetSource).toMatch(/@container \(min-width: \d+px\)/);
+    });
+  });
+
+  describe('on a tablet (outside dock mode)', () => {
+    it('puts every entry in the column beside the card, in a wide sheet', () => {
+      renderSheet({ dock: false, counters: [DAMAGE] });
+
+      const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
+      expect(sheet.classList).toContain('wide');
+      expect(sheet.classList).not.toContain('dock');
+      expect(document.querySelector('.inspector')?.classList).toContain('tablet');
+      const column = side();
+      expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Discard' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: /Move to/ })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Damage, 3' }).closest('.face')).toBeTruthy();
+      // The face and its column are all the sheet holds.
+      expect(document.querySelector('.inspector')?.children).toHaveLength(1);
+    });
+
+    it('shows a note in the column too', () => {
+      renderSheet({ dock: false, entries: [], note: 'Not your card' });
+
+      expect(within(side()).getByText('Not your card')).toBeTruthy();
+    });
+
+    it('drills a submenu down in place, in the column, with a Back row', async () => {
+      renderSheet({ dock: false });
+
+      await fireEvent.click(screen.getByRole('button', { name: /Move to/ }));
+
+      const column = side();
+      expect(within(column).getByRole('button', { name: /Back/ })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Hand' })).toBeTruthy();
+    });
+
+    /** The classes of the inspector shown, not of the hidden copy that measures the sheet. */
+    function inspectorClasses(): DOMTokenList {
+      return document.querySelector<HTMLElement>('.inspector:not(.measure)')!.classList;
+    }
+
+    it('lays the column beside a portrait card, under a landscape one', () => {
+      const { unmount } = renderSheet({ dock: false });
+      expect(inspectorClasses()).toContain('beside');
+      expect(inspectorClasses()).not.toContain('column');
+      unmount();
+
+      renderSheet({ dock: false, landscape: true });
+      expect(inspectorClasses()).toContain('column');
+      expect(inspectorClasses()).not.toContain('beside');
+      // Still a wide sheet.
+      expect(screen.getByRole('dialog').classList).toContain('wide');
+    });
+
+    it("lays a stack out by its main card's orientation, whichever card is shown", () => {
+      const scheme: StackCard = { ...STACK[0]!, landscape: true };
+      renderSheet({ dock: false, stack: [scheme, STACK[1]!], cardId: 'armor' });
+
+      expect(inspectorClasses()).toContain('column');
+    });
+
+    describe("following the screen's orientation", () => {
+      afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+      });
+
+      it('on its side, lays a landscape card beside its column, in a sheet as wide as its content', () => {
+        mockScreen(TOUCH_TABLET);
+        renderSheet({ dock: false, landscape: true });
+
+        expect(inspectorClasses()).toContain('beside');
+        expect(inspectorClasses()).toContain('land');
+        expect(inspectorClasses()).not.toContain('column');
+        const sheet = screen.getByRole('dialog');
+        expect(sheet.classList).toContain('wide');
+        expect(sheet.classList).toContain('fit');
+      });
+
+      it('upright, lays a landscape card above its column, in a wide sheet', () => {
+        mockScreen(TOUCH_TABLET_UPRIGHT);
+        renderSheet({ dock: false, landscape: true });
+
+        expect(inspectorClasses()).toContain('column');
+        expect(inspectorClasses()).not.toContain('beside');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+      });
+
+      it.each([
+        ['on its side', TOUCH_TABLET],
+        ['upright', TOUCH_TABLET_UPRIGHT],
+      ])('%s, lays a portrait card beside its column, in a wide sheet', (_, screenSize) => {
+        mockScreen(screenSize);
+        renderSheet({ dock: false });
+
+        expect(inspectorClasses()).toContain('beside');
+        expect(inspectorClasses()).not.toContain('land');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+      });
+
+      it("on its side, lays a stack out beside its column by its main card's orientation", () => {
+        mockScreen(TOUCH_TABLET);
+        const scheme: StackCard = { ...STACK[0]!, landscape: true };
+        renderSheet({ dock: false, stack: [scheme, STACK[1]!], cardId: 'armor' });
+
+        expect(inspectorClasses()).toContain('beside');
+        expect(inspectorClasses()).toContain('land');
+      });
+
+      it('lays the sheet out again as the tablet turns', async () => {
+        const lists = mockScreen(TOUCH_TABLET);
+        renderSheet({ dock: false, landscape: true });
+
+        await resizeScreen(lists, TOUCH_TABLET_UPRIGHT);
+        expect(inspectorClasses()).toContain('column');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+
+        await resizeScreen(lists, TOUCH_TABLET);
+        expect(inspectorClasses()).toContain('beside');
+        expect(screen.getByRole('dialog').classList).toContain('fit');
+      });
+
+      it("leaves dock mode's layout alone, a phone on its side included", () => {
+        mockScreen(LANDSCAPE_PHONE);
+        renderSheet({ dock: true, landscape: true });
+
+        expect(inspectorClasses()).toContain('dock');
+        expect(inspectorClasses()).not.toContain('tablet');
+        expect(inspectorClasses()).not.toContain('land');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+      });
+    });
+
+    it('makes a portrait card as high as the room, at most 460 px and 70 % of the screen', () => {
+      expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
+      const tablet = rule('.inspector.tablet');
+      expect(tablet).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
+      expect(tablet).toContain('--land-room: calc(var(--sheet-room) * 3 / 4);');
+      expect(tablet).toContain('--landscape-w: var(--land-room);');
+      // The sheet pads its bottom by 14 px (Sheet.svelte), its sides not at all.
+      expect(tablet).toContain('padding: 0 var(--gutter) calc(var(--gutter) - 14px);');
+      expect(rule('.inspector.beside .visual > .face')).toContain('height: var(--sheet-room);');
+      // Side by side: the face beside its column.
+      expect(rule('.top')).not.toContain('flex-direction');
+    });
+
+    it("keeps the column beside a stack level with its shown card, inside the carousel's padding and dots", () => {
+      expect(rule('.inspector')).toContain('--carousel-top: 10px;');
+      expect(rule('.carousel')).toContain('padding-block: var(--carousel-top) 14px;');
+      expect(rule('.inspector.beside .visual.stacked + .side')).toContain(
+        'padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));',
+      );
+      const onItsSide = block('@media (max-height: 500px)');
+      expect(ruleIn(onItsSide, '.inspector.dock .visual.stacked + .side')).toContain(
+        'padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));',
+      );
+    });
+
+    it("sizes a portrait stack's carousel as a phone on its side does", () => {
+      const stacked = rule('.inspector.beside .visual.stacked');
+      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));');
+      expect(stacked).toContain('width: calc(var(--slide-h) * 5 / 7 + 88px);');
+      expect(rule('.inspector')).toContain('--carousel-chrome: 38px;');
+    });
+
+    it('keeps the column beside a portrait card at most as high as it, the only part that scrolls', () => {
+      const column = rule('.inspector.beside .side');
+      expect(column).toContain('align-self: stretch;');
+      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('overflow-y: auto;');
+      expect(column).toContain('overscroll-behavior: contain;');
+      expect(rule('.side')).toContain('container-type: inline-size;');
+    });
+
+    it("centres the column's content on the card beside it, its auto margins sharing the room", () => {
+      // Auto margins rather than justify-content: a column taller than the card starts at its top.
+      const firsts =
+        '.inspector.beside .side > :first-child,\n  .inspector.beside .pages.held > .page > :first-child';
+      const lasts =
+        '.inspector.beside .side > :last-child,\n  .inspector.beside .pages.held > .page > :last-child';
+      expect(rule(firsts)).toContain('margin-top: auto;');
+      expect(rule(lasts)).toContain('margin-bottom: auto;');
+      expect(rule('.inspector.beside .side')).not.toContain('justify-content');
+      const onItsSide = block('@media (max-height: 500px)');
+      expect(ruleIn(onItsSide, '.inspector.dock .side')).toContain('align-self: stretch;');
+      const dockFirsts = firsts.replaceAll('beside', 'dock').replace('\n  ', '\n    ');
+      const dockLasts = lasts.replaceAll('beside', 'dock').replace('\n  ', '\n    ');
+      expect(ruleIn(onItsSide, dockFirsts)).toContain('margin-top: auto;');
+      expect(ruleIn(onItsSide, dockLasts)).toContain('margin-bottom: auto;');
+      // Under the card (dock mode upright, a tablet upright's scheme), the column needs no margin.
+      expect(rule('.inspector.column .side')).not.toContain('margin');
+    });
+
+    it('on its side, lays a landscape card as wide as the room beside a column of about 340 px', () => {
+      expect(rule('.inspector.beside.land')).toContain('--landscape-w: var(--sheet-room);');
+      const face = rule('.inspector.beside .visual > .face.land');
+      expect(face).toContain('width: var(--sheet-room);');
+      expect(face).toContain('height: auto;');
+      // Top-aligned beside its column, which keeps its width rather than growing.
+      expect(rule('.top')).toContain('align-items: flex-start;');
+      const column = rule('.inspector.beside.land .side');
+      expect(column).toContain('width: 340px;');
+      expect(column).toContain('flex: 0 1 auto;');
+      // At most as high as the room, scrolling past it, as beside a portrait card.
+      expect(rule('.inspector.beside .side')).toContain('max-height: var(--sheet-room);');
+      const stacked = rule('.inspector.beside.land .visual.stacked');
+      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) * 5 / 7);');
+      expect(stacked).toContain('--slide-max: 100%;');
+      expect(stacked).toContain('width: calc(var(--sheet-room) + 88px);');
+    });
+
+    it('measures a side beside a landscape card at the width the sheet will fit it to', () => {
+      const copy = rule('.inspector.measure.land');
+      expect(copy).toContain('width: max-content;');
+      expect(copy).toContain('max-width: calc(100vw - 34px);');
+    });
+
+    it('upright, puts a landscape card on top, 3 / 4 as wide as the room, its column full width under it', () => {
+      const top = rule('.inspector.column .top');
+      expect(top).toContain('flex-direction: column;');
+      expect(top).toContain('align-items: center;');
+      expect(rule('.inspector.column .visual > .face')).toContain(
+        'width: min(var(--land-room), 100%);',
+      );
+      expect(rule('.inspector.column .visual.stacked')).toContain(
+        '--slide-h: calc(var(--land-room) * 5 / 7);',
+      );
+      const column = rule('.inspector.column .side');
+      expect(column).toContain('align-self: stretch;');
+      // The whole sheet scrolls (Sheet.svelte), not the column.
+      expect(column).not.toContain('overflow-y');
+    });
+
+    it('lays the main buttons out as on a phone', () => {
+      renderSheet({
+        dock: false,
+        entries: [
+          { kind: 'action', item: EXHAUST },
+          { kind: 'action', item: FLIP },
+          { kind: 'action', item: item('ready') },
+        ],
+      });
+
+      const grid = document.querySelector<HTMLElement>('.inspector:not(.measure) .main-grid')!;
+      expect(grid.dataset.layout).toBe('lead');
     });
   });
 
@@ -746,16 +1003,16 @@ describe('CardSheet', () => {
         'Action2',
       ]);
       expect(buttons[0]!.classList).toContain('default');
-      expect(
-        rule(".inspector.dock .main-grid:global([data-layout='lead']) > .main:first-child"),
-      ).toContain('grid-column: 1 / -1;');
+      expect(rule(".main-grid:global([data-layout='lead']) > .main:first-child")).toContain(
+        'grid-column: 1 / -1;',
+      );
     });
 
     it('gives a lone button the whole width, and three in a row a third each', () => {
-      expect(rule(".inspector.dock .main-grid:global([data-layout='single'])", 4)).toContain(
+      expect(rule(".main-grid:global([data-layout='single'])", 4)).toContain(
         'grid-template-columns: minmax(0, 1fr);',
       );
-      expect(rule(".inspector.dock .main-grid:global([data-layout='row'])", 4)).toContain(
+      expect(rule(".main-grid:global([data-layout='row'])", 4)).toContain(
         'grid-template-columns: repeat(3, minmax(0, 1fr));',
       );
     });
@@ -933,7 +1190,7 @@ describe('CardSheet', () => {
 
       expect(screen.getByRole('dialog')).toBe(dialog);
       expect(carousel()).toBe(shown);
-      expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
+      expect(screen.getByRole('dialog', { name: 'Armored Rhino, Attachment' })).toBe(dialog);
       expect(slides().map((slide) => slide.getAttribute('aria-current'))).toEqual([
         null,
         'true',
@@ -941,14 +1198,82 @@ describe('CardSheet', () => {
       ]);
     });
 
-    it("keeps the main page's height through a switch, as through a submenu", async () => {
-      const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
-      const pages = pagesOf(233);
+    describe("the page's height through a switch", () => {
+      afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+      });
 
-      await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+      /** Opens the stack on its main card, its page 233 px high, and switches to the next card. */
+      async function switchOn(
+        screenSize: TestScreen,
+        options: { dock: boolean; stack?: StackCard[] },
+      ) {
+        mockScreen(screenSize);
+        const { rerender } = renderSheet({
+          dock: options.dock,
+          stack: options.stack ?? STACK,
+          cardId: 'rhino',
+        });
+        const pages = pagesOf(233);
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        return pages;
+      }
 
-      expect(pages.style.height).toBe('233px');
-      expect(pages.classList).toContain('held');
+      it("keeps the main page's height on a phone upright, as through a submenu", async () => {
+        const pages = await switchOn(PHONE, { dock: true });
+
+        expect(pages.style.height).toBe('233px');
+        expect(pages.classList).toContain('held');
+      });
+
+      it("keeps the main page's height on a tablet upright under a landscape card", async () => {
+        const scheme: StackCard = { ...STACK[0]!, landscape: true };
+        const pages = await switchOn(TOUCH_TABLET_UPRIGHT, {
+          dock: false,
+          stack: [scheme, STACK[1]!],
+        });
+
+        expect(pages.style.height).toBe('233px');
+        expect(pages.classList).toContain('held');
+      });
+
+      it('holds no height on a tablet on its side beside a landscape card', async () => {
+        const scheme: StackCard = { ...STACK[0]!, landscape: true };
+        const pages = await switchOn(TOUCH_TABLET, { dock: false, stack: [scheme, STACK[1]!] });
+
+        expect(pages.style.height).toBe('');
+        expect(pages.classList).not.toContain('held');
+      });
+
+      it('holds no height on a tablet beside a portrait card: the column takes what the new card needs', async () => {
+        const pages = await switchOn(TOUCH_TABLET, { dock: false });
+
+        expect(pages.style.height).toBe('');
+        expect(pages.classList).not.toContain('held');
+      });
+
+      it('holds no height on a phone on its side, beside the card', async () => {
+        const pages = await switchOn(LANDSCAPE_PHONE, { dock: true });
+
+        expect(pages.style.height).toBe('');
+        expect(pages.classList).not.toContain('held');
+      });
+
+      it("lets a submenu's hold go as it switches beside the card, and holds a later submenu again", async () => {
+        mockScreen(TOUCH_TABLET);
+        const { rerender } = renderSheet({ dock: false, stack: STACK, cardId: 'rhino' });
+        pagesOf(233);
+        await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        await tick();
+
+        const pages = pagesOf(180);
+        expect(pages.style.height).toBe('');
+        await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+        expect(pages.style.height).toBe('180px');
+      });
     });
 
     it('closes an open submenu as it switches', async () => {
@@ -986,7 +1311,7 @@ describe('CardSheet', () => {
       expect(rule('.inspector.dock .visual.stacked')).toContain('--slide-h: 42dvh;');
       const side = block('@media (max-height: 500px)');
       expect(ruleIn(side, '.inspector.dock .visual.stacked')).toContain(
-        '--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));',
+        '--slide-h: calc(var(--card-room) - var(--carousel-chrome));',
       );
     });
   });
@@ -1142,7 +1467,7 @@ describe('CardSheet', () => {
         await switchToArmor(rerender);
 
         // The new card's name and entries right away, the old card's gone with nothing in between.
-        expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
+        expect(screen.getByRole('dialog', { name: 'Armored Rhino, Attachment' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
         await finishAnimations();
@@ -1215,7 +1540,7 @@ describe('CardSheet', () => {
 
         await switchToArmor(rerender);
 
-        expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
+        expect(screen.getByRole('dialog', { name: 'Armored Rhino, Attachment' })).toBeTruthy();
         expect(animate).not.toHaveBeenCalled();
       });
 
@@ -1294,9 +1619,112 @@ describe('CardSheet', () => {
 
           await finishAnimations();
           expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
-          expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+          expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
         } finally {
           heights.mockRestore();
+        }
+      });
+
+      it.each([
+        ['a tablet', false],
+        ['a phone', true],
+      ])(
+        'measures the new side with its entries in the column, as %s lays them',
+        async (_, dock) => {
+          const measured: { tablet: boolean; dock: boolean; inColumn: boolean }[] = [];
+          const heights = vi
+            .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+            .mockImplementation(function (this: HTMLElement) {
+              if (this.classList.contains('measure')) {
+                measured.push({
+                  tablet: this.classList.contains('tablet'),
+                  dock: this.classList.contains('dock'),
+                  inColumn: this.querySelector('.side .pages .main-grid') !== null,
+                });
+                return 300;
+              }
+              return this.classList.contains('inspector') ? 500 : 0;
+            });
+          try {
+            const { rerender } = renderSheet({ dock });
+
+            await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
+            await tick();
+
+            expect(measured).toEqual([{ tablet: !dock, dock, inColumn: true }]);
+          } finally {
+            heights.mockRestore();
+          }
+        },
+      );
+
+      it('on a tablet, keeps the old layout until edge-on as the card turns to the other orientation', async () => {
+        // jsdom lays nothing out: the measured copy, in the new side's layout, is 300 px high.
+        const measuredLayouts: string[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              measuredLayouts.push(this.classList.contains('column') ? 'column' : 'beside');
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet({ dock: false });
+          const inspector = document.querySelector<HTMLElement>('.inspector')!;
+
+          await rerender({ images: ['scheme.png'], landscape: true, header: TURNED });
+          await tick();
+
+          expect(measuredLayouts).toEqual(['column']);
+          expect(inspector.classList).toContain('beside');
+
+          // The resize ends, the card turns away: still the old layout until edge-on.
+          running.shift()?.onfinish?.();
+          await tick();
+          expect(inspector.classList).toContain('beside');
+
+          await finishAnimations();
+          expect(inspector.classList).toContain('column');
+          expect(inspector.classList).not.toContain('beside');
+        } finally {
+          heights.mockRestore();
+        }
+      });
+
+      it('on a tablet on its side, measures a card turning to a scheme beside its column, at its width', async () => {
+        mockScreen(TOUCH_TABLET);
+        const measured: { land: boolean; width: string }[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              measured.push({ land: this.classList.contains('land'), width: this.style.width });
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet({ dock: false });
+          const inspector = document.querySelector<HTMLElement>('.inspector')!;
+          const sheet = screen.getByRole('dialog');
+
+          await rerender({ images: ['scheme.png'], landscape: true, header: TURNED });
+          await tick();
+
+          // Laid out by the sheet's own width rule, not the content's width now.
+          expect(measured).toEqual([{ land: true, width: '' }]);
+          expect(sheet.classList).not.toContain('fit');
+
+          await finishAnimations();
+          expect(inspector.classList).toContain('beside');
+          expect(inspector.classList).toContain('land');
+          expect(sheet.classList).toContain('fit');
+        } finally {
+          heights.mockRestore();
+          vi.restoreAllMocks();
+          vi.unstubAllGlobals();
         }
       });
 
@@ -1318,16 +1746,17 @@ describe('CardSheet', () => {
         ).toEqual([]);
       });
 
-      it('turns the face away to edge-on, lifted, then shows the new side, its name and entries', async () => {
+      it('turns the face away to edge-on, lifted, then shows the new side on it', async () => {
         const { rerender } = renderSheet();
         const dialog = screen.getByRole('dialog');
 
         await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
 
-        // Still the old side, its name and entries, as it turns away.
+        // Still the old face as it turns away; the sheet is named for the new side, which the column
+        // shows the entries of.
         expect(faceImage().getAttribute('src')).toBe('rhino.png');
-        expect(screen.getByText('Rhino', { selector: '.name' })).toBeTruthy();
-        expect(screen.queryByRole('button', { name: 'Change card…' })).toBeNull();
+        expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
         const away = turns()[0]!;
         expect(away.keyframes[0]?.transform).toContain('rotateY(0deg)');
         expect(away.keyframes.at(-1)?.transform).toContain('rotateY(90deg)');
@@ -1336,7 +1765,7 @@ describe('CardSheet', () => {
         await finishAnimations();
 
         expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
-        expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+        expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
         const back = turns()[1]!;
         expect(back.keyframes[0]?.transform).toContain('rotateY(90deg)');
@@ -1346,32 +1775,88 @@ describe('CardSheet', () => {
         expect(screen.getByRole('dialog')).toBe(dialog);
       });
 
-      it("turns a deck's back over to the card revealed on it, its count and counters switching once edge-on", async () => {
-        const deck: ContextHeader = {
-          ...HEADER,
-          name: 'Encounter deck',
-          label: 'Encounter deck',
-          count: 20,
-        };
-        const { rerender } = renderSheet();
-        await rerender({ header: deck, images: ['encounter-back.png'] });
+      it("changes the column at once as the card turns: the old side's entries never linger", async () => {
+        const REVEAL = item('reveal');
+        const deckEntries: ContextEntry[] = [
+          { kind: 'action', item: REVEAL },
+          { kind: 'separator' },
+          { kind: 'action', item: DISCARD },
+        ];
+        const { rerender } = renderSheet({ entries: deckEntries });
         await finishAnimations();
         animate.mockClear();
 
-        await rerender({ header: TURNED, images: ['rhino-2.png'], counters: [DAMAGE] });
+        await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
+
+        // From the update on, before any animation ends: the new side's entries alone, none fading
+        // or sliding out, while the face still shows the old side as it turns away.
+        expect(screen.queryByRole('button', { name: 'Reveal' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
+        expect(faceImage().getAttribute('src')).toBe('rhino.png');
+        expect(running).toHaveLength(1);
+
+        running.shift()?.onfinish?.();
+        await tick();
+        expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+        expect(screen.queryByRole('button', { name: 'Reveal' })).toBeNull();
+        // The face alone moves: it turns away, then back flat.
+        const moved = animate.mock.contexts as Element[];
+        expect(moved.filter((element) => !element.classList.contains('face'))).toEqual([]);
+      });
+
+      it("turns a deck's back over to the card revealed on it, renamed at once, its counters once edge-on", async () => {
+        const { rerender } = renderSheet({ header: DECK_HEADER, cardId: undefined });
+        await rerender({ images: ['encounter-back.png'] });
+        await finishAnimations();
+        animate.mockClear();
+        expect(screen.getByRole('dialog', { name: 'Encounter deck, 29 cards' })).toBeTruthy();
+
+        await rerender({
+          header: TURNED,
+          cardId: 'rhino',
+          images: ['rhino-2.png'],
+          counters: [DAMAGE],
+        });
 
         expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
-        expect(
-          screen.getByText('20', { selector: '.count' }).classList.contains('count-pill'),
-        ).toBe(true);
+        expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
         expect(turns()).toHaveLength(1);
 
         await finishAnimations();
 
         expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
-        expect(document.querySelector('.inspector .count')).toBeNull();
         expect(screen.getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
+      });
+
+      it('renames the sheet at once as the card turns face down, the measured copy as its column', async () => {
+        const measuredFirst: (string | undefined)[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              const first = this.querySelector('.side')?.firstElementChild?.className;
+              measuredFirst.push(first?.split(' ')[0]);
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet();
+
+          await rerender({ header: FACE_DOWN_HEADER, images: ['back.png'] });
+          await tick();
+
+          // The old face turns away; the sheet already names the new side, its column starting
+          // with the main buttons, as the copy that measured it.
+          expect(faceImage().getAttribute('src')).toBe('rhino.png');
+          expect(screen.getByRole('dialog', { name: 'Face-down card' })).toBeTruthy();
+          expect(side().firstElementChild?.classList).toContain('pages');
+          expect(measuredFirst).toEqual(['pages']);
+        } finally {
+          heights.mockRestore();
+        }
       });
 
       it('turns over to a landscape face once edge-on', async () => {
@@ -1391,7 +1876,7 @@ describe('CardSheet', () => {
         await rerender({ images: ['rhino-2.png'], header: TURNED });
 
         expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
-        expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+        expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
         expect(turns()).toEqual([]);
       });
 

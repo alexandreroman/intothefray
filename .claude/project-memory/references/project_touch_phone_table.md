@@ -1,6 +1,6 @@
 ---
 name: "Touch and phone table"
-description: "Touch mode: inspector sheet, hold to drag, pinch; dock mode on small touch screens: dock, hand carousel, small cards"
+description: "Touch mode: inspector sheet, hold to drag, pinch; tablets: inspector follows the orientation, History sheet, 44 px targets; dock mode on small touch screens: dock, hand carousel, small cards"
 type: project
 ---
 
@@ -20,26 +20,36 @@ type: project
     A card of a stack shows the whole stack as a carousel on the card's
     line, the neighbours peeking at its sides, each card with its own
     tokens; a swipe or a tap on a neighbour switches the sheet to it.
-    The switch changes the column at once (no fade, no row slides); every
-    carousel card keeps its face, image and token elements mounted, so
-    nothing reloads. A swipe switches as the middle passes the midpoint
-    (6 px slack), not at scroll end; a tap switches at once.
+    The switch changes the column at once (no fade, no row slides). Where
+    the column lies beside the card (a tablet's portrait card, every card
+    on a tablet on its side, a phone on its side) it takes what the shown
+    card's entries need, up to the card's height; where it lies under
+    the card it keeps the height of the first switch, so the card does
+    not move. Every carousel card keeps its face, image and token
+    elements mounted, so nothing reloads. A swipe switches as the middle
+    passes the midpoint (6 px slack), not at scroll end; a tap switches
+    at once.
     The first menu group shows as big buttons (default in Fray red; laid
     out as [[project_no_lone_button]] says), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
     entries left out (`visibleEntries`), and no arrows: arrows are drawn
-    with a mouse or a pen only. Its header shows the card's name only,
-    centred with margins and an ellipsis (a pile's kind with its count);
-    the sheet's accessible name also gives the type and owner. It keeps
+    with a mouse or a pen only. The inspector has no title line: the
+    sheet's accessible name gives the name, type and owner, a pile's
+    kind and count. It keeps
     its size across submenus: the entries area keeps the main page's
     height. Token, status and modifier entries and the pills keep it
     open; every other entry closes it. Flip keeps it open and turns the
     card over in it (360 ms). Reveal from a deck's inspector keeps it open
     and switches it to the revealed card once the table shows it: the
     sheet first eases to the new size, then the card turns; a refused
-    reveal leaves it on the deck. Its opening, closing, drill-down,
+    reveal leaves it on the deck. In a turn, the name and the entries show
+    the new side from the start, at once (no button fades, no row slides):
+    a revealed card's actions replace the deck's as the reveal lands; only
+    the face turns, and the layout follows it once edge-on. Its opening, closing, drill-down,
     counters and presses animate (none under reduced motion). A tap on a
-    raised hand card opens it with Play and Discard (`handActions`).
+    raised hand card lifts it to read it, a second one lets it go: the
+    fan's cards are played and discarded by drag and drop; the inspector
+    serves table cards and piles.
     "Select" enters select mode: taps toggle table cards in the group, a
     pill "N selected · Done" ends it.
   - Every bottom sheet (inspector, hand, history; `Sheet.svelte`) closes
@@ -61,6 +71,48 @@ type: project
     one-finger scrolling stays. The page itself never pinch-zooms on the
     table screen.
   - Card boxes do not focus their filter, so no keyboard pops up.
+- Tablets (touch mode off dock mode) keep the desktop layout, fitted to a
+  finger:
+  - The inspector follows the screen's orientation (`SIDEWAYS_QUERY`,
+    `(orientation: landscape)`; turning the tablet lays it out again).
+    A portrait card lies beside its actions either way, as on a phone on
+    its side: the card `min(460px, 70dvh)` high on the left, the main
+    buttons and rows (44 px) in one column on its right, the only part
+    that scrolls, at most as high as the card, in a sheet at most 760 px
+    wide (`Sheet` `wide`, other sheets 480 px).
+  - On a tablet on its side every card lies beside its actions, a scheme
+    included, at full size: a landscape card as wide as a portrait card
+    is high (460 × 329 px), top-aligned, the column about 340 px wide
+    and at most the room high. That sheet is as wide as its content
+    (`Sheet` `fit`), up to the window less 16 px a side: ≈ 890 × 390 px
+    for a main scheme at 1180 × 820.
+  - On a tablet upright a scheme lies above its actions: the card on
+    top, centred, three quarters as wide as a portrait card is high, the
+    actions full width under it, the sheet scrolling as a whole.
+  - Wherever the column lies beside the card (dock mode on its side
+    too), a column shorter than the card is centred on its height (a
+    stack's: on the shown card); a taller one scrolls from its top.
+    Submenu pages are centred the same way. A stack follows its main
+    card. A
+    face that changes shape (a flip, a scheme revealed from a deck's
+    inspector) changes layout once edge-on in its turn; a revealed scheme
+    shows as it is, landscape, with no handling of its own.
+  - The inspector has one gutter, in every layout (phones too): what
+    stands out of the card (status tabs, modifier badges: 6 table units
+    at the card's zoom) plus 12 px, ≈ 30 px on a tablet. It sets the
+    space between the sheet's edge and the card, between the card and
+    its column, between the column and the sheet's edge, and under the
+    card (`--gutter` in CardSheet.svelte).
+  - Without the history column (a narrow screen), a History button beside
+    the floating Undo opens the history sheet dock mode uses
+    (`historySheetMode` in Table.svelte); the history column shows on
+    wider tablets, as on desktop.
+  - On a narrow screen the resting hand drops by the same share of its
+    card as on a wide one, so its strip is a finger's target (see
+    [[project_hand_sizes]]).
+  - The history panel's buttons and the card box's footer and filter are
+    44 px high, and the hero selector's avatars have 44 px hit areas, the
+    avatars drawn at their own size (`.app.touch:not(.dock-mode)`).
 - Dock mode (phones):
   - A dock (`Dock.svelte`) at the bottom, or a 64 px rail on the left on
     a phone on its side, holds the hand button (hero avatar, mini cards,
@@ -78,7 +130,7 @@ type: project
     dragged up out of it goes onto the table. It closes when the viewer's
     own Play or Discard empties the hand.
   - A card played or discarded from the hand rises and fades out where it
-    was shown: the hand sheet, the inspector or the dock's hand button
+    was shown: the hand sheet or the dock's hand button
     (`RiseFlight` in motion.svelte.ts, 300 ms).
   - The history opens as a sheet (`HistorySheet.svelte`) from the dock's
     or rail's History button.
@@ -134,8 +186,14 @@ type: project
 **Why:** designed with the user from phone mockups (direction "camera,
 inspector and dock"): on a phone the table text is unreadable and hover
 does not exist, so cards are read in the inspector, moved by a hold and
-the screen goes to the table; tablets get the touch interactions and keep
-the desktop layout.
+the screen goes to the table. Tablets have the room for the desktop
+layout; what they adapt is what a mouse does and a finger cannot (hover
+to raise the hand or read the history, small targets), and a sheet up to
+760 px wide uses their room to show the card large. Decided with the
+user: a tablet's hand cards play by drag and drop; a tablet on its side
+has width to spare, and a scheme stacked above its actions ran out of
+height there, so every card lies beside its actions; upright, a scheme
+reads best above them; the column is centred on the card.
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action

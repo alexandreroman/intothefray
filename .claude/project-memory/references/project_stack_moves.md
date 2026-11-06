@@ -1,6 +1,6 @@
 ---
 name: "Moving card stacks"
-description: "A stack is a chain; new cards go to its end, offset down-right, the first under a scheme centred on it; the main card moves the whole stack, a tucked card moves alone"
+description: "A stack is a chain; new cards go to its end, offset down-right, the first under a scheme centred on it; the main card moves the whole stack, a tucked card moves alone (drag, or Detach on touch)"
 type: project
 ---
 
@@ -43,13 +43,28 @@ the stack to the top of the table as a move does.
 Moving the main card moves the whole stack. Moving a tucked card takes it
 alone: the chain closes (the next card attaches to the previous one) and the
 cards after the gap move up. Dropping a tucked card on its own stack moves
-it to the end of the chain. A tucked card leaving the table (discard, hand,
-deck) also goes alone and the chain closes; the main card leaving the table
-takes the whole chain, each card to its discard destination.
+it to the end of the chain.
+
+A tucked card comes off its stack by a drag or, on a touch screen, by the
+inspector's Detach: a `detach` action (`ActDetach`, field `card`, `x`, `y`)
+that the server performs as a move of a tucked card (`applyDetach` calls
+`applyMove`) and refuses for a card tucked under none. The card keeps its
+face, exhaustion and counters and takes a fresh Z. The client picks the
+spot as for a played card (`detachSlot`, web/src/table/layout.ts, sharing
+`slotInRow` with `freeSlot`): in the row of the stack's main card (its y),
+the spots tried from that card's x on, so the card lands 40 past the last
+thing of the row reaching past the stack, or in the first hole wide enough
+after the stack. Unlike a move, a detach writes a history line ("detached
+Web-Shooter from Rhino", the stack's main card named) and is undoable.
+
+A tucked card leaving the table (discard, hand, deck) also goes alone and
+the chain closes; the main card leaving the table takes the whole chain,
+each card to its discard destination.
 
 **Why:** players stack upgrades and attachments on a hero or a villain; a
 chain keeps every card readable without hand placement, and an attachment
-comes off its host by drag without disturbing the others.
+comes off its host by drag, or by Detach on touch, where the tucked card
+lies mostly covered, without disturbing the others.
 
 **How to apply:** keep the server's "carried cards" rule (whole chain for a
 main card, nothing for a tucked card) and the client's `stackOf` in step;

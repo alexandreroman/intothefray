@@ -290,8 +290,10 @@
   }
 
   /* A spectator's free seat is a button: it takes the seat. */
-  button.free:hover:not(:disabled) {
-    border-color: var(--pc);
+  @media (hover: hover) {
+    button.free:hover:not(:disabled) {
+      border-color: var(--pc);
+    }
   }
 
   .free i {

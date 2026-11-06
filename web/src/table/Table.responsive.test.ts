@@ -958,7 +958,11 @@ describe('Table raised hand', () => {
     render(Table, { session: fakeSession(), view: viewWithHandOf(12) });
 
     // Over the table less 18 px of padding each side, each card shows a quarter of its width.
-    const raised = raisedHandCard(HAND_CARD_NARROW, { w: 800, h: TABLET.height }, { small: false });
+    const raised = raisedHandCard(
+      HAND_CARD_NARROW,
+      { w: 800, h: TABLET.height },
+      { small: false, tablet: false },
+    );
     const shrunk = filledHandCard(raised, HAND_CARD_NARROW, 12, 764);
     expect(shrunk.w).toBeLessThan(raised.w);
     expect(shrunk.w).toBeGreaterThan(HAND_CARD_NARROW.w);
@@ -994,7 +998,7 @@ describe('Table raised hand', () => {
     mockScrollerWidth(640);
     render(Table, { session: fakeSession(), view: viewWithHandOf(6) });
 
-    const raised = raisedHandCard(HAND_CARD, { w: 640, h: 800 }, { small: false });
+    const raised = raisedHandCard(HAND_CARD, { w: 640, h: 800 }, { small: false, tablet: false });
     const card = filledHandCard(raised, HAND_CARD, 6, 604);
     expect(hand().style.getPropertyValue('--card-w')).toBe(`${card.w}px`);
     expect(hand().style.getPropertyValue('--card-h')).toBe(`${card.h}px`);

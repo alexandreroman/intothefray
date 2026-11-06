@@ -22,7 +22,8 @@ import {
   type DropRect,
 } from './drag';
 import { dockLayout, type DockItem } from './dockLayout';
-import { spreadRows, tableMapOf } from './rows';
+import { TABLET_GRID } from './grid';
+import { ALL_TABLE, spreadRows, tableMapOf } from './rows';
 import { card, pile, playingView, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
@@ -167,34 +168,69 @@ describe('dropAction', () => {
     });
   });
 
+  it("dropAction snaps to a tablet's coarser grid: across on 20s, down on 10 past them", () => {
+    const at = (x: number, y: number) =>
+      dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, ALL_TABLE, undefined, TABLET_GRID);
+    // The nearest lines: beside player 1's cards (470), after the identity (300).
+    expect(at(311, 476)).toEqual({ kind: 'move', card: 'c', x: 320, y: 470 });
+    expect(at(289, 481)).toEqual({ kind: 'move', card: 'c', x: 280, y: 490 });
+    expect(at(300, 470)).toMatchObject({ x: 300, y: 470 });
+    // A marker too.
+    const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
+    expect(
+      dropAction(token, TABLE, { x: 509, y: 503 }, DEAL_TO, ALL_TABLE, undefined, TABLET_GRID),
+    ).toEqual({
+      kind: 'marker',
+      name: 'firstPlayer',
+      x: 500,
+      y: 510,
+    });
+    // Never off the top or left edge.
+    expect(at(-12, -30)).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it("dropAction keeps a tablet's drop at the bottom of a shown row in that row", () => {
+    // "Villain + player" on a tablet with the second of three players: the villain's row drawn
+    // 440 high, then row 2 (660 to 880) drawn from 440, 220 high.
+    const rows = tableMapOf(spreadRows(220, 3, 2, 440));
+    const yAt = (y: number) =>
+      dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows, undefined, TABLET_GRID)?.y;
+    // Row 2's cards, 30 under its top, drawn at 470.
+    expect(yAt(476)).toBe(690);
+    // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
+    expect(yAt(658)).toBe(870);
+    expect(yAt(2000)).toBe(870);
+  });
+
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {
     // "Villain + player" with the second of three players, rows as close as they go: the villain's
-    // row drawn 270 high, its empty band from 210 squeezed into 60, then row 2 (600 to 820).
+    // row drawn 270 high, its empty band from 210 squeezed into 60, then row 2 (660 to 880).
     const rows = tableMapOf(spreadRows(220, 3, 2));
     const yAt = (y: number) => dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows)?.y;
     // At the bottom of the villain's row: snapped onto the top of the shown row, not into row 1.
-    expect(yAt(267)).toBe(600);
+    expect(yAt(267)).toBe(660);
     expect(yAt(204)).toBe(200);
-    // In the villain's squeezed band, where it is drawn: 240 is 30 into it, 85 on the table.
-    expect(yAt(244)).toBe(290);
-    expect(yAt(443)).toBe(770);
+    // In the villain's squeezed band, where it is drawn: 240 is 30 into it, 115 on the table, 325
+    // taken down to the grid.
+    expect(yAt(244)).toBe(320);
+    expect(yAt(443)).toBe(830);
     // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
-    expect(yAt(486)).toBe(810);
-    expect(yAt(2000)).toBe(810);
+    expect(yAt(486)).toBe(870);
+    expect(yAt(2000)).toBe(870);
   });
 
   // Player 1's owner frame, around piles at 0 and 130: the grid of dock mode starts at its left.
-  const FRAME: DockItem = { id: 'frame', x: -10, y: 400, w: 262, h: 177, kind: 'frame' };
+  const FRAME: DockItem = { id: 'frame', x: -10, y: 460, w: 262, h: 177, kind: 'frame' };
 
   it('dropAction in dock mode inserts a card among the units of the row it is dropped on', () => {
-    // Player 1's row (top 380) at 0.6, wrapped at 400, on columns from its frame's left (−6), 91.2
+    // Player 1's row (top 440) at 0.6, wrapped at 400, on columns from its frame's left (−6), 91.2
     // apart: c0 (the indent, 176.4) and c1 on the first line, its top 12, the cards 18 lower; c2
     // and c3 on the second, from the first column, its top 12 + 118.2 (the frame) + 16 = 146.2,
     // their slots' middles at 27.6 and 118.8. The drop spot is the card's drawn middle.
     const cards: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
       id: `c${i}`,
       x,
-      y: 410,
+      y: 470,
       w: 112,
       h: 157,
       kind: 'card',
@@ -207,26 +243,26 @@ describe('dropAction', () => {
       dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map, spot);
 
     // Before c3, its middle at 83.6: between c2 (604..716) and c3 (756..868), 736 − 56.
-    expect(at(50, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
+    expect(at(50, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 470 });
     // Under the frame, left of c2's middle: before c2, (564 + 604) / 2 − 56 = 528, to 530.
-    expect(at(-30, 150)).toEqual({ kind: 'move', card: 'c', x: 530, y: 410 });
+    expect(at(-30, 150)).toEqual({ kind: 'move', card: 'c', x: 530, y: 470 });
     // Past c3: 40 past its right edge, 908, up to the grid.
-    expect(at(150, 150)).toEqual({ kind: 'move', card: 'c', x: 910, y: 410 });
+    expect(at(150, 150)).toEqual({ kind: 'move', card: 'c', x: 910, y: 470 });
   });
 
   it('dropAction in dock mode lays a marker where it is drawn, with the unit it lies past', () => {
-    const items: DockItem[] = [FRAME, { id: 'c0', x: 300, y: 410, w: 112, h: 157, kind: 'card' }];
+    const items: DockItem[] = [FRAME, { id: 'c0', x: 300, y: 470, w: 112, h: 157, kind: 'card' }];
     const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
     const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
     const spot = () => ({ x: 0, y: 0 });
 
     // With c0 (300, drawn 176.4, 30 under its row's 12 of name room): 300 + 73.6 / 0.6 = 422.7
-    // across, 410 + 20 / 0.6 = 443.3 down, on the grid.
+    // across, 470 + 20 / 0.6 = 503.3 down, on the grid.
     expect(dropAction(token, TABLE, { x: 250, y: 50 }, DEAL_TO, map, spot)).toEqual({
       kind: 'marker',
       name: 'firstPlayer',
       x: 420,
-      y: 440,
+      y: 500,
     });
   });
 
@@ -1375,13 +1411,13 @@ describe('a deck takes any card of its owner', () => {
 
 describe('the drop the rows show in dock mode (spec 3.8)', () => {
   // Player 1's row of four cards, drawn at 0.6 and wrapped at 400 (see dropAction in dock mode).
-  const FRAME: DockItem = { id: 'frame', x: -10, y: 400, w: 262, h: 157 + 20, kind: 'frame' };
+  const FRAME: DockItem = { id: 'frame', x: -10, y: 460, w: 262, h: 157 + 20, kind: 'frame' };
   const items: DockItem[] = [
     FRAME,
     ...[300, 452, 604, 756].map((x, i): DockItem => ({
       id: `c${i}`,
       x,
-      y: 410,
+      y: 470,
       w: 112,
       h: 157,
       kind: 'card',

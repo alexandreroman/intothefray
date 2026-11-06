@@ -16,6 +16,7 @@ type Kind string
 const (
 	ActMove    Kind = "move"
 	ActAttach  Kind = "attach"
+	ActDetach  Kind = "detach"
 	ActToHand  Kind = "toHand"
 	ActToDeck  Kind = "toDeck"
 	ActDiscard Kind = "discard"
@@ -229,7 +230,7 @@ func resolveOnTable(original *Table, who actor, a Action, rng *rand.Rand) (Actio
 // resolveOnTable); original is the table before covering.
 func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	switch a.Kind {
-	case ActMove, ActToken, ActStatus, ActModifier, ActChooseStage, ActDiscard:
+	case ActMove, ActDetach, ActToken, ActStatus, ActModifier, ActChooseStage, ActDiscard:
 		return a, checkCards(t, who, a.Card)
 	case ActExhaust:
 		return resolveExhaust(t, who, a)

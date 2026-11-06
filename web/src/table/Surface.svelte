@@ -74,6 +74,7 @@
   import CardView from './CardView.svelte';
   import { dockMode } from './dockMode';
   import { DOCK_DOT_PITCH, DOCK_SCALE } from './dockPiles';
+  import { FINE_GRID, type SnapGrid } from './grid';
   import MarkerToken from './MarkerToken.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { interaction } from './interaction.svelte';
@@ -94,6 +95,7 @@
     canDrag = () => false,
     shifts = new Map(),
     glide = false,
+    grid = FINE_GRID,
   }: {
     /** The cards lying on the table. */
     cards: TableCard[];
@@ -124,6 +126,8 @@
     shifts?: ReadonlyMap<string, Point>;
     /** Whether a change of the shifts glides there, rather than jumping. */
     glide?: boolean;
+    /** The grid drops snap to (grid.ts), which the dots follow out of dock mode: the fine one unless given. */
+    grid?: SnapGrid;
   } = $props();
 
   // How long a shift glides; nothing glides under reduced motion.
@@ -141,6 +145,10 @@
   // size. The dots lie further apart there (DOCK_DOT_PITCH), drawn.
   const dock = dockMode();
   const DOCK_DOTS = `${DOCK_DOT_PITCH * DOCK_SCALE}px ${DOCK_DOT_PITCH * DOCK_SCALE}px`;
+  // Elsewhere a dot lies in the middle of each cell of the grid: a card's corner on a grid line lies
+  // between four dots. The cells start where the grid's lines do, `offsetY` down.
+  const dotSize = $derived(dock.current ? DOCK_DOTS : `${grid.step}px ${grid.step}px`);
+  const dotPosition = $derived(dock.current ? undefined : `0 ${grid.offsetY}px`);
 
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
@@ -173,7 +181,8 @@
   class="surface table-dots"
   style:width="{width}px"
   style:height="{height}px"
-  style:background-size={dock.current ? DOCK_DOTS : undefined}
+  style:background-size={dotSize}
+  style:background-position={dotPosition}
   style:--shift-glide={glide && !prefersReducedMotion.current ? SHIFT_GLIDE : undefined}
 >
   {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
@@ -501,9 +510,11 @@
     color: var(--text);
   }
 
-  .chip:hover:not([aria-disabled='true']) {
-    background: var(--hover);
-    border-color: var(--owner);
-    color: var(--text);
+  @media (hover: hover) {
+    .chip:hover:not([aria-disabled='true']) {
+      background: var(--hover);
+      border-color: var(--owner);
+      color: var(--text);
+    }
   }
 </style>

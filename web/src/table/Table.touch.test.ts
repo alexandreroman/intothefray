@@ -4,7 +4,15 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import Table from './Table.svelte';
 import tableSource from './Table.svelte?raw';
 import { interaction, LANDING_MS } from './interaction.svelte';
-import { DESKTOP, mockScreen } from '../lib/screen.testing';
+import {
+  DESKTOP,
+  mockScreen,
+  PHONE,
+  resizeScreen,
+  TABLET,
+  type TestScreen,
+} from '../lib/screen.testing';
+import { HAND_CARD_NARROW, HAND_REST_DROP, handRestDrop, smallHandDrop } from './layout';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
 import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
@@ -131,6 +139,29 @@ describe('the inspector', () => {
     expect(contextMenu()).toBeNull();
   });
 
+  it('names a card, a face-down card and a pile for screen readers, with no title line', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const hidden = card('hidden', { code: '01003', faceDown: true, x: 400 });
+    await renderTable(makeView([card('mine'), hidden, ...OTHERS]));
+    /** The column starts with the main buttons: no title line above them. */
+    const columnStart = () => sheet()!.querySelector('.side')?.firstElementChild?.classList;
+
+    await tap(placed('two'));
+    expect(screen.getByRole('dialog', { name: /^Peter Parker, / })).toBe(sheet());
+    expect(columnStart()).toContain('pages');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('hidden'));
+    expect(screen.getByRole('dialog', { name: 'Face-down card' })).toBe(sheet());
+    expect(columnStart()).toContain('pages');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('deck:p0'));
+    expect(screen.getByRole('dialog', { name: /^Your deck, \d+ cards$/ })).toBe(sheet());
+    expect(columnStart()).toContain('pages');
+    expect(sheet()!.querySelector('.count-pill')).toBeNull();
+  });
+
   it('leaves the context menu to a mouse (mouse_click_opens_menu)', async () => {
     await renderTable();
 
@@ -170,26 +201,23 @@ describe('the inspector', () => {
     expect(sheet()).not.toBeNull();
   });
 
-  it('opens on a tap on a card of the raised hand, with Play (hand_tap_opens_sheet)', async () => {
+  it('stays shut on a tap on a card of the raised hand, which lifts it instead', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable();
     const hand = screen.getByRole('list', { name: 'Your hand' });
     const hcard = document.querySelector<HTMLElement>('.hand [data-id="h"]')!;
 
-    // The first tap raises the hand, the next one opens its card.
+    // The first tap raises the hand, the next one lifts its card to be read, a third lets it go.
     await tap(hcard);
     expect(hand.classList).toContain('open');
     expect(sheet()).toBeNull();
     await tap(hcard);
-    expect(sheet()).not.toBeNull();
-    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(false);
-
-    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Play/ }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ kind: 'play', card: 'h' }),
-      0,
-    );
     expect(sheet()).toBeNull();
+    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(true);
+    await tap(hcard);
+    expect(sheet()).toBeNull();
+    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(false);
+    expect(session.act).not.toHaveBeenCalled();
   });
 
   it('closes when its card leaves the table (sheet_closes_when_element_goes)', async () => {
@@ -256,6 +284,27 @@ describe('select mode', () => {
 
     expect(selectPill()).toBeNull();
     expect(interaction.group).toEqual(new Set(['mine']));
+  });
+});
+
+describe("the villain's row on a tablet", () => {
+  // An iPad on its side. jsdom's table shows no height, so the rows are drawn as close as they go.
+  const IPAD: TestScreen = { width: 1180, height: 820 };
+
+  /** Where a card 30 into player 1's row, at 470, is drawn. */
+  async function playerCardTop(): Promise<string | undefined> {
+    await renderTable(makeView([card('mine', { y: 470 }), ...OTHERS]));
+    return placed('mine').style.top;
+  }
+
+  it('is drawn at its full height in touch mode, a row of cards fitting under its own', async () => {
+    mockScreen({ ...IPAD, touch: true });
+    expect(await playerCardTop()).toBe('470px');
+  });
+
+  it('is drawn squeezed to 270 with a mouse on the same screen', async () => {
+    mockScreen(IPAD);
+    expect(await playerCardTop()).toBe('300px');
   });
 });
 
@@ -416,6 +465,28 @@ describe('the inspector, revealing a card from a deck (F-U8)', () => {
     expect(within(sheet()!).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
     expect(within(sheet()!).getByRole('button', { name: /^Draw/ })).toBeTruthy();
     expect(within(sheet()!).queryByRole('button', { name: /^Reveal/ })).toBeNull();
+  });
+
+  it("draws the revealed card's entries in the update that shows it, none of the deck's leaving", async () => {
+    // jsdom has no Web Animations: with animations that never end, a row that slides or fades out
+    // stays in the DOM, as it does on screen while it leaves.
+    const originalAnimate = Element.prototype.animate;
+    const animate = vi.fn(() => ({ onfinish: null, cancel: () => {}, effect: null }));
+    Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+    try {
+      const { rerender } = await revealFrom('enc');
+      expect(within(sheet()!).getByRole('button', { name: /^Top X/ })).toBeTruthy();
+
+      await rerender({ view: revealView([ON_ENCOUNTER]) });
+
+      expect(within(sheet()!).getByRole('button', { name: /^Flip/ })).toBeTruthy();
+      const deckEntries = [/^Reveal/, /^Top X/, /^Search/, /^Discard 1/, /^Discard X/, /^Shuffle/];
+      for (const deckEntry of deckEntries) {
+        expect(within(sheet()!).queryByRole('button', { name: deckEntry })).toBeNull();
+      }
+    } finally {
+      Element.prototype.animate = originalAnimate;
+    }
   });
 
   it('stays on the deck when the server refuses the reveal', async () => {
@@ -610,6 +681,40 @@ describe('the inspector, a stack of cards (F-U15)', () => {
     expect(centred()).toBe('t2');
   });
 
+  it('offers Detach on a tucked card, which sends it past its stack and closes', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session } = await renderTable(makeView(STACKED));
+    await tap(placed('t1'));
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Detach/ }));
+
+    expect(session.act).toHaveBeenCalledOnce();
+    const [action] = vi.mocked(session.act).mock.calls[0]!;
+    // In the stack's row, past its last card (120–232) with 40 free.
+    expect(action).toMatchObject({ kind: 'detach', card: 't1', y: 100 });
+    expect(action.x).toBeGreaterThanOrEqual(272);
+    expect(sheet()).toBeNull();
+  });
+
+  it('offers no Detach on the main card of a stack', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable(makeView(STACKED));
+
+    await tap(placed('host'));
+
+    expect(within(sheet()!).queryByRole('button', { name: /^Detach/ })).toBeNull();
+  });
+
+  it('leaves Detach out of the mouse menu, a mouse dragging the card off', async () => {
+    await renderTable(makeView(STACKED));
+
+    await fireEvent.click(placed('t1'));
+
+    expect(contextMenu()).not.toBeNull();
+    expect(within(contextMenu()!).queryByText('Detach')).toBeNull();
+    expect(within(contextMenu()!).getByText('Flip')).toBeTruthy();
+  });
+
   it('shows the card alone for a card on its own, or a pile', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(makeView(STACKED));
@@ -621,5 +726,92 @@ describe('the inspector, a stack of cards (F-U15)', () => {
     await fireEvent.keyDown(window, { key: 'Escape' });
     await tap(placed('deck:p0'));
     expect(carousel()).toBeNull();
+  });
+});
+
+// A tablet upright with a finger (iPad Air): narrow, so without the history column, but no phone.
+const TOUCH_TABLET: TestScreen = { width: 820, height: 1180, touch: true };
+
+describe('a tablet without the history column (spec 2.2)', () => {
+  /** The bottom right corner's History button, if it shows. */
+  function cornerHistory(): HTMLElement | null {
+    const corner = document.querySelector<HTMLElement>('.corner');
+    return corner ? within(corner).queryByRole('button', { name: 'History' }) : null;
+  }
+
+  it('shows History beside the floating Undo, which opens the history sheet', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable();
+
+    const undo = screen.getByRole('button', { name: 'Undo last action' });
+    const history = cornerHistory();
+    expect(history).not.toBeNull();
+    expect(history!.dataset.tip).toBe('History');
+    // In Undo's bar, right after it.
+    expect(undo.nextElementSibling).toBe(history);
+    expect(screen.queryByRole('dialog', { name: 'History' })).toBeNull();
+
+    await fireEvent.click(history!);
+
+    expect(screen.getByRole('dialog', { name: 'History' })).toBeTruthy();
+  });
+
+  it('closes the history sheet once the history column shows', async () => {
+    const lists = mockScreen(TOUCH_TABLET);
+    await renderTable();
+    await fireEvent.click(cornerHistory()!);
+
+    await resizeScreen(lists, { ...DESKTOP, touch: true });
+
+    expect(screen.queryByRole('dialog', { name: 'History' })).toBeNull();
+    expect(cornerHistory()).toBeNull();
+  });
+
+  it('keeps the corner without History in a narrow mouse window, and in dock mode', async () => {
+    mockScreen(TABLET);
+    const { unmount } = await renderTable();
+    expect(screen.getByRole('button', { name: 'Undo last action' })).toBeTruthy();
+    expect(cornerHistory()).toBeNull();
+    unmount();
+
+    // A phone: the dock has History, and there is no corner.
+    mockScreen(PHONE);
+    await renderTable();
+    expect(document.querySelector('.corner')).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'History' })).toHaveLength(1);
+  });
+});
+
+describe('the resting hand on a narrow touch screen (spec 2.3)', () => {
+  function hand(): HTMLElement {
+    return screen.getByRole('list', { name: 'Your hand' });
+  }
+
+  /** The raised card the hand is drawn from, which its rest drop is measured against. */
+  function raisedCard(): { w: number; h: number } {
+    return {
+      w: Number.parseFloat(hand().style.getPropertyValue('--card-w')),
+      h: Number.parseFloat(hand().style.getPropertyValue('--card-h')),
+    };
+  }
+
+  it('drops the narrow card by the share a wide screen drops its card, for a finger to tap', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable();
+
+    // 196 × 140 / 259 ≈ 106 px down, so that about 70 px of the cards show.
+    expect(smallHandDrop(HAND_CARD_NARROW.h)).toBe(106);
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe(
+      `${handRestDrop(HAND_CARD_NARROW, smallHandDrop(HAND_CARD_NARROW.h), raisedCard())}px`,
+    );
+  });
+
+  it('keeps the desktop drop in a narrow mouse window', async () => {
+    mockScreen(TABLET);
+    await renderTable();
+
+    expect(hand().style.getPropertyValue('--rest-drop')).toBe(
+      `${handRestDrop(HAND_CARD_NARROW, HAND_REST_DROP, raisedCard())}px`,
+    );
   });
 });

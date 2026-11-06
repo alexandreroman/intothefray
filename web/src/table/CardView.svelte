@@ -511,7 +511,6 @@
   }
 
   /* Pointed at: the chip is ringed. */
-  .tok:hover,
   .tok.hot {
     box-shadow:
       inset 0 1px 1px #ffffff80,
@@ -520,11 +519,26 @@
       0 2px 6px #000000a0;
   }
 
-  .st:hover,
   .st.hot {
     box-shadow:
       0 0 0 2px #fff,
       0 2px 4px #0009;
+  }
+
+  @media (hover: hover) {
+    .tok:hover {
+      box-shadow:
+        inset 0 1px 1px #ffffff80,
+        inset 0 -2px 3px #0000004d,
+        0 0 0 2px #fff,
+        0 2px 6px #000000a0;
+    }
+
+    .st:hover {
+      box-shadow:
+        0 0 0 2px #fff,
+        0 2px 4px #0009;
+    }
   }
 
   .tok::before {

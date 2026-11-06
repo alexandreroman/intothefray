@@ -239,6 +239,17 @@
   }
 
   /*
+    A tablet: a finger needs a 44 px target, so an invisible hit area reaches past the avatar, as
+    far round on every side. The spacing between avatars leaves room for it without overlapping
+    the next one's; dock mode (a phone) and a mouse keep the avatar alone.
+  */
+  :global(.app.touch:not(.dock-mode)) .swatch::before {
+    content: '';
+    position: absolute;
+    inset: calc((var(--avatar) - 44px) / 2);
+  }
+
+  /*
     The keyboard focus rings the avatar alone, round and outside the player-colour ring (which
     reaches 4.5px past the avatar), rather than boxing the whole entry with its name.
   */
@@ -266,8 +277,10 @@
     background: var(--seat);
   }
 
-  .item:hover .art {
-    filter: grayscale(0.6) brightness(0.85);
+  @media (hover: hover) {
+    .item:hover .art {
+      filter: grayscale(0.6) brightness(0.85);
+    }
   }
 
   .item[aria-checked='true'] .art {
@@ -301,8 +314,10 @@
       color 0.3s;
   }
 
-  .item:hover .name {
-    color: var(--text-soft);
+  @media (hover: hover) {
+    .item:hover .name {
+      color: var(--text-soft);
+    }
   }
 
   .item[aria-checked='true'] .name {

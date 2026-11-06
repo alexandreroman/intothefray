@@ -718,8 +718,13 @@
 
   /* A tile the host can pick zooms in on its art; read-only and unsupported tiles stay still. */
   @media (prefers-reduced-motion: no-preference) {
-    .vil:enabled:hover,
     .vil:enabled:focus-visible {
+      --art-zoom: 1.07;
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .vil:enabled:hover {
       --art-zoom: 1.07;
     }
   }

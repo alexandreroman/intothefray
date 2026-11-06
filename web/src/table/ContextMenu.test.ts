@@ -351,8 +351,8 @@ describe('the context menu', () => {
     const moveTo = menuItem(menu, 'Move to');
     expect(screen.getByRole('menuitem', { name: 'Move to', description: reason })).toBe(moveTo);
     // An enabled item has no reason.
-    expect(menuItem(menu, 'Exhaust').hasAttribute('aria-describedby')).toBe(false);
-    expect(menuItem(menu, 'Exhaust').hasAttribute('data-tip')).toBe(false);
+    expect(menuItem(menu, 'Change card…').hasAttribute('aria-describedby')).toBe(false);
+    expect(menuItem(menu, 'Change card…').hasAttribute('data-tip')).toBe(false);
     await fireEvent.click(discard);
     await fireEvent.click(moveTo);
     expect(session.act).not.toHaveBeenCalled();

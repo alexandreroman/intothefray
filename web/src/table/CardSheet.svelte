@@ -1,10 +1,12 @@
 <!--
   The inspector of a table card or pile on a touch screen, in place of its
   context menu (ContextMenu.svelte): a bottom sheet (Sheet.svelte) with the
-  card's face large beside its name, its counters drawn on it, then the same entries
-  as the menu (contextItems.ts). The first group shows as large buttons, the
-  default one in Fray red, the others as rows; a submenu opens in the sheet,
-  with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
+  card's face large, its counters drawn on it, and a column with the same
+  entries as the menu (contextItems.ts), with no title line: the sheet's
+  accessible name says what the element is (its header's label: a card's
+  name, type and owner, a pile's kind and count). The first group shows as
+  large buttons, the default one in Fray red, the others as rows; a submenu
+  opens in the sheet, with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
   it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet, or keeps
   it open for a token, status or modifier, which then shows on the card.
@@ -14,19 +16,38 @@
   on top, centred, and everything else full width under it, the whole sheet
   scrolling if it must; on its side, the card as large as it allows on the
   left, and everything else in one column on its right, the only part that
-  scrolls.
+  scrolls, centred on the card when shorter than it.
+  On a tablet (outside dock mode, as only a touch screen opens the inspector),
+  the sheet is wide (Sheet.svelte). Its room (--sheet-room) is at most 460 px
+  and 70 % of the screen. A portrait card lays out as a phone on its side: the
+  card on the left, as high as the room, and the column on its right, at most
+  as high as the room, the only part that scrolls; shorter than the card, its
+  content is centred on the card's height. A landscape card (a scheme)
+  follows the screen. On a tablet on its side, which has width to spare, it
+  lies beside its column too, as wide as the room, top-aligned, and the sheet
+  is as wide as the card and its column need. On a tablet upright, it is on
+  top, centred, three quarters as wide as the room, and its column full width
+  under it, the whole sheet scrolling if it must. Turning the tablet lays the
+  sheet out again. A stack follows its main card, so that
+  a swipe never changes the layout; a card turning over to the other
+  orientation keeps the old layout until it is edge-on, as for its face.
+  Buttons and rows are 44 px high, on a phone and a tablet alike.
   Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
   back the other way; an entry that comes or goes after an update slides open
   or closed; a token fades in or out; a pressed button sinks. When the
   face the card shows changes (a flip, a stage turned, a card turned face
   down or up, a deck's back giving way to the card revealed on it), the card
-  turns over as a table card does, in place: the name, the count, the
-  counters and the entries follow its new side once it is edge-on. When the
-  new side needs another size, the sheet eases to it first, the old side
-  still shown, then the card turns: the new side is measured beforehand in a
-  hidden copy of the content. Another element opens a sheet of its own
-  (Table.svelte keys it), which does not turn.
+  turns over as a table card does, in place: the sheet's name and the
+  entries show the new side at once, so that the old side's actions (a deck's
+  Reveal) never linger; the face, its counters and the layout around it
+  follow once it is edge-on. When the new side needs another size, the sheet
+  eases to it first, the old face still shown, then the card turns: the new
+  side is measured beforehand in a hidden copy of the content. Another
+  element opens a sheet of its own (Table.svelte keys it), which does not
+  turn.
+  One gutter keeps the card, its column and the sheet's edges apart, wide
+  enough for the tabs and badges standing out of the card's edges.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
   A card of a stack shows the whole stack in place of its face: a carousel
@@ -37,7 +58,9 @@
   moves, or a tapped neighbour, at once, is asked of the caller (onpick): the
   same sheet then shows it, the carousel gliding on to it,
   its column switching at once, its rows neither sliding nor fading, never
-  turning, its page keeping its height as through a submenu. The carousel
+  turning. Under the card, its page keeps its height as through a submenu;
+  beside it, the card sets the sheet's height, and the page takes what the
+  new card's entries need, up to the room. The carousel
   bringing the card to its middle is the only motion: every card keeps its face,
   image and counters drawn through the switch, so nothing blinks as it loads
   again. The centred card is the face that turns over on a flip.
@@ -47,13 +70,14 @@
   import { tick, untrack } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
+  import { MediaQuery } from 'svelte/reactivity';
   import { fade, fly, slide } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
   import { buttonGrid } from '../lib/buttonGrid';
   import { overflowTip } from '../lib/overflowTip';
+  import { SHORT_SCREEN_QUERY, SIDEWAYS_QUERY } from '../lib/screen';
   import CardCounters from './CardCounters.svelte';
   import CardFace from './CardFace.svelte';
-  import './countPill.css';
   import { dockMode } from './dockMode';
   import { LIFT_SCALE } from './motion.svelte';
   import type { ActionItem } from './actions';
@@ -87,7 +111,7 @@
     counters: SheetCounter[];
     /** The stack the card belongs to, its main card first (inspector.stackCardsOf); none for a card on its own. */
     stack?: StackCard[];
-    /** The id of the table card shown, which the strip rings; none for a pile or a hand card. */
+    /** The id of the table card shown, which the strip rings; none for a pile. */
     cardId?: string;
     /** Runs a chosen item; the caller closes the sheet. */
     onrun: (item: ActionItem) => void;
@@ -99,6 +123,10 @@
   } = $props();
 
   const dock = dockMode();
+  /** A phone on its side: in dock mode, the column lies beside the card (the @media rule below). */
+  const short = new MediaQuery(SHORT_SCREEN_QUERY);
+  /** A tablet on its side: a landscape card lies beside its column too (layoutOf). */
+  const sideways = new MediaQuery(SIDEWAYS_QUERY);
 
   /** How long a page takes to slide in as the other one leaves, in ms. */
   const PAGE_MS = 220;
@@ -128,9 +156,13 @@
   };
 
   const live = $derived<Side>({ images, landscape, header, counters, entries, cardId });
-  /** The side the card turns away from, shown until it is edge-on; null while it does not turn. */
+  /**
+   * The side the card turns away from, which its face shows until it is edge-on; null while it does
+   * not turn. The column, its note and entries, shows the live side from the update that brings it.
+   */
   let leaving = $state.raw<Side | null>(null);
-  const side = $derived(leaving ?? live);
+  /** The side the face shows, with its counters and the layout around it. */
+  const faceSide = $derived(leaving ?? live);
 
   let faceElement = $state<HTMLElement>();
   let turn: Animation | undefined;
@@ -144,19 +176,55 @@
   let centredOnce = false;
   /** The ease of the sheet to the new side's size; it holds that size until the turn ends. */
   let resize: Animation | undefined;
+  /** The content's height before the new side's column came in, which the ease starts from, in px. */
+  let heightBefore = 0;
   /** The side of the last update, which a new face turns away from. */
   let lastSide: Side | null = null;
   /** The hidden copy of the content, drawn with the new side to measure its height. */
   let measureElement = $state<HTMLElement | null>(null);
-  /** The width the copy is drawn at: the content's, in px; null while nothing is measured. */
+  /**
+   * The width the copy is drawn at: the content's, in px; null while nothing is measured. A sheet
+   * that fits its content lays the copy out at the width it gives itself instead (see the copy).
+   */
   let measureWidth = $state<number | null>(null);
+
+  /**
+   * The classes of the inspector's layout for a side: dock mode's on a phone; on a tablet, the column
+   * beside a portrait card; beside a landscape one on a tablet on its side ('land': the sheet fits
+   * its content), under it on a tablet upright. A stack follows its main card, so that a swipe never
+   * changes the layout; the main card shown follows the side, which may have just turned.
+   */
+  function layoutOf(of: Side): string[] {
+    if (dock.current) {
+      return ['dock'];
+    }
+    const main = stack.length > 1 ? stack[0] : undefined;
+    const landscape = main === undefined || main.id === of.cardId ? of.landscape : main.landscape;
+    if (!landscape) {
+      return ['tablet', 'beside'];
+    }
+    return sideways.current ? ['tablet', 'beside', 'land'] : ['tablet', 'column'];
+  }
+
+  /** Whether the sheet is as wide as its content in a side's layout: a landscape card beside its column. */
+  function fitsContent(of: Side): boolean {
+    return layoutOf(of).includes('land');
+  }
+
+  /**
+   * Whether the column lies beside the card, which sets the sheet's height then: a phone on its
+   * side, or a tablet beside a portrait card. Under the card, the sheet's height follows the column.
+   */
+  function columnBesideCard(of: Side): boolean {
+    return dock.current ? short.current : layoutOf(of).includes('beside');
+  }
 
   /** What tells one face from another: a new array of the same images is the same face. */
   function faceKey(of: Side): string {
     return `${of.landscape ? 'land' : 'portrait'}|${of.images.join('|')}`;
   }
 
-  // Before the sheet is drawn again: the old side stays on screen until the turn reaches edge-on.
+  // Before the sheet is drawn again: the old face stays on screen until the turn reaches edge-on.
   $effect.pre(() => {
     const now = live;
     untrack(() => {
@@ -262,15 +330,21 @@
   }
 
   /**
-   * Shows another card of the stack at once: the page keeps its height and goes back to the main
-   * page, and the column changes in place, its rows neither sliding nor fading (atOnce). A fade
-   * would dip the column to nothing between the two cards; the carousel gliding to the new one is
-   * motion enough. Its faces stay as they are, the shown one's counters coming to life.
+   * Shows another card of the stack at once: the page goes back to the main page, and the column
+   * changes in place, its rows neither sliding nor fading (atOnce). A fade would dip the column to
+   * nothing between the two cards; the carousel gliding to the new one is motion enough. Its faces
+   * stay as they are, the shown one's counters coming to life. Under the card, the page keeps its
+   * height, so that the sheet does not jump nor the card move; beside it, the card keeps the sheet's
+   * height anyway, and the page takes what the new card's entries need, scrolling only past the room.
    */
   function switchCard(): void {
     turn?.cancel();
     resize?.cancel();
-    keepHeightForStack();
+    if (columnBesideCard(live)) {
+      heldHeight = null;
+    } else {
+      keepHeightForStack();
+    }
     atOnce = true;
     pageStep = -1;
     openId = null;
@@ -279,8 +353,10 @@
   }
 
   /**
-   * Shows the card's new side: the old one stays until the card is edge-on, while the hidden copy
-   * measures the new one. Under reduced motion, the face and the rest just change.
+   * Shows the card's new side: the column changes at once, its rows neither sliding nor fading
+   * (atOnce), while the face keeps the old side until it is edge-on (turnOver) and the hidden copy
+   * measures the new one. Run before the update is drawn: the content's height is still the old
+   * side's, which the sheet eases from. Under reduced motion, the face and the rest just change.
    */
   function changeSide(from: Side): void {
     if (motionMs(TURN_MS) === 0 || faceElement === undefined || content === undefined) {
@@ -288,24 +364,32 @@
     }
     turn?.cancel();
     resize?.cancel();
+    heightBefore = content.offsetHeight;
     leaving = from;
     measureWidth = content.offsetWidth;
+    atOnce = true;
+    // The rows and pages that come or go with this update take their transitions at its end.
+    void tick().then(() => (atOnce = false));
   }
 
-  /** Eases the sheet to the new side's height, if it differs, then turns the card over. */
+  /**
+   * Eases the sheet from the old side's height to the new side's, then turns the card over. Run
+   * before the update is painted: the content, with the new column beside the old face, never
+   * shows at a height of its own. No ease when neither differs from the new side's.
+   */
   function resizeThenTurn(target: number): void {
     measureWidth = null;
     if (content === undefined) {
       return;
     }
     const current = content.offsetHeight;
-    if (Math.abs(target - current) < 1) {
+    if (Math.abs(target - heightBefore) < 1 && Math.abs(target - current) < 1) {
       turnOver();
       return;
     }
-    // Held at the new size until the turn ends: the entries sliding in and out as the side changes
-    // do not move the sheet again.
-    const easing = content.animate([{ height: `${current}px` }, { height: `${target}px` }], {
+    // Held at the new size until the turn ends: the layout changing as the card is edge-on does not
+    // move the sheet again.
+    const easing = content.animate([{ height: `${heightBefore}px` }, { height: `${target}px` }], {
       duration: RESIZE_MS,
       easing: 'ease-out',
       fill: 'forwards',
@@ -317,7 +401,9 @@
   /**
    * Turns the card over around its vertical axis, as a table card does (motion.svelte.ts #flip):
    * its old side (leaving) turns away to edge-on, lifted, then its new side turns back flat and
-   * comes down. The sheet takes its own height back once the turn ends.
+   * comes down. Edge-on, the face, its counters and the layout take the new side, which the column
+   * shows already; the sheet has the new side's height by then. The sheet takes its own height
+   * back once the turn ends.
    */
   function turnOver(): void {
     if (faceElement === undefined) {
@@ -347,7 +433,7 @@
     };
   }
 
-  const shown = $derived(visibleEntries(side.entries));
+  const shown = $derived(visibleEntries(live.entries));
   const split = $derived(splitEntries(shown));
 
   let openId = $state<string | null>(null);
@@ -363,9 +449,16 @@
    * size follows its content.
    */
   let heldHeight = $state<number | null>(null);
-  /** The sheet has gone to another card of the stack: its page keeps its height from then on. */
+  /**
+   * The sheet has gone to another card of the stack, its column under the card: its page keeps its
+   * height from then on.
+   */
   let heldForStack = false;
-  /** The pages and rows of this update come and go at once: a switch to another card of the stack. */
+  /**
+   * The pages and rows of this update come and go at once: a switch to another card of the stack,
+   * or the column of a card that turns over: both sides' entries in the column together would mix
+   * in its grid and overlap.
+   */
   let atOnce = false;
 
   /** Holds the page at its height as the sheet goes from card to card of the stack, for good. */
@@ -491,7 +584,7 @@
 <!-- The main page of the entries: the first group as large buttons, the others as rows. -->
 {#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
   {#if parts.main.length > 0}
-    <div class="main-grid" style:--columns={parts.main.length} {@attach buttonGrid()}>
+    <div class="main-grid" {@attach buttonGrid()}>
       {#each parts.main as entry (entry.item.id)}
         <button
           type="button"
@@ -530,7 +623,7 @@
   {/if}
 {/snippet}
 
-<!-- The note or the entries: under the card, or in its column in dock mode. -->
+<!-- The note or the entries, in the card's column. -->
 {#snippet entriesBlock()}
   {#if note !== undefined}
     <p class="note">{note}</p>
@@ -580,21 +673,12 @@
   {/if}
 {/snippet}
 
-<!-- The sheet is named by its whole header, its type, stage or owner included: shown, the name
-     alone, which is not read a second time; an eyebrow line would take room. -->
-{#snippet nameline(of: ContextHeader)}
-  <div class="nameline" aria-hidden="true">
-    <span class="name" use:overflowTip>{of.name}</span>
-    {#if of.count !== undefined}<span class="count count-pill">{of.count}</span>{/if}
-  </div>
-{/snippet}
-
 <!-- The shown card's tokens, tabs and badges, on its face: the way to change them. -->
 {#snippet faceCounters()}
   <CardCounters
-    counters={side.counters}
-    landscape={side.landscape}
-    scheme={side.header.scheme ?? false}
+    counters={faceSide.counters}
+    landscape={faceSide.landscape}
+    scheme={faceSide.header.scheme ?? false}
     {onstep}
   />
 {/snippet}
@@ -620,8 +704,8 @@
   >
     {@render spacer(stack[0]!)}
     {#each stack as card (card.id)}
-      {@const shown = card.id === side.cardId}
-      {@const landscape = shown ? side.landscape : card.landscape}
+      {@const shown = card.id === faceSide.cardId}
+      {@const landscape = shown ? faceSide.landscape : card.landscape}
       <!-- A neighbour is a button: its role is set as it peeks, which the check cannot follow. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
@@ -643,14 +727,14 @@
           {@attach shown && holdFace}
         >
           <CardFace
-            images={shown ? side.images : card.images}
-            name={shown ? side.header.name : card.name}
+            images={shown ? faceSide.images : card.images}
+            name={shown ? faceSide.header.name : card.name}
             {landscape}
           />
           <CardCounters
-            counters={shown ? side.counters : (card.counters ?? [])}
+            counters={shown ? faceSide.counters : (card.counters ?? [])}
             {landscape}
-            scheme={(shown ? side.header.scheme : card.scheme) ?? false}
+            scheme={(shown ? faceSide.header.scheme : card.scheme) ?? false}
             onstep={shown ? onstep : undefined}
           />
         </div>
@@ -697,38 +781,34 @@
   {/if}
 {/snippet}
 
-<Sheet label={header.label} dock={dock.current} {onclose}>
-  <div class="inspector" class:dock={dock.current} bind:this={content}>
+<Sheet label={header.label} dock={dock.current} wide fit={fitsContent(faceSide)} {onclose}>
+  <div class={['inspector', layoutOf(faceSide)]} bind:this={content}>
     <div class="top">
       <div class="visual" class:stacked={stack.length > 1}>
         {#if stack.length > 1}
           {@render stackCarousel()}
         {:else}
-          <div class="face" class:land={side.landscape} bind:this={faceElement}>
-            <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+          <div class="face" class:land={faceSide.landscape} bind:this={faceElement}>
+            <CardFace
+              images={faceSide.images}
+              name={faceSide.header.name}
+              landscape={faceSide.landscape}
+            />
             {@render faceCounters()}
           </div>
         {/if}
       </div>
       <div class="side">
-        {@render nameline(side.header)}
-        {#if dock.current}
-          {@render entriesBlock()}
-        {/if}
+        {@render entriesBlock()}
       </div>
     </div>
-
-    {#if !dock.current}
-      {@render entriesBlock()}
-    {/if}
   </div>
 
   <!-- Drawn for a moment only, unseen and out of reach, the time to measure the new side. -->
   {#if measureWidth !== null}
     <div
-      class="inspector measure"
-      class:dock={dock.current}
-      style:width="{measureWidth}px"
+      class={['inspector', 'measure', layoutOf(live)]}
+      style:width={fitsContent(live) ? undefined : `${measureWidth}px`}
       aria-hidden="true"
       inert
       bind:this={measureElement}
@@ -742,25 +822,34 @@
           {/if}
         </div>
         <div class="side">
-          {@render nameline(live.header)}
-          {#if dock.current}
-            {@render measuredEntries()}
-          {/if}
+          {@render measuredEntries()}
         </div>
       </div>
-      {#if !dock.current}
-        {@render measuredEntries()}
-      {/if}
     </div>
   {/if}
 </Sheet>
 
 <style>
+  /*
+    One gutter, --gutter, on every side of the card and its column: from the sheet's edges to the
+    card, between the card and the column, from the column to the sheet's edge, and under the card.
+    It keeps 12 px clear around the status tabs and modifier badges, which stand 6 table units out
+    of the card's edges (CardCounters.svelte), --overhang: 6 / 112 of a portrait face's width, 6 /
+    157 of a landscape one's, the widest of the two as each layout sets their widths (--portrait-w,
+    --landscape-w), so that a card turning over keeps the gutter it had. The sheet pads its own
+    edges (Sheet.svelte): the inspector pads the rest.
+  */
   .inspector {
+    --overhang: max(var(--portrait-w) * 6 / 112, var(--landscape-w) * 6 / 157);
+    --gutter: calc(var(--overhang) + 12px);
+    /*
+      The carousel's padding above its cards, for their shadows (see .carousel), and the height it
+      takes besides its cards: its padding (24 px), the gap (8 px) and the dots (6 px).
+    */
+    --carousel-top: 10px;
+    --carousel-chrome: 38px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 0 14px;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -774,27 +863,35 @@
     pointer-events: none;
   }
 
-  /* The face beside what the element is and the counters it carries. */
+  /*
+    The copy of a sheet that fits its content (Sheet.svelte .sheet.wide.fit): as wide as its content,
+    up to the window less the sheet's 16 px a side and its 1 px borders, as the sheet will be.
+  */
+  .inspector.measure.land {
+    width: max-content;
+    max-width: calc(100vw - 34px);
+  }
+
+  /* The face beside its column: its note and entries. */
   .top {
     display: flex;
-    gap: 12px;
+    gap: var(--gutter);
     align-items: flex-start;
   }
 
-  /* The face, with the strip of its stack under it. */
+  /* The face, or the stack's carousel with its dots under it; sized by dock mode or the tablet's rules. */
   .visual {
     flex: none;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 46%;
     min-width: 0;
   }
 
   /*
-    --face-ratio: its width over its height, which dock mode sizes it by. No minimum size from its
-    image: the face keeps the card's ratio whatever the scan's, as the copy that measures a new
-    side, drawn without an image, lays it out.
+    --face-ratio: its width over its height, which dock mode and the tablet's rules size it by. No
+    minimum size from its image: the face keeps the card's ratio whatever the scan's, as the copy
+    that measures a new side, drawn without an image, lays it out.
   */
   .face {
     --face-ratio: 5 / 7;
@@ -802,7 +899,6 @@
     flex: none;
     min-width: 0;
     min-height: 0;
-    width: 100%;
     aspect-ratio: var(--face-ratio);
     border-radius: var(--card-radius);
     box-shadow: 4px 6px 16px #000c;
@@ -819,9 +915,7 @@
     shown one is as large as a card alone would be, with room left for its neighbours to peek.
   */
   .visual.stacked {
-    --slide-h: 100vh;
     --slide-max: 82%;
-    width: 56%;
   }
 
   .carousel {
@@ -830,7 +924,7 @@
     display: flex;
     align-items: center;
     gap: var(--gap);
-    padding-block: 10px 14px;
+    padding-block: var(--carousel-top) 14px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
@@ -915,45 +1009,18 @@
     background: var(--text);
   }
 
+  /*
+    The column's width tells the main buttons how many go side by side (see .main-grid). Beside the
+    card, its content is centred on the card's height, or starts level with its top when it is the
+    taller (see .inspector.beside .side).
+  */
   .side {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-
-  /*
-    The name centred, with a pile's count beside it: the two centred as one, with room above and
-    below, and on their sides, so that a long name never meets the sheet's edges. The copy that
-    measures a new side draws the same line.
-  */
-  .nameline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 12px;
-  }
-
-  /* One line: a long name is cut with an ellipsis (overflowTip shows it whole), never the count. */
-  .name {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text);
-    font-size: 20px;
-    font-weight: 800;
-    line-height: 1.1;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* A pile's count, in a pile's capsule (countPill.css), its digits lined up as they change. */
-  .count {
-    flex: none;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
+    container-type: inline-size;
   }
 
   .note {
@@ -962,11 +1029,34 @@
     font-size: 14px;
   }
 
-  /* The first group: large buttons side by side, the default one in Fray red. */
+  /*
+    The first group: large buttons, the default one in Fray red. One per row in a narrow column,
+    two in a wide one, never one alone on the last line (lib/buttonGrid.ts): a lone button the
+    whole width, three in a row when they fit there, or else the first one, the default
+    (inspector.splitEntries), the whole width on top.
+  */
   .main-grid {
     display: grid;
-    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  @container (min-width: 260px) {
+    .main-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .main-grid:global([data-layout='single']) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .main-grid:global([data-layout='row']) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .main-grid:global([data-layout='lead']) > .main:first-child {
+    grid-column: 1 / -1;
   }
 
   .main {
@@ -975,12 +1065,12 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
-    min-height: 64px;
-    padding: 6px;
+    min-height: 44px;
+    padding: 4px 8px;
     border: 0;
-    border-radius: 14px;
+    border-radius: 10px;
     background: var(--panel-2);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     text-align: center;
   }
@@ -999,8 +1089,10 @@
     color: var(--bg);
   }
 
-  .main.default:hover {
-    background: var(--accent-hover);
+  @media (hover: hover) {
+    .main.default:hover {
+      background: var(--accent-hover);
+    }
   }
 
   /* A press reads as taken before the sheet closes: the default button darkens as the primary
@@ -1059,7 +1151,7 @@
     grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 8px;
     min-width: 0;
   }
 
@@ -1077,8 +1169,8 @@
     column-gap: 12px;
     row-gap: 2px;
     width: 100%;
-    min-height: 48px;
-    padding: 6px 4px;
+    min-height: 44px;
+    padding: 4px 8px;
     border-radius: 10px;
     font-size: 15px;
     font-weight: 600;
@@ -1105,18 +1197,21 @@
 
   .sep {
     height: 1px;
-    margin: 4px 0;
+    margin: 2px 0;
     background: var(--line-strong);
   }
 
   /*
     Dock mode upright: the card on top, centred, as wide as the sheet allows
-    while it stays at most 42 % of the screen high; the name, the counters
-    and the entries full width under it. The
-    sheet pads them and scrolls the whole (Sheet.svelte), if it must.
+    while it stays at most 42 % of the screen high; the note and the
+    entries full width under it. The
+    sheet pads them and scrolls the whole (Sheet.svelte), if it must. A face
+    is at most as wide as the sheet, which pads its edges by 12 px.
   */
   .inspector.dock {
-    padding: 0;
+    --portrait-w: min(100dvw - 24px, 42dvh * 5 / 7);
+    --landscape-w: min(100dvw - 24px, 42dvh * 7 / 5);
+    padding: 0 calc(var(--gutter) - 12px) calc(var(--gutter) - 12px);
   }
 
   .inspector.dock .top {
@@ -1143,15 +1238,21 @@
 
   .inspector.dock .side {
     align-self: stretch;
-    container-type: inline-size;
   }
 
   /*
     A phone on its side: two columns, the card as high as the sheet, as wide as
     its aspect makes it, on the left, and the rest on its right. Only the
     column scrolls, once its content is higher than the room the sheet has.
+    --card-room: their height, the sheet's room less the gutter under them.
   */
   @media (max-height: 500px) {
+    .inspector.dock {
+      --card-room: calc(var(--sheet-room) - var(--gutter) + 12px);
+      --portrait-w: calc(var(--sheet-room) * 5 / 7);
+      --landscape-w: calc(var(--sheet-room) * 7 / 5);
+    }
+
     .inspector.dock .top {
       flex-direction: row;
       align-items: flex-start;
@@ -1162,78 +1263,149 @@
       width: auto;
     }
 
-    /*
-      The carousel as high as the sheet: its cards that high less its padding (24 px), the gap
-      (8 px) and the dots (6 px); as wide as a card with 44 px on each side for its neighbours.
-    */
+    /* The carousel as high as the sheet; as wide as a card with 44 px on each side for its neighbours. */
     .inspector.dock .visual.stacked {
-      --carousel-chrome: 38px;
-      --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
+      --slide-h: calc(var(--card-room) - var(--carousel-chrome));
       width: calc(var(--slide-h) * 5 / 7 + 88px);
     }
 
     .inspector.dock .face {
       width: auto;
-      height: var(--sheet-room);
+      height: var(--card-room);
     }
 
+    /* Centred on the card, as beside a tablet's card (see .inspector.beside .side). */
     .inspector.dock .side {
-      align-self: auto;
-      max-height: var(--sheet-room);
+      align-self: stretch;
+      max-height: var(--card-room);
       overflow-y: auto;
       overscroll-behavior: contain;
     }
-  }
 
-  .inspector.dock .name {
-    font-size: 18px;
+    .inspector.dock .side > :first-child,
+    .inspector.dock .pages.held > .page > :first-child {
+      margin-top: auto;
+    }
+
+    .inspector.dock .side > :last-child,
+    .inspector.dock .pages.held > .page > :last-child {
+      margin-bottom: auto;
+    }
+
+    .inspector.dock .visual.stacked + .side {
+      padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));
+    }
   }
 
   /*
-    The main group: one button per row in a narrow column, two in a wide one, never one alone on
-    the last line (lib/buttonGrid.ts): a lone button the whole width, three in a row when they fit
-    there, or else the first one, the default (inspector.splitEntries), the whole width on top.
+    A tablet, in a wide sheet (Sheet.svelte). --sheet-room: at most 460 px and 70 % of the screen,
+    the height of a portrait card. --land-room: three quarters of it, the width of a landscape one.
   */
-  .inspector.dock .main-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+  .inspector.tablet {
+    --sheet-room: min(460px, 70dvh);
+    --land-room: calc(var(--sheet-room) * 3 / 4);
+    --portrait-w: calc(var(--sheet-room) * 5 / 7);
+    --landscape-w: var(--land-room);
+    padding: 0 var(--gutter) calc(var(--gutter) - 14px);
   }
 
-  @container (min-width: 260px) {
-    .inspector.dock .main-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .inspector.dock .main-grid:global([data-layout='single']) {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .inspector.dock .main-grid:global([data-layout='row']) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+  /*
+    Beside a portrait card: laid out as a phone on its side, the card as high as the room, its
+    column at most as high and the only part that scrolls. The carousel's cards as high as the room
+    less its chrome, 44 px on each side for the neighbours.
+  */
+  .inspector.beside .visual.stacked {
+    --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
+    width: calc(var(--slide-h) * 5 / 7 + 88px);
   }
 
-  .inspector.dock .main-grid:global([data-layout='lead']) > .main:first-child {
-    grid-column: 1 / -1;
+  .inspector.beside .visual > .face {
+    height: var(--sheet-room);
   }
 
-  .inspector.dock .main {
-    min-height: 44px;
-    padding: 4px 8px;
-    border-radius: 10px;
-    font-size: 14px;
+  /*
+    The column as high as the card, its content centred on the card's height: the auto margins
+    above its first line and under its last one share the room. Taller than the card, the column
+    starts at its top, the margins then nothing (unlike justify-content, which would push its top
+    out of the scroll). A submenu's page, held at the main page's height, is centred in it too.
+  */
+  .inspector.beside .side {
+    align-self: stretch;
+    max-height: var(--sheet-room);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  .inspector.dock .row {
-    min-height: 44px;
-    padding: 4px 8px;
+  .inspector.beside .side > :first-child,
+  .inspector.beside .pages.held > .page > :first-child {
+    margin-top: auto;
   }
 
-  .inspector.dock .page {
-    gap: 8px;
+  .inspector.beside .side > :last-child,
+  .inspector.beside .pages.held > .page > :last-child {
+    margin-bottom: auto;
   }
 
-  .inspector.dock .sep {
-    margin: 2px 0;
+  /*
+    Centred on the shown card of a stack: inside the carousel's padding at the top, and its
+    padding, gap and dots at the bottom.
+  */
+  .inspector.beside .visual.stacked + .side {
+    padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));
+  }
+
+  /*
+    Beside a landscape card, on a tablet on its side: the card as wide as the room, top-aligned, and
+    the sheet as wide as the card and its column (Sheet.svelte fit). The column keeps the width it has
+    beside a portrait card in a 760 px sheet rather than growing; it narrows in a narrow window. As
+    high as the taller of the two: the column at most as high as the room, scrolling past it. The
+    carousel's cards as high as a landscape card that wide, 44 px on each side for the neighbours.
+  */
+  .inspector.beside.land {
+    --landscape-w: var(--sheet-room);
+  }
+
+  .inspector.beside .visual > .face.land {
+    width: var(--sheet-room);
+    height: auto;
+  }
+
+  .inspector.beside.land .visual.stacked {
+    --slide-h: calc(var(--sheet-room) * 5 / 7);
+    --slide-max: 100%;
+    width: calc(var(--sheet-room) + 88px);
+  }
+
+  .inspector.beside.land .side {
+    flex: 0 1 auto;
+    width: 340px;
+  }
+
+  /*
+    Under a landscape card, on a tablet upright: the card on top, centred, as wide as --land-room
+    (never wider than the sheet), and its column full width under it; the sheet scrolls the whole,
+    if it must. The carousel's cards as high as a landscape card of that width.
+  */
+  .inspector.column .top {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .inspector.column .visual {
+    width: 100%;
+    align-items: center;
+  }
+
+  .inspector.column .visual.stacked {
+    --slide-h: calc(var(--land-room) * 5 / 7);
+    align-items: stretch;
+  }
+
+  .inspector.column .visual > .face {
+    width: min(var(--land-room), 100%);
+  }
+
+  .inspector.column .side {
+    align-self: stretch;
   }
 </style>

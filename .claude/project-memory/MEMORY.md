@@ -77,7 +77,7 @@
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC/HP per card; menu + pill, no keys; ±99
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
 - [Acceleration token](references/project_acceleration_token.md) — token "acc": menu and pill only; Fray red, upward double chevron, by the threat
-- [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview, fills the table on narrow screens; resting: base card at 82 %
+- [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview (tablet 65 %), touch pop 1.15; resting: base at 82 %
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
 - [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
@@ -95,11 +95,11 @@
 - [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; tested
 - [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
 - [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only
-- [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome
+- [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome; (hover: hover)
 - [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists games being played; Home capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
-- [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold to drag, pinch; phone dock, hand carousel, small cards
-- [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector, inspector: .count-pill
+- [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold, pinch; tablet inspector follows orientation; phone dock
+- [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector: .count-pill
 - [No button alone on a line](references/project_no_lone_button.md) — buttonGrid: 1 full, pairs, 3 in a row if ≥96 px, else default on top
 - [Full-bleed favicon](references/project_favicon.md) — one opaque icon for tabs and search; favicon.ico from favicon.svg

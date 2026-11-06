@@ -1220,7 +1220,7 @@ func TestHandOrder(t *testing.T) {
 
 func TestFirstPlayer(t *testing.T) {
 	table := newTestTable()
-	table.FirstPlayer = &Point{X: 460, Y: 450}
+	table.FirstPlayer = &Point{X: 460, Y: 510}
 
 	mustApply(t, table, Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: 423, Y: 7})
 

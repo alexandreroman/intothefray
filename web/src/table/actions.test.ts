@@ -21,19 +21,23 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01002': [{ name: 'Peter Parker' }, { name: 'Spider-Man' }],
-  '01094': [{ name: 'Rhino', stage: 'I' }],
-  '01095': [{ name: 'Rhino', stage: 'II' }],
-  '01096': [{ name: 'Rhino', stage: 'III' }],
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01095': [{ name: 'Rhino', type: 'villain', stage: 'II' }],
+  '01096': [{ name: 'Rhino', type: 'villain', stage: 'III' }],
   '01097': [
-    { name: 'The Break-In!', size: 'land' },
-    { name: 'The Break-In!', size: 'land' },
+    { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
+    { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
   ],
   '01100': [{ name: 'Hard to Keep Down', localized: { fr: { name: 'Coriace' } } }],
+  '01107': [{ name: "Breakin' & Takin'", type: 'side_scheme', size: 'land' }],
+  '01113': [{ name: 'Black Cat', type: 'ally' }],
+  '01117': [{ name: 'Web-Shooter', type: 'upgrade' }],
+  '01118': [{ name: 'Spider-Man', type: 'hero' }],
   // A villain whose stages are the faces of one card.
   '99001': [
-    { name: 'Spiral', stage: 'I' },
-    { name: 'Spiral', stage: 'II' },
-    { name: 'Spiral', stage: 'III' },
+    { name: 'Spiral', type: 'villain', stage: 'I' },
+    { name: 'Spiral', type: 'villain', stage: 'II' },
+    { name: 'Spiral', type: 'villain', stage: 'III' },
   ],
 };
 
@@ -463,7 +467,7 @@ describe('actionsFor', () => {
     const items = itemsFor({ kind: 'card', id: 's' });
 
     expect(groups(items)).toEqual([
-      ['exhaust', 'flip', 'stage'],
+      ['flip', 'stage'],
       ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
@@ -519,12 +523,9 @@ describe('actionsFor', () => {
 
   it('a single-faced villain stage card has no Flip, only its card choice, even with a next stage', () => {
     for (const id of ['v1', 'v2', 'v3']) {
-      expect(groups(itemsFor({ kind: 'card', id }, villainStages(id)))[0]).toEqual([
-        'exhaust',
-        'stage',
-      ]);
+      expect(groups(itemsFor({ kind: 'card', id }, villainStages(id)))[0]).toEqual(['stage']);
     }
-    expect(groups(itemsFor({ kind: 'card', id: 'v' }))[0]).toEqual(['exhaust', 'stage']);
+    expect(groups(itemsFor({ kind: 'card', id: 'v' }))[0]).toEqual(['stage']);
   });
 
   it('a stage card the catalog does not know yet has no Flip', () => {
@@ -535,6 +536,130 @@ describe('actionsFor', () => {
       cards: [card('v', { code: '99001', owner: -1, back: 'villain', stage: 'villain' })],
     });
     expect(groups(itemsFor({ kind: 'card', id: 'v' }, villain))[0]).toEqual(['exhaust', 'stage']);
+  });
+
+  describe('Detach, on a touch screen', () => {
+    const touch = { sizeOf: () => 'std' as const };
+    /**
+     * Alex's stack in his row at y 360: host (300–412), up tucked under it (310–422), next under up
+     * (320–432); a loose card beside it when `beside` gives its x.
+     */
+    const stackView = (beside?: number) =>
+      makeView({
+        cards: [
+          card('host', { x: 300, y: 360, z: 3 }),
+          card('up', { code: '01117', parent: 'host', x: 310, y: 380, z: 2 }),
+          card('next', { parent: 'up', x: 320, y: 400, z: 1 }),
+          card('mine', { x: 0, y: 0 }),
+          ...(beside === undefined ? [] : [card('beside', { x: beside, y: 360 })]),
+        ],
+      });
+    const touchItemsFor = (id: string, view = stackView(), you?: YouView) => {
+      const result = actionsFor(
+        { kind: 'card', id },
+        you ? { ...view, you } : view,
+        'en',
+        undefined,
+        touch,
+      );
+      if (!Array.isArray(result)) {
+        throw new Error(`expected items, got the text "${result.text}"`);
+      }
+      return result;
+    };
+
+    it('follows Exhaust and Flip on a tucked card, without a key', () => {
+      const items = touchItemsFor('up');
+
+      expect(groups(items)[0]).toEqual(['exhaust', 'flip', 'detach']);
+      const detach = item(items, 'detach');
+      expect(detach).toMatchObject({ label: 'Detach' });
+      expect(detach.key).toBeUndefined();
+      expect(detach.default).toBeUndefined();
+    });
+
+    it('sends the card past its stack, 40 clear of it, in its row', () => {
+      // The stack, the detached card left out, reaches 432: 40 past it, on the grid, is 480.
+      expect(actionOf(item(touchItemsFor('up'), 'detach'))).toEqual({
+        kind: 'detach',
+        card: 'up',
+        x: 480,
+        y: 360,
+      });
+    });
+
+    it('lands in the first hole wide enough past the stack', () => {
+      // A card at 700 leaves 480–592 with 40 free on each side.
+      expect(actionOf(item(touchItemsFor('up', stackView(700)), 'detach'))).toMatchObject({
+        x: 480,
+      });
+      // A card at 520 does not: the card goes 40 past it (632), at 680.
+      expect(actionOf(item(touchItemsFor('up', stackView(520)), 'detach'))).toMatchObject({
+        x: 680,
+      });
+    });
+
+    it('is not offered by the mouse menu and keys, which drag the card off', () => {
+      expect(itemsFor({ kind: 'card', id: 'up' }, stackView()).map((i) => i.id)).not.toContain(
+        'detach',
+      );
+    });
+
+    it('is not offered on a main card, nor on a card alone', () => {
+      for (const id of ['host', 'mine']) {
+        expect(
+          touchItemsFor(id).map((i) => i.id),
+          id,
+        ).not.toContain('detach');
+      }
+    });
+
+    it('is not offered to a spectator', () => {
+      expect(touchItemsFor('up', stackView(), KIM)).toEqual([]);
+    });
+  });
+
+  describe('Exhaust on a villain or a scheme', () => {
+    /** One card of the encounter on the table, outside any stage. */
+    const encounterCard = (code: string, extra: Partial<CardView> = {}) =>
+      makeView({ cards: [card('e', { code, owner: -1, back: 'encounter', ...extra })] });
+
+    it('the villain and the main scheme get none, Flip or Change card… their default', () => {
+      const villain = itemsFor({ kind: 'card', id: 'v' });
+      expect(villain.map((it) => it.id)).not.toContain('exhaust');
+      expect(item(villain, 'stage').default).toBe(true);
+
+      const scheme = itemsFor({ kind: 'card', id: 's' });
+      expect(scheme.map((it) => it.id)).not.toContain('exhaust');
+      expect(item(scheme, 'flip').default).toBe(true);
+      expect(scheme.filter((it) => it.default)).toHaveLength(1);
+    });
+
+    it('a side scheme gets none, Flip its default', () => {
+      const items = itemsFor({ kind: 'card', id: 'e' }, encounterCard('01107'));
+
+      expect(groups(items)[0]).toEqual(['flip']);
+      expect(item(items, 'flip').default).toBe(true);
+    });
+
+    it('an exhausted villain or scheme still offers Ready, its default', () => {
+      for (const code of ['01094', '01097', '01107']) {
+        const items = itemsFor({ kind: 'card', id: 'e' }, encounterCard(code, { exhausted: true }));
+
+        expect(item(items, 'exhaust')).toMatchObject({ label: 'Ready', key: 'E', default: true });
+        expect(items.filter((it) => it.default)).toHaveLength(1);
+      }
+    });
+
+    it('an ally, an upgrade and a hero keep Exhaust, their default', () => {
+      for (const code of ['01113', '01117', '01118']) {
+        const view = makeView({ cards: [card('mine', { code })] });
+        const items = itemsFor({ kind: 'card', id: 'mine' }, view);
+
+        expect(item(items, 'exhaust')).toMatchObject({ label: 'Exhaust', default: true });
+        expect(items.filter((it) => it.default)).toHaveLength(1);
+      }
+    });
   });
 
   it('a stage top card cannot leave the table', () => {
@@ -666,7 +791,8 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
     expect(items.some((it) => it.reason !== undefined)).toBe(false);
     const draw = item(items, 'draw1');
@@ -801,7 +927,8 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
     const reveal = item(items, 'reveal');
     expect(reveal).toMatchObject({ label: 'Reveal', key: 'R', default: true });
@@ -996,7 +1123,8 @@ describe('a player with two decks', () => {
     expect(groups(deck)).toEqual([
       ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
 
     const move = menuOf(itemsFor({ kind: 'card', id: 'second' }, view, TWO_DECKS), 'moveTo');
@@ -1079,7 +1207,8 @@ describe('side decks', () => {
     expect(groups(items)).toEqual([
       ['draw1', 'drawN'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop', 'shuffle'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
     ]);
     expect(actionOf(item(items, 'draw1'))).toEqual({ kind: 'draw', n: 1, pile: 'side:p0:0' });
     const drawN = item(items, 'drawN').run?.();

@@ -121,6 +121,8 @@ func applyKind(t *Table, a Action) error {
 		return applyMove(t, a)
 	case ActAttach:
 		return applyAttach(t, a)
+	case ActDetach:
+		return applyDetach(t, a)
 	case ActToHand:
 		return applyToHand(t, a)
 	case ActToDeck:
@@ -557,6 +559,22 @@ func applyMove(t *Table, a Action) error {
 	c.OnPile = ""
 	t.layOutStack(c)
 	return nil
+}
+
+// applyDetach takes a tucked card off its stack and lays it alone at a point,
+// as a move of a tucked card does (see applyMove): the stack closes up, and the
+// card keeps its face, exhaustion and counters. The client picks the point as
+// it picks a played card's, in the row of the stack (detachSlot,
+// web/src/table/layout.ts). A main card is refused: it has nothing to leave.
+func applyDetach(t *Table, a Action) error {
+	c, err := t.tableCard(a.Card)
+	if err != nil {
+		return err
+	}
+	if c.Parent == "" {
+		return invalid("card %q is tucked under no card", c.ID)
+	}
+	return applyMove(t, a)
 }
 
 func (t *Table) nextZ() int {

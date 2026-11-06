@@ -5,7 +5,9 @@
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
   control, unless it would hide the whole hovered element there, and never
   the hero selector's corner; touch mode previews nothing (touch.ts). On a
-  narrow screen and in dock mode there is no side column.
+  narrow screen and in dock mode there is no side column: the dock, or on a
+  tablet a History button in the bottom right corner, opens the history in a
+  sheet.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -52,6 +54,7 @@
     type CountQuestion,
     type LocalAction,
     type TableElement,
+    type TouchOptions,
   } from './actions';
   import ArrowHint from './ArrowHint.svelte';
   import Arrows from './Arrows.svelte';
@@ -124,9 +127,11 @@
     storedViewMode,
     tableMapOf,
     type TableMap,
+    VILLAIN_ROW_HEIGHT,
     type ViewMode,
   } from './rows';
   import { motion } from './motion.svelte';
+  import { FINE_GRID, TABLET_GRID } from './grid';
   import Presence from './Presence.svelte';
   import {
     areaOf,
@@ -539,6 +544,10 @@
   // The history column beside the table: none on a narrow screen, nor in dock mode at any width,
   // where the dock's History button opens the history sheet.
   const sidePanel = $derived(!narrow.current && !dockMode);
+  // A tablet without the history column (touch mode on a narrow screen, not dock mode): a History
+  // button beside the floating Undo opens the history sheet dock mode uses (spec 2.2), as a finger
+  // has no other way to read the history. A mouse window keeps its corner as it is.
+  const historySheetMode = $derived(touchMode.current && narrow.current && !dockMode);
   // The cards and piles below read it too: small cards and small piles (spec 3.6).
   setDockMode({
     get current() {
@@ -595,14 +604,22 @@
     }
     return narrow.current ? HAND_CARD_NARROW : HAND_CARD;
   });
-  const baseHandDrop = $derived(small.current ? smallHandDrop(baseHandCard.h) : HAND_REST_DROP);
+  // A small screen drops its cards by the same share as a wide one. So does a narrow touch screen
+  // (spec 2.3): there the resting strip is the target a finger taps to raise the hand, and the
+  // desktop drop would leave only 36 px of its smaller cards showing. A mouse raises the hand by
+  // hovering it, so a narrow mouse window keeps the desktop drop.
+  const baseHandDrop = $derived(
+    small.current || (narrow.current && touchMode.current)
+      ? smallHandDrop(baseHandCard.h)
+      : HAND_REST_DROP,
+  );
 
   // The room between the resting hand's strip and the controls above it on a small screen, in px
   // (controlsBottom).
   const ABOVE_HAND = 8;
 
-  // The height of the controls at the bottom right (the zoom control, the narrow Undo), measured:
-  // the rows keep clear of them, and the Focus panel at home sits above them.
+  // The height of the controls at the bottom right (the zoom control, the narrow Undo and History),
+  // measured: the rows keep clear of them, and the Focus panel at home sits above them.
   let cornerHeight = $state(0);
 
   // The room under the table's rows, in px: the resting hand's strip, or the controls at the bottom,
@@ -629,14 +646,23 @@
   const rowsBottom = $derived(dockMode ? bottomPadding : Math.max(restingRoom, controlsRoom));
   // Numbers, so that the row map, which the layers re-measure on, changes only with them.
   const lastDeckRow = $derived(lastRow(piles));
+  // On a tablet (touch mode outside dock mode) the villain's row is drawn at its full height: a row of
+  // cards fits between the villain's cards and the first player's row, where a finger lays them. A
+  // window short of height scrolls. Elsewhere the villain's row takes rowPitch's default minimum.
+  const minVillain = $derived(touchMode.current && !dockMode ? VILLAIN_ROW_HEIGHT : undefined);
+  // A finger is less precise than a mouse: on a tablet, drops snap to a coarser grid, which the rows
+  // and the dots follow (grid.ts).
+  const snapGrid = $derived(touchMode.current && !dockMode ? TABLET_GRID : FINE_GRID);
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
-  const pitch = $derived(rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow));
+  const pitch = $derived(
+    rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow, minVillain, snapGrid.step),
+  );
   const shownRow = $derived(
     focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
   );
-  const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow));
+  const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow, minVillain));
 
   // ---- Dock mode's compact, wrapped table (spec 3.7) ----
 
@@ -897,17 +923,23 @@
 
   // ---- The hand and the controls at the bottom ----
 
-  // The raised hand's cards, 80 % of the preview's. At rest, Hand.svelte draws them at the size of
-  // the base card at HAND_REST_SCALE, on the base card's fan, and they drop so that as tall a part
-  // of them shows as of the base card dropped by baseHandDrop.
+  // The raised hand's cards, 80 % of the preview's, 65 % on a tablet (touch mode outside dock
+  // mode). At rest, Hand.svelte draws them at the size of the base card at HAND_REST_SCALE, on the
+  // base card's fan, and they drop so that as tall a part of them shows as of the base card
+  // dropped by baseHandDrop.
   const raisedCard = $derived(
-    raisedHandCard(baseHandCard, { w: scrollerWidth, h: windowHeight }, { small: small.current }),
+    raisedHandCard(
+      baseHandCard,
+      { w: scrollerWidth, h: windowHeight },
+      { small: small.current, tablet: touchMode.current && !dockMode },
+    ),
   );
 
   // The room between the hands and the controls beside them on a wide screen, in px.
   const CONTROLS_GAP = 32;
 
-  // The width of the controls at the bottom right (the zoom control, the narrow Undo).
+  // The width of the controls at the bottom right (the zoom control, the narrow Undo and History),
+  // measured: the resting hands keep clear of them (handsRoom).
   let cornerWidth = $state(0);
 
   // On a wide screen the resting hands keep to the room between the hero selector, when it shows,
@@ -1334,12 +1366,15 @@
    * for a hand card, nor for an element without either (a card, to a spectator).
    */
   type ContextContent = { entries: ContextEntry[]; note?: string };
+  // A table card or pile: what a tap or a right click on the surface opens, the inspector included.
+  // A hand card is no such element: it has no context menu and no inspector.
+  type SurfaceElement = Exclude<TableElement, { kind: 'hand' }>;
 
-  function contextContentOf(element: TableElement): ContextContent | null {
+  function contextContentOf(element: TableElement, touch?: TouchOptions): ContextContent | null {
     if (element.kind === 'hand') {
       return null;
     }
-    const items = actionsFor(element, view, lang, interaction.group);
+    const items = actionsFor(element, view, lang, interaction.group, touch);
     if (!Array.isArray(items)) {
       return { entries: [], note: items.text };
     }
@@ -1375,7 +1410,7 @@
   });
 
   /** The table card or pile an element of the surface belongs to, if any: what a context menu is for. */
-  function contextElementOf(target: EventTarget | null): TableElement | null {
+  function contextElementOf(target: EventTarget | null): SurfaceElement | null {
     if (!(target instanceof Element)) {
       return null;
     }
@@ -1392,7 +1427,7 @@
    * show. It previews the element as entering it would (PileView: a deck that
    * shows its back clears the preview).
    */
-  function openContextMenu(element: TableElement, at: Point): void {
+  function openContextMenu(element: SurfaceElement, at: Point): void {
     // A touch screen has the inspector instead, a bottom sheet the finger reaches.
     if (touchMode.current) {
       openInspector(element);
@@ -1478,9 +1513,10 @@
   // ---- The inspector (touch mode) ----
 
   // The element whose inspector (CardSheet.svelte) is open: a table card or pile, which a tap opens
-  // in place of the context menu, or a card of the raised hand. Its own state, not the context
+  // in place of the context menu. A hand card has none: it is played or discarded by a drag, or
+  // from the hand sheet in dock mode. Its own state, not the context
   // menu's: the sheet is modal, and a modal lets go of the context menu (see below).
-  let inspected = $state.raw<TableElement | null>(null);
+  let inspected = $state.raw<SurfaceElement | null>(null);
   // How many times an inspector has opened: each opening draws a sheet of its own. The switch from
   // a deck to the card revealed on it is no opening: the same sheet turns the card over in place.
   let inspectorOpenings = $state(0);
@@ -1491,27 +1527,18 @@
     item: { id: 'select', label: 'Select', group: 0 },
   };
 
-  /** What the inspector lists: the context menu's entries, Select for a card in play, or a hand card's actions. */
+  /**
+   * What the inspector lists: the context menu's entries with those of a touch screen (Detach, which
+   * a mouse drags), and Select for a card in play.
+   */
   function inspectorContentOf(element: TableElement): ContextContent | null {
-    if (element.kind === 'hand') {
-      const entries = contextItems(element, handActions(element.id, view, sizeOf));
-      return entries.length > 0 ? { entries } : null;
-    }
-    const content = contextContentOf(element);
+    const content = contextContentOf(element, { sizeOf });
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
     if (content === null || content.entries.length === 0 || !card || !isFree(card)) {
       return content;
     }
     return { entries: [...content.entries, { kind: 'separator' }, SELECT_ENTRY] };
   }
-
-  // From the current view, as the context menu's: a redraw updates the entries and the counters.
-  const inspectorContent = $derived.by((): ContextContent | null => {
-    void catalog;
-    return inspected ? inspectorContentOf(inspected) : null;
-  });
-
-  const inspectorHeader = $derived(inspected ? headerOf(inspected) : null);
 
   // A Reveal run from a deck's inspector: the inspector stays on the deck and waits for the card
   // revealed there (spec 3.1), until the server refuses the action of that id or LANDING_MS passes.
@@ -1531,6 +1558,37 @@
 
   $effect(() => () => clearTimeout(awaitingRevealTimer));
 
+  /** Whether the inspector is still on the awaited deck, and the server has not refused its Reveal. */
+  function stillAwaiting(awaited: { pile: string; action: number }): boolean {
+    // The viewer closed the inspector, or opened another, while the reveal was on its way.
+    const onDeck = inspected?.kind === 'pile' && inspected.id === awaited.pile;
+    return onDeck && session.lastError?.id !== awaited.action;
+  }
+
+  // The card revealed on the awaited deck, once the view shows it.
+  const revealedOnInspected = $derived.by((): TableCard | undefined => {
+    const awaited = awaitingReveal;
+    if (awaited === null || !stillAwaiting(awaited)) {
+      return undefined;
+    }
+    return cards.find((card) => card.zone === 'table' && card.onPile === awaited.pile);
+  });
+
+  // The element the sheet shows: the revealed card in the very update whose view shows it. The
+  // effect below commits it as the inspected element only after that update is drawn: drawn with
+  // the deck, its entries, which the revealed card makes refused, would start to leave first.
+  const sheetElement = $derived.by((): SurfaceElement | null => {
+    return revealedOnInspected ? { kind: 'card', id: revealedOnInspected.id } : inspected;
+  });
+
+  // From the current view, as the context menu's: a redraw updates the entries and the counters.
+  const inspectorContent = $derived.by((): ContextContent | null => {
+    void catalog;
+    return sheetElement ? inspectorContentOf(sheetElement) : null;
+  });
+
+  const inspectorHeader = $derived(sheetElement ? headerOf(sheetElement) : null);
+
   // The view that shows a card revealed on the awaited deck switches the inspector to that card, in
   // the same sheet, which turns the deck over to it (CardSheet.svelte). Declared before the effect
   // below, which runs after it: the switch comes first.
@@ -1539,24 +1597,20 @@
     if (awaited === null) {
       return;
     }
-    // The viewer closed the inspector, or opened another, while the reveal was on its way.
-    const stillOnDeck = inspected?.kind === 'pile' && inspected.id === awaited.pile;
-    if (!stillOnDeck || session.lastError?.id === awaited.action) {
-      untrack(stopAwaitingReveal);
-      return;
-    }
-    const revealed = cards.find((card) => card.zone === 'table' && card.onPile === awaited.pile);
+    const revealed = revealedOnInspected;
     if (revealed) {
       untrack(() => {
         stopAwaitingReveal();
         inspected = { kind: 'card', id: revealed.id };
       });
+    } else if (!stillAwaiting(awaited)) {
+      untrack(stopAwaitingReveal);
     }
   });
 
   // A redraw that takes its element away, or leaves it without actions, closes the inspector.
   $effect(() => {
-    if (inspected && (inspectorContent === null || !isPresent(inspected))) {
+    if (sheetElement && (inspectorContent === null || !isPresent(sheetElement))) {
       untrack(() => (inspected = null));
     }
   });
@@ -1593,7 +1647,7 @@
     return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
   }
 
-  /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile or a hand card. */
+  /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile. */
   function inspectorCounters(element: TableElement): SheetCounter[] {
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
     return card ? countersFor(card) : [];
@@ -1627,16 +1681,12 @@
   }
 
   /** Opens the element's inspector, unless it has nothing to show. */
-  function openInspector(element: TableElement): void {
+  function openInspector(element: SurfaceElement): void {
     if (modal.open || interaction.dragging !== null || inspectorContentOf(element) === null) {
       return;
     }
     inspected = element;
     inspectorOpenings += 1;
-  }
-
-  function openHandInspector(id: string): void {
-    openInspector({ kind: 'hand', id });
   }
 
   function closeInspector(): void {
@@ -1676,11 +1726,10 @@
    * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
    * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
    * as for a stepper, and for a card's Flip, which it shows turning over. A deck's Reveal keeps it
-   * open too, and switches it to the revealed card once the view shows it. A hand card's Play and
-   * Discard send what their keys send (keys.ts).
+   * open too, and switches it to the revealed card once the view shows it.
    */
   function runInspectorItem(item: ActionItem): void {
-    const element = inspected;
+    const element = sheetElement;
     if (element === null) {
       return;
     }
@@ -1698,30 +1747,15 @@
       enterSelectMode(element.id);
       return;
     }
-    if (element.kind === 'hand') {
-      runHandItem(item);
-      return;
-    }
     runItem(item, element);
-  }
-
-  /** Runs one of a hand card's actions (handActions): sends what its key sends (keys.ts). */
-  function runHandItem(item: ActionItem): void {
-    const result = item.run?.();
-    if (result && 'kind' in result) {
-      send(result, targetOfKey(result));
-      if (result.card !== undefined) {
-        watchLeavingHand(result.card);
-      }
-    }
   }
 
   /** A stepper of the inspector: sends what the token pill's − / + sends (stepCounter). */
   function stepInspected(counter: SheetCounter, delta: -1 | 1): void {
-    if (inspected?.kind === 'card') {
+    if (sheetElement?.kind === 'card') {
       act(
-        { kind: counter.kind, card: inspected.id, name: counter.name, delta },
-        { kind: 'card', id: inspected.id },
+        { kind: counter.kind, card: sheetElement.id, name: counter.name, delta },
+        { kind: 'card', id: sheetElement.id },
       );
     }
   }
@@ -1793,18 +1827,25 @@
     return goesToHand(from, grouped.length > 1 ? grouped : [], view);
   });
 
-  // The sheets the dock opens: the selected deck's hand, the history.
+  // The sheets the dock opens: the selected deck's hand, the history. The corner's History button
+  // opens the history one too (historySheetMode).
   let handSheetShown = $state(false);
   let historyShown = $state(false);
 
-  // Out of dock mode (a phone turned into a tablet's size), the dock's sheets go with it.
+  // Out of dock mode (a phone turned into a tablet's size), the hand sheet goes with it; the history
+  // sheet goes once neither the dock nor the corner's History button shows (the history column
+  // takes over, or a mouse came).
   $effect.pre(() => {
-    if (!dockMode) {
-      untrack(() => {
+    const handSheetGone = !dockMode;
+    const historySheetGone = !dockMode && !historySheetMode;
+    untrack(() => {
+      if (handSheetGone) {
         handSheetShown = false;
+      }
+      if (historySheetGone) {
         historyShown = false;
-      });
-    }
+      }
+    });
   });
 
   function openHandSheet(): void {
@@ -1817,7 +1858,7 @@
     handSheetShown = false;
   }
 
-  // The hand card the viewer just played or discarded (hand sheet or inspector), and its seat,
+  // The hand card the viewer just played or discarded from the hand sheet, and its seat,
   // until the view shows it out of that hand. If it was the last card, the hand sheet closes: by
   // then the card's rise has been measured from the carousel (motion.animate, before the view is
   // drawn) and plays on above the sheet sliding away. Any other way the hand empties keeps it open.
@@ -1846,11 +1887,18 @@
     });
   });
 
-  /** Play or Discard on a card of the hand sheet: what the inspector's entry sends (handActions). */
+  /** Play or Discard on a card of the hand sheet (handActions): sends what its key sends (keys.ts). */
   function runHandAction(id: string, action: 'play' | 'discard'): void {
     const item = handActions(id, view, sizeOf).find((candidate) => candidate.id === action);
-    if (item && !item.disabled) {
-      runHandItem(item);
+    if (!item || item.disabled) {
+      return;
+    }
+    const result = item.run?.();
+    if (result && 'kind' in result) {
+      send(result, targetOfKey(result));
+      if (result.card !== undefined) {
+        watchLeavingHand(result.card);
+      }
     }
   }
 
@@ -2521,6 +2569,7 @@
         canDrag={(element) => sourceOf(element, view) !== null}
         {shifts}
         glide={shiftsGlide}
+        grid={snapGrid}
       />
       <!-- The arrows follow the cards while they move. -->
       <Arrows
@@ -2563,8 +2612,10 @@
 
   <!--
     The bottom right corner of the table. Touch screens have no Z key: without the side column,
-    Undo floats there, left of the zoom control. On a small screen, both share one bar above the
-    resting hand. In dock mode the dock has Undo, and fingers zoom.
+    Undo floats there, left of the zoom control. On a tablet (historySheetMode), History shares
+    Undo's bar, as in the dock: it opens the history sheet. On a small screen, Undo and the zoom
+    control share one bar above the resting hand. In dock mode the dock has Undo and History, and
+    fingers zoom.
   -->
   {#if !dockMode}
     <div
@@ -2591,6 +2642,18 @@
           >
             <Icon name="undo" />
           </button>
+          {#if historySheetMode}
+            <!-- The dock's History button, at Undo's size. -->
+            <button
+              class="btn-ghost"
+              aria-label="History"
+              data-tip="History"
+              onclick={openHistory}
+              {@attach pointerBlur}
+            >
+              <Icon name="history" />
+            </button>
+          {/if}
         </div>
         {#if small.current}
           <span class="floatbar-sep" aria-hidden="true"></span>
@@ -2665,7 +2728,6 @@
           inset={handsRoom}
           restPlace={restPlaces[i]}
           hidden={handRaised && seat !== handSeat}
-          onopen={touchMode.current ? openHandInspector : undefined}
           bind:open={handsOpen[i]}
         />
       {/each}
@@ -2726,6 +2788,7 @@
     {sizeOf}
     {tableMap}
     drawnMap={shownDockView ?? tableMap}
+    grid={snapGrid}
     {selected}
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}
@@ -2754,18 +2817,18 @@
     {/key}
   {/if}
 
-  {#if inspected && inspectorHeader && inspectorContent}
+  {#if sheetElement && inspectorHeader && inspectorContent}
     <!-- Created afresh for each opening, as the menu: the focus it gives back is the one before it. -->
     {#key inspectorOpenings}
       <CardSheet
         header={inspectorHeader}
         entries={inspectorContent.entries}
         note={inspectorContent.note}
-        images={inspectorImages(inspected)}
-        landscape={inspectorLandscape(inspected)}
-        counters={inspectorCounters(inspected)}
-        stack={inspectorStack(inspected)}
-        cardId={inspected.kind === 'card' ? inspected.id : undefined}
+        images={inspectorImages(sheetElement)}
+        landscape={inspectorLandscape(sheetElement)}
+        counters={inspectorCounters(sheetElement)}
+        stack={inspectorStack(sheetElement)}
+        cardId={sheetElement.kind === 'card' ? sheetElement.id : undefined}
         onrun={runInspectorItem}
         onstep={stepInspected}
         onpick={inspectStackCard}
@@ -3178,6 +3241,12 @@
     background: none;
     border: none;
     box-shadow: none;
+  }
+
+  /* Undo, and History beside it on a tablet. */
+  .undo {
+    display: flex;
+    gap: 2px;
   }
 
   .undo button {

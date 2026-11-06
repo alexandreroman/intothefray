@@ -267,6 +267,8 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActToPile:
 		text := join(words("moved "), n.name(a.Card), words(" to "), n.pile(a.Target))
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
+	case ActDetach:
+		return n.detachEvent(a), true
 	case ActPlay:
 		if n.after.Cards[a.Card].FaceDown {
 			return n.faceDownPlayEvent(a), true
@@ -470,6 +472,14 @@ func (n narrator) underStackLine(text phrase, id string, cards ...string) logLin
 	main := n.after.mainCard(n.after.Cards[id]).ID
 	text = join(text, words(" under "), n.name(main))
 	return logLine{text: text, cards: n.visibleCards(append(cards, main)...)}
+}
+
+// detachEvent names the card taken off its stack and the stack's main card,
+// as the line of a card played under a stack does (see underStackLine).
+func (n narrator) detachEvent(a Action) logLine {
+	main := n.before.mainCard(n.before.Cards[a.Card]).ID
+	text := join(words("detached "), n.name(a.Card), words(" from "), n.name(main))
+	return logLine{text: text, cards: n.visibleCards(a.Card, main)}
 }
 
 func (n narrator) flipEvent(a Action) logLine {
