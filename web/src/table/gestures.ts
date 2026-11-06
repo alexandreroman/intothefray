@@ -26,12 +26,15 @@ const ZOOM_TOLERANCE = 0.05;
 /** A tap: when it happened, in milliseconds, and where, in screen pixels. */
 export type Tap = { t: number; x: number; y: number };
 
+/** Where a touch press stands: still waiting for the hold, armed for a drag, or turned into a scroll. */
+export type HoldPhase = 'waiting' | 'armed' | 'scroll';
+
 /**
  * Where a touch press stands after `elapsedMs` with the finger `distancePx` away from where it went down:
  * still waiting, armed for a drag, or turned into a scroll. A press that lasted HOLD_MS is armed whatever
  * the distance: it only scrolls if the finger moved before then.
  */
-export function holdPhase(elapsedMs: number, distancePx: number): 'waiting' | 'armed' | 'scroll' {
+export function holdPhase(elapsedMs: number, distancePx: number): HoldPhase {
   if (elapsedMs >= HOLD_MS) {
     return 'armed';
   }

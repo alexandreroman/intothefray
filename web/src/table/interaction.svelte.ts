@@ -3,7 +3,7 @@ import { releaseFocus } from '../lib/releaseFocus';
 import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
 import type { Rect } from './drag';
-import { holdPhase } from './gestures';
+import { holdPhase, type HoldPhase } from './gestures';
 import { isFree } from './selection';
 
 /** How long the hover and the preview stay after the pointer leaves their element. */
@@ -85,9 +85,6 @@ interface ContextMenuAt {
   element: TableElement;
   at: { x: number; y: number };
 }
-
-/** Where a touch press waiting for the hold stands (gestures.ts). */
-export type HoldPhase = ReturnType<typeof holdPhase>;
 
 /** One string per pressable element, to tell whether two of them are the same. */
 function keyOf(element: Pressable): string {
