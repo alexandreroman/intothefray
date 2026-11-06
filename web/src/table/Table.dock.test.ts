@@ -710,6 +710,20 @@ describe('the history panel on a large phone on its side', () => {
     expect(gutter?.[1]).toMatch(/--bar-gutter-end: 8px;/);
     expect(gutter!.index).toBeGreaterThan(compactAt);
   });
+
+  it('keeps the table and its bar clear of the right safe area, the rail clear of the left one', () => {
+    // jsdom has no env(): the rules themselves are checked. A phone on its side in dock mode is a
+    // rail, which keeps clear of the left safe area; the right one pads the whole table.
+    const dockRule = /\n {2}\.app\.dock-mode \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(dockRule).toMatch(/padding-right: env\(safe-area-inset-right\);/);
+    const railRule = /\n {2}\.app\.dock-rail \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(railRule).toMatch(/padding-left: calc\(64px \+ env\(safe-area-inset-left\)\);/);
+
+    // The table pads by the safe areas already: its bar adds none of its own, on any screen.
+    const barRule = /\n {2}\.top \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(barRule).toMatch(/--bar-inset-left: 0px;/);
+    expect(barRule).toMatch(/--bar-inset-right: 0px;/);
+  });
 });
 
 describe('the top bar in dock mode', () => {

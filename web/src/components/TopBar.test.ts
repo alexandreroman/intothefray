@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import TopBar from './TopBar.svelte';
+import barSource from './TopBar.svelte?raw';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { setFullscreenElement } from '../lib/fullscreen.testing';
@@ -606,5 +607,19 @@ describe('TopBar on scroll', () => {
     await scrollWindowTo(900);
     expect(header(container).classList).not.toContain('auto-hide');
     expect(header(container).classList).not.toContain('hidden');
+  });
+});
+
+describe('TopBar safe areas', () => {
+  it('keeps its first and last items clear of the side safe areas of a notched phone', () => {
+    // jsdom has no env(): the rule itself is checked. Each edge keeps its gutter, or the safe area
+    // when it is wider, unless the screen gives its own inset (--bar-inset-left and -right).
+    // Spaces, which the formatter moves, are left out.
+    const bar = /\n {2}\.bar \{([^}]*)\}/.exec(barSource)?.[1] ?? '';
+    const padding = (/padding-inline:([^;]*);/.exec(bar)?.[1] ?? '').replace(/\s+/g, '');
+    const start = 'max(var(--content-gutter,24px),var(--bar-inset-left,env(safe-area-inset-left)))';
+    const end =
+      'max(var(--bar-gutter-end,var(--content-gutter,24px)),var(--bar-inset-right,env(safe-area-inset-right)))';
+    expect(padding).toBe(start + end);
   });
 });

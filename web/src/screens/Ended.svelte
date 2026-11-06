@@ -17,6 +17,7 @@
 <style>
   .screen {
     min-height: 100vh;
+    min-height: 100dvh;
     /* Clear of the notch and the home indicator; env() is 0 on a desktop. */
     padding-block: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-bottom));
     padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));

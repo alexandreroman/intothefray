@@ -245,6 +245,7 @@
     --gutter: 24px;
     position: relative;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     background: var(--table-bg);

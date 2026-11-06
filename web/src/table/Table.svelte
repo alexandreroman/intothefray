@@ -2979,9 +2979,15 @@
     grid-template-columns: minmax(0, 1fr) 44px;
   }
 
-  /* The bar's icons sit close to the window's edge, over the side panel, not the play area. */
+  /*
+    The bar's icons sit close to the window's edge, over the side panel, not the play area. The
+    table pads by the side safe areas itself (dock mode, below; elsewhere they are 0): the bar
+    adds none of its own.
+  */
   .top {
     --bar-gutter-end: 8px;
+    --bar-inset-left: 0px;
+    --bar-inset-right: 0px;
     grid-area: top;
   }
 
@@ -3370,11 +3376,14 @@
 
   /*
     Dock mode has no history column at any width, even on a large phone on its side: the table
-    takes the window and the bar's icons sit close to the window's edge.
+    takes the window and the bar's icons sit close to the window's edge. On a notched phone on its
+    side, the table and its bar keep clear of the right safe area (0 upright), the icons 8px from
+    its edge; the rail keeps clear of the left one (.app.dock-rail).
   */
   .app.dock-mode {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: 'table';
+    padding-right: env(safe-area-inset-right);
   }
 
   .app.dock-mode .top {
