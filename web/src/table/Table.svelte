@@ -71,7 +71,13 @@
   } from './contextItems';
   import DragLayer from './DragLayer.svelte';
   import { dockItems, dockRows, frameItemId, markerItemId } from './dockItems';
-  import { dockFitWidth, dockLayout, type DockLayout } from './dockLayout';
+  import {
+    dockFitWidth,
+    dockLayout,
+    dockShifts,
+    type DockLayout,
+    type DockPreview,
+  } from './dockLayout';
   import { setDockMode } from './dockMode';
   import { DRAG_THRESHOLD, goesToHand, intersect, sourceOf, type Rect } from './drag';
   import Flights from './Flights.svelte';
@@ -676,6 +682,60 @@
   /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
   const tableMap: TableMap = $derived(dockView ?? tableMapOf(rowMap));
 
+  // ---- A drop shown before it is let go (spec 3.8) ----
+
+  // During a drag in dock mode, the rows are drawn as if the dragged card lay where the drop would
+  // put it (DragLayer feeds it): the units after it pushed along, the slot it left closed up. The
+  // cards stay placed by tableMap, which the drop reads; each one pushed aside is drawn shifted
+  // from there (a translate, which glides), so that nothing is laid out again but the shifts.
+
+  /** The preview DragLayer last fed, with the view it was made on: a newer view shows no preview. */
+  let fedPreview = $state.raw<{ preview: DockPreview; view: View } | null>(null);
+  const dockPreview = $derived(fedPreview?.view === view ? fedPreview.preview : null);
+  const previewView: DockLayout | null = $derived(
+    dockView !== null && dockPreview !== null
+      ? dockLayout({
+          items: dockTableItems,
+          rows: dockShownRows,
+          seatRows,
+          wrapWidth,
+          preview: dockPreview,
+        })
+      : null,
+  );
+  /** The layout the table shows, the preview's while there is one. */
+  const shownDockView = $derived(previewView ?? dockView);
+  const NO_SHIFTS: ReadonlyMap<string, Point> = new Map();
+  /** How far each item pushed aside is drawn from its place, in drawn units. */
+  const shifts: ReadonlyMap<string, Point> = $derived(
+    dockView !== null && previewView !== null
+      ? dockShifts(
+          dockView,
+          previewView,
+          dockTableItems.map((item) => item.id),
+        )
+      : NO_SHIFTS,
+  );
+  // The shifts glide (a CSS transition) from one preview to the next of the same view. A new view
+  // draws every card at its new place at once, its own motions playing from where they showed
+  // (motion.svelte.ts): the shifts it drops jump with it, for the first frame it draws.
+  let shiftsGlide = $state(true);
+  let glideFrame = 0;
+
+  /** Lets the shifts jump for the next frame drawn, then glide again. */
+  function pauseGlide(): void {
+    cancelAnimationFrame(glideFrame);
+    shiftsGlide = false;
+    glideFrame = requestAnimationFrame(() => {
+      glideFrame = requestAnimationFrame(() => {
+        glideFrame = 0;
+        shiftsGlide = true;
+      });
+    });
+  }
+
+  $effect(() => () => cancelAnimationFrame(glideFrame));
+
   // ---- The zoom ----
 
   // The zoom the viewer chose (buttons, keys, Ctrl + wheel), remembered; null until then, or since
@@ -1004,7 +1064,7 @@
   // where it lay may be drawn elsewhere (dockMotions). Kept up to date as the screen changes too.
   let drawnDock: DockLayout | null = null;
   $effect.pre(() => {
-    const layout = dockView;
+    const layout = shownDockView;
     const shown = view;
     untrack(() => {
       if (shown === drawnView) {
@@ -1026,10 +1086,13 @@
       const prev = drawnView;
       drawnView = next;
       const before = drawnDock;
-      const after = dockView;
+      const after = shownDockView;
       drawnDock = after;
       if (prev === next) {
         return;
+      }
+      if (fedPreview !== null) {
+        pauseGlide();
       }
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
@@ -2410,6 +2473,8 @@
         {markers}
         markersMovable={view.you.role === 'player'}
         canDrag={(element) => sourceOf(element, view) !== null}
+        {shifts}
+        glide={shiftsGlide}
       />
       <!-- The arrows follow the cards while they move. -->
       <Arrows
@@ -2614,10 +2679,12 @@
     {faceOf}
     {sizeOf}
     {tableMap}
+    drawnMap={shownDockView ?? tableMap}
     {selected}
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
+    onpreview={(preview) => (fedPreview = preview === null ? null : { preview, view })}
     lastError={session.lastError}
   />
 

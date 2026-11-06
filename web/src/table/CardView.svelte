@@ -22,6 +22,7 @@
     landed = false,
     draggable = false,
     caption,
+    shift,
   }: {
     card: TableCard;
     /** The catalog face the card shows, null while unknown: it is then a std placeholder. */
@@ -34,6 +35,8 @@
     draggable?: boolean;
     /** The caption of its back: the side deck it belongs to, when that deck has its own back. */
     caption?: string;
+    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside, as a translate. */
+    shift?: string;
   } = $props();
 
   // The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top.
@@ -133,6 +136,7 @@
   style:width="{drawn.w}px"
   style:height="{drawn.h}px"
   style:z-index={card.z}
+  style:translate={shift}
   style:--scale={dock.current ? DOCK_SCALE : undefined}
   style:--lift-scale={armed ? LIFT_SCALE : undefined}
   style:--lift-shade={armed ? LIFT_SHADE : undefined}
@@ -252,10 +256,13 @@
 
   /*
     A hold lifts it in place (.armed) only in touch mode, where it eases up and back down, let go without a move
-    or not. A ghost takes its own transition.
+    or not. Pushed aside by a drag (dock mode, spec 3.8), it glides as the surface says (--shift-glide). A ghost
+    takes its own transition.
   */
   :global(.app.touch) .card:not(.ghost) {
-    transition: scale 0.14s ease-out;
+    transition:
+      scale 0.14s ease-out,
+      translate var(--shift-glide, 0s) ease-out;
   }
 
   :global(.app.touch) .card:not(.ghost) .shade {

@@ -14,6 +14,9 @@
 // row above it: its units flow after that row's own. Shared positions never change: only where
 // they are drawn does, and a drop on a row is an insertion among its units (insertAt), placed on
 // the table so that it sorts there, in the band of the row it is shown in.
+// During a drag the rows show the drop before it is let go (spec 3.8): laid out with the dragged
+// card where the drop would put it, as if it lay there already, the units after it pushed along
+// and the slot it left closed up.
 
 import { DOCK_SCALE, type Placement } from './dockPiles';
 import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
@@ -47,8 +50,23 @@ export interface DockItem {
   exhausted?: boolean;
 }
 
+/**
+ * A drag the layout shows as if dropped (spec 3.8): the dragged card where the drop would put it on
+ * the table, with everything that travels with it, out of the unit it was part of.
+ */
+export interface DockPreview {
+  /** The dragged card: a table card, or a card not on the table yet (from a hand or a pile). */
+  unitId: string;
+  /** Where the drop puts its corner on the table (insertAt), in table units. */
+  insertAt: Point;
+  /** The size of a card not on the table yet, in table units: it needs one to be drawn. */
+  size?: { w: number; h: number };
+}
+
 export interface DockLayoutInput {
   items: readonly DockItem[];
+  /** A drag shown as if dropped; none unless given. */
+  preview?: DockPreview;
   /** The rows of the table shown, top to bottom: blocks (blockRowOf), never a folded row. */
   rows: readonly number[];
   /** The rows the seats' decks lie in (rowOfSeat); none unless given, so that no row is folded. */
@@ -185,6 +203,54 @@ function rootOf(item: DockItem, byId: ReadonlyMap<string, DockItem>): DockItem {
     root = anchor;
   }
   return root;
+}
+
+/** Whether an item travels with another, named by its id: it is the item's anchor, or its anchor's, and so on. */
+function travelsWith(item: DockItem, id: string, byId: ReadonlyMap<string, DockItem>): boolean {
+  const seen = new Set<string>([item.id]);
+  let current = item;
+  while (current.anchor !== undefined && !seen.has(current.anchor)) {
+    if (current.anchor === id) {
+      return true;
+    }
+    const anchor = byId.get(current.anchor);
+    if (anchor === undefined) {
+      return false;
+    }
+    seen.add(anchor.id);
+    current = anchor;
+  }
+  return false;
+}
+
+/**
+ * The items as they would lie once the previewed drag is dropped: the dragged card at its new
+ * corner, on its own (its anchor dropped), and what travels with it moved by as much; a card not on
+ * the table yet added there.
+ */
+function previewItems(items: readonly DockItem[], preview: DockPreview): DockItem[] {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const dragged = byId.get(preview.unitId);
+  const { x, y } = preview.insertAt;
+  if (dragged === undefined) {
+    if (preview.size === undefined) {
+      throw new Error(
+        `dockLayout cannot preview ${preview.unitId}: it is not on the table, and has no size`,
+      );
+    }
+    return [...items, { id: preview.unitId, x, y, ...preview.size, kind: 'card' }];
+  }
+  const dx = x - dragged.x;
+  const dy = y - dragged.y;
+  return items.map((item) => {
+    if (item === dragged) {
+      return { ...item, x, y, anchor: undefined };
+    }
+    if (travelsWith(item, dragged.id, byId)) {
+      return { ...item, x: item.x + dx, y: item.y + dy };
+    }
+    return item;
+  });
 }
 
 /** The order of units on the table, which they flow in: by x, then y, then id. */
@@ -410,7 +476,9 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   const slotW = PORTRAIT_CARD.w * scale;
   const slotH = PORTRAIT_CARD.h * scale;
 
-  const groupsOf = groupsByRow(input.items, input.rows, input.seatRows ?? []);
+  const items =
+    input.preview === undefined ? input.items : previewItems(input.items, input.preview);
+  const groupsOf = groupsByRow(items, input.rows, input.seatRows ?? []);
   const splits = input.rows.map((row) =>
     splitRow(groupsOf.get(row) ?? { own: new Map(), folded: new Map() }),
   );
@@ -684,4 +752,31 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
     height: top,
     width,
   };
+}
+
+// Below this, in drawn units, an item is drawn where it was: the rounding of the layout's sums.
+const SHIFT_EPSILON = 1e-3;
+
+/**
+ * How far from where `base` draws them `preview` draws the items of `ids` (spec 3.8), in drawn
+ * units: only those it draws elsewhere, and only those both draw.
+ */
+export function dockShifts(
+  base: DockLayout,
+  preview: DockLayout,
+  ids: readonly string[],
+): Map<string, Point> {
+  const shifts = new Map<string, Point>();
+  for (const id of ids) {
+    const from = base.itemBox(id);
+    const to = preview.itemBox(id);
+    if (from === null || to === null) {
+      continue;
+    }
+    const shift = { x: to.x - from.x, y: to.y - from.y };
+    if (Math.abs(shift.x) > SHIFT_EPSILON || Math.abs(shift.y) > SHIFT_EPSILON) {
+      shifts.set(id, shift);
+    }
+  }
+  return shifts;
 }

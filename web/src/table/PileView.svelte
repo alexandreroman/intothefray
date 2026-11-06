@@ -21,6 +21,7 @@
     top,
     face = null,
     draggable = false,
+    shift,
   }: {
     pile: PileView;
     /** The top card, for a pile that lists its cards. */
@@ -29,6 +30,8 @@
     face?: PackFace | null;
     /** The viewer can drag from it (sourceOf): the pointer grabs it; else it only has a menu. */
     draggable?: boolean;
+    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside with its frame, as a translate. */
+    shift?: string;
   } = $props();
 
   // In dock mode (spec 3.7) the pile is drawn smaller, from its top-left corner, which the table
@@ -107,6 +110,7 @@
   style:--scale={scaled ? DOCK_SCALE : undefined}
   style:--lift-scale={armed ? LIFT_SCALE : undefined}
   style:--lift-shade={armed ? LIFT_SHADE : undefined}
+  style:translate={shift}
   onpointerenter={onEnter}
   onpointerleave={() => interaction.leave(element)}
   onpointerdown={(event) => interaction.press(element, event)}
@@ -159,9 +163,14 @@
     touch-action: pan-x pan-y;
   }
 
-  /* A hold lifts it in place (.armed) only in touch mode: it eases up, and back down when let go, moved or not. */
+  /*
+    A hold lifts it in place (.armed) only in touch mode: it eases up, and back down when let go, moved or not.
+    Pushed aside with its frame by a drag (dock mode, spec 3.8), it glides as the surface says (--shift-glide).
+  */
   :global(.app.touch) .card {
-    transition: scale 0.14s ease-out;
+    transition:
+      scale 0.14s ease-out,
+      translate var(--shift-glide, 0s) ease-out;
   }
 
   :global(.app.touch) .card .shade {

@@ -23,6 +23,7 @@
     tip,
     onpointerenter,
     onpointerdown,
+    shift,
   }: {
     name: MarkerName;
     x: number;
@@ -35,6 +36,8 @@
     tip?: string;
     onpointerenter?: (event: PointerEvent) => void;
     onpointerdown?: (event: PointerEvent) => void;
+    /** Dock mode, during a drag (spec 3.8): how far it is drawn pushed aside with its card, as a translate. */
+    shift?: string;
   } = $props();
 
   // In dock mode (spec 3.7) the marker is drawn at DOCK_SCALE from its corner, which the table
@@ -63,6 +66,7 @@
   style:width="{box.w}px"
   style:height="{box.h}px"
   style:--scale={dock.current ? DOCK_SCALE : undefined}
+  style:translate={shift}
 >
   {#if name === 'active'}
     <ActiveCounterArt />
@@ -78,7 +82,10 @@
     z-index: var(--above-cards);
     touch-action: none;
     filter: var(--token-shadow);
-    transition: transform 0.12s;
+    /* Pushed aside with its card by a drag (dock mode, spec 3.8), it glides as the surface says. */
+    transition:
+      transform 0.12s,
+      translate var(--shift-glide, 0s) ease-out;
   }
 
   /* In touch mode, a finger swiping over the marker scrolls the table: only a hold drags it (spec 3.2). */

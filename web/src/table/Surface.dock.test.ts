@@ -120,7 +120,7 @@ describe('Surface in dock mode', () => {
   });
 });
 
-describe('the chip lines and the avatars in dock mode (F-U12, F-U13)', () => {
+describe('the chip lines and the avatars in dock mode (F-U13)', () => {
   const ASIDE = { kind: 'aside', pile: 'aside', label: 'Set-aside cards', count: 0 } as const;
   // Hercules's frame holds four piles (deck, discard and two side piles): drawn 313.2 wide, twice
   // the villain's 157.2, both from −6.
@@ -160,27 +160,43 @@ describe('the chip lines and the avatars in dock mode (F-U12, F-U13)', () => {
     });
   }
 
-  it('ends every chip line at one right edge, the furthest any line needs, whatever the frame widths', () => {
+  /** The declarations of a rule of Surface.svelte's style, by its selector. */
+  function declarations(selector: string): string {
+    const escaped = selector.replace(/[.]/g, '\\.');
+    return new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`).exec(surfaceSource)?.[1] ?? '';
+  }
+
+  it("starts every chip line's chips right after its avatar, from the left, the same across rows", () => {
     const { container } = renderOwners([VILLAIN, HERCULES]);
 
-    // Each line needs its drawn frame's width, or its chips past its avatar when wider.
-    const surface = element(container, '.surface');
-    expect(surface.style.getPropertyValue('--lines-right')).toBe(
-      'max(' +
-        '-6px + max(157.2px, 2 * var(--chip-room) + var(--avatar-room) + 8 * var(--lu)), ' +
-        '-6px + max(313.2px, 1 * var(--chip-room) + var(--avatar-room) + 8 * var(--lu)))',
-    );
+    // Every line starts at its frame's left edge, which is the row's: −6 in both rows.
     const lines = [...container.querySelectorAll<HTMLElement>('.chips')];
     expect(lines.map((line) => line.style.left)).toEqual(['-6px', '-6px']);
-    expect(lines.map((line) => line.style.getPropertyValue('--line-w'))).toEqual([
-      'calc(var(--lines-right) - -6px)',
-      'calc(var(--lines-right) - -6px)',
-    ]);
-    const chips = /\n {2}\.chips \{([^}]*)\}/.exec(surfaceSource)?.[1];
-    expect(chips).toMatch(/width: var\(\s*--line-w,/);
+    for (const line of lines) {
+      expect(line.classList).toContain('after-avatar');
+      expect(line.querySelector('.name-room')).toBeNull();
+    }
+    // The avatar ends --avatar-room right of the frame's left edge (the frame's border, the
+    // avatar's margin, the avatar and its ring): the chips start --chip-lead past it, as they come.
+    expect(declarations('.surface')).toContain(
+      '--avatar-room: calc(6px + var(--avatar) + 2 * var(--avatar-ring));',
+    );
+    expect(declarations('.surface')).toContain('--chip-lead: calc(6 * var(--lu));');
+    expect(declarations('.chips.after-avatar')).toContain(
+      'padding-left: calc(var(--avatar-room) + var(--chip-lead));',
+    );
+    expect(surfaceSource).toMatch(
+      /\.chips\.after-avatar,\s*\.chips\.after-name \{\s*width: max-content;\s*justify-content: flex-start;/,
+    );
+    // Victory, then Set-aside, as the owner lists them.
+    const villain = lines[0]!;
+    expect(
+      [...villain.querySelectorAll<HTMLElement>('.chip')].map((chip) => chip.dataset.pile),
+    ).toEqual(['victory', 'aside']);
+    expect(element(container, '.surface').style.getPropertyValue('--lines-right')).toBe('');
   });
 
-  it("measures a line that shows its name by the name's room", () => {
+  it('puts the chips of a line that shows its name right after the name', () => {
     const deck: OwnerBox = {
       frame: { owner: -1, label: 'Hydra Patrol', x: 300, y: 24, w: 157.2, h: 106.2 },
       nameRoom: 262,
@@ -190,10 +206,20 @@ describe('the chip lines and the avatars in dock mode (F-U12, F-U13)', () => {
     };
     const { container } = renderOwners([deck]);
 
-    expect(element(container, '.surface').style.getPropertyValue('--lines-right')).toBe(
-      'max(300px + max(262px, 1 * var(--chip-room) + var(--name-min) + 8 * var(--lu)))',
-    );
     expect(element(container, '.owner').textContent).toBe('Hydra Patrol');
+    const line = element(container, '.chips');
+    expect(line.classList).toContain('after-name');
+    // An unseen copy of the name, from where the name starts, as wide as it shows, holds the room
+    // before the chips.
+    const room = element(line, '.name-room');
+    expect(room.textContent).toBe('Hydra Patrol');
+    expect(room.getAttribute('aria-hidden')).toBe('true');
+    expect(room.nextElementSibling?.classList).toContain('chip');
+    expect(declarations('.name-room')).toContain('visibility: hidden;');
+    expect(declarations('.name-room')).toContain(
+      'margin: 0 calc(var(--chip-lead) - var(--chip-gap)) 0 6px;',
+    );
+    expect(declarations('.owner')).toContain('left: 4px;');
   });
 
   it("shows the owner's avatar where the name starts, the full name as its name and tooltip", () => {
@@ -214,10 +240,6 @@ describe('the chip lines and the avatars in dock mode (F-U12, F-U13)', () => {
   });
 
   it("draws the avatar the chips' height, on their line, in a 2 screen px ring", () => {
-    const declarations = (selector: string) =>
-      new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`).exec(
-        surfaceSource,
-      )?.[1] ?? '';
     const chipHeight = /height: (calc\(22 \* var\(--lu\)\));/.exec(declarations('.chips'))?.[1];
     expect(chipHeight).toBe('calc(22 * var(--lu))');
     expect(declarations('.surface')).toContain(`--avatar: ${chipHeight};`);
@@ -237,13 +259,17 @@ describe('the chip lines and the avatars in dock mode (F-U12, F-U13)', () => {
     expect(avatar.querySelector('img')).toBeNull();
   });
 
-  it('leaves the chip lines their own widths out of dock mode', () => {
+  it('leaves the chip lines their own widths, the chips at their right end, out of dock mode', () => {
     const owners = [VILLAIN, HERCULES].map(({ avatar: _, nameRoom: __, ...owner }) => owner);
     const { container } = renderOwners(owners, false);
 
-    expect(element(container, '.surface').style.getPropertyValue('--lines-right')).toBe('');
     const lines = [...container.querySelectorAll<HTMLElement>('.chips')];
-    expect(lines.map((line) => line.style.getPropertyValue('--line-w'))).toEqual(['', '']);
+    for (const line of lines) {
+      expect(line.classList).not.toContain('after-avatar');
+      expect(line.classList).not.toContain('after-name');
+      expect(line.querySelector('.name-room')).toBeNull();
+    }
+    expect(declarations('.chips')).toContain('justify-content: flex-end;');
     expect(lines.map((line) => line.style.getPropertyValue('--frame-w'))).toEqual([
       '157.2px',
       '313.2px',

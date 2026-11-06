@@ -941,6 +941,24 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(hero.textContent).toContain('2 cards in hand');
   });
 
+  it("starts each owner line's chips right after its avatar, at one x down the rows", async () => {
+    mockScreen(PHONE);
+    const view = busyView();
+    view.table!.piles.push(
+      pile('vic', { kind: 'victory', owner: -1, count: 1, cards: [] }),
+      pile('aside:p0', { kind: 'aside', owner: 0, count: 0, cards: [] }),
+    );
+    await renderTable(view);
+
+    // Both frames start on the rows' left edge, −6: their lines, and the chips past the avatars.
+    const lines = [...document.querySelectorAll<HTMLElement>('.surface .chips')];
+    expect(lines.map((line) => line.dataset.owner)).toEqual(['-1', '0']);
+    for (const line of lines) {
+      expect(Number.parseFloat(line.style.left)).toBeCloseTo(-6, 4);
+      expect(line.classList).toContain('after-avatar');
+    }
+  });
+
   it('keeps the names as text on a touch tablet (F-U13)', async () => {
     mockScreen(TOUCH_TABLET);
     await renderTable(busyView());
@@ -1088,6 +1106,124 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
       { kind: 'move', card: 'c2', x: 460, y: 30 },
       0,
     );
+  });
+
+  /** Presses a card by its middle and drags its middle to that drawn point, still holding it. */
+  async function holdMiddleAt(id: string, x: number, y: number): Promise<void> {
+    const z = shownZoom();
+    const from = drawnBox(placed(id, '.card'));
+    await fireEvent.pointerDown(placed(id), {
+      clientX: (from.x + from.w / 2) * z,
+      clientY: (from.y + from.h / 2) * z,
+      pointerType: 'mouse',
+    });
+    await fireEvent.pointerMove(window, { clientX: x * z, clientY: y * z - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: x * z, clientY: y * z, buttons: 1 });
+  }
+
+  /** Waits for the next frame, where the drag feeds the table its preview, then for the redraw. */
+  async function nextFrame(): Promise<void> {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+  }
+
+  /** How far from its place a card is drawn pushed aside, in drawn units; null when it is not. */
+  function shiftOf(id: string): { x: number; y: number } | null {
+    const translate = placed(id, '.card').style.translate;
+    if (translate === '') {
+      return null;
+    }
+    const [x = Number.NaN, y = Number.NaN] = translate.split(' ').map(Number.parseFloat);
+    return { x, y };
+  }
+
+  function expectShift(id: string, x: number, y: number): void {
+    const shift = shiftOf(id);
+    expect(shift).not.toBeNull();
+    expect(shift!.x).toBeCloseTo(x, 4);
+    expect(shift!.y).toBeCloseTo(y, 4);
+  }
+
+  // c7 dragged, its middle at 345, 350: on the first line, in the gap between c1 (267.6..334.8) and
+  // c2 (358.8), left of c2's middle (392.4), so between
+  // c1 (460..572) and c2 (620): (572 + 620) / 2 − 56 = 540. Laid out with c7 there, c7 takes c2's
+  // column (358.8); c2 would end at 450 + 67.2 = 517.2, past 468.5: it starts the second line
+  // (−6, 422.6), c3 to c6 each a column right (91.2), and the slot c7 leaves closes up.
+  it('pushes the cards after the slot under a dragged card aside, and lets them back on a cancel (spec 3.8)', async () => {
+    mockScreen(PHONE);
+    await renderTable(busyView());
+    measureDrawn();
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+
+    expect(shiftOf('id')).toBeNull();
+    expect(shiftOf('c1')).toBeNull();
+    expectShift('c2', -364.8, 116.2);
+    for (const id of ['c3', 'c4', 'c5', 'c6']) {
+      expectShift(id, 91.2, 0);
+    }
+    // The dragged card, hidden in its place, is drawn in the slot it would land in.
+    expectShift('c7', 0, -116.2);
+    // They glide there.
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('180ms');
+
+    await fireEvent.pointerCancel(window, {});
+    await tick();
+
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
+  });
+
+  it('lands a card in the slot it opened, the others kept aside until the server answers', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    measureDrawn();
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    await fireEvent.pointerUp(window, { clientX: 345 * shownZoom(), clientY: 350 * shownZoom() });
+    await tick();
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'c7', x: 540, y: 410 },
+      0,
+    );
+    expectShift('c2', -364.8, 116.2);
+    // Its ghost set down in the slot: c2's column on the first line.
+    const ghost = document.querySelector<HTMLElement>('.draglayer .card.landed')!;
+    expect(Number.parseFloat(ghost.style.left)).toBeCloseTo(358.8, 4);
+    expect(Number.parseFloat(ghost.style.top)).toBeCloseTo(306.4, 4);
+  });
+
+  it('pushes nothing aside for a card dropped back where it lies, nor over another row', async () => {
+    mockScreen(PHONE);
+    await renderTable(busyView());
+    measureDrawn();
+
+    // c3 under the frame, left of c4's middle on the second line: where it lies already.
+    await holdMiddleAt('c3', 30, 470);
+    await nextFrame();
+
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
+  });
+
+  it('pushes nothing aside on a touch tablet, which places cards freely', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable(busyView());
+
+    await fireEvent.pointerDown(placed('c7'), { clientX: 10, clientY: 10, pointerType: 'mouse' });
+    await fireEvent.pointerMove(window, { clientX: 300, clientY: 300, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: 320, clientY: 300, buttons: 1 });
+    await nextFrame();
+
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
   });
 
   it('draws the dots of the 40-unit grid it drops on, at its scale', async () => {

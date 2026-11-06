@@ -9,7 +9,11 @@
   revealed on a deck is dragged as the table draws it: a side scheme turns
   from the deck's portrait slot to lie landscape. In touch mode, a finger on
   a table card, a pile or a marker must hold still for HOLD_MS before it
-  drags (spec 3.2): a quick swipe scrolls the table instead.
+  drags (spec 3.2): a quick swipe scrolls the table instead. In dock mode,
+  the rows show a drop on the table before it is let go (spec 3.8): this layer
+  feeds the table where the drop would put the card, once a frame at most,
+  and the table lays its rows out with the card there, pushing the others
+  aside.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -56,6 +60,7 @@
     type TableRect,
   } from './drag';
   import { dockMode } from './dockMode';
+  import type { DockPreview } from './dockLayout';
   import { dockCardBox } from './dockPiles';
   import { backCaption, isHidden, pileBack } from './face';
   import { HOLD_MS } from './gestures';
@@ -75,10 +80,12 @@
     faceOf,
     sizeOf,
     tableMap = ALL_TABLE,
+    drawnMap,
     selected,
     act,
     onhand,
     ondrag,
+    onpreview = () => {},
     lastError,
   }: {
     view: View;
@@ -89,6 +96,11 @@
     sizeOf: (card: TableCard) => Size;
     /** Where the view mode draws the points of the table (rows.ts, dockLayout.ts). */
     tableMap?: TableMap;
+    /**
+     * Where the table is drawn, the drag's preview included (dock mode, spec 3.8): a drop lands
+     * where it shows the card. The tableMap unless given.
+     */
+    drawnMap?: TableMap;
     /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
     selected: number | null;
     /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
@@ -97,6 +109,11 @@
     onhand: (seat: number) => void;
     /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
     ondrag: (drag: PresenceDrag | null) => void;
+    /**
+     * Dock mode only (spec 3.8): the drop on the table the rows show before it is let go, null once
+     * there is none, the drag over or its drop answered.
+     */
+    onpreview?: (preview: DockPreview | null) => void;
     /** The session's last error, which names the action it refuses. */
     lastError: SessionError | null;
   } = $props();
@@ -143,10 +160,21 @@
   let rising = $state(false);
   /** The frame that ends the rise, 0 when none is pending. */
   let riseFrame = 0;
+  /** The preview the table was last fed (onpreview), and the one the next frame feeds it. */
+  let fedPreview: DockPreview | null = null;
+  let pendingPreview: DockPreview | null = null;
+  /** The frame that feeds the pending preview, 0 when none is pending. */
+  let previewFrame = 0;
   /** The label above the drop target. */
   let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
     null,
   );
+
+  /** What a drop lands on, and the action it sends, null when nothing would change. */
+  interface Located {
+    target: DropRect;
+    action: Action | null;
+  }
 
   // The server relays no more cards in one drag: it mirrors maxDragCards in internal/server/presence.go.
   const MAX_DRAG_CARDS = 50;
@@ -217,6 +245,14 @@
         interaction.endLanding();
       }
     });
+  });
+
+  // With no drag and no drop waiting for the server, the rows show no drop: a cancelled drag, or one
+  // let go anywhere else, lets the cards it pushed aside back; an answered drop shows in the view.
+  $effect(() => {
+    if (held === null && waiting === null) {
+      untrack(() => feedPreview(null));
+    }
   });
 
   // Pressing anything but a selected card lets go of the selection: what it
@@ -422,6 +458,7 @@
   $effect(() => () => {
     stopSway();
     cancelAnimationFrame(riseFrame);
+    cancelAnimationFrame(previewFrame);
   });
 
   /** Once drawn, the ghost of a card picked up off the deck's slot turns to lie landscape. */
@@ -580,8 +617,13 @@
    * Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is
    * hidden; a spot of an item, named by its id, is drawn with that item.
    */
-  function onScreen(point: Point, surface: Rect, itemId?: string): Point | null {
-    const drawn = tableMap.toDisplay(point, itemId);
+  function onScreen(
+    point: Point,
+    surface: Rect,
+    itemId?: string,
+    map: TableMap = tableMap,
+  ): Point | null {
+    const drawn = map.toDisplay(point, itemId);
     return drawn === null ? null : toScreen(drawn, surface, zoom);
   }
 
@@ -598,8 +640,9 @@
 
   /**
    * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
-   * places it, where it was let go when it tucks it into a stack, whose chain the server lays out:
-   * the next view slides it from there (animate.ts).
+   * places it, in the slot the rows opened for it in dock mode (spec 3.8), where it was let go when
+   * it tucks it into a stack, whose chain the server lays out: the next view slides it from there
+   * (animate.ts).
    */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
@@ -608,7 +651,12 @@
       return cornerOf(from, at);
     }
     // A placed card always lands in a shown row; the spot under the pointer covers any other case.
-    return onScreen(spot, surface) ?? cornerOf(from, at);
+    const preview = fedPreview;
+    const landed =
+      preview === null
+        ? onScreen(spot, surface)
+        : onScreen(spot, surface, preview.unitId, drawnMap ?? tableMap);
+    return landed ?? cornerOf(from, at);
   }
 
   /**
@@ -743,7 +791,7 @@
   }
 
   /** What a drop at the pointer lands on, and the action it sends, null when nothing. */
-  function locate(from: DragSource, at: Point): { target: DropRect; action: Action | null } | null {
+  function locate(from: DragSource, at: Point): Located | null {
     const target = dropTarget(at, targetsFor(from, at));
     if (!target || selected === null) {
       return null;
@@ -778,6 +826,69 @@
   }
 
   /**
+   * In dock mode (spec 3.8), the drop the rows show before it is let go: the dragged card where the
+   * drop would put it, the same spot as the drop sends. None for a drop anywhere but on the table,
+   * one that tucks the card into a stack or would not move it, a group, a marker, and elsewhere.
+   */
+  function previewOf(from: DragSource, found: Located | null): DockPreview | null {
+    if (tableMap.insertAt === undefined || from.kind === 'marker' || units.length > 0) {
+      return null;
+    }
+    const action = found?.action;
+    if (found?.target.kind !== 'table' || !action) {
+      return null;
+    }
+    const spot = spotOf(from, action);
+    if (spot === null) {
+      return null;
+    }
+    const box = cardBoxOf(from);
+    return { unitId: previewIdOf(from), insertAt: spot, size: { w: box.w, h: box.h } };
+  }
+
+  /** The id the dragged card goes by on the table, its ghost's: a deck's unknown top card the deck's stand-in. */
+  function previewIdOf(from: Exclude<DragSource, { kind: 'marker' }>): string {
+    switch (from.kind) {
+      case 'encounter':
+        return ENCOUNTER_TOP.id;
+      case 'deck':
+        return shownDeckTop(from.pile)?.id ?? DECK_TOP.id;
+      default:
+        return from.card;
+    }
+  }
+
+  /**
+   * Feeds the table the preview at the next frame, however often the pointer moves: the table lays
+   * its rows out once a frame at most. None feeds it at once: the cards pushed aside go back.
+   */
+  function feedPreview(next: DockPreview | null): void {
+    pendingPreview = next;
+    if (next === null) {
+      flushPreview();
+    } else if (previewFrame === 0) {
+      previewFrame = requestAnimationFrame(flushPreview);
+    }
+  }
+
+  /** Feeds the table the pending preview now, when it differs from the one it shows. */
+  function flushPreview(): void {
+    cancelAnimationFrame(previewFrame);
+    previewFrame = 0;
+    if (!samePreview(pendingPreview, fedPreview)) {
+      fedPreview = pendingPreview;
+      onpreview(fedPreview);
+    }
+  }
+
+  function samePreview(a: DockPreview | null, b: DockPreview | null): boolean {
+    if (a === null || b === null) {
+      return a === b;
+    }
+    return a.unitId === b.unitId && a.insertAt.x === b.insertAt.x && a.insertAt.y === b.insertAt.y;
+  }
+
+  /**
    * The action a drop sends: during a group drag, the action of the pressed
    * card alone made the whole group's.
    */
@@ -794,6 +905,7 @@
       return;
     }
     const found = locate(source, pointer);
+    feedPreview(previewOf(source, found));
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
     // Only what a drop would change is outlined: not the pile a card came from.
     const target = found?.action ? found.target : null;
@@ -853,6 +965,9 @@
     const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
     const found = isStillThere(pressed, from) ? locate(from, at) : null;
+    // The rows show the drop as it is let go: its card lands in the slot they open for it.
+    pendingPreview = from && found ? previewOf(from, found) : null;
+    flushPreview();
     end();
     // The click this release fires is the end of the drag, not a tap on what lies there.
     interaction.swallowNextClick();

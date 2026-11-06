@@ -3,6 +3,7 @@ import {
   blockRowOf,
   dockFitWidth,
   dockLayout,
+  dockShifts,
   type DockItem,
   type DockLayoutInput,
 } from './dockLayout';
@@ -673,6 +674,108 @@ describe('a drop on a row of dock mode (insertAt)', () => {
 
     // Before b: at a's x, a grid line lower, so that it sorts after a and before b.
     expect(close.insertAt({ x: 380, y: 60 }, 112)).toEqual({ x: 452, y: 420 });
+  });
+});
+
+describe('a drag previewed on the rows (spec 3.8)', () => {
+  // playerRow(4, 1000): the identity, c1 to c4 on the first line, on the columns 176.4, 267.6,
+  // 358.8, 450 and 541.2, 28 down (10 + 18); the empty slot on 632.4. A drop's middle drawn at 350,
+  // left of c2's middle (392.4), goes between c1 (452..564) and c2 (604): 530.
+  const wide = () => playerRow(4, 1000);
+  const HAND_CARD = { unitId: 'h', insertAt: { x: 530, y: 410 }, size: { w: 112, h: 157 } };
+
+  it('opens a slot where the drop goes, the units after it moved on a column', () => {
+    expect(dockLayout(wide()).insertAt({ x: 350, y: 60 }, 112)).toEqual(HAND_CARD.insertAt);
+
+    const layout = dockLayout({ ...wide(), preview: HAND_CARD });
+
+    expectBox(layout.itemBox('identity'), cardAt(176.4, 28));
+    expectBox(layout.itemBox('c1'), cardAt(267.6, 28));
+    // The card from the hand, drawn in its slot as if played there already.
+    expectBox(layout.itemBox('h'), cardAt(358.8, 28));
+    expectBox(layout.itemBox('c2'), cardAt(450, 28));
+    expectBox(layout.itemBox('c3'), cardAt(541.2, 28));
+    expectBox(layout.itemBox('c4'), cardAt(632.4, 28));
+    // The empty slot after c4, at 723.6.
+    expect(layout.width).toBeCloseTo(723.6 + 67.2, 6);
+  });
+
+  it('wraps the units it pushes past the wrap width onto the next line', () => {
+    // playerRow(4, 500): c3 and c4 start the second line, at 138.2. With the card in before c2,
+    // c2 would end at 450 + 67.2 = 517.2, past 500: it starts the second line, c3 and c4 after it.
+    const layout = dockLayout({ ...playerRow(4, 500), preview: HAND_CARD });
+
+    expectBox(layout.itemBox('h'), cardAt(358.8, 28));
+    expectBox(layout.itemBox('c2'), cardAt(-6, 138.2));
+    expectBox(layout.itemBox('c3'), cardAt(85.2, 138.2));
+    expectBox(layout.itemBox('c4'), cardAt(176.4, 138.2));
+    // The empty slot follows c4 on the same line: the row keeps its height.
+    expect(layout.rowHeight(1)).toBeCloseTo(262.4, 6);
+  });
+
+  it('closes the slot a table card leaves, and draws it where it goes', () => {
+    // c1 dragged, its middle at 520: past c3's middle (483.6), before c4's (574.8). Between c3
+    // (756..868) and c4 (908): (868 + 908) / 2 − 56 = 832, to 830, at c3's y.
+    const insertAt = dockLayout(wide()).insertAt({ x: 520, y: 60 }, 112, new Set(['c1']));
+    expect(insertAt).toEqual({ x: 830, y: 410 });
+
+    const layout = dockLayout({ ...wide(), preview: { unitId: 'c1', insertAt } });
+
+    expectBox(layout.itemBox('c2'), cardAt(267.6, 28));
+    expectBox(layout.itemBox('c3'), cardAt(358.8, 28));
+    expectBox(layout.itemBox('c1'), cardAt(450, 28));
+    expectBox(layout.itemBox('c4'), cardAt(541.2, 28));
+  });
+
+  const STACKED: DockItem[] = [
+    ...PLAYER_PILES,
+    card('main', 452, 410),
+    card('tucked', 472, 450, { anchor: 'main' }),
+    card('next', 700, 410),
+  ];
+  const stacked = (unitId: string): DockLayoutInput => ({
+    items: STACKED,
+    rows: [1],
+    wrapWidth: 1000,
+    ...ROOMS,
+    preview: { unitId, insertAt: { x: 760, y: 410 } },
+  });
+
+  it('moves a stack with everything that travels with it', () => {
+    const layout = dockLayout(stacked('main'));
+
+    expectBox(layout.itemBox('next'), cardAt(267.6, 28));
+    expectBox(layout.itemBox('main'), cardAt(358.8, 28));
+    // 20 right of and 40 under its main card on the table: 12 and 24 drawn.
+    expectBox(layout.itemBox('tucked'), cardAt(370.8, 52));
+  });
+
+  it('takes a tucked card out of its stack, which stays where it is', () => {
+    const layout = dockLayout(stacked('tucked'));
+
+    expectBox(layout.itemBox('main'), cardAt(267.6, 28));
+    expectBox(layout.itemBox('next'), cardAt(358.8, 28));
+    expectBox(layout.itemBox('tucked'), cardAt(450, 28));
+  });
+
+  it('needs the size of a card that is not on the table', () => {
+    const sizeless = { unitId: HAND_CARD.unitId, insertAt: HAND_CARD.insertAt };
+
+    expect(() => dockLayout({ ...wide(), preview: sizeless })).toThrow(/size/);
+  });
+
+  it('tells how far each item is drawn from where it lies drawn without the preview', () => {
+    const base = dockLayout(wide());
+    const preview = dockLayout({ ...wide(), preview: HAND_CARD });
+    const ids = [...PLAYER_PILES, ...played(4)].map((item) => item.id);
+
+    const shifts = dockShifts(base, preview, ids);
+
+    // Only the cards pushed along, a column each; the card from the hand is not on the table.
+    expect([...shifts.keys()]).toEqual(['c2', 'c3', 'c4']);
+    for (const shift of shifts.values()) {
+      expectPoint(shift, { x: 91.2, y: 0 });
+    }
   });
 });
 
