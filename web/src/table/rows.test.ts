@@ -72,6 +72,15 @@ describe('rows', () => {
     }
   });
 
+  it("spaces the rows on a tablet's coarser grid, so that each row's cards lie on its lines", () => {
+    // (960 − 220) / 2 = 370: 360 on a 20-unit grid, against 370 on the 10-unit one.
+    expect(rowPitch(960, 2, 270, 20)).toBe(360);
+    expect(rowPitch(580, 1, VILLAIN_ROW_HEIGHT, 20)).toBe(360);
+    for (let available = 0; available < 2000; available++) {
+      expect(rowPitch(available, 2, VILLAIN_ROW_HEIGHT, 20) % 20).toBe(0);
+    }
+  });
+
   it("leaves a pitch what the villain's row, drawn higher, leaves of the height", () => {
     // Halved, 740 would give 260: the villain's row 270 high, the one pitch left gets 250.
     expect(rowPitch(740, 2)).toBe(250);

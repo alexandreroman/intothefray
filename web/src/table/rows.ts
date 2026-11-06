@@ -130,21 +130,25 @@ const VILLAIN_CONTENT = 210;
  * visible height, with players' rows down to `lastRow`: the villain's row and
  * two players' rows fill it, that is two pitches and the last row's own band
  * (its cards and the room under them). The same pitch spaces every player's
- * row, a third or a fourth deck's too, on the 10-unit grid. With a single
- * deck, the villain's row and its one player's row fill it: the one pitch,
- * which the villain's row is drawn as high as (villainPitch), takes all the
- * height above the player's band. Computed at zoom 1: zooming out shows more
- * of the table, it does not spread its rows.
+ * row, a third or a fourth deck's too, on the grid: a multiple of `step`, the
+ * 10-unit GRID unless given. With a single deck, the villain's row and its one
+ * player's row fill it: the one pitch, which the villain's row is drawn as
+ * high as (villainPitch), takes all the height above the player's band.
+ * Computed at zoom 1: zooming out shows more of the table, it does not spread
+ * its rows.
  *
  * The villain's row is drawn at least `minVillain` high (villainPitch). A
  * tablet passes VILLAIN_ROW_HEIGHT: a row of cards then fits between the
  * villain's cards and the first player's row, where a finger lays them, and a
- * window short of height scrolls.
+ * window short of height scrolls. It also passes its coarser grid's step
+ * (grid.ts): every row is then drawn on the lines its drops snap to and its
+ * dots lie on.
  */
 export function rowPitch(
   available: number,
   lastRow: number,
   minVillain = MIN_VILLAIN_PITCH,
+  step = GRID,
 ): number {
   // A third or a fourth deck's row is drawn below the screen's height, a pitch apart.
   const fittedRows = lastRow === 1 ? 1 : 2;
@@ -154,7 +158,7 @@ export function rowPitch(
   if (fittedRows === 2 && pitch < minVillain) {
     pitch = available - ROW_HEIGHT - minVillain;
   }
-  const onGrid = Math.floor(pitch / GRID) * GRID;
+  const onGrid = Math.floor(pitch / step) * step;
   return Math.min(MAX_PITCH, Math.max(MIN_PITCH, onGrid));
 }
 

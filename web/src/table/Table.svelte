@@ -130,6 +130,7 @@
     type ViewMode,
   } from './rows';
   import { motion } from './motion.svelte';
+  import { FINE_GRID, TABLET_GRID } from './grid';
   import Presence from './Presence.svelte';
   import {
     areaOf,
@@ -648,11 +649,14 @@
   // cards fits between the villain's cards and the first player's row, where a finger lays them. A
   // window short of height scrolls. Elsewhere the villain's row takes rowPitch's default minimum.
   const minVillain = $derived(touchMode.current && !dockMode ? VILLAIN_ROW_HEIGHT : undefined);
+  // A finger is less precise than a mouse: on a tablet, drops snap to a coarser grid, which the rows
+  // and the dots follow (grid.ts).
+  const snapGrid = $derived(touchMode.current && !dockMode ? TABLET_GRID : FINE_GRID);
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
   const pitch = $derived(
-    rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow, minVillain),
+    rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow, minVillain, snapGrid.step),
   );
   const shownRow = $derived(
     focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
@@ -2556,6 +2560,7 @@
         canDrag={(element) => sourceOf(element, view) !== null}
         {shifts}
         glide={shiftsGlide}
+        grid={snapGrid}
       />
       <!-- The arrows follow the cards while they move. -->
       <Arrows
@@ -2774,6 +2779,7 @@
     {sizeOf}
     {tableMap}
     drawnMap={shownDockView ?? tableMap}
+    grid={snapGrid}
     {selected}
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}

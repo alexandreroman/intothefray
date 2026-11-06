@@ -1380,13 +1380,23 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(surface.style.backgroundSize).toBe('24px 24px');
   });
 
-  it('keeps the 10-unit dots on a touch tablet', async () => {
+  it("draws the dots of a touch tablet's 20-unit grid, a card's corner on it between four dots", async () => {
     mockScreen(TOUCH_TABLET);
     await renderTable(busyView());
 
-    expect(document.querySelector<HTMLElement>('.tablewrap .surface')!.style.backgroundSize).toBe(
-      '',
-    );
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    expect(surface.style.backgroundSize).toBe('20px 20px');
+    // Its lines lie 10 past every 20 down: the cells, a dot in the middle of each, start there.
+    expect(surface.style.backgroundPosition).toBe('0px 10px');
+  });
+
+  it('keeps the 10-unit dots with a mouse on the same screen', async () => {
+    mockScreen({ ...TOUCH_TABLET, touch: false });
+    await renderTable(busyView());
+
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+    expect(surface.style.backgroundSize).toBe('10px 10px');
+    expect(surface.style.backgroundPosition).toBe('0px 0px');
   });
 });
 

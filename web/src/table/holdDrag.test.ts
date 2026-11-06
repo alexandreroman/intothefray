@@ -210,6 +210,20 @@ describe('a touch press on a table card, in touch mode', () => {
     expect(interaction.armed).toBe(false);
   });
 
+  it("drops the card on the tablet's coarser grid: across on 20s, down on 10 past them", async () => {
+    const { session } = await renderTable();
+    // Held 30 px in from its left edge, 60 down: let go there, its corner lies at 215, 362 on the
+    // table, which the 10-unit grid would take to 220, 360.
+    await press(placed('mine'), 50, 400);
+    await wait(300);
+    await moveTo(265, 462);
+    await release(265, 462);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'move', card: 'mine', x: 220, y: 370 },
+      0,
+    );
+  });
+
   it('keeps the page from scrolling under the finger once armed, and only then', async () => {
     await renderTable();
     await press(placed('mine'), 50, 400);

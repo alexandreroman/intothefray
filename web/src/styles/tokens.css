@@ -551,7 +551,7 @@ a.btn-primary {
   white-space: nowrap;
 }
 
-/* The table's dots, one every grid step (table/layout.ts): on the table itself, and under .table-bg. */
+/* The table's dots, one every grid step (table/grid.ts): on the table itself, and under .table-bg. */
 .table-dots,
 .table-bg {
   background-image: radial-gradient(circle, var(--dot) 1px, transparent 1.2px);

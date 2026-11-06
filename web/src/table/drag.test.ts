@@ -22,7 +22,8 @@ import {
   type DropRect,
 } from './drag';
 import { dockLayout, type DockItem } from './dockLayout';
-import { spreadRows, tableMapOf } from './rows';
+import { TABLET_GRID } from './grid';
+import { ALL_TABLE, spreadRows, tableMapOf } from './rows';
 import { card, pile, playingView, rect } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
@@ -165,6 +166,40 @@ describe('dropAction', () => {
       x: 20_000,
       y: 20_000,
     });
+  });
+
+  it("dropAction snaps to a tablet's coarser grid: across on 20s, down on 10 past them", () => {
+    const at = (x: number, y: number) =>
+      dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, ALL_TABLE, undefined, TABLET_GRID);
+    // The nearest lines: beside player 1's cards (470), after the identity (300).
+    expect(at(311, 476)).toEqual({ kind: 'move', card: 'c', x: 320, y: 470 });
+    expect(at(289, 481)).toEqual({ kind: 'move', card: 'c', x: 280, y: 490 });
+    expect(at(300, 470)).toMatchObject({ x: 300, y: 470 });
+    // A marker too.
+    const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
+    expect(
+      dropAction(token, TABLE, { x: 509, y: 503 }, DEAL_TO, ALL_TABLE, undefined, TABLET_GRID),
+    ).toEqual({
+      kind: 'marker',
+      name: 'firstPlayer',
+      x: 500,
+      y: 510,
+    });
+    // Never off the top or left edge.
+    expect(at(-12, -30)).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it("dropAction keeps a tablet's drop at the bottom of a shown row in that row", () => {
+    // "Villain + player" on a tablet with the second of three players: the villain's row drawn
+    // 440 high, then row 2 (660 to 880) drawn from 440, 220 high.
+    const rows = tableMapOf(spreadRows(220, 3, 2, 440));
+    const yAt = (y: number) =>
+      dropAction(TABLE_CARD, TABLE, { x: 0, y }, DEAL_TO, rows, undefined, TABLET_GRID)?.y;
+    // Row 2's cards, 30 under its top, drawn at 470.
+    expect(yAt(476)).toBe(690);
+    // At the bottom of the shown row, or below it: on its last grid line, never in the hidden row 3.
+    expect(yAt(658)).toBe(870);
+    expect(yAt(2000)).toBe(870);
   });
 
   it('dropAction snaps where the card is drawn, then maps it to the shown row', () => {

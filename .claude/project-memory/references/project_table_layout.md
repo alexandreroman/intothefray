@@ -57,6 +57,12 @@ type: project
   On a tablet (touch mode outside dock mode) the villain row is always
   drawn at its full 440, its band of cards never squeezed; a window
   short of height scrolls.
+- Drops snap a card's corner to the 10-unit grid (`GRID`), the dots drawn
+  10 apart. On a tablet, a finger being less precise than a mouse, the
+  step is 20 (`TABLET_GRID` in web/src/table/grid.ts): x on multiples of
+  20, y on 10 plus multiples of 20, which keeps a dropped card in line
+  with the setup's (x 300 and 460, y 30 and 470); the dots and the rows'
+  drawn pitch follow that step.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles; the deck's name for a scenario deck); the frame's
