@@ -308,7 +308,7 @@
 
   /* A tablet: a finger needs 44 px targets; the collapsed strip is that wide, its 1 px border included
      (Table.svelte). */
-  :global(.app.touch:not(.dock-mode)) :is(.toggle, .strip-undo button) {
+  :global(.app.tablet) :is(.toggle, .strip-undo button) {
     width: 44px;
     height: 44px;
   }
@@ -424,7 +424,7 @@
   }
 
   /* A tablet: a finger needs a 44 px target. */
-  :global(.app.touch:not(.dock-mode)) .undo button {
+  :global(.app.tablet) .undo button {
     height: 44px;
   }
 

@@ -243,7 +243,7 @@
     far round on every side. The spacing between avatars leaves room for it without overlapping
     the next one's; dock mode (a phone) and a mouse keep the avatar alone.
   */
-  :global(.app.touch:not(.dock-mode)) .swatch::before {
+  :global(.app.tablet) .swatch::before {
     content: '';
     position: absolute;
     inset: calc((var(--avatar) - 44px) / 2);

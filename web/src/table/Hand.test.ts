@@ -377,10 +377,9 @@ describe('Hand', () => {
   });
 
   it('pops a card selected on a tablet less, to where touchPop puts it, tilted as on its slot', () => {
-    const pop =
-      /\n {2}:global\(\.app\.touch:not\(\.dock-mode\)\) \.hcard\.locked \.fan \{([^}]*)\}/.exec(
-        handSource,
-      )?.[1];
+    const pop = /\n {2}:global\(\.app\.tablet\) \.hcard\.locked \.fan \{([^}]*)\}/.exec(
+      handSource,
+    )?.[1];
     expect(pop).toMatch(
       /transform: translate\(var\(--touch-pop-x\), var\(--touch-pop-y\)\) rotate\(var\(--rot\)\)\s+scale\(var\(--touch-pop-scale\)\);/,
     );

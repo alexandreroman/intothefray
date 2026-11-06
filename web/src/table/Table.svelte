@@ -546,13 +546,15 @@
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
+  // A tablet: touch mode outside dock mode. The `.app` element carries it as the `tablet` class.
+  const tablet = $derived(touchMode.current && !dockMode);
   // The history column beside the table: none on a narrow screen, nor in dock mode at any width,
   // where the dock's History button opens the history sheet.
   const sidePanel = $derived(!narrow.current && !dockMode);
   // A tablet without the history column (touch mode on a narrow screen, not dock mode): a History
   // button beside the floating Undo opens the history sheet dock mode uses (spec 2.2), as a finger
   // has no other way to read the history. A mouse window keeps its corner as it is.
-  const historySheetMode = $derived(touchMode.current && narrow.current && !dockMode);
+  const historySheetMode = $derived(tablet && narrow.current);
   // The cards and piles below read it too: small cards and small piles (spec 3.6).
   setDockMode({
     get current() {
@@ -654,10 +656,10 @@
   // On a tablet (touch mode outside dock mode) the villain's row is drawn at its full height: a row of
   // cards fits between the villain's cards and the first player's row, where a finger lays them. A
   // window short of height scrolls. Elsewhere the villain's row takes rowPitch's default minimum.
-  const minVillain = $derived(touchMode.current && !dockMode ? VILLAIN_ROW_HEIGHT : undefined);
+  const minVillain = $derived(tablet ? VILLAIN_ROW_HEIGHT : undefined);
   // A finger is less precise than a mouse: on a tablet, drops snap to a coarser grid, which the rows
   // and the dots follow (grid.ts).
-  const snapGrid = $derived(touchMode.current && !dockMode ? TABLET_GRID : FINE_GRID);
+  const snapGrid = $derived(tablet ? TABLET_GRID : FINE_GRID);
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
@@ -936,7 +938,7 @@
     raisedHandCard(
       baseHandCard,
       { w: scrollerWidth, h: windowHeight },
-      { small: small.current, tablet: touchMode.current && !dockMode },
+      { small: small.current, tablet },
     ),
   );
 
@@ -2517,6 +2519,7 @@
   class:touch={touchMode.current}
   class:dock-mode={dockMode}
   class:dock-rail={dockRail}
+  class:tablet
   style:--z={zoom}
   style:--you={playerColorVar(view.you.color)}
   style:--edge="{TABLE_EDGE}px"

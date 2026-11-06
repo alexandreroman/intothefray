@@ -1014,11 +1014,11 @@
     A tablet: a finger needs 44 px targets, the footer's buttons, the main one with them, and the
     filter. Dock mode (a phone) has its own sizes below.
   */
-  :global(.app.touch:not(.dock-mode)) .mfoot button {
+  :global(.app.tablet) .mfoot button {
     height: 44px;
   }
 
-  :global(.app.touch:not(.dock-mode)) .mhead .filter {
+  :global(.app.tablet) .mhead .filter {
     height: 44px;
   }
 

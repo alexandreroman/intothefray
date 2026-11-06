@@ -180,6 +180,22 @@ describe('dock mode', () => {
     expect(document.querySelector('.corner')).not.toBeNull();
   });
 
+  it.each([
+    ['a touch tablet', TOUCH_TABLET, true],
+    ['a touch desktop', { ...DESKTOP, touch: true }, true],
+    ['a phone', PHONE, false],
+    ['a mouse on a narrow window', NARROW_MOUSE, false],
+    ['a desktop', DESKTOP, false],
+  ])(
+    'marks the table as a tablet on %s: touch mode outside dock mode',
+    async (_name, size, tablet) => {
+      mockScreen(size);
+      await renderTable();
+
+      expect(document.querySelector('.app')!.classList.contains('tablet')).toBe(tablet);
+    },
+  );
+
   it('draws no hand fan, no corner bar, no selector for one hero (no_fan_no_corner_in_dock)', async () => {
     mockScreen(PHONE);
     await renderTable();
