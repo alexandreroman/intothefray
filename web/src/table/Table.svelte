@@ -155,7 +155,7 @@
     type Corner,
   } from './focus';
   import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
-  import Surface, { type OwnerBox } from './Surface.svelte';
+  import Surface, { ownerLineWidth, type OwnerBox } from './Surface.svelte';
   import { backUrl } from './theme';
   import { TOUCH_MODE_QUERY } from './touch';
   import { touchZoom } from './touchZoom';
@@ -464,16 +464,16 @@
   const tablePiles = $derived.by(() => shownPiles(piledInPlay, tableMap));
   const tableCards = $derived.by(() => shownCards(cardsInPlay, tableMap));
 
-  /** The frames around each owner's deck and discard pile as drawn, with the name line's width in dock mode. */
-  const drawnFrames = $derived.by((): { frame: OwnerFrame; nameRoom?: number }[] => {
+  /** The frames around each owner's deck and discard pile, as drawn. */
+  const drawnFrames = $derived.by((): OwnerFrame[] => {
     if (dockView === null) {
-      return ownerFrames(tablePiles).map((frame) => ({ frame }));
+      return ownerFrames(tablePiles);
     }
-    // Laid out with the rest of the table, at its full size; the name line keeps that width.
+    // Laid out with the rest of the table.
     const layout = dockView;
     return ownerFrames(piledInPlay).flatMap((frame) => {
       const box = layout.itemBox(frameItemId(frame));
-      return box === null ? [] : [{ frame: { ...frame, ...box }, nameRoom: frame.w }];
+      return box === null ? [] : [{ ...frame, ...box }];
     });
   });
 
@@ -500,18 +500,12 @@
 
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived.by(() => {
-    const chips = chipsByFrame(
-      drawnFrames.map(({ frame }) => frame),
-      piles,
-    );
-    return drawnFrames.map(({ frame, nameRoom }, i): OwnerBox => {
+    const chips = chipsByFrame(drawnFrames, piles);
+    return drawnFrames.map((frame, i): OwnerBox => {
       const outOfPlay = chips[i] ?? [];
       const { name: ownerName, color } = ownerLook(view, frame.owner);
       const name = frame.label ?? ownerName;
       const owner: OwnerBox = { frame, name, color, outOfPlay };
-      if (nameRoom !== undefined) {
-        owner.nameRoom = nameRoom;
-      }
       const avatar = frameAvatar(frame);
       if (avatar !== undefined) {
         owner.avatar = avatar;
@@ -680,9 +674,22 @@
   const wrapWidth = $derived.by(() =>
     visibleWidth > 0 ? (visibleWidth - 2 * SCROLL_PADDING) / zoom : Number.POSITIVE_INFINITY,
   );
+  // How far right of its frame's left edge each owner line reaches, by frame id (Surface.svelte):
+  // a frame takes as much room in its row when its line is wider. Every frame shows an avatar but
+  // a scenario deck's, which shows its name (frameAvatar).
+  const lineWidths = $derived.by(() => {
+    const frames = ownerFrames(piledInPlay);
+    const chips = chipsByFrame(frames, piles);
+    return new Map(
+      frames.map((frame, i) => {
+        const line = { avatar: frame.label === undefined, chips: chips[i]?.length ?? 0 };
+        return [frameItemId(frame), ownerLineWidth(line, zoom)];
+      }),
+    );
+  });
   const dockView: DockLayout | null = $derived(
     dockMode
-      ? dockLayout({ items: dockTableItems, rows: dockShownRows, seatRows, wrapWidth })
+      ? dockLayout({ items: dockTableItems, rows: dockShownRows, seatRows, wrapWidth, lineWidths })
       : null,
   );
   /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
@@ -705,6 +712,7 @@
           rows: dockShownRows,
           seatRows,
           wrapWidth,
+          lineWidths,
           preview: dockPreview,
         })
       : null,

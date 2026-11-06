@@ -6,7 +6,7 @@ import type { PileView as TablePile } from '../lib/types';
 import { DOCK_MODE_KEY } from './dockMode';
 import { pile } from './fixtures.testing';
 import { ownerFrames } from './layout';
-import Surface, { type OwnerBox } from './Surface.svelte';
+import Surface, { ownerLineWidth, type OwnerBox } from './Surface.svelte';
 import type { ComponentProps } from 'svelte';
 import surfaceSource from './Surface.svelte?raw';
 
@@ -32,7 +32,6 @@ const DRAWN_OWNERS: OwnerBox[] = [
   {
     ...OWNERS[0]!,
     frame: { ...FRAME, x: -6, y: 24, w: 157.2, h: 106.2 },
-    nameRoom: 262,
   },
 ];
 
@@ -125,7 +124,6 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
   // the villain's 157.2, both from −6.
   const VILLAIN: OwnerBox = {
     frame: { owner: -1, x: -6, y: 24, w: 157.2, h: 106.2 },
-    nameRoom: 262,
     name: 'Villain',
     color: 'var(--villain)',
     avatar: 'rhino.png',
@@ -133,7 +131,6 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
   };
   const HERCULES: OwnerBox = {
     frame: { owner: 0, x: -6, y: 200, w: 313.2, h: 106.2 },
-    nameRoom: 522,
     name: 'Alex · Hercules',
     color: 'var(--p1)',
     avatar: 'hercules.png',
@@ -198,7 +195,6 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
   it('puts the chips of a line that shows its name right after the name', () => {
     const deck: OwnerBox = {
       frame: { owner: -1, label: 'Hydra Patrol', x: 300, y: 24, w: 157.2, h: 106.2 },
-      nameRoom: 262,
       name: 'Hydra Patrol',
       color: 'var(--villain)',
       outOfPlay: [ASIDE],
@@ -225,7 +221,6 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
     // A one-pile frame, drawn 79.2 wide (132 at full size).
     const weapons: OwnerBox = {
       frame: { owner: -1, label: 'Experimental Weapons', x: 300, y: 24, w: 79.2, h: 106.2 },
-      nameRoom: 132,
       name: 'Experimental Weapons',
       color: 'var(--villain)',
       outOfPlay: [ASIDE],
@@ -308,7 +303,7 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
   });
 
   it('leaves the chip lines their own widths, the chips at their right end, out of dock mode', () => {
-    const owners = [VILLAIN, HERCULES].map(({ avatar: _, nameRoom: __, ...owner }) => owner);
+    const owners = [VILLAIN, HERCULES].map(({ avatar: _, ...owner }) => owner);
     const { container } = renderOwners(owners, false);
 
     const lines = [...container.querySelectorAll<HTMLElement>('.chips')];
@@ -323,6 +318,36 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
       '157.2px',
       '313.2px',
     ]);
+  });
+});
+
+describe('ownerLineWidth', () => {
+  // At 100 %, --lu is 1px and the avatar's ring 2: the avatar ends 6 + 22 + 4 = 32 past the frame's
+  // left edge, a chip is 46 wide, 4 apart, 6 past the avatar or the name.
+  it('measures an avatar line: the avatar, then --chip-lead and the chips', () => {
+    expect(ownerLineWidth({ avatar: true, chips: 2 }, 1)).toBeCloseTo(32 + 6 + 46 + 4 + 46, 6);
+    expect(ownerLineWidth({ avatar: true, chips: 0 }, 1)).toBeCloseTo(32, 6);
+  });
+
+  it('counter-scales the line far out, as --lu and the ring do', () => {
+    // At 50 %: --lu is 11 / 12 / 0.5 = 1.8333, the ring 4; the villain's line with two chips:
+    // 6 + 40.333 + 8, then 11 + 2 × 84.333 + 7.333: 241.333.
+    expect(ownerLineWidth({ avatar: true, chips: 2 }, 0.5)).toBeCloseTo(241.3333, 3);
+  });
+
+  it("measures a text line by its chips alone: the name is cut to the frame's room before them", () => {
+    expect(ownerLineWidth({ avatar: false, chips: 1 }, 1)).toBeCloseTo(6 + 6 + 46, 6);
+    expect(ownerLineWidth({ avatar: false, chips: 0 }, 1)).toBe(0);
+  });
+
+  it('mirrors the style of the line', () => {
+    const surface = /\n {2}\.surface \{([^}]*)\}/.exec(surfaceSource)?.[1] ?? '';
+    expect(surface).toContain('--lu: max(1px, 11px / 12 / var(--z, 1));');
+    expect(surface).toContain('--chip-width: calc(46 * var(--lu));');
+    expect(surface).toContain('--chip-gap: calc(4 * var(--lu));');
+    expect(surface).toContain('--avatar: calc(22 * var(--lu));');
+    expect(surface).toContain('--avatar-ring: calc(2px / var(--z, 1));');
+    expect(surface).toContain('--chip-lead: calc(6 * var(--lu));');
   });
 });
 

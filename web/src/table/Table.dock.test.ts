@@ -1011,6 +1011,27 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     }
   });
 
+  it("starts the villain's cards past its owner line when the line is wider than its frame", async () => {
+    mockScreen(PHONE);
+    const view = busyView();
+    view.table!.piles.push(
+      pile('vic', { kind: 'victory', owner: -1, count: 1, cards: [] }),
+      pile('saside', { kind: 'aside', owner: -1, count: 0, cards: [] }),
+    );
+    await renderTable(view);
+
+    // At 73 %, --lu is 11 / 12 / 0.73 = 1.2557 and the ring 2.7397: the avatar ends 6 + 27.626 +
+    // 5.479 = 39.105 past the frame's left edge, the two chips 7.534 + 2 × 57.763 + 5.023 further:
+    // the line 167.19 wide, to 161.19, past the frame's 157.2. Rhino goes on the first half column
+    // past 161.19 + 24 = 185.19: 222, rather than 176.4; Alex's row keeps its indent.
+    expect(shownZoom()).toBe(0.73);
+    expectAt('v', 222, 30);
+    expectAt('id', 176.4, 306.4);
+    const villain = drawnBox(document.querySelector<HTMLElement>('.ownerbox[data-owner="-1"]')!);
+    expect(villain.x).toBeCloseTo(-6, 4);
+    expect(villain.w).toBeCloseTo(157.2, 4);
+  });
+
   it('keeps the names as text on a touch tablet (F-U13)', async () => {
     mockScreen(TOUCH_TABLET);
     await renderTable(busyView());

@@ -104,21 +104,28 @@ type: project
   - Owner lines show the hero's (villain's) avatar at the chips' height
     instead of the name, then the out-of-play chips right after it,
     left-aligned, so that they line up on the left across rows; a
-    scenario deck shows its name, its chips after it.
+    scenario deck shows its name, its chips after it. That name takes
+    its frame's drawn width less its chips, cut with an ellipsis and a
+    tooltip (`--name-fit`). A frame takes, in its row, the width of its
+    owner line when the line is wider (`ownerLineWidth` in Surface.svelte,
+    the `lineWidths` input of `dockLayout`): what follows starts on the
+    first half column past the line and a gap, so no owner line runs
+    over another frame, line or card.
   - During a drag the rows lay themselves out as if the dragged unit lay
     in its drop slot (the `preview` input of `dockLayout`, spec 3.8): the
     cards after it glide aside (180 ms, none under reduced motion) and
     glide back on a cancel.
   - The dock zoom is fixed: it fits the widest row's indent plus three
     card slots in the width, never above 100 %.
-  - A table card's counters take three disjoint regions inside the card
+  - A table card's counters take three disjoint regions
     (`dockCounterLayout`, web/src/table/dockCounters.ts), at a fixed
     screen size, numbers 11 px: tokens in a column of touching discs on
     the right edge (bottom-up, damage in the corner; a scheme top-down,
     threat in the corner), statuses as initial chips ("S", "T×2", "R2")
-    in a row under the title band from the left, modifiers up the left
-    edge ("+1 ATK", else "+1ATK"). A full region shows what fits but one,
-    then "+N"; the inspector shows them all.
+    in a row under the title band from the left, modifiers as whole
+    badges ("+1 DEF") in a column standing out of the card's left edge,
+    as on desktop. A full region shows what fits but one, then "+N"; the
+    inspector shows them all.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
   safe areas; a web app manifest (`display: standalone`) lets a game
   added to the home screen run full screen on iOS.

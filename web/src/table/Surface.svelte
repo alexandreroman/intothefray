@@ -16,11 +16,6 @@
   export interface OwnerBox {
     /** The frame as drawn: in dock mode, where the table's projection draws it, smaller. */
     frame: OwnerFrame;
-    /**
-     * The frame's width at full size, in dock mode. The surface does not read it: a name line keeps
-     * within the frame's drawn width.
-     */
-    nameRoom?: number;
     /** The player's name, "Villain", or the label of a scenario deck. */
     name: string;
     /**
@@ -35,6 +30,31 @@
     tip?: string;
     /** The owner's out-of-play piles, as chips at the right of the name line. */
     outOfPlay: OutOfPlayChip[];
+  }
+
+  // The owner line's sizes in --lu (the style below): a chip, the gap between chips, the avatar, and
+  // the room between the avatar or the name and the chips; and the line's left inset, in drawn units.
+  const CHIP_WIDTH = 46;
+  const CHIP_GAP = 4;
+  const AVATAR = 22;
+  const CHIP_LEAD = 6;
+  const LINE_INSET = 6;
+
+  /**
+   * How far right of its frame's left edge an owner line reaches in dock mode, in drawn units, at a
+   * zoom: its avatar, or the name's inset, then --chip-lead and its chips. A name reaches no further
+   * on its own, cut to its frame's room before the chips (--name-fit). As the style draws it: --lu
+   * counter-scales the line far out, the avatar's ring is 2 screen px.
+   */
+  export function ownerLineWidth(line: { avatar: boolean; chips: number }, zoom: number): number {
+    const lu = Math.max(1, 11 / 12 / zoom);
+    const ring = 2 / zoom;
+    const lead = line.avatar ? LINE_INSET + AVATAR * lu + 2 * ring : LINE_INSET;
+    if (line.chips === 0) {
+      return line.avatar ? lead : 0;
+    }
+    const chips = line.chips * CHIP_WIDTH * lu + (line.chips - 1) * CHIP_GAP * lu;
+    return lead + CHIP_LEAD * lu + chips;
   }
 </script>
 

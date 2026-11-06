@@ -528,6 +528,81 @@ describe('dockLayout', () => {
   });
 });
 
+describe('an owner line wider than its frame in dock mode', () => {
+  // The villain's row of a Crossbones game: the encounter frame (−10..252, drawn −6..151.2), the
+  // Experimental Weapons frame 40 past it (292..424, drawn 175.2..254.4) and the villain at 474.
+  // At a zoom of 0.558, the villain's line (its avatar, Victory and Set-aside chips) is drawn 217
+  // wide from the frame's left edge, to 211, past the frame's 157.2 and over the next frame.
+  const CROSSBONES: DockItem[] = [
+    frame('encounter', -10, 20, 262, 177),
+    pile('deck', 0, 30, { anchor: 'encounter' }),
+    pile('discard', 130, 30, { anchor: 'encounter' }),
+    frame('weapons', 292, 20, 132, 177),
+    pile('weapons-deck', 302, 30, { anchor: 'weapons' }),
+    card('villain', 474, 30),
+  ];
+
+  function crossbones(lineWidths?: Map<string, number>): DockLayoutInput {
+    return { items: CROSSBONES, rows: [0], wrapWidth: 1000, ...ROOMS, lineWidths };
+  }
+
+  it('draws the frames at their scaled place when no line passes its frame', () => {
+    const layout = dockLayout(crossbones(new Map([['encounter', 150]])));
+
+    expectBox(layout.itemBox('weapons'), { x: 175.2, y: 22, w: 79.2, h: 106.2 });
+    // The first half column past (424 + 40) × 0.6 = 278.4: 313.2.
+    expectBox(layout.itemBox('villain'), cardAt(313.2, 28));
+  });
+
+  it("starts the next frame on the first half column past the line's end and a gap", () => {
+    const layout = dockLayout(crossbones(new Map([['encounter', 217]])));
+
+    // The encounter frame takes the line's 217, to 211; a 24 gap: 235, on the half column 267.6.
+    expectBox(layout.itemBox('encounter'), { x: -6, y: 22, w: 157.2, h: 106.2 });
+    expectBox(layout.itemBox('discard'), cardAt(78, 28));
+    expectBox(layout.itemBox('weapons'), { x: 267.6, y: 22, w: 79.2, h: 106.2 });
+    expectBox(layout.itemBox('weapons-deck'), cardAt(273.6, 28));
+    // The villain on the first half column past 267.6 + 79.2 + 24 = 370.8: 404.4.
+    expectBox(layout.itemBox('villain'), cardAt(404.4, 28));
+    expect(layout.indent(0)).toBeCloseTo(404.4, 6);
+    // A point of the moved frame is drawn with it (92.4 right of its scaled place), and back.
+    expectPoint(layout.toDisplay({ x: 358, y: 108 }), { x: 307.2, y: 74.8 });
+    expectPoint(layout.toTable({ x: 307.2, y: 74.8 }), { x: 358, y: 108 });
+    expectPoint(layout.toDisplay({ x: 130, y: 30 }), { x: 78, y: 28 });
+    // The empty slot two half columns past the villain: 495.6 to 562.8.
+    expect(layout.width).toBeCloseTo(562.8, 6);
+  });
+
+  it("starts a row's units past its last frame's line", () => {
+    // Alex's frame (−6..151.2) with a line 200 wide, to 194: the identity on the first half column
+    // past 194 + 24 = 218, 222, rather than 176.4.
+    const layout = dockLayout(playerRow(0, 1000, { lineWidths: new Map([['frame', 200]]) }));
+
+    expectBox(layout.itemBox('identity'), cardAt(222, 28));
+    expect(layout.width).toBeGreaterThanOrEqual(194);
+  });
+
+  it('gives a frame flowing among the units as many half columns as its line needs', () => {
+    // A scenario deck after a card: drawn 120 wide, its line 200: five half columns (4.39), so the
+    // card after it starts 228 past it.
+    const layout = dockLayout({
+      items: [
+        ...PLAYER_PILES,
+        frame('crew', 460, 400, 200, 132),
+        pile('crew-deck', 470, 410, { w: 80, h: 112, anchor: 'crew' }),
+        card('after', 700, 410),
+      ],
+      rows: [1],
+      wrapWidth: 1000,
+      ...ROOMS,
+      lineWidths: new Map([['crew', 200]]),
+    });
+
+    expectBox(layout.itemBox('crew'), { x: 267.6, y: 28, w: 120, h: 79.2 });
+    expectBox(layout.itemBox('after'), cardAt(495.6, 28));
+  });
+});
+
 describe('a row of no seat in dock mode', () => {
   // A one-player game: Nick Fury dropped at (300, 700), in row 2 (600..820), which no seat has. It
   // flows in player 1's block after its own units: the identity at 176.4, c1 at 267.6, c2 at 358.8,

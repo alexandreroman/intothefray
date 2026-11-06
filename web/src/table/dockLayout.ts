@@ -15,6 +15,9 @@
 // row above it: its units flow after that row's own. Shared positions never change: only where
 // they are drawn does, and a drop on a row is an insertion among its units (insertAt), placed on
 // the table so that it sorts there, in the band of the row it is shown in.
+// A frame takes, in its row, the wider of its drawn width and its owner line's (lineWidths): the line
+// above it starts at its left edge, and what follows it starts past both, on a half column, so that
+// no owner line runs over the next frame or a card.
 // During a drag the rows show the drop before it is let go (spec 3.8): laid out with the dragged
 // card where the drop would put it, as if it lay there already, the units after it pushed along
 // and the slot it left closed up.
@@ -79,6 +82,11 @@ export interface DockLayoutInput {
   rowGap?: number;
   lineGap?: number;
   nameRoom?: number;
+  /**
+   * The drawn width of each frame's owner line, by frame id, from the frame's left edge; a frame
+   * without one has a line no wider than itself.
+   */
+  lineWidths?: ReadonlyMap<string, number>;
 }
 
 export interface Point {
@@ -173,8 +181,10 @@ interface Row {
   height: number;
   indent: number;
   lines: Line[];
-  /** The frames and piles left of its units, drawn at their scaled place on its first line. */
+  /** The frames and piles left of its units, drawn on its first line at their scaled place, or pushed right. */
   fixed: DockItem[];
+  /** Where its groups of frames and piles are drawn: by their left edge on the table, ascending. */
+  fixedPlaces: FixedPlace[];
   /** How far right they reach on the table; null without them. */
   fixedRight: number | null;
   units: Unit[];
@@ -310,11 +320,24 @@ function groupsByRow(
   return groupsOf;
 }
 
+/** A frame with its piles, or a pile alone, among the frames and piles left of a row's units. */
+interface FixedGroup {
+  root: DockItem;
+  members: DockItem[];
+}
+
 /** A row's units, in their order, and the frames and piles left of them. */
 interface Split {
   units: Unit[];
   fixed: DockItem[];
+  fixedGroups: FixedGroup[];
   fixedRight: number | null;
+}
+
+/** A group of a row's frames and piles: its left edge on the table, and how far right of its scaled place it is drawn. */
+interface FixedPlace {
+  left: number;
+  dx: number;
 }
 
 /**
@@ -328,11 +351,13 @@ function splitRow({ own, folded }: BlockGroups): Split {
   const firstX = leading.length > 0 ? Math.min(...leading.map((root) => root.x)) : Infinity;
   const units: Unit[] = [];
   const fixed: DockItem[] = [];
+  const fixedGroups: FixedGroup[] = [];
   for (const [root, members] of own) {
     if (isLeading(root) || root.x >= firstX) {
       units.push(unitOf(root, members, false));
     } else {
       fixed.push(...members);
+      fixedGroups.push({ root, members });
     }
   }
   units.sort((a, b) => byPlace(a.root, b.root));
@@ -341,7 +366,7 @@ function splitRow({ own, folded }: BlockGroups): Split {
   units.push(...foldedUnits);
   const fixedRight =
     fixed.length > 0 ? Math.max(...fixed.map((item) => visualBox(item).right)) : null;
-  return { units, fixed, fixedRight };
+  return { units, fixed, fixedGroups, fixedRight };
 }
 
 function unitOf(root: DockItem, members: DockItem[], folded: boolean): Unit {
@@ -395,13 +420,66 @@ function columnX(grid: Grid, column: number): number {
   return grid.origin + column * grid.step;
 }
 
+/** The first half column at or right of a drawn x. */
+function columnAtOrPast(grid: Grid, x: number): number {
+  return Math.ceil((x - grid.origin) / grid.step - EPSILON);
+}
+
+/** Where a row's frames and piles are drawn, and the drawn x they and their owner lines reach. */
+interface FixedLayout {
+  places: FixedPlace[];
+  /** Null without frames and piles. */
+  end: number | null;
+}
+
+/**
+ * Lays a row's frames and piles out, group by group from the left: each at its scaled place, moved
+ * as far right as the groups before it were. A group whose owner line is wider than itself takes
+ * the line's width, and pushes the next one to the first half column past the line and a gap.
+ */
+function layOutFixed(
+  { fixedGroups }: Split,
+  grid: Grid,
+  scale: number,
+  lineWidths: ReadonlyMap<string, number>,
+): FixedLayout {
+  const groups = fixedGroups.map(({ root, members }) => {
+    const boxes = members.map((item) => visualBox(item));
+    return {
+      root,
+      left: Math.min(...boxes.map((box) => box.left)),
+      right: Math.max(...boxes.map((box) => box.right)),
+    };
+  });
+  groups.sort((a, b) => a.left - b.left);
+  const places: FixedPlace[] = [];
+  let end: number | null = null;
+  let dx = 0;
+  // Where the next group starts at the earliest, past the line before it: nowhere unless pushed.
+  let pushedTo = Number.NEGATIVE_INFINITY;
+  for (const group of groups) {
+    const scaledLeft = group.left * scale;
+    if (scaledLeft + dx < pushedTo) {
+      dx = columnX(grid, columnAtOrPast(grid, pushedTo)) - scaledLeft;
+    }
+    places.push({ left: group.left, dx });
+    const drawnLeft = scaledLeft + dx;
+    const boxWidth = (group.right - group.left) * scale;
+    const lineWidth = lineWidths.get(group.root.id) ?? 0;
+    const takes = Math.max(boxWidth, lineWidth);
+    end = Math.max(end ?? Number.NEGATIVE_INFINITY, drawnLeft + takes);
+    pushedTo =
+      lineWidth > boxWidth ? drawnLeft + takes + SLOT_GAP * scale : Number.NEGATIVE_INFINITY;
+  }
+  return { places, end };
+}
+
 /** The half column a row's first line starts at: the first one past its frames and piles and a gap. */
-function firstColumn({ fixedRight }: Split, grid: Grid, scale: number): number {
-  if (fixedRight === null) {
+function firstColumn({ end }: FixedLayout, grid: Grid, scale: number): number {
+  if (end === null) {
     return 0;
   }
-  const past = (fixedRight + SLOT_GAP) * scale;
-  return Math.max(0, Math.ceil((past - grid.origin) / grid.step - EPSILON));
+  return Math.max(0, columnAtOrPast(grid, end + SLOT_GAP * scale));
 }
 
 /** How many half columns a unit takes at least: a slot, so that a portrait card keeps its look. */
@@ -418,8 +496,8 @@ function spanOf(slotW: number, grid: Grid): number {
 }
 
 /** The drawn x a row's first line starts its units at, on its first half column; 0 for a row without units. */
-function indentOf(split: Split, grid: Grid, scale: number): number {
-  return split.units.length === 0 ? 0 : columnX(grid, firstColumn(split, grid, scale));
+function indentOf(split: Split, fixed: FixedLayout, grid: Grid, scale: number): number {
+  return split.units.length === 0 ? 0 : columnX(grid, firstColumn(fixed, grid, scale));
 }
 
 /** How many lines a row has at least: its first, and an empty one to drop on under it. */
@@ -442,7 +520,9 @@ export function dockFitWidth(
 ): number {
   const splits = [...groupsByRow(items, rows, seatRows).values()].map((groups) => splitRow(groups));
   const grid = gridOf(splits, scale);
-  const indents = splits.map((split) => indentOf(split, grid, scale));
+  const indents = splits.map((split) =>
+    indentOf(split, layOutFixed(split, grid, scale, new Map()), grid, scale),
+  );
   return Math.max(0, ...indents) + FIT_SLOTS * grid.pitch;
 }
 
@@ -471,6 +551,31 @@ function lastAbove<T extends { top: number }>(list: readonly T[], y: number): T 
   return found;
 }
 
+/**
+ * How far right of its scaled place a point of a row's frames and piles is drawn: as far as the
+ * group it lies past (the first one when it lies left of them all).
+ */
+function fixedDx(row: Row, x: number): number {
+  let dx = row.fixedPlaces[0]?.dx ?? 0;
+  for (const place of row.fixedPlaces) {
+    if (place.left <= x) {
+      dx = place.dx;
+    }
+  }
+  return dx;
+}
+
+/** fixedDx, for a drawn x: as far as the group drawn at or left of it. */
+function drawnFixedDx(row: Row, x: number, scale: number): number {
+  let dx = row.fixedPlaces[0]?.dx ?? 0;
+  for (const place of row.fixedPlaces) {
+    if (place.left * scale + place.dx <= x) {
+      dx = place.dx;
+    }
+  }
+  return dx;
+}
+
 /** Lays the shown rows of the table out, each flowing its units in the wrap width. */
 export function dockLayout(input: DockLayoutInput): DockLayout {
   if (input.rows.length === 0) {
@@ -480,6 +585,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   const nameRoom = input.nameRoom ?? DOCK_NAME_ROOM;
   const lineGap = input.lineGap ?? DOCK_LINE_GAP;
   const rowGap = input.rowGap ?? DOCK_ROW_GAP;
+  const lineWidths = input.lineWidths ?? new Map<string, number>();
   const gap = SLOT_GAP * scale;
   // The empty slot after each row: a drawn portrait card.
   const slotW = PORTRAIT_CARD.w * scale;
@@ -499,6 +605,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
 
   for (const [rowIndex, rowNumber] of input.rows.entries()) {
     const split = splits[rowIndex] as Split;
+    const fixed = layOutFixed(split, grid, scale, lineWidths);
     const row: Row = {
       number: rowNumber,
       tableTop: rowTop(rowNumber),
@@ -506,21 +613,23 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       cardY: rowTop(rowNumber) + ROW_LABEL_ROOM,
       top,
       height: 0,
-      indent: indentOf(split, grid, scale),
+      indent: indentOf(split, fixed, grid, scale),
       lines: [],
       fixed: split.fixed,
+      fixedPlaces: fixed.places,
       fixedRight: split.fixedRight,
       units: split.units,
     };
 
     // The units flow on the half columns, the first line from its first one, each unit's box on
     // the half column after the last one's (its turned cards may reach left of it); one that does
-    // not fit starts the next line, on the first half column.
+    // not fit starts the next line, on the first half column. A frame takes its owner line's width
+    // when that is wider.
     let line = 0;
-    let column = firstColumn(split, grid, scale);
+    let column = firstColumn(fixed, grid, scale);
     let lineIsEmpty = true;
     for (const unit of row.units) {
-      unit.slotW = (unit.right - unit.left) * scale;
+      unit.slotW = Math.max((unit.right - unit.left) * scale, lineWidths.get(unit.root.id) ?? 0);
       const lead = unit.lead * scale;
       if (!lineIsEmpty && columnX(grid, column) - lead + unit.slotW > input.wrapWidth) {
         line += 1;
@@ -576,8 +685,9 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
 
     for (const item of row.fixed) {
       placed.set(item.id, { item, row, unit: null });
-      width = Math.max(width, (item.x + item.w) * scale);
+      width = Math.max(width, (item.x + item.w) * scale + fixedDx(row, item.x));
     }
+    width = Math.max(width, fixed.end ?? 0);
     for (const unit of row.units) {
       for (const item of unit.members) {
         placed.set(item.id, { item, row, unit });
@@ -590,7 +700,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   function drawnWith(row: Row, unit: Unit | null, p: Point): Point {
     const first = row.lines[0] as Line;
     if (unit === null) {
-      return { x: p.x * scale, y: first.top + (p.y - row.tableTop) * scale };
+      return { x: p.x * scale + fixedDx(row, p.x), y: first.top + (p.y - row.tableTop) * scale };
     }
     const line = row.lines[unit.line] as Line;
     return { x: p.x * scale + unit.dx, y: line.top + line.inset + (p.y - unit.top) * scale };
@@ -601,7 +711,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
     let y: number;
     let x: number;
     if (unit === null) {
-      x = p.x / scale;
+      x = (p.x - drawnFixedDx(row, p.x, scale)) / scale;
       y = row.tableTop + (p.y - (row.lines[0] as Line).top) / scale;
     } else {
       const line = row.lines[unit.line] as Line;
