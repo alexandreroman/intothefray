@@ -1203,9 +1203,9 @@
   }
 
   /*
-    Dock mode: the card's width, as high as the sheet allows on its side, else as wide as the sheet
-    allows while it stays at most 42 % of the screen high. A face is at most as wide as the sheet,
-    which pads its edges by 12 px.
+    Dock mode upright: the card's width, as wide as the sheet allows while it stays at most 42 % of the
+    screen high (.inspector.dock.beside sizes it for a phone on its side). A face is at most as wide as
+    the sheet, which pads its edges by 12 px.
   */
   .inspector.dock {
     --portrait-w: min(100dvw - 24px, 42dvh * 5 / 7);

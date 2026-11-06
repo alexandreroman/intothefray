@@ -581,8 +581,8 @@ a.btn-primary {
 }
 
 /*
-  Touch mode (TOUCH_MODE_QUERY, lib/screen.ts): the table page, fixed to the screen (Table.svelte), pans but never pinch-zooms, as the
-  table zooms itself. Keep the query in step with TOUCH_MODE_QUERY.
+  Touch mode (TOUCH_MODE_QUERY in lib/screen.ts, which this query must match): the table page, fixed to the screen
+  (Table.svelte), pans but never pinch-zooms, as the table zooms itself.
 */
 @media (hover: none) and (pointer: coarse) {
   html.fixed-screen {
