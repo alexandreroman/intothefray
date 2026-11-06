@@ -100,3 +100,4 @@
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
 - [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold to drag, pinch; phone dock, hand carousel, small cards
+- [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector, inspector: .count-pill

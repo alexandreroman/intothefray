@@ -17,34 +17,41 @@ type: project
     as big buttons (default in Fray red), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
     entries left out (`visibleEntries`), and no arrows: arrows are drawn
-    with a mouse or a pen only. Its header shows the card's name only (a
-    pile's kind with its count); the sheet's accessible name also gives
-    the type and owner. Token, status and modifier entries and the
-    steppers keep it open; every other entry closes it. Reveal from a
-    deck's inspector keeps it open and switches it to the revealed card
-    once the table shows it; a refused reveal leaves it on the deck. Its
-    opening, closing, drill-down, counters and presses animate (none under
-    reduced motion). A tap on a raised hand card opens it with Play and
-    Discard (`handActions`). "Select" enters select mode: taps toggle
-    table cards in the group, a pill "N selected · Done" ends it.
+    with a mouse or a pen only. Its header shows the card's name only,
+    centred with margins and an ellipsis (a pile's kind with its count);
+    the sheet's accessible name also gives the type and owner. It keeps
+    its size across submenus: the entries area keeps the main page's
+    height. Token, status and modifier entries and the steppers keep it
+    open; every other entry closes it. Flip keeps it open and turns the
+    card over in it (360 ms). Reveal from a deck's inspector keeps it open
+    and switches it to the revealed card once the table shows it: the
+    sheet first eases to the new size, then the card turns; a refused
+    reveal leaves it on the deck. Its opening, closing, drill-down,
+    counters and presses animate (none under reduced motion). A tap on a
+    raised hand card opens it with Play and Discard (`handActions`).
+    "Select" enters select mode: taps toggle table cards in the group, a
+    pill "N selected · Done" ends it.
   - A press on a table card, pile or marker picks it up after a 300 ms
     hold within 10 px (`gestures.ts` `HOLD_MS`, `HOLD_SLOP`; a 10 ms
     vibration); a quicker move scrolls the table. Hand cards drag at once.
     A second finger lets go of a press that has not moved.
-  - Two fingers pinch-zoom and pan (`touchZoom.ts`); a double tap on an
-    empty spot toggles between the fit zoom and the readable zoom (100 %,
-    150 % when the fit is already about 100 %). The page itself never
-    pinch-zooms on the table screen.
+  - On tablets, two fingers pinch-zoom and pan (`touchZoom.ts`) and a
+    double tap on an empty spot toggles between the fit zoom and the
+    readable zoom (100 %, 150 % when the fit is already about 100 %).
+    Pinch and double tap belong to tablets only: phones (dock mode) never
+    zoom (no pinch, no double tap, a saved `itf-zoom` ignored), and
+    one-finger scrolling stays. The page itself never pinch-zooms on the
+    table screen.
   - Card boxes do not focus their filter, so no keyboard pops up.
 - Dock mode (phones):
   - A dock (`Dock.svelte`) at the bottom, or a 64 px rail on the left on
     a phone on its side, holds the hand button (hero avatar, mini cards,
-    count; the drop target "back to hand" during a drag), Undo and
-    History with an unread badge (lines newer than the last seen line's
-    time). No hand fan, no corner bar; the hero selector floats above the
-    dock when it lists two entries or more. During a drag the hand button
-    is the only hand target: a table card dropped there goes to its
-    owner's hand, a hand card goes back.
+    the hand count in the count capsule, see [[project_count_capsule]];
+    the drop target "back to hand" during a drag), Undo and History, which
+    has no badge. No hand fan, no corner bar; the hero selector floats
+    above the dock when it lists two entries or more. During a drag the
+    hand button is the only hand target: a table card dropped there goes
+    to its owner's hand, a hand card goes back.
   - In dock mode the top bar is always visible, never auto-hides and
     takes its own room above the table (right of the rail on a phone on
     its side), below the notch (`TopBar` `autoHide={false}`).
@@ -57,14 +64,19 @@ type: project
     upright, the card beside its list on its side; the hand sheet on its
     side puts its actions beside the carousel; card boxes open full
     screen with a one-line header and a one-row footer.
-  - Every table card and every pile is drawn at 60 % (`DOCK_SCALE`,
-    web/src/table/dockPiles.ts), full face, from its top-left corner; each
-    owner frame and its piles shrink about the frame's top-left corner, so
-    the frame wraps them. The drawn box is the hit area, drop target,
-    ghost and flight size. Layout and positions are those of every other
-    screen.
-  - Until the viewer chooses a zoom, the table fits its content in both
-    directions (never above 100 %), upright or on its side.
+  - The table is drawn through one projection (web/src/table/dockLayout.ts,
+    dockItems.ts, `TableMap` in rows.ts): the desktop layout at 60 %
+    (`DOCK_SCALE`); past the row's indent, units (a card with its stack
+    and markers, a deck frame with its piles) flow by table order in even
+    slots, wrapping under the indent; rows are as tall as their content
+    and keep an empty second line; a drop inserts between neighbours,
+    placing the shared x so the card sorts there. Positions on the shared
+    table never depend on the phone.
+  - Owner lines show the hero's (villain's) avatar at the chips' height
+    instead of the name (scenario decks keep their name); every chip line
+    ends on one shared right edge.
+  - The dock zoom is fixed: it fits the widest row's indent plus three
+    card slots in the width, never above 100 %.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
   safe areas; a web app manifest (`display: standalone`) lets a game
   added to the home screen run full screen on iOS.

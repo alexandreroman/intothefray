@@ -10,6 +10,8 @@ type: project
   through `CardArt`) in a ring of the player's colour, with a badge giving
   the hand size; a deck with no hero yet is a disc of the seat colour.
   Entries are radios named with the full label ("Alex · Spider-Man").
+  The hand-count badge is the shared count capsule (see
+  [[project_count_capsule]]).
 - Only the current entry shows its hero's name, beside its avatar. The
   other entries are greyed (grayscale, dimmed) and take back a little
   colour on hover.
