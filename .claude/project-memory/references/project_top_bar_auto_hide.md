@@ -11,6 +11,9 @@ type: project
   `web/src/lib/screen.ts` is its single source for scripts, shared with
   the table's small screen layout; other screens always show the bar. The
   items the bar drops follow the width only.
+- On a touch screen the bar shows Fullscreen at every width where the
+  browser has the Fullscreen API (iPhone Safari has none); a mouse window
+  up to 600px wide (`PHONE_QUERY`) drops it unless fullscreen is on.
 - On a compact screen the bar slides out of view (a transform, no layout
   change) once the content scrolls down by 10px past the bar's height.
 - It comes back on an upward scroll of 10px, near the top (within the bar's
