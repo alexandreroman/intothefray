@@ -7,6 +7,8 @@ import { getContext, setContext } from 'svelte';
 /** Whether the table is in dock mode, read live: a getter follows the screen. */
 export interface DockMode {
   readonly current: boolean;
+  /** The table's zoom, read live: dock mode draws a card's counters at a fixed screen size. 1 when unknown. */
+  readonly zoom?: number;
 }
 
 /** The context key, exported for tests that render a card or a pile on their own. */

@@ -550,6 +550,9 @@
     get current() {
       return dockMode;
     },
+    get zoom() {
+      return zoom;
+    },
   });
 
   // The window's size, in px: a small screen's hand cards follow it.

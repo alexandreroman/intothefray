@@ -120,7 +120,7 @@ describe('CardView in dock mode (small cards, spec 3.6)', () => {
     expectDrawnAt60(el, cardBox('std', {}));
   });
 
-  it('keeps its tokens, statuses, modifiers and exhausted tilt, the numbers apart', () => {
+  it('draws its counters in their dock regions, not in the desktop corner pile and tabs', () => {
     const { container } = renderCard({
       card: tableCard({
         exhausted: true,
@@ -133,26 +133,44 @@ describe('CardView in dock mode (small cards, spec 3.6)', () => {
 
     const el = cardElement(container);
     expect(el.classList.contains('exhausted')).toBe(true);
-    expect(el.querySelector('.tok.dmg')?.textContent).toBe('2');
-    expect(el.querySelector('.st.tough')?.textContent).toBe('Tough ×2');
-    expect(el.querySelector('.st.tough .n')?.textContent).toBe('×2');
-    expect(el.querySelector('.st.retaliate .n')?.textContent).toBe('1');
-    expect(el.querySelector('.st.stunned .n')).toBeNull();
-    expect(el.querySelector('.st.mod')?.textContent).toBe('+1 ATK');
-    expect(el.querySelector('.st.mod .n')?.textContent).toBe('+1');
+    const layer = el.querySelector<HTMLElement>(':scope > .dock-counters');
+    expect(layer).not.toBeNull();
+    // Inside the card box, which turns it with the card.
+    expect(el.querySelector('.tokens, .statuses, .mods')).toBeNull();
+
+    const damage = layer?.querySelector<HTMLElement>('.tok.dmg');
+    expect(damage?.textContent).toBe('2');
+    expect(damage?.dataset.counter).toBe('token:dmg');
+    // Placed by dockCounters.ts: its box is inline.
+    expect(damage?.style.left).toMatch(/px$/);
+    expect(damage?.style.width).toMatch(/px$/);
+    // Initials, in status order, on a 67.2 px wide card at zoom 1: "S" and "T×2" leave no room
+    // for "R1", so the row ends with "+2" (the measure without a canvas: 0.7 em a character).
+    const chips = [...(layer?.querySelectorAll('.st:not(.mod)') ?? [])].map(
+      (chip) => chip.textContent,
+    );
+    expect(chips).toEqual(['S', '+2']);
+    expect(layer?.querySelector('.st.more')?.textContent).toBe('+2');
+    const modifier = layer?.querySelector('.st.mod');
+    expect(modifier?.querySelector('.n')?.textContent).toBe('+1');
+    expect(modifier?.textContent).toBe('+1 ATK');
   });
 
-  it('zooms everything it draws by its scale, so that face, back, tokens and tabs shrink alike', () => {
+  it('undoes the table zoom in its counter layer, so that it draws in screen px', () => {
+    const { container } = render(CardView, {
+      props: { card: tableCard({ tokens: { dmg: 1 } }), face: face() },
+      context: new Map([[DOCK_MODE_KEY, { current: true, zoom: 0.8 }]]),
+    });
+
+    const layer = container.querySelector<HTMLElement>('.dock-counters');
+    expect(Number(layer?.style.getPropertyValue('zoom'))).toBeCloseTo(1.25, 6);
+  });
+
+  it('zooms its face, back and shade by its scale, and turns about its own centre', () => {
     expect(ruleOf(cardViewSource, '.card.scaled > :global(*)')).toContain('zoom: var(--scale);');
-    // Its numbers keep 11 screen px, through its scale and the table's zoom (--z).
-    const floor = /--num-min: calc\(11px \/ var\(--scale\) \/ var\(--z, 1\)\);/;
-    expect(ruleOf(cardViewSource, '.card.scaled')).toMatch(floor);
-    expect(ruleOf(cardViewSource, '.card.scaled .tok')).toContain(
-      'font-size: max(10.5px, var(--num-min));',
-    );
-    expect(ruleOf(cardViewSource, '.card.scaled .st .n')).toContain(
-      'font-size: max(1em, var(--num-min));',
-    );
+    // Its counters keep 11 screen px.
+    expect(ruleOf(cardViewSource, '.dock-counters .tok')).toContain('font-size: 11px;');
+    expect(ruleOf(cardViewSource, '.dock-counters .st')).toContain('font-size: 11px;');
     // The tilt turns the element about its own centre: the drawn card's.
     expect(ruleOf(cardViewSource, '.card.exhausted')).toContain(
       'transform: rotate(var(--exhaust-angle));',
@@ -174,6 +192,21 @@ describe('CardView out of dock mode', () => {
     expect(boxOf(el)).toEqual({ x: 120, y: 40, w: 112, h: 157 });
     expect(el.classList.contains('scaled')).toBe(false);
     expect(el.style.getPropertyValue('--scale')).toBe('');
+  });
+
+  it('draws its counters in the desktop corner pile and tabs, without the dock layer', () => {
+    const { container } = renderCard(
+      {
+        card: tableCard({ tokens: { dmg: 2 }, status: { stunned: 1 }, mods: { atk: 1 } }),
+        face: face(),
+      },
+      false,
+    );
+
+    expect(container.querySelector('.dock-counters')).toBeNull();
+    expect(container.querySelector('.tokens.bottom-right .tok.dmg')?.textContent).toBe('2');
+    expect(container.querySelector('.statuses .st.stunned')?.textContent).toBe('Stunned');
+    expect(container.querySelector('.mods .st.mod')?.textContent).toBe('+1 ATK');
   });
 
   it('draws the card at its full footprint outside any table', () => {
