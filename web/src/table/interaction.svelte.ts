@@ -383,12 +383,9 @@ class TableInteraction {
     const target = event.currentTarget;
     this.#inCarousel = target instanceof Element && target.closest('[data-carousel]') !== null;
     if (this.#awaitingHold && event.target !== null) {
-      // Added at the press, before the touchstart that follows its pointerdown: Chrome may make
-      // every touchmove of a touch uncancelable once its first one went by unprevented, so a
-      // listener added only at the hold could no longer stop the scroll. It stops it once armed.
-      // On the element touched, not the window: every touchmove of the touch targets it, even once
-      // it is no longer in the page (a pile whose last card is dragged out draws its empty slot
-      // instead), and then no longer bubbles up to the window. Passive: false, else it cannot stop it.
+      // The window's guard (guardScroll) misses the touchmoves of a touched element no longer in
+      // the page (a pile whose last card is dragged out draws its empty slot instead): they target
+      // that element, and no longer bubble up to the window. This one, on that element, stops them.
       this.#scrollGuarded = event.target;
       this.#scrollGuarded.addEventListener('touchmove', this.#preventScroll, { passive: false });
     }
@@ -435,9 +432,22 @@ class TableInteraction {
     );
   }
 
-  // Bound once, so that the very listener press adds is the one #endHold removes.
+  /**
+   * Keeps the page from scrolling under a touch press once its hold armed it: to call when the
+   * table shows, and to undo with the function returned when it goes. On the window, for good,
+   * not on the element touched at the press: Chrome decides whether the moves of a touch may be
+   * cancelled where its first move lands, so a finger that leaves the card at once would find no
+   * guard there, scroll the page and cancel the drag. Passive: false, else it cannot stop it.
+   */
+  guardScroll(): () => void {
+    window.addEventListener('touchmove', this.#preventScroll, { passive: false });
+    return () => window.removeEventListener('touchmove', this.#preventScroll);
+  }
+
+  // Bound once, so that the very listener added is the one removed.
   #preventScroll = (event: Event): void => {
-    if (this.armed) {
+    // An uncancelable move (a scroll the browser already started) only earns a console warning.
+    if (this.armed && event.cancelable) {
       event.preventDefault();
     }
   };

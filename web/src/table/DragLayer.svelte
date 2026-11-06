@@ -292,6 +292,9 @@
     return () => clearTimeout(timer);
   });
 
+  // Before any touch: a guard added only at a press could come too late for its touch.
+  $effect(() => interaction.guardScroll());
+
   function armIfDraggable(pressed: Held): void {
     if (sourceOf(pressed.element, view) !== null) {
       interaction.arm();

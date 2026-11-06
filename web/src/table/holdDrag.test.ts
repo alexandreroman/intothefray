@@ -91,10 +91,10 @@ function layOut(view: View): void {
 async function renderTable(view = makeView()) {
   const session = fakeSession();
   layOut(view);
-  render(Table, { session, view });
+  const { unmount } = render(Table, { session, view });
   // The actions need the catalog.
   await Promise.resolve();
-  return { session };
+  return { session, unmount };
 }
 
 async function press(element: Element, x: number, y: number, pointerType = 'touch', pointerId = 1) {
@@ -299,6 +299,32 @@ describe('a touch press on a table card, in touch mode', () => {
     await release(50, 400);
     const guard = touchmoves()[0]![1];
     expect(remove).toHaveBeenCalledWith('touchmove', guard);
+  });
+
+  it('guards the whole page from before the first touch, and stops the scroll only once armed', async () => {
+    // Chrome asks the page whether it may cancel a touch's moves where the first one lands: a
+    // guard on the touched card alone lets a finger that leaves the card at once scroll the page.
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const { unmount } = await renderTable();
+    const guards = add.mock.calls.filter(([type]) => type === 'touchmove');
+    expect(guards).toEqual([['touchmove', expect.any(Function), { passive: false }]]);
+
+    const moveOverThePage = () => {
+      const move = new TouchEvent('touchmove', { bubbles: true, cancelable: true });
+      document.body.dispatchEvent(move);
+      return move.defaultPrevented;
+    };
+    expect(moveOverThePage()).toBe(false);
+    await press(placed('mine'), 50, 400);
+    expect(moveOverThePage()).toBe(false);
+    await wait(300);
+    expect(moveOverThePage()).toBe(true);
+    await release(50, 400);
+    expect(moveOverThePage()).toBe(false);
+
+    unmount();
+    expect(remove).toHaveBeenCalledWith('touchmove', guards[0]![1]);
   });
 
   it('removes its scroll guard when the finger scrolls the table instead', async () => {
