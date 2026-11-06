@@ -20,9 +20,9 @@ const content = createRawSnippet(() => ({
   render: () => '<div><button type="button">Play</button></div>',
 }));
 
-/** The declarations of a rule of the sheet's stylesheet. */
-function rule(selector: string): string {
-  const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+/** The declarations of a rule of the sheet's stylesheet, at the given indent. */
+function rule(selector: string, indent = 2): string {
+  const pattern = new RegExp(`\\n {${indent}}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
   return pattern.exec(sheetSource)?.[1] ?? '';
 }
 
@@ -65,7 +65,9 @@ async function swipe(
   await touch(target, 'touchEnd', ...last);
 }
 
-function renderSheet(props: { maxHeight?: string; modal?: boolean; dock?: boolean } = {}) {
+function renderSheet(
+  props: { maxHeight?: string; modal?: boolean; dock?: boolean; wide?: boolean } = {},
+) {
   const onclose = vi.fn();
   const view = render(Sheet, { label: 'Rhino', onclose, children: content, ...props });
   const sheet = screen.getByRole('dialog', { name: 'Rhino' });
@@ -398,6 +400,28 @@ describe('Sheet', () => {
       const { sheet } = renderSheet();
 
       expect(sheet.classList).not.toContain('dock');
+    });
+
+    it('spans the whole width even when asked to be wide', () => {
+      const { sheet } = renderSheet({ dock: true, wide: true });
+
+      expect(sheet.classList).not.toContain('wide');
+    });
+  });
+
+  describe('wide', () => {
+    it('is at most 760 px wide above 600 px, never nearer than 16 px to the sides', () => {
+      const { sheet } = renderSheet({ wide: true });
+
+      expect(sheet.classList).toContain('wide');
+      expect(rule('.sheet.wide', 4)).toContain('max-width: min(760px, calc(100% - 32px));');
+    });
+
+    it('is not, by default: at most 480 px wide', () => {
+      const { sheet } = renderSheet();
+
+      expect(sheet.classList).not.toContain('wide');
+      expect(rule('.sheet', 4)).toContain('max-width: 480px;');
     });
   });
 

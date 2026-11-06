@@ -1,10 +1,10 @@
 <!--
   The inspector of a table card or pile on a touch screen, in place of its
   context menu (ContextMenu.svelte): a bottom sheet (Sheet.svelte) with the
-  card's face large beside its name, its counters drawn on it, then the same entries
-  as the menu (contextItems.ts). The first group shows as large buttons, the
-  default one in Fray red, the others as rows; a submenu opens in the sheet,
-  with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
+  card's face large, its counters drawn on it, and a column with its name and
+  the same entries as the menu (contextItems.ts). The first group shows as
+  large buttons, the default one in Fray red, the others as rows; a submenu
+  opens in the sheet, with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
   it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet, or keeps
   it open for a token, status or modifier, which then shows on the card.
@@ -15,6 +15,12 @@
   scrolling if it must; on its side, the card as large as it allows on the
   left, and everything else in one column on its right, the only part that
   scrolls.
+  On a tablet (outside dock mode, as only a touch screen opens the inspector),
+  the sheet is wide (Sheet.svelte) and lays out as a phone on its side: the
+  card on the left, as high as its room (--sheet-room: at most 460 px and 70 %
+  of the screen), a landscape one as wide as a portrait one is high, and the
+  column on its right, at most as high as the card, the only part that
+  scrolls. Buttons and rows are 44 px high, on a phone and a tablet alike.
   Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
   back the other way; an entry that comes or goes after an update slides open
@@ -491,7 +497,7 @@
 <!-- The main page of the entries: the first group as large buttons, the others as rows. -->
 {#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
   {#if parts.main.length > 0}
-    <div class="main-grid" style:--columns={parts.main.length} {@attach buttonGrid()}>
+    <div class="main-grid" {@attach buttonGrid()}>
       {#each parts.main as entry (entry.item.id)}
         <button
           type="button"
@@ -530,7 +536,7 @@
   {/if}
 {/snippet}
 
-<!-- The note or the entries: under the card, or in its column in dock mode. -->
+<!-- The note or the entries, in the card's column under its name. -->
 {#snippet entriesBlock()}
   {#if note !== undefined}
     <p class="note">{note}</p>
@@ -697,8 +703,8 @@
   {/if}
 {/snippet}
 
-<Sheet label={header.label} dock={dock.current} {onclose}>
-  <div class="inspector" class:dock={dock.current} bind:this={content}>
+<Sheet label={header.label} dock={dock.current} wide={!dock.current} {onclose}>
+  <div class="inspector" class:dock={dock.current} class:tablet={!dock.current} bind:this={content}>
     <div class="top">
       <div class="visual" class:stacked={stack.length > 1}>
         {#if stack.length > 1}
@@ -712,15 +718,9 @@
       </div>
       <div class="side">
         {@render nameline(side.header)}
-        {#if dock.current}
-          {@render entriesBlock()}
-        {/if}
+        {@render entriesBlock()}
       </div>
     </div>
-
-    {#if !dock.current}
-      {@render entriesBlock()}
-    {/if}
   </div>
 
   <!-- Drawn for a moment only, unseen and out of reach, the time to measure the new side. -->
@@ -728,6 +728,7 @@
     <div
       class="inspector measure"
       class:dock={dock.current}
+      class:tablet={!dock.current}
       style:width="{measureWidth}px"
       aria-hidden="true"
       inert
@@ -743,14 +744,9 @@
         </div>
         <div class="side">
           {@render nameline(live.header)}
-          {#if dock.current}
-            {@render measuredEntries()}
-          {/if}
+          {@render measuredEntries()}
         </div>
       </div>
-      {#if !dock.current}
-        {@render measuredEntries()}
-      {/if}
     </div>
   {/if}
 </Sheet>
@@ -759,7 +755,6 @@
   .inspector {
     display: flex;
     flex-direction: column;
-    gap: 14px;
     padding: 0 14px;
     user-select: none;
     -webkit-user-select: none;
@@ -774,20 +769,19 @@
     pointer-events: none;
   }
 
-  /* The face beside what the element is and the counters it carries. */
+  /* The face beside its column: its name and entries. */
   .top {
     display: flex;
     gap: 12px;
     align-items: flex-start;
   }
 
-  /* The face, with the strip of its stack under it. */
+  /* The face, or the stack's carousel with its dots under it; sized by dock mode or the tablet's rules. */
   .visual {
     flex: none;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 46%;
     min-width: 0;
   }
 
@@ -802,7 +796,6 @@
     flex: none;
     min-width: 0;
     min-height: 0;
-    width: 100%;
     aspect-ratio: var(--face-ratio);
     border-radius: var(--card-radius);
     box-shadow: 4px 6px 16px #000c;
@@ -817,11 +810,12 @@
     The stack's carousel, in place of the face: sideways only, each card snapping to the middle.
     Padded above and below for the cards' shadows. --slide-h and --slide-max size the cards: the
     shown one is as large as a card alone would be, with room left for its neighbours to peek.
+    --carousel-chrome: the height it takes besides its cards, its padding (24 px), the gap (8 px)
+    and the dots (6 px).
   */
   .visual.stacked {
-    --slide-h: 100vh;
     --slide-max: 82%;
-    width: 56%;
+    --carousel-chrome: 38px;
   }
 
   .carousel {
@@ -915,12 +909,14 @@
     background: var(--text);
   }
 
+  /* The column's width tells the main buttons how many go side by side (see .main-grid). */
   .side {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    container-type: inline-size;
   }
 
   /*
@@ -962,11 +958,34 @@
     font-size: 14px;
   }
 
-  /* The first group: large buttons side by side, the default one in Fray red. */
+  /*
+    The first group: large buttons, the default one in Fray red. One per row in a narrow column,
+    two in a wide one, never one alone on the last line (lib/buttonGrid.ts): a lone button the
+    whole width, three in a row when they fit there, or else the first one, the default
+    (inspector.splitEntries), the whole width on top.
+  */
   .main-grid {
     display: grid;
-    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  @container (min-width: 260px) {
+    .main-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .main-grid:global([data-layout='single']) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .main-grid:global([data-layout='row']) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .main-grid:global([data-layout='lead']) > .main:first-child {
+    grid-column: 1 / -1;
   }
 
   .main {
@@ -975,12 +994,12 @@
     align-items: center;
     justify-content: center;
     gap: 2px;
-    min-height: 64px;
-    padding: 6px;
+    min-height: 44px;
+    padding: 4px 8px;
     border: 0;
-    border-radius: 14px;
+    border-radius: 10px;
     background: var(--panel-2);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     text-align: center;
   }
@@ -1059,7 +1078,7 @@
     grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 8px;
     min-width: 0;
   }
 
@@ -1077,8 +1096,8 @@
     column-gap: 12px;
     row-gap: 2px;
     width: 100%;
-    min-height: 48px;
-    padding: 6px 4px;
+    min-height: 44px;
+    padding: 4px 8px;
     border-radius: 10px;
     font-size: 15px;
     font-weight: 600;
@@ -1105,7 +1124,7 @@
 
   .sep {
     height: 1px;
-    margin: 4px 0;
+    margin: 2px 0;
     background: var(--line-strong);
   }
 
@@ -1143,7 +1162,6 @@
 
   .inspector.dock .side {
     align-self: stretch;
-    container-type: inline-size;
   }
 
   /*
@@ -1162,12 +1180,8 @@
       width: auto;
     }
 
-    /*
-      The carousel as high as the sheet: its cards that high less its padding (24 px), the gap
-      (8 px) and the dots (6 px); as wide as a card with 44 px on each side for its neighbours.
-    */
+    /* The carousel as high as the sheet; as wide as a card with 44 px on each side for its neighbours. */
     .inspector.dock .visual.stacked {
-      --carousel-chrome: 38px;
       --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
       width: calc(var(--slide-h) * 5 / 7 + 88px);
     }
@@ -1190,50 +1204,42 @@
   }
 
   /*
-    The main group: one button per row in a narrow column, two in a wide one, never one alone on
-    the last line (lib/buttonGrid.ts): a lone button the whole width, three in a row when they fit
-    there, or else the first one, the default (inspector.splitEntries), the whole width on top.
+    A tablet: laid out as a phone on its side, in a wide sheet (Sheet.svelte). --sheet-room is the
+    card's height: at most 460 px and 70 % of the screen. Only the column scrolls, once it is
+    higher than the card.
   */
-  .inspector.dock .main-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+  .inspector.tablet {
+    --sheet-room: min(460px, 70dvh);
   }
 
-  @container (min-width: 260px) {
-    .inspector.dock .main-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .inspector.dock .main-grid:global([data-layout='single']) {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .inspector.dock .main-grid:global([data-layout='row']) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+  /* A container, for a landscape face to leave its column room enough (see below). */
+  .inspector.tablet .top {
+    container-type: inline-size;
   }
 
-  .inspector.dock .main-grid:global([data-layout='lead']) > .main:first-child {
-    grid-column: 1 / -1;
+  /* The carousel's cards as high as the room less its chrome, 44 px on each side for the neighbours. */
+  .inspector.tablet .visual.stacked {
+    --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
+    width: calc(var(--slide-h) * 5 / 7 + 88px);
   }
 
-  .inspector.dock .main {
-    min-height: 44px;
-    padding: 4px 8px;
-    border-radius: 10px;
-    font-size: 14px;
+  /*
+    A card alone, not the carousel's cards. A landscape one is as wide as a portrait one is high,
+    but leaves its column at least 300 px past the gap (12 px): narrower, its main buttons would go
+    one per line (.main-grid's 260 px container query).
+  */
+  .inspector.tablet .visual > .face {
+    height: var(--sheet-room);
   }
 
-  .inspector.dock .row {
-    min-height: 44px;
-    padding: 4px 8px;
+  .inspector.tablet .visual > .face.land {
+    width: min(var(--sheet-room), 100cqi - 312px);
+    height: auto;
   }
 
-  .inspector.dock .page {
-    gap: 8px;
-  }
-
-  .inspector.dock .sep {
-    margin: 2px 0;
+  .inspector.tablet .side {
+    max-height: var(--sheet-room);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 </style>

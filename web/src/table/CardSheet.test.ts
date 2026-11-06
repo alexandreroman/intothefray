@@ -643,6 +643,14 @@ describe('CardSheet', () => {
       expect(document.querySelector('.inspector')?.children).toHaveLength(1);
     });
 
+    it('is not a wide sheet, nor laid out as a tablet', () => {
+      renderSheet({ dock: true });
+
+      const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
+      expect(sheet.classList).not.toContain('wide');
+      expect(document.querySelector('.inspector')?.classList).not.toContain('tablet');
+    });
+
     it('shows a note in the column too', () => {
       renderSheet({ dock: true, entries: [], note: 'Not your card' });
 
@@ -660,13 +668,6 @@ describe('CardSheet', () => {
       expect(within(column).queryByRole('button', { name: 'Exhaust' })).toBeNull();
     });
 
-    it('leaves the entries under the card outside dock mode', () => {
-      renderSheet({ dock: false });
-
-      expect(within(side()).queryByRole('button', { name: 'Exhaust' })).toBeNull();
-      expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
-    });
-
     it('upright, puts the card on top, centred, at most 42 % of the screen high', () => {
       const top = rule('.inspector.dock .top');
       expect(top).toContain('flex-direction: column;');
@@ -682,7 +683,7 @@ describe('CardSheet', () => {
     it('upright, lays the header, the counters and the entries full width under the card', () => {
       const column = rule('.inspector.dock .side');
       expect(column).toContain('align-self: stretch;');
-      expect(column).toContain('container-type: inline-size;');
+      expect(rule('.side')).toContain('container-type: inline-size;');
       // The whole sheet scrolls (Sheet.svelte), not the column.
       expect(column).not.toContain('overflow-y');
     });
@@ -699,15 +700,87 @@ describe('CardSheet', () => {
     });
 
     it('makes every entry 44 px high, the main ones two per row in a wide column', () => {
-      expect(rule('.inspector.dock .main')).toContain('min-height: 44px;');
-      expect(rule('.inspector.dock .row')).toContain('min-height: 44px;');
-      expect(rule('.inspector.dock .main-grid')).toContain(
-        'grid-template-columns: minmax(0, 1fr);',
-      );
-      expect(rule('.inspector.dock .main-grid', 4)).toContain(
-        'grid-template-columns: repeat(2, minmax(0, 1fr));',
-      );
+      expect(rule('.main')).toContain('min-height: 44px;');
+      expect(rule('.row')).toContain('min-height: 44px;');
+      expect(rule('.main-grid')).toContain('grid-template-columns: minmax(0, 1fr);');
+      expect(rule('.main-grid', 4)).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
       expect(sheetSource).toMatch(/@container \(min-width: \d+px\)/);
+    });
+  });
+
+  describe('on a tablet (outside dock mode)', () => {
+    it('puts every entry in the column beside the card, in a wide sheet', () => {
+      renderSheet({ dock: false, counters: [DAMAGE] });
+
+      const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
+      expect(sheet.classList).toContain('wide');
+      expect(sheet.classList).not.toContain('dock');
+      expect(document.querySelector('.inspector')?.classList).toContain('tablet');
+      const column = side();
+      expect(within(column).getByText('Rhino', { selector: '.name' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Discard' })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: /Move to/ })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Damage, 3' }).closest('.face')).toBeTruthy();
+      // The face and its column are all the sheet holds.
+      expect(document.querySelector('.inspector')?.children).toHaveLength(1);
+    });
+
+    it('shows a note in the column too', () => {
+      renderSheet({ dock: false, entries: [], note: 'Not your card' });
+
+      expect(within(side()).getByText('Not your card')).toBeTruthy();
+    });
+
+    it('drills a submenu down in place, in the column, with a Back row', async () => {
+      renderSheet({ dock: false });
+
+      await fireEvent.click(screen.getByRole('button', { name: /Move to/ }));
+
+      const column = side();
+      expect(within(column).getByRole('button', { name: /Back/ })).toBeTruthy();
+      expect(within(column).getByRole('button', { name: 'Hand' })).toBeTruthy();
+    });
+
+    it('makes the card at most 460 px and 70 % of the screen high, a landscape one at most that wide', () => {
+      expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
+      expect(rule('.inspector.tablet .visual > .face')).toContain('height: var(--sheet-room);');
+      const land = rule('.inspector.tablet .visual > .face.land');
+      // The column keeps 300 px beside a landscape face, for its main buttons to pair up.
+      expect(land).toContain('width: min(var(--sheet-room), 100cqi - 312px);');
+      expect(rule('.inspector.tablet .top')).toContain('container-type: inline-size;');
+      expect(land).toContain('height: auto;');
+      // Side by side: the face beside its column.
+      expect(rule('.top')).not.toContain('flex-direction');
+    });
+
+    it("sizes a stack's carousel as a phone on its side does", () => {
+      const stacked = rule('.inspector.tablet .visual.stacked');
+      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));');
+      expect(stacked).toContain('width: calc(var(--slide-h) * 5 / 7 + 88px);');
+      expect(rule('.visual.stacked')).toContain('--carousel-chrome: 38px;');
+    });
+
+    it('keeps the column at most as high as the card, the only part that scrolls', () => {
+      const column = rule('.inspector.tablet .side');
+      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('overflow-y: auto;');
+      expect(column).toContain('overscroll-behavior: contain;');
+      expect(rule('.side')).toContain('container-type: inline-size;');
+    });
+
+    it('lays the main buttons out as on a phone', () => {
+      renderSheet({
+        dock: false,
+        entries: [
+          { kind: 'action', item: EXHAUST },
+          { kind: 'action', item: FLIP },
+          { kind: 'action', item: item('ready') },
+        ],
+      });
+
+      const grid = document.querySelector<HTMLElement>('.inspector:not(.measure) .main-grid')!;
+      expect(grid.dataset.layout).toBe('lead');
     });
   });
 
@@ -746,16 +819,16 @@ describe('CardSheet', () => {
         'Action2',
       ]);
       expect(buttons[0]!.classList).toContain('default');
-      expect(
-        rule(".inspector.dock .main-grid:global([data-layout='lead']) > .main:first-child"),
-      ).toContain('grid-column: 1 / -1;');
+      expect(rule(".main-grid:global([data-layout='lead']) > .main:first-child")).toContain(
+        'grid-column: 1 / -1;',
+      );
     });
 
     it('gives a lone button the whole width, and three in a row a third each', () => {
-      expect(rule(".inspector.dock .main-grid:global([data-layout='single'])", 4)).toContain(
+      expect(rule(".main-grid:global([data-layout='single'])", 4)).toContain(
         'grid-template-columns: minmax(0, 1fr);',
       );
-      expect(rule(".inspector.dock .main-grid:global([data-layout='row'])", 4)).toContain(
+      expect(rule(".main-grid:global([data-layout='row'])", 4)).toContain(
         'grid-template-columns: repeat(3, minmax(0, 1fr));',
       );
     });
@@ -1299,6 +1372,39 @@ describe('CardSheet', () => {
           heights.mockRestore();
         }
       });
+
+      it.each([
+        ['a tablet', false],
+        ['a phone', true],
+      ])(
+        'measures the new side with its entries in the column, as %s lays them',
+        async (_, dock) => {
+          const measured: { tablet: boolean; dock: boolean; inColumn: boolean }[] = [];
+          const heights = vi
+            .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+            .mockImplementation(function (this: HTMLElement) {
+              if (this.classList.contains('measure')) {
+                measured.push({
+                  tablet: this.classList.contains('tablet'),
+                  dock: this.classList.contains('dock'),
+                  inColumn: this.querySelector('.side .pages .main-grid') !== null,
+                });
+                return 300;
+              }
+              return this.classList.contains('inspector') ? 500 : 0;
+            });
+          try {
+            const { rerender } = renderSheet({ dock });
+
+            await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
+            await tick();
+
+            expect(measured).toEqual([{ tablet: !dock, dock, inColumn: true }]);
+          } finally {
+            heights.mockRestore();
+          }
+        },
+      );
 
       it("keeps the face at the card's ratio whatever its scan, as the measured copy draws it", () => {
         // An image would otherwise make the face as tall as the scan's own ratio, which the copy,
