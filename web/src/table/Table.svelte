@@ -1638,12 +1638,6 @@
     return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
   }
 
-  /** Whether the inspected card lies face down: the inspector shows its back, and names it beside it. */
-  function inspectorFaceDown(element: TableElement): boolean {
-    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
-    return card !== undefined && isHidden(card);
-  }
-
   /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile. */
   function inspectorCounters(element: TableElement): SheetCounter[] {
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
@@ -2826,7 +2820,6 @@
         counters={inspectorCounters(sheetElement)}
         stack={inspectorStack(sheetElement)}
         cardId={sheetElement.kind === 'card' ? sheetElement.id : undefined}
-        faceDown={inspectorFaceDown(sheetElement)}
         onrun={runInspectorItem}
         onstep={stepInspected}
         onpick={inspectStackCard}

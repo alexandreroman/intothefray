@@ -2,10 +2,9 @@
   The inspector of a table card or pile on a touch screen, in place of its
   context menu (ContextMenu.svelte): a bottom sheet (Sheet.svelte) with the
   card's face large, its counters drawn on it, and a column with the same
-  entries as the menu (contextItems.ts). The column names only what the face
-  does not: a pile, its kind and count over a back or its top card, and a
-  face-down card, over its back; a face-up card prints its own name, so its
-  column starts with the entries. The first group shows as
+  entries as the menu (contextItems.ts), with no title line: the sheet's
+  accessible name says what the element is (its header's label: a card's
+  name, type and owner, a pile's kind and count). The first group shows as
   large buttons, the default one in Fray red, the others as rows; a submenu
   opens in the sheet, with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
   it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
@@ -34,7 +33,7 @@
   or closed; a token fades in or out; a pressed button sinks. When the
   face the card shows changes (a flip, a stage turned, a card turned face
   down or up, a deck's back giving way to the card revealed on it), the card
-  turns over as a table card does, in place: the name, the count and the
+  turns over as a table card does, in place: the sheet's name and the
   entries show the new side at once, so that the old side's actions (a deck's
   Reveal) never linger; the face, its counters and the layout around it
   follow once it is edge-on. When the new side needs another size, the sheet
@@ -74,7 +73,6 @@
   import { SHORT_SCREEN_QUERY } from '../lib/screen';
   import CardCounters from './CardCounters.svelte';
   import CardFace from './CardFace.svelte';
-  import './countPill.css';
   import { dockMode } from './dockMode';
   import { LIFT_SCALE } from './motion.svelte';
   import type { ActionItem } from './actions';
@@ -90,7 +88,6 @@
     counters,
     stack = [],
     cardId,
-    faceDown = false,
     onrun,
     onstep,
     onpick,
@@ -111,8 +108,6 @@
     stack?: StackCard[];
     /** The id of the table card shown, which the strip rings; none for a pile. */
     cardId?: string;
-    /** The card lies face down: its face shows its back, so the column names it. */
-    faceDown?: boolean;
     /** Runs a chosen item; the caller closes the sheet. */
     onrun: (item: ActionItem) => void;
     /** Adds one to a counter, or takes one away. */
@@ -151,13 +146,12 @@
     counters: SheetCounter[];
     entries: ContextEntry[];
     cardId: string | undefined;
-    faceDown: boolean;
   };
 
-  const live = $derived<Side>({ images, landscape, header, counters, entries, cardId, faceDown });
+  const live = $derived<Side>({ images, landscape, header, counters, entries, cardId });
   /**
    * The side the card turns away from, which its face shows until it is edge-on; null while it does
-   * not turn. The column, its name and entries, shows the live side from the update that brings it.
+   * not turn. The column, its note and entries, shows the live side from the update that brings it.
    */
   let leaving = $state.raw<Side | null>(null);
   /** The side the face shows, with its counters and the layout around it. */
@@ -204,14 +198,6 @@
    */
   function columnBesideCard(of: Side): boolean {
     return dock.current ? short.current : layoutOf(of).includes('beside');
-  }
-
-  /**
-   * Whether the column starts with the side's name: a pile's (cardId is none) or a face-down card's,
-   * whose face shows a back. A face-up card's name is printed on its face.
-   */
-  function namedInColumn(of: Side): boolean {
-    return of.cardId === undefined || of.faceDown;
   }
 
   /** What tells one face from another: a new array of the same images is the same face. */
@@ -618,7 +604,7 @@
   {/if}
 {/snippet}
 
-<!-- The note or the entries, in the card's column, under its name when the face does not print it. -->
+<!-- The note or the entries, in the card's column. -->
 {#snippet entriesBlock()}
   {#if note !== undefined}
     <p class="note">{note}</p>
@@ -666,16 +652,6 @@
       {/key}
     </div>
   {/if}
-{/snippet}
-
-<!-- The sheet is named by its whole header, its type, stage or owner included: shown, the name
-     alone, which is not read a second time; an eyebrow line would take room. Drawn only where the
-     face does not print it (namedInColumn). -->
-{#snippet nameline(of: ContextHeader)}
-  <div class="nameline" aria-hidden="true">
-    <span class="name" use:overflowTip>{of.name}</span>
-    {#if of.count !== undefined}<span class="count count-pill">{of.count}</span>{/if}
-  </div>
 {/snippet}
 
 <!-- The shown card's tokens, tabs and badges, on its face: the way to change them. -->
@@ -804,9 +780,6 @@
         {/if}
       </div>
       <div class="side">
-        {#if namedInColumn(live)}
-          {@render nameline(live.header)}
-        {/if}
         {@render entriesBlock()}
       </div>
     </div>
@@ -830,9 +803,6 @@
           {/if}
         </div>
         <div class="side">
-          {#if namedInColumn(live)}
-            {@render nameline(live.header)}
-          {/if}
           {@render measuredEntries()}
         </div>
       </div>
@@ -870,7 +840,7 @@
     pointer-events: none;
   }
 
-  /* The face beside its column: its name and entries. */
+  /* The face beside its column: its note and entries. */
   .top {
     display: flex;
     gap: var(--gutter);
@@ -1012,7 +982,7 @@
 
   /*
     The column's width tells the main buttons how many go side by side (see .main-grid). Its first
-    line, the name or the main buttons, starts level with the card's top when it lies beside it.
+    line, the main buttons or the note, starts level with the card's top when it lies beside it.
   */
   .side {
     flex: 1;
@@ -1021,39 +991,6 @@
     flex-direction: column;
     gap: 8px;
     container-type: inline-size;
-  }
-
-  /*
-    The name centred, with a pile's count beside it: the two centred as one, with room above and
-    below, and on their sides, so that a long name never meets the sheet's edges. The copy that
-    measures a new side draws the same line.
-  */
-  .nameline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 12px;
-  }
-
-  /* One line: a long name is cut with an ellipsis (overflowTip shows it whole), never the count. */
-  .name {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text);
-    font-size: 20px;
-    font-weight: 800;
-    line-height: 1.1;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* A pile's count, in a pile's capsule (countPill.css), its digits lined up as they change. */
-  .count {
-    flex: none;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
   }
 
   .note {
@@ -1236,8 +1173,8 @@
 
   /*
     Dock mode upright: the card on top, centred, as wide as the sheet allows
-    while it stays at most 42 % of the screen high; the name, the counters
-    and the entries full width under it. The
+    while it stays at most 42 % of the screen high; the note and the
+    entries full width under it. The
     sheet pads them and scrolls the whole (Sheet.svelte), if it must. A face
     is at most as wide as the sheet, which pads its edges by 12 px.
   */
@@ -1317,10 +1254,6 @@
     .inspector.dock .visual.stacked + .side {
       padding-top: var(--carousel-top);
     }
-  }
-
-  .inspector.dock .name {
-    font-size: 18px;
   }
 
   /*

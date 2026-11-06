@@ -139,23 +139,27 @@ describe('the inspector', () => {
     expect(contextMenu()).toBeNull();
   });
 
-  it('names a pile and a face-down card in its column, not a face-up card, whose face prints it', async () => {
+  it('names a card, a face-down card and a pile for screen readers, with no title line', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     const hidden = card('hidden', { code: '01003', faceDown: true, x: 400 });
     await renderTable(makeView([card('mine'), hidden, ...OTHERS]));
-    const nameLine = () => sheet()!.querySelector('.nameline');
+    /** The column starts with the main buttons: no title line above them. */
+    const columnStart = () => sheet()!.querySelector('.side')?.firstElementChild?.classList;
 
     await tap(placed('two'));
-    expect(screen.getByRole('dialog', { name: /^Peter Parker/ })).toBe(sheet());
-    expect(nameLine()).toBeNull();
+    expect(screen.getByRole('dialog', { name: /^Peter Parker, / })).toBe(sheet());
+    expect(columnStart()).toContain('pages');
     await fireEvent.keyDown(window, { key: 'Escape' });
 
     await tap(placed('hidden'));
-    expect(nameLine()?.textContent).toContain('Face-down card');
+    expect(screen.getByRole('dialog', { name: 'Face-down card' })).toBe(sheet());
+    expect(columnStart()).toContain('pages');
     await fireEvent.keyDown(window, { key: 'Escape' });
 
     await tap(placed('deck:p0'));
-    expect(nameLine()?.querySelector('.count')).not.toBeNull();
+    expect(screen.getByRole('dialog', { name: /^Your deck, \d+ cards$/ })).toBe(sheet());
+    expect(columnStart()).toContain('pages');
+    expect(sheet()!.querySelector('.count-pill')).toBeNull();
   });
 
   it('leaves the context menu to a mouse (mouse_click_opens_menu)', async () => {

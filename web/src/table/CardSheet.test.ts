@@ -28,7 +28,7 @@ const HEADER: ContextHeader = {
   label: 'Rhino, Villain, stage I',
 };
 
-/** A pile's header: its face shows a back or its top card, so the column names it, with its count. */
+/** A pile's header: the sheet's accessible name gives its kind and count. */
 const DECK_HEADER: ContextHeader = {
   eyebrow: 'Villain',
   name: 'Encounter deck',
@@ -37,7 +37,7 @@ const DECK_HEADER: ContextHeader = {
   label: 'Encounter deck, 29 cards',
 };
 
-/** A face-down card's header (contextItems.cardHeader): its face shows its back. */
+/** A face-down card's header (contextItems.cardHeader). */
 const FACE_DOWN_HEADER: ContextHeader = {
   eyebrow: 'Face down',
   name: 'Face-down card',
@@ -108,7 +108,6 @@ function renderSheet(
     dock?: boolean;
     stack?: StackCard[];
     cardId?: string;
-    faceDown?: boolean;
     header?: ContextHeader;
     images?: string[];
     landscape?: boolean;
@@ -129,7 +128,6 @@ function renderSheet(
       stack: props.stack,
       // Rhino, a table card, unless the test says otherwise: an undefined cardId is a pile.
       cardId: 'cardId' in props ? props.cardId : 'rhino',
-      faceDown: props.faceDown,
       onrun,
       onstep,
       onpick,
@@ -219,64 +217,30 @@ function side(): HTMLElement {
 }
 
 describe('CardSheet', () => {
-  it('centres the name, with a pile count beside it, and room around them', () => {
-    expect(rule('.nameline')).toContain('justify-content: center;');
-    // Room above and below the name, and on its sides, so that a long name never meets an edge.
-    expect(rule('.nameline')).toContain('padding: 10px 12px;');
-    expect(rule('.name')).toContain('text-align: center;');
-  });
+  it.each([
+    ['a card', HEADER, 'rhino', 'Rhino, Villain, stage I'],
+    ['a face-down card', FACE_DOWN_HEADER, 'rhino', 'Face-down card'],
+    ['a pile', DECK_HEADER, undefined, 'Encounter deck, 29 cards'],
+  ])(
+    'draws no title line for %s, the sheet named by its whole header',
+    (_, header, cardId, label) => {
+      renderSheet({ header, cardId });
 
-  it('cuts a long name on one line with an ellipsis, the count kept whole beside it', () => {
-    const name = rule('.name');
-    expect(name).toContain('min-width: 0;');
-    expect(name).toContain('overflow: hidden;');
-    expect(name).toContain('text-overflow: ellipsis;');
-    expect(name).toContain('white-space: nowrap;');
-    expect(name).not.toContain('overflow-wrap');
-    expect(rule('.count')).toContain('flex: none;');
-  });
+      // What it is, its type, stage, owner or count, is heard in the sheet's name, not shown.
+      const sheet = screen.getByRole('dialog', { name: label });
+      expect(within(sheet).queryByText(header.name)).toBeNull();
+      expect(within(sheet).queryByText(header.eyebrow)).toBeNull();
+      expect(within(sheet).queryByText('29')).toBeNull();
+      // The column starts with the main buttons.
+      expect(side().firstElementChild?.classList).toContain('pages');
+    },
+  );
 
-  it('shows a cut name whole in a tooltip (overflowTip)', async () => {
-    renderSheet({ header: DECK_HEADER, cardId: undefined });
-    const name = document.querySelector<HTMLElement>('.inspector .name')!;
-    // jsdom lays nothing out: the name is wider than its box.
-    Object.defineProperty(name, 'scrollWidth', { configurable: true, value: 300 });
-    Object.defineProperty(name, 'clientWidth', { configurable: true, value: 120 });
-
-    await fireEvent.pointerOver(name);
-
-    expect(name.dataset.tip).toBe('Encounter deck');
-  });
-
-  it('is a dialog named by its whole header, showing the card face with no name line', () => {
+  it('shows the card face, named for screen readers', () => {
     renderSheet();
 
-    // The type, stage and owner are heard in its name, not shown: no eyebrow line takes room.
     const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
     expect(within(sheet).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('rhino.png');
-    expect(within(sheet).queryByText('Villain · Stage I')).toBeNull();
-    expect(sheet.querySelector('.eyebrow')).toBeNull();
-    // The face prints the name: the column starts with the main buttons.
-    expect(sheet.querySelector('.nameline')).toBeNull();
-    expect(side().firstElementChild?.classList).toContain('pages');
-  });
-
-  it('names a pile in the column, with its count: the face shows a back or its top card', () => {
-    renderSheet({ header: DECK_HEADER, cardId: undefined });
-
-    const sheet = screen.getByRole('dialog', { name: 'Encounter deck, 29 cards' });
-    const line = sheet.querySelector<HTMLElement>('.side > .nameline')!;
-    expect(within(line).getByText('Encounter deck', { selector: '.name' })).toBeTruthy();
-    expect(within(line).getByText('29', { selector: '.count' })).toBeTruthy();
-  });
-
-  it('names a face-down card in the column: the face shows its back', () => {
-    renderSheet({ header: FACE_DOWN_HEADER, faceDown: true });
-
-    const sheet = screen.getByRole('dialog', { name: 'Face-down card' });
-    const line = sheet.querySelector<HTMLElement>('.side > .nameline')!;
-    expect(within(line).getByText('Face-down card', { selector: '.name' })).toBeTruthy();
-    expect(line.querySelector('.count')).toBeNull();
   });
 
   it('runs a main action without closing itself', async () => {
@@ -658,7 +622,6 @@ describe('CardSheet', () => {
       expect(sheet.classList).toContain('dock');
       expect(document.querySelector('.inspector')?.classList).toContain('dock');
       const column = side();
-      expect(column.querySelector('.nameline')).toBeNull();
       expect(within(column).queryByRole('button', { name: 'Damage, 3' })).toBeNull();
       expect(screen.getByRole('button', { name: 'Damage, 3' }).closest('.face')).toBeTruthy();
       expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
@@ -761,7 +724,6 @@ describe('CardSheet', () => {
       expect(sheet.classList).not.toContain('dock');
       expect(document.querySelector('.inspector')?.classList).toContain('tablet');
       const column = side();
-      expect(column.querySelector('.nameline')).toBeNull();
       expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
       expect(within(column).getByRole('button', { name: 'Discard' })).toBeTruthy();
       expect(within(column).getByRole('button', { name: /Move to/ })).toBeTruthy();
@@ -1104,7 +1066,6 @@ describe('CardSheet', () => {
       expect(screen.getByRole('dialog')).toBe(dialog);
       expect(carousel()).toBe(shown);
       expect(screen.getByRole('dialog', { name: 'Armored Rhino, Attachment' })).toBe(dialog);
-      expect(document.querySelector('.nameline')).toBeNull();
       expect(slides().map((slide) => slide.getAttribute('aria-current'))).toEqual([
         null,
         'true',
@@ -1673,12 +1634,12 @@ describe('CardSheet', () => {
         expect(moved.filter((element) => !element.classList.contains('face'))).toEqual([]);
       });
 
-      it("turns a deck's back over to the card revealed on it, its name line gone at once, its counters once edge-on", async () => {
+      it("turns a deck's back over to the card revealed on it, renamed at once, its counters once edge-on", async () => {
         const { rerender } = renderSheet({ header: DECK_HEADER, cardId: undefined });
         await rerender({ images: ['encounter-back.png'] });
         await finishAnimations();
         animate.mockClear();
-        expect(document.querySelector('.inspector .nameline .count')?.textContent).toBe('29');
+        expect(screen.getByRole('dialog', { name: 'Encounter deck, 29 cards' })).toBeTruthy();
 
         await rerender({
           header: TURNED,
@@ -1688,57 +1649,44 @@ describe('CardSheet', () => {
         });
 
         expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
-        expect(document.querySelector('.inspector .nameline')).toBeNull();
+        expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
         expect(turns()).toHaveLength(1);
 
         await finishAnimations();
 
         expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
-        expect(document.querySelector('.inspector .nameline')).toBeNull();
         expect(screen.getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
       });
 
-      it.each([
-        ['face down: its name line comes', false, true],
-        ['face up: its name line goes', true, false],
-      ])(
-        'turns a card %s at once, and measures the new side with it or without',
-        async (_, fromFaceDown, toFaceDown) => {
-          const measuredLines: boolean[] = [];
-          const heights = vi
-            .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
-            .mockImplementation(function (this: HTMLElement) {
-              if (this.classList.contains('measure')) {
-                measuredLines.push(this.querySelector('.side > .nameline') !== null);
-                return 300;
-              }
-              return this.classList.contains('inspector') ? 500 : 0;
-            });
-          try {
-            const sideOf = (faceDown: boolean) =>
-              faceDown
-                ? { header: FACE_DOWN_HEADER, images: ['back.png'], faceDown }
-                : { header: HEADER, images: ['rhino.png'], faceDown };
-            const { rerender } = renderSheet(sideOf(fromFaceDown));
-            const shownLine = () => document.querySelector('.inspector:not(.measure) .nameline');
-            expect(shownLine() !== null).toBe(fromFaceDown);
+      it('renames the sheet at once as the card turns face down, the measured copy as its column', async () => {
+        const measuredFirst: (string | undefined)[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              const first = this.querySelector('.side')?.firstElementChild?.className;
+              measuredFirst.push(first?.split(' ')[0]);
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet();
 
-            await rerender(sideOf(toFaceDown));
-            await tick();
+          await rerender({ header: FACE_DOWN_HEADER, images: ['back.png'] });
+          await tick();
 
-            // The column has the new side's line while the old face turns away.
-            expect(faceImage().getAttribute('src')).toBe(fromFaceDown ? 'back.png' : 'rhino.png');
-            expect(shownLine() !== null).toBe(toFaceDown);
-            expect(measuredLines).toEqual([toFaceDown]);
-
-            await finishAnimations();
-            expect(shownLine() !== null).toBe(toFaceDown);
-          } finally {
-            heights.mockRestore();
-          }
-        },
-      );
+          // The old face turns away; the sheet already names the new side, its column starting
+          // with the main buttons, as the copy that measured it.
+          expect(faceImage().getAttribute('src')).toBe('rhino.png');
+          expect(screen.getByRole('dialog', { name: 'Face-down card' })).toBeTruthy();
+          expect(side().firstElementChild?.classList).toContain('pages');
+          expect(measuredFirst).toEqual(['pages']);
+        } finally {
+          heights.mockRestore();
+        }
+      });
 
       it('turns over to a landscape face once edge-on', async () => {
         const { rerender } = renderSheet();

@@ -8,8 +8,8 @@ type: project
 
 - Every card count shows in the piles' count capsule
   (`web/src/table/countPill.css`, `.count-pill`): piles, the dock and the
-  rail, the hand sheet, the hero selector badges, the inspector and action
-  menu headers, and the card boxes' titles (every kind: the capsule follows
+  rail, the hand sheet, the hero selector badges, the action menu
+  headers, and the card boxes' titles (every kind: the capsule follows
   the title, which is cut before it on a phone). No middle dot comes before
   it.
 - A card box's accessible name carries the count in words: "Search Your

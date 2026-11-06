@@ -14,7 +14,6 @@ const COUNTS: [file: string, selector: string][] = [
   ['Dock.svelte', '.count'],
   ['HandSheet.svelte', '.count'],
   ['HeroPicker.svelte', '.n'],
-  ['CardSheet.svelte', '.count'],
   ['ContextMenu.svelte', '.count'],
   ['CardBox.svelte', '.count'],
 ];
