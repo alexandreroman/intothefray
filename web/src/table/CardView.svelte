@@ -13,7 +13,7 @@
   import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
-  import { cardBox } from './layout';
+  import { cardBox, SLOT_GAP } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 
   let {
@@ -86,6 +86,8 @@
       ? dockCounterLayout({
           width: drawn.w * zoom,
           height: drawn.h * zoom,
+          // The gap to the neighbouring unit's slot (dockLayout.ts), where the modifiers may stand.
+          leftRoom: SLOT_GAP * DOCK_SCALE * zoom,
           scheme,
           counters: card,
           measure: measureChipText,
@@ -222,7 +224,7 @@
         >
       {/if}
 
-      {#each dockCounters.modifiers.items as { name, value, stat, spaced, box } (name)}
+      {#each dockCounters.modifiers.items as { name, value, stat, box } (name)}
         {@const target = { card: card.id, kind: 'modifier', name } as const}
         <span
           class="st mod"
@@ -233,7 +235,7 @@
           role="presentation"
           onpointerenter={(event) => interaction.enterCounter(target, event)}
           onpointerleave={() => interaction.leaveCounter(target)}
-          ><span class="n">{value}</span><span class="stat">{spaced ? ' ' : ''}{stat}</span></span
+          ><span class="n">{value}</span> {stat}</span
         >
       {/each}
       {#if dockCounters.modifiers.more}
@@ -775,10 +777,11 @@
   }
 
   /*
-    Its counters are drawn at a fixed screen size instead, their numbers at 11 px: their layer's
+    Its counters are drawn at a fixed screen size instead, all their text at 11 px: their layer's
     zoom (inline, 1 / the table's) undoes the table's, so that its px are screen px, and each
     counter takes the box dockCounters.ts gives it, in three regions that never meet. The chips
     are in the font that measured them: system-ui, weight 800, 75 % wide, no letter spacing.
+    Their boxes fit their whole text: nothing clips it.
   */
   .dock-counters {
     position: absolute;
@@ -801,16 +804,11 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    overflow: hidden;
     white-space: pre;
     font-family: system-ui, sans-serif;
     font-size: 11px;
     letter-spacing: 0;
     border-radius: 3px;
-  }
-
-  .dock-counters .mod .stat {
-    font-size: 7px;
   }
 
   /* What does not fit: "+N", in grey. */

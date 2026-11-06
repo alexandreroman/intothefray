@@ -7,7 +7,7 @@ import cardFaceSource from './CardFace.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
 import { DOCK_SCALE } from './dockPiles';
 import type { CardView as TableCard, PackFace } from '../lib/types';
-import { cardBox } from './layout';
+import { cardBox, SLOT_GAP } from './layout';
 import { card } from './fixtures.testing';
 
 function tableCard(extra: Partial<TableCard> = {}): TableCard {
@@ -154,6 +154,27 @@ describe('CardView in dock mode (small cards, spec 3.6)', () => {
     const modifier = layer?.querySelector('.st.mod');
     expect(modifier?.querySelector('.n')?.textContent).toBe('+1');
     expect(modifier?.textContent).toBe('+1 ATK');
+  });
+
+  it('draws a modifier badge whole at 11 px, out of the left edge when the card is too narrow', () => {
+    const { container } = render(CardView, {
+      props: { card: tableCard({ tokens: { dmg: 1 }, mods: { hp: 2 } }), face: face() },
+      context: new Map([[DOCK_MODE_KEY, { current: true, zoom: 0.75 }]]),
+    });
+
+    const badge = container.querySelector<HTMLElement>('.dock-counters .st.mod');
+    expect(badge?.textContent).toBe('+2 HP');
+    // The measure without a canvas gives 0.7 em a character: "+2 HP" needs 38.5 and 2 + 2 of
+    // padding, more than the 29.9 left of the tokens on a 50.4 px card. It stands out of the left
+    // edge, short of the neighbouring slot: 40 table units at 60 %, 18 px at this zoom.
+    const left = Number.parseFloat(badge?.style.left ?? '');
+    const width = Number.parseFloat(badge?.style.width ?? '');
+    expect(width).toBeCloseTo(5 * 11 * 0.7 + 4, 6);
+    expect(left).toBeLessThan(0);
+    expect(left).toBeGreaterThanOrEqual(-SLOT_GAP * DOCK_SCALE * 0.75);
+    // The whole text in one size, never clipped.
+    expect(ruleOf(cardViewSource, '.dock-counters .st')).not.toContain('overflow: hidden');
+    expect(cardViewSource).not.toMatch(/\.mod \.stat/);
   });
 
   it('undoes the table zoom in its counter layer, so that it draws in screen px', () => {

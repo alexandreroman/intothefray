@@ -6,11 +6,13 @@
 //   damage first; on a scheme top-down from the corner, the threat first.
 // - The statuses lie in a row along the top edge from the left, under the title band, each a chip
 //   with its initial: "S", "T×2", "R2".
-// - The modifiers stand in a column along the left edge from the bottom: "+1 ATK", or "+1ATK" when
-//   that does not fit.
+// - The modifiers stand in a column along the left edge from the bottom, each badge as wide as its
+//   whole text ("+1 ATK"), all of it at 11 px. A badge wider than the room left of the tokens
+//   stands out of the card's left edge, as on the desktop table, up to the neighbouring card slot.
 //
 // The statuses take the top-left corner, the modifiers the bottom-left one. A group with more than
-// its region holds shows what fits but one, then a "+N": the inspector shows them all.
+// its region holds shows what fits but one, then a "+N": the inspector shows them all. A text is
+// never cut: a modifier badge too wide for its room goes into the "+N" too.
 //
 // Everything is in screen px, in the card's own frame (upright, from its top-left corner): an
 // exhausted card turns its layout with it.
@@ -18,11 +20,8 @@
 import type { CardView } from '../lib/types';
 import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
 
-/** The font size of every number, and of a status initial: the readable floor on a phone. */
+/** The font size of every number, status initial and modifier: the readable floor on a phone. */
 export const NUMBER_PX = 11;
-
-/** The font size of the stat after a modifier's number ("ATK"). */
-export const STAT_PX = 7;
 
 /** A token's diameter: its number with a rim around it. */
 const DISC = 16.5;
@@ -72,12 +71,10 @@ export interface PlacedStatus {
 
 export interface PlacedModifier {
   name: string;
-  /** Its signed value, at NUMBER_PX: "+1", "−2". */
+  /** Its signed value: "+1", "−2". The badge reads it, a space, then its stat: "+1 ATK". */
   value: string;
-  /** Its stat, at STAT_PX: "ATK". */
+  /** Its stat: "ATK". */
   stat: string;
-  /** Whether a space parts the value from the stat ("+1 ATK"), or not ("+1ATK"). */
-  spaced: boolean;
   box: Box;
 }
 
@@ -102,6 +99,8 @@ export interface DockCounterInput {
   /** The card's drawn size, in screen px. */
   width: number;
   height: number;
+  /** The room left of the card up to the neighbouring slot, in screen px: the modifiers' reach. */
+  leftRoom: number;
   /** A scheme carries its threat in the top right corner. */
   scheme: boolean;
   counters: Pick<CardView, 'tokens' | 'status' | 'mods'>;
@@ -115,7 +114,7 @@ export function moreText(hidden: number): string {
 
 /** Places a card's tokens, statuses and modifiers in their three regions. */
 export function dockCounterLayout(input: DockCounterInput): DockCounterLayout {
-  const { width, height, scheme, counters, measure } = input;
+  const { width, height, leftRoom, scheme, counters, measure } = input;
   const column = { x: width - INSET - DISC, top: INSET, bottom: height - INSET };
   // The statuses and the modifiers share the room left of the token column.
   const left = { x: INSET, right: column.x - GAP };
@@ -125,9 +124,16 @@ export function dockCounterLayout(input: DockCounterInput): DockCounterLayout {
   return {
     tokens: placeTokens(counters.tokens ?? {}, scheme, column),
     statuses: placeStatuses(counters.status ?? {}, statusTop, left, measure),
+    // The modifiers may stand out of the left edge, as far as INSET short of the neighbouring slot.
     modifiers: placeModifiers(
       counters.mods ?? {},
-      { ...left, top: modifierTop, bottom: column.bottom },
+      {
+        x: INSET,
+        minX: INSET - leftRoom,
+        right: left.right,
+        top: modifierTop,
+        bottom: column.bottom,
+      },
       measure,
     ),
   };
@@ -179,7 +185,7 @@ function placeStatuses(
     name,
     text: statusText(name, label, status[name] ?? 0),
   }));
-  const chipWidth = (text: string) => measure(text, NUMBER_PX) + 2 * CHIP_PADDING;
+  const chipWidth = (text: string) => chipWidthOf(text, measure);
   const widths = shown.map(({ text }) => chipWidth(text));
   const fit = fitCount(widths, (hidden) => chipWidth(moreText(hidden)), row.right - row.x, GAP);
 
@@ -197,41 +203,56 @@ function placeStatuses(
   return { items, more };
 }
 
+/** The width of a status or modifier chip around its text, at NUMBER_PX. */
+function chipWidthOf(text: string, measure: MeasureText): number {
+  return measure(text, NUMBER_PX) + 2 * CHIP_PADDING;
+}
+
+/**
+ * Places the modifier badges in a column up from the bottom-left corner. The column starts at the
+ * region's x, or further left when its widest badge needs it, never left of minX; a badge wider
+ * than the room from minX to the right edge does not show, it is counted in the "+N".
+ */
 function placeModifiers(
   mods: Record<string, number>,
-  region: { x: number; right: number; top: number; bottom: number },
+  region: { x: number; minX: number; right: number; top: number; bottom: number },
   measure: MeasureText,
 ): Group<PlacedModifier> {
-  const room = region.right - region.x;
-  const shown = MODIFIERS.filter((name) => (mods[name] ?? 0) !== 0);
-  const fit = fitCount(
-    shown.map(() => CHIP_HEIGHT),
-    () => CHIP_HEIGHT,
-    region.bottom - region.top,
-    GAP,
+  const room = region.right - region.minX;
+  const badges = MODIFIERS.filter((name) => (mods[name] ?? 0) !== 0).map((name) => {
+    const value = withSign(mods[name] ?? 0);
+    const stat = name.toUpperCase();
+    return { name, value, stat, w: chipWidthOf(`${value} ${stat}`, measure) };
+  });
+  const fitting = badges.filter(({ w }) => w <= room);
+
+  // All the chips have the same height: count how many the column holds, the "+N" included.
+  const capacity = Math.max(
+    0,
+    Math.floor((region.bottom - region.top + GAP) / (CHIP_HEIGHT + GAP)),
   );
-  // A column with no width holds nothing, not even the "+N".
-  const moreWidth = (hidden: number) => measure(moreText(hidden), NUMBER_PX) + 2 * CHIP_PADDING;
-  if (shown.length === 0 || room < moreWidth(shown.length)) {
+  const allShow = fitting.length === badges.length && badges.length <= capacity;
+  const shown = allShow ? fitting : fitting.slice(0, Math.max(0, capacity - 1));
+  const hidden = badges.length - shown.length;
+  const moreWidth = chipWidthOf(moreText(hidden), measure);
+  // A column with no room holds nothing, not even the "+N".
+  if (badges.length === 0 || capacity === 0 || moreWidth > room) {
     return { items: [], more: null };
   }
+
+  const columnWidth = Math.max(...shown.map(({ w }) => w), hidden > 0 ? moreWidth : 0);
+  const x = Math.max(region.minX, Math.min(region.x, region.right - columnWidth));
   // The n-th chip from the bottom-left corner, upwards.
   const yAt = (n: number) => region.bottom - CHIP_HEIGHT - n * (CHIP_HEIGHT + GAP);
 
-  const items = shown.slice(0, fit.shown).map((name, n): PlacedModifier => {
-    const value = withSign(mods[name] ?? 0);
-    const stat = name.toUpperCase();
-    const numberWidth = measure(value, NUMBER_PX) + 2 * CHIP_PADDING;
-    const spacedWidth = numberWidth + measure(` ${stat}`, STAT_PX);
-    const spaced = spacedWidth <= room;
-    // At worst the tight form is cut to the column: it never reaches the token column.
-    const w = spaced ? spacedWidth : Math.min(room, numberWidth + measure(stat, STAT_PX));
-    return { name, value, stat, spaced, box: { x: region.x, y: yAt(n), w, h: CHIP_HEIGHT } };
-  });
-  const hidden = shown.length - fit.shown;
-  const more = fit.more
-    ? { hidden, box: { x: region.x, y: yAt(fit.shown), w: moreWidth(hidden), h: CHIP_HEIGHT } }
-    : null;
+  const items = shown.map(({ name, value, stat, w }, n): PlacedModifier => ({
+    name,
+    value,
+    stat,
+    box: { x, y: yAt(n), w, h: CHIP_HEIGHT },
+  }));
+  const more =
+    hidden > 0 ? { hidden, box: { x, y: yAt(shown.length), w: moreWidth, h: CHIP_HEIGHT } } : null;
   return { items, more };
 }
 
