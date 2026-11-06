@@ -28,7 +28,7 @@ import type { Anim, Tuck, Turn } from './animate';
 import { DOCK_SCALE } from './dockPiles';
 import { unknownTopId } from './drag';
 import { pileBack, pileCaption } from './face';
-import { EXHAUST_DEGREES, PORTRAIT_CARD } from './layout';
+import { EXHAUST_DEGREES, isDiscardPile, PORTRAIT_CARD } from './layout';
 import { tableCard, tablePile } from './screen';
 
 /**
@@ -420,7 +420,7 @@ function risesAway(
   let leavesHand: boolean;
   if (anim.kind === 'fly') {
     const pile = tables.after?.piles.find((p) => p.id === anim.toPile);
-    leavesHand = anim.fromPile === undefined && pile?.kind === 'discard';
+    leavesHand = anim.fromPile === undefined && pile !== undefined && isDiscardPile(pile.kind);
   } else if (anim.kind === 'move') {
     leavesHand = anim.to.zone === 'table';
   } else {

@@ -180,6 +180,28 @@ describe('a card discarded from the hand in dock mode', () => {
     ]);
   });
 
+  it("rises from the hand sheet when it goes to its side deck's discard pile", async () => {
+    // Invocation's side deck has a discard pile of its own: Discard sends its cards there.
+    const app = page(true);
+    handSheet(app);
+    const sideDiscard: PileView = { ...DISCARD, id: 'sided:p0:0', kind: 'sideDiscard' };
+    const before = table([card('a', { zone: 'hand' })], [DECK, DISCARD, sideDiscard]);
+    const after = table(
+      [card('a', { zone: 'pile' })],
+      [DECK, DISCARD, { ...sideDiscard, count: 1, cards: ['a'] }],
+    );
+
+    await motion.animate(
+      app,
+      [{ kind: 'fly', id: 'a', toPile: 'sided:p0:0' }],
+      { before, after },
+      ZOOM,
+    );
+
+    expect(motion.flights).toMatchObject([{ kind: 'rise', card: { id: 'a' }, zoomed: false }]);
+    expect(motion.flying.has('a')).toBe(false);
+  });
+
   it('several cards discarded together rise one after the other', async () => {
     const app = page(true);
     const before = table([card('a', { zone: 'hand' }), card('b', { zone: 'hand' })], [DISCARD]);

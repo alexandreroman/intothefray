@@ -86,6 +86,16 @@ export function isOutOfPlay(pile: PileView): boolean {
   return OUT_OF_PLAY_KINDS.includes(pile.kind);
 }
 
+/** A discard pile of any kind: a player's, the encounter deck's, a side deck's or a scenario deck's. */
+export function isDiscardPile(kind: PileKind): boolean {
+  return (
+    kind === 'discard' ||
+    kind === 'encounterDiscard' ||
+    kind === 'sideDiscard' ||
+    kind === 'scenarioDiscard'
+  );
+}
+
 /** Where a card or a pile lies on the table, in table units. */
 interface Footprint {
   id: string;

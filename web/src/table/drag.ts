@@ -23,7 +23,7 @@ import {
 } from './actions';
 import type { Pressable } from './interaction.svelte';
 import { FINE_GRID, floorTo, snapTo, type SnapGrid } from './grid';
-import { TABLE_LIMIT } from './layout';
+import { isDiscardPile, TABLE_LIMIT } from './layout';
 import { ALL_TABLE, ROW_LABEL_ROOM, type TableMap } from './rows';
 import { areaOf, isScenarioDeckId, isSideDeckId, ownSeats, PILE_ENCOUNTER } from './seats';
 
@@ -443,11 +443,7 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
         return { kind: 'deck', pile: pile.id };
       }
       // Out-of-play piles are not drawn on the table: only a discard pile is dragged from.
-      const open =
-        pile.kind === 'discard' ||
-        pile.kind === 'encounterDiscard' ||
-        pile.kind === 'sideDiscard' ||
-        pile.kind === 'scenarioDiscard';
+      const open = isDiscardPile(pile.kind);
       const card = taken ?? pile.cards?.at(-1);
       const inPile = card !== undefined && (pile.cards ?? []).includes(card);
       return open && inPile ? { kind: 'pile', pile: pile.id, card } : null;
