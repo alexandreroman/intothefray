@@ -12,12 +12,13 @@ import type { PileView, Point } from '../lib/types';
 import { GRID } from './layout';
 
 /**
- * The height of the villain's row, in table units: it covers [0, 380), leaving
- * room between its cards and the first player's row.
+ * The height of the villain's row, in table units: it covers [0, 440), leaving
+ * room for a row of cards between its cards and the first player's row. It
+ * mirrors villainRowHeight in internal/game/setup.go.
  */
-export const VILLAIN_ROW_HEIGHT = 380;
+export const VILLAIN_ROW_HEIGHT = 440;
 
-/** The height of a player's row, in table units: row r ≥ 1 covers [380 + 220·(r−1), 380 + 220·r). */
+/** The height of a player's row, in table units: row r ≥ 1 covers [440 + 220·(r−1), 440 + 220·r). */
 export const ROW_HEIGHT = 220;
 
 /**
@@ -212,7 +213,7 @@ function tableOffset(band: Band, offset: number): number {
  * it is and its empty tail squeezed or stretched to the drawn height, so that
  * a card dropped in a gap lands near where it was dropped: drops snap to the
  * table's grid (drag.ts, spotOf), whose lines a stretched tail draws up to
- * about 63 units apart.
+ * about 83 units apart.
  *
  * The last row of the table runs on downward as it is, so a card dropped
  * below it stays with its player. A shown row that is not the last one ends

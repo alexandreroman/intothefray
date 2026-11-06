@@ -46,15 +46,16 @@ import (
 // set-aside cards) keep a position for the model, on the first villain pile, but the client never
 // draws them.
 //
-// The villain's row is taller so that it reads apart from the players' rows:
-// about 1.2 portrait card heights (193 units, keeping the rows on the 10-unit
-// grid) lie empty between its cards and the owner label of the first
-// player's row. A player's row is tight: under its portrait cards, 33 units
+// The villain's row is taller so that it reads apart from the players' rows
+// and holds a row of cards laid under the villain's: about 1.6 portrait card
+// heights (253 units, keeping the rows on the 10-unit grid) lie empty between
+// its cards and the owner label of the first player's row, the active counter
+// in that band. A player's row is tight: under its portrait cards, 33 units
 // hold an exhausted card, turned 15° and so about 12 units lower, and the
 // owner frame, 10 units past the piles, on the 10-unit grid. The client's
 // focus view uses the same bands (web/src/table/rows.ts).
 const (
-	villainRowHeight = 380
+	villainRowHeight = 440
 	rowHeight        = 220
 	rowContentY      = 30
 

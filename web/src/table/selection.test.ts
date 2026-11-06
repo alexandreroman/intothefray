@@ -92,38 +92,38 @@ describe('groupAction', () => {
     // 60; player 1's row from 270. A villain card in that band, drawn at 240, and a card of
     // player 1's, 30 into its row, drawn at 300.
     const rows = spreadRows(rowPitch(0, 1), 1);
-    const spread = [card('v', { x: 300, y: 295 }), card('p', { x: 100, y: 410 })];
+    const spread = [card('v', { x: 300, y: 325 }), card('p', { x: 100, y: 470 })];
     // Player 1's card dropped 20 lower: the villain card is drawn 20 lower too, at 260, which is
-    // 352 on the table, not the 315 a table offset gives.
-    const single: Action = { kind: 'move', card: 'p', x: 100, y: 430 };
+    // 402 on the table, not the 345 a table offset gives.
+    const single: Action = { kind: 'move', card: 'p', x: 100, y: 490 };
     const action = groupAction(['v', 'p'], 'p', single, spread, tableMapOf(rows));
     expect(action).toEqual({
       kind: 'group',
       actions: [
-        { kind: 'move', card: 'v', x: 300, y: 352 },
-        { kind: 'move', card: 'p', x: 100, y: 430 },
+        { kind: 'move', card: 'v', x: 300, y: 402 },
+        { kind: 'move', card: 'p', x: 100, y: 490 },
       ],
     });
     const drawn = (y: number) => rows.toDisplay(y) ?? NaN;
-    expect(drawn(430) - drawn(352)).toBeCloseTo(drawn(410) - drawn(295), 0);
+    expect(drawn(490) - drawn(402)).toBeCloseTo(drawn(470) - drawn(325), 0);
   });
 
   it('keeps the shape the group is drawn in on a wrapped line of dock mode', () => {
     // Player 1's row at 0.6, wrapped at 400 (the lines 152.8 wide past the 180 indent): c2 and c3
     // lie on the second line. c2 dropped 16 units right is drawn 9.6 right: c3 goes as far as drawn.
-    const row = [300, 452, 604, 756].map((x, i) => card(`c${i}`, { x, y: 410 }));
+    const row = [300, 452, 604, 756].map((x, i) => card(`c${i}`, { x, y: 470 }));
     const map = dockLayout({
       items: row.map((c) => ({ id: c.id, x: c.x, y: c.y, w: 112, h: 157, kind: 'card' as const })),
       rows: [1],
       wrapWidth: 400,
     });
-    const single: Action = { kind: 'move', card: 'c2', x: 620, y: 410 };
+    const single: Action = { kind: 'move', card: 'c2', x: 620, y: 470 };
 
     expect(groupAction(['c2', 'c3'], 'c2', single, row, map)).toEqual({
       kind: 'group',
       actions: [
-        { kind: 'move', card: 'c2', x: 620, y: 410 },
-        { kind: 'move', card: 'c3', x: 772, y: 410 },
+        { kind: 'move', card: 'c2', x: 620, y: 470 },
+        { kind: 'move', card: 'c3', x: 772, y: 470 },
       ],
     });
   });

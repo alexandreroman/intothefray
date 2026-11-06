@@ -1474,7 +1474,7 @@
       "home": "deck:p0",
       "zone": "table",
       "x": 300,
-      "y": 410,
+      "y": 470,
       "z": 3,
       "identity": true,
       "shapes": [
@@ -1593,7 +1593,7 @@
       "home": "deck:p1",
       "zone": "table",
       "x": 300,
-      "y": 630,
+      "y": 690,
       "z": 4,
       "identity": true,
       "shapes": [
@@ -1612,7 +1612,7 @@
       "kind": "aside",
       "owner": 0,
       "x": 0,
-      "y": 410,
+      "y": 470,
       "cards": [
         "c9vqye7uf",
         "c7sqzvnsj",
@@ -1626,7 +1626,7 @@
       "kind": "aside",
       "owner": 1,
       "x": 0,
-      "y": 630,
+      "y": 690,
       "cards": [
         "cx3a7hfr7",
         "cszysvnkv",
@@ -1640,7 +1640,7 @@
       "kind": "deck",
       "owner": 0,
       "x": 0,
-      "y": 410,
+      "y": 470,
       "cards": [
         "cpaavspaf",
         "cdgvjtgjt",
@@ -1664,7 +1664,7 @@
       "kind": "deck",
       "owner": 1,
       "x": 0,
-      "y": 630,
+      "y": 690,
       "cards": [
         "cxht678q4",
         "cgtbskpn9",
@@ -1689,7 +1689,7 @@
       "kind": "discard",
       "owner": 0,
       "x": 130,
-      "y": 410,
+      "y": 470,
       "cards": []
     },
     "disc:p1": {
@@ -1697,7 +1697,7 @@
       "kind": "discard",
       "owner": 1,
       "x": 130,
-      "y": 630,
+      "y": 690,
       "cards": [
         "cab89hsja",
         "c4p53zsux"
@@ -1799,7 +1799,7 @@
   ],
   "firstPlayer": {
     "x": 460,
-    "y": 450
+    "y": 510
   },
   "nextZ": 13
 }

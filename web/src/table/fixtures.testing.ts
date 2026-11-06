@@ -140,7 +140,7 @@ export function rect(left: number, top: number, width: number, height: number): 
 
 /**
  * Shows the table on a screen tall enough to draw its rows as far apart as they go (rowPitch, a
- * pitch of 380): only the villain's row and player 1's row's cards are then drawn at their table
+ * pitch of 440): only the villain's row and player 1's row's cards are then drawn at their table
  * heights, so that a test of what happens over them keeps the heights of the table. The 30 units
  * under player 1's cards are drawn stretched, and every row after it lower than it lies. jsdom
  * measures every element 0 high otherwise, which draws the rows as close as they go, the villain's

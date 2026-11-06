@@ -35,11 +35,13 @@ type: project
 - The first player token (two heroes or more, see
   [[project_first_player_token]]) starts right of the first player's identity,
   40 units past its right edge (clear of it when exhausted), centred on
-  its height to the grid: (460, 450) on a row without side piles. The
+  its height to the grid: (460, 510) on a row without side piles. The
   active counter starts under its villain card (20 right of the card's
   left edge, 23 below it, its top at 210). A played card avoids every
   marker, so the first player's first played card lands past the token.
-- On the server the villain's row is 380 units high and a player's row
+- On the server the villain's row is 440 units high, its cards ending at
+  187: the 253 units under them hold a row of cards (157 high) with room
+  around it, between the villain and the first player. A player's row is
   220 (33 units under its cards, enough for an exhausted card and the
   owner frame). The client draws the rows spread evenly over the screen's
   height (`spreadRows`, web/src/table/rows.ts), in both views: the
@@ -47,11 +49,14 @@ type: project
   resting hand, with the same margin between every row, a 3rd and 4th
   deck included. With a single deck, the villain row and its one player
   row fill it: the villain row is drawn as high as leaves the player row's
-  220 at the bottom (270–380); a game with 2+ decks keeps the two-row
+  220 at the bottom (270–440); a game with 2+ decks keeps the two-row
   spacing in "Villain + player" too. The pitch is computed in px at zoom
-  1, so zooming never changes it; it stays within 220–380 units, and the
+  1, so zooming never changes it; it stays within 220–440 units, and the
   villain row is drawn at least 270 high so the active counter clears the
   first player's row. Server positions never depend on a viewer's screen.
+  On a tablet (touch mode outside dock mode) the villain row is always
+  drawn at its full 440, its band of cards never squeezed; a window
+  short of height scrolls.
 - Each owner's deck and discard sit in a frame in the seat colour labelled
   with the player's name ("Villain" in purple, as in the game, for the
   encounter piles; the deck's name for a scenario deck); the frame's
@@ -104,7 +109,8 @@ decks read as encounter piles at full size, and only a row of several
 villains with a deck each (The Wrecking Crew) needs compact decks to fit.
 The user wants the decks evenly spaced on screen, so a two-deck game fits
 the window; a screen-dependent spacing belongs to the client's drawing,
-never to shared positions.
+never to shared positions. The user wants a row of cards to fit between
+the villain and the players, for every player alike.
 
 **How to apply:** new fixed table elements go at the start of their
 owner's row (server setup positions); the table has no per-player zones.

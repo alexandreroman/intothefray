@@ -237,8 +237,8 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 // token beside the first identity, the villain row, the height of a player's
 // row, the first Z).
 const (
-	spiderManSetupHash = "a00d1fce6fcbc91e1ff1ed6b5007c33477cb4413e4ba03b1cd8a25760441eeea"
-	threeDeckSetupHash = "ffcee5b1a86d65ba9586c2b27c3058d620d1082f41c03887dea629f0b39cd764"
+	spiderManSetupHash = "70d2a2f1619e77f493395775a4e79361347a02ae36cd074454e4444182758130"
+	threeDeckSetupHash = "84c12f14d2a40619a82fe8b7091891e339555fb2d88223390eaec100852e42ac"
 )
 
 func TestSetupWithoutSideDecksIsUnchanged(t *testing.T) {
@@ -688,11 +688,11 @@ func TestSideCardDiscardGoesToItsOwnersDiscard(t *testing.T) {
 	tb := f.g.Table
 	code := tb.Cards[tb.Piles["deck:p1"].Cards[0]].Code
 	tb.Piles["side:p1:0"] = &Pile{
-		ID: "side:p1:0", Kind: KindSideDeck, Owner: 1, Label: "Web", X: 390, Y: 630, Discard: "disc:p1",
+		ID: "side:p1:0", Kind: KindSideDeck, Owner: 1, Label: "Web", X: 390, Y: 690, Discard: "disc:p1",
 	}
-	tb.Cards["s1"] = &Card{ID: "s1", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, X: 600, Y: 600, Z: 50}
+	tb.Cards["s1"] = &Card{ID: "s1", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, X: 600, Y: 660, Z: 50}
 	tb.Cards["s2"] = &Card{
-		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 610, Y: 620, Z: 49,
+		ID: "s2", Code: code, Owner: 1, Home: "side:p1:0", Zone: ZoneTable, Parent: "s1", X: 610, Y: 680, Z: 49,
 	}
 	f.g.History = newHistory(testSeed, tb, testNow)
 

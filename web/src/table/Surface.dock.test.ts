@@ -364,10 +364,10 @@ describe('Surface out of dock mode', () => {
   });
 
   it('draws the markers full size', () => {
-    const { container } = renderSurface(false, { firstPlayer: { x: 460, y: 450 } });
+    const { container } = renderSurface(false, { firstPlayer: { x: 460, y: 510 } });
 
     const token = element(container, '.marker[data-marker="firstPlayer"]');
-    expectPlaced(token, [460, 450, 84, 70]);
+    expectPlaced(token, [460, 510, 84, 70]);
     expect(token.classList).not.toContain('scaled');
     expect(token.style.getPropertyValue('--scale')).toBe('');
   });

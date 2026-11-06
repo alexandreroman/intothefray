@@ -23,13 +23,13 @@ function deck(owner: number, y: number): PileView {
 }
 
 describe('rows', () => {
-  it("cuts the table in the villain's row of 380, then rows of 220", () => {
-    const heights = [-10, 0, 379, 380, 599, 600, 1000];
+  it("cuts the table in the villain's row of 440, then rows of 220", () => {
+    const heights = [-10, 0, 439, 440, 659, 660, 1000];
     expect(heights.map(rowOf)).toEqual([0, 0, 0, 1, 1, 2, 3]);
   });
 
   it("finds a seat's row from its deck, or from the seat without one", () => {
-    const piles = [deck(0, 410), deck(1, 630), deck(2, 850)];
+    const piles = [deck(0, 470), deck(1, 690), deck(2, 910)];
     expect(rowOfSeat(piles, 1)).toBe(2);
     expect(rowOfSeat([], 1)).toBe(2);
     expect(lastRow(piles)).toBe(3);
@@ -94,7 +94,7 @@ describe('rows', () => {
   describe("a tablet's minimum, the villain's row at its full height", () => {
     const tablet = VILLAIN_ROW_HEIGHT;
 
-    it("draws the villain's row 380 high with a single deck, whatever the height available", () => {
+    it("draws the villain's row 440 high with a single deck, whatever the height available", () => {
       for (const available of [0, 475, 568, 820, 5000]) {
         expect(villainPitch(rowPitch(available, 1, tablet), tablet)).toBe(VILLAIN_ROW_HEIGHT);
       }
@@ -102,9 +102,9 @@ describe('rows', () => {
       expect(rowPitch(568, 1, tablet)).toBe(rowPitch(568, 1));
     });
 
-    it("draws the villain's row 380 high with two decks, the one pitch left taking what it leaves", () => {
-      // Halved, 948 would give 364: the villain's row 380 high, the pitch 948 − 600 = 348, 340.
-      expect(rowPitch(948, 2, tablet)).toBe(340);
+    it("draws the villain's row 440 high with two decks, the one pitch left taking what it leaves", () => {
+      // Halved, 948 would give 364: the villain's row 440 high, the pitch 948 − 660 = 288, 280.
+      expect(rowPitch(948, 2, tablet)).toBe(280);
       expect(rowPitch(948, 2)).toBe(360);
       // The pitch keeps its own bounds.
       expect(rowPitch(700, 2, tablet)).toBe(ROW_HEIGHT);
@@ -120,19 +120,19 @@ describe('rows', () => {
 
     it("draws the villain's row where it lies, the first player's row right under it", () => {
       const rows = spreadRows(ROW_HEIGHT, 2, undefined, tablet);
-      for (const y of [-10, 0, 187, 210, 300, 379]) {
+      for (const y of [-10, 0, 187, 210, 300, 439]) {
         expect(rows.toDisplay(y)).toBe(y);
         expect(rows.toTable(y)).toBe(y);
       }
-      expect(rows.toDisplay(380)).toBe(380);
-      expect(rows.toDisplay(600)).toBe(600);
-      // "Villain + player": the shown row right under the villain's 380.
-      expect(spreadRows(ROW_HEIGHT, 3, 2, tablet).toDisplay(600)).toBe(380);
+      expect(rows.toDisplay(440)).toBe(440);
+      expect(rows.toDisplay(660)).toBe(660);
+      // "Villain + player": the shown row right under the villain's 440.
+      expect(spreadRows(ROW_HEIGHT, 3, 2, tablet).toDisplay(660)).toBe(440);
     });
 
     it('keeps the default minimum of 270 without one', () => {
       expect(villainPitch(220)).toBe(270);
-      expect(spreadRows(ROW_HEIGHT, 2).toDisplay(380)).toBe(270);
+      expect(spreadRows(ROW_HEIGHT, 2).toDisplay(440)).toBe(270);
     });
   });
 
@@ -144,40 +144,40 @@ describe('rows', () => {
       expect(rows.toDisplay(-10)).toBe(-10);
       expect(rows.toDisplay(30)).toBe(30);
       expect(rows.toDisplay(209)).toBe(209);
-      // From 210, the 170 units left of the row are drawn in 130.
+      // From 210, the 230 units left of the row are drawn in 130.
       expect(rows.toDisplay(210)).toBe(210);
-      expect(rows.toDisplay(295)).toBeCloseTo(275);
-      expect(rows.toTable(275)).toBeCloseTo(295);
+      expect(rows.toDisplay(325)).toBeCloseTo(275);
+      expect(rows.toTable(275)).toBeCloseTo(325);
     });
 
     it("draws a player's row a pitch high, its cards as they lie, the 30 units under them stretched", () => {
-      expect(rows.toDisplay(380)).toBe(340);
-      expect(rows.toDisplay(410)).toBe(370);
-      expect(rows.toDisplay(569)).toBe(529);
-      // From 570, the 30 units left of the row are drawn in 150.
-      expect(rows.toDisplay(590)).toBeCloseTo(630);
-      expect(rows.toDisplay(600)).toBe(680);
-      expect(rows.toTable(370)).toBe(410);
-      expect(rows.toTable(630)).toBeCloseTo(590);
+      expect(rows.toDisplay(440)).toBe(340);
+      expect(rows.toDisplay(470)).toBe(370);
+      expect(rows.toDisplay(629)).toBe(529);
+      // From 630, the 30 units left of the row are drawn in 150.
+      expect(rows.toDisplay(650)).toBeCloseTo(630);
+      expect(rows.toDisplay(660)).toBe(680);
+      expect(rows.toTable(370)).toBe(470);
+      expect(rows.toTable(630)).toBeCloseTo(650);
     });
 
     it('lets the last row run on downward as it lies', () => {
-      expect(rows.toDisplay(630)).toBe(710);
-      expect(rows.toDisplay(819)).toBe(899);
-      expect(rows.toDisplay(5000)).toBe(5080);
-      expect(rows.toTable(5080)).toBe(5000);
+      expect(rows.toDisplay(690)).toBe(710);
+      expect(rows.toDisplay(879)).toBe(899);
+      expect(rows.toDisplay(5000)).toBe(5020);
+      expect(rows.toTable(5020)).toBe(5000);
     });
 
     it('draws the rows as close as they go on a screen with no room', () => {
       const close = spreadRows(rowPitch(0, 2), 2);
       // The villain's row 270 high, then 220 for each player's.
-      expect(close.toDisplay(410)).toBe(300);
-      expect(close.toDisplay(630)).toBe(520);
-      expect(close.toTable(300)).toBe(410);
+      expect(close.toDisplay(470)).toBe(300);
+      expect(close.toDisplay(690)).toBe(520);
+      expect(close.toTable(300)).toBe(470);
     });
 
     it('round trips between the table and the surface, keeping the order of heights', () => {
-      for (const pitch of [220, 270, 340, 380]) {
+      for (const pitch of [220, 270, 340, 440]) {
         const spread = spreadRows(pitch, 3);
         let previous = -Infinity;
         for (let y = -20; y < 2000; y++) {
@@ -194,31 +194,31 @@ describe('rows', () => {
 
   describe('"Villain + player"', () => {
     it("draws the player's row right under the villain's, a pitch high, and hides the others", () => {
-      // Three players: the second one's row is row 2, from 600 to 820.
+      // Three players: the second one's row is row 2, from 660 to 880.
       const rows = spreadRows(340, 3, 2);
       expect(rows.toDisplay(30)).toBe(30);
-      expect(rows.toDisplay(630)).toBe(370);
-      expect(rows.toDisplay(789)).toBe(529);
-      expect(rows.toDisplay(819)).toBeCloseTo(675);
-      expect(rows.toDisplay(410)).toBeNull();
-      expect(rows.toDisplay(850)).toBeNull();
+      expect(rows.toDisplay(690)).toBe(370);
+      expect(rows.toDisplay(849)).toBe(529);
+      expect(rows.toDisplay(879)).toBeCloseTo(675);
+      expect(rows.toDisplay(470)).toBeNull();
+      expect(rows.toDisplay(910)).toBeNull();
       expect(rows.toDisplay(5000)).toBeNull();
     });
 
     it('lets the last row run on downward', () => {
       const rows = spreadRows(340, 3, 3);
-      expect(rows.toDisplay(850)).toBe(370);
-      expect(rows.toDisplay(5000)).toBe(4520);
-      expect(rows.toTable(4520)).toBe(5000);
+      expect(rows.toDisplay(910)).toBe(370);
+      expect(rows.toDisplay(5000)).toBe(4460);
+      expect(rows.toTable(4460)).toBe(5000);
     });
 
     it('keeps anything drawn below a row that is not the last one in that row', () => {
       const rows = spreadRows(340, 3, 2);
-      expect(rows.toTable(679)).toBeLessThan(820);
-      expect(rows.toTable(680)).toBe(819);
-      expect(rows.toTable(2000)).toBe(819);
+      expect(rows.toTable(679)).toBeLessThan(880);
+      expect(rows.toTable(680)).toBe(879);
+      expect(rows.toTable(2000)).toBe(879);
       // The last row runs on.
-      expect(spreadRows(340, 3, 3).toTable(2000)).toBe(2480);
+      expect(spreadRows(340, 3, 3).toTable(2000)).toBe(2540);
     });
 
     // Every height drawn from the top of the surface to well below the shown rows, one table unit apart.
@@ -361,8 +361,8 @@ describe('tableMapOf', () => {
     const rows = spreadRows(220, 3, 2);
     const map = tableMapOf(rows);
 
-    expect(map.toDisplay({ x: 123, y: 650 })).toEqual({ x: 123, y: rows.toDisplay(650) });
-    expect(map.toDisplay({ x: 123, y: 450 })).toBeNull();
+    expect(map.toDisplay({ x: 123, y: 710 })).toEqual({ x: 123, y: rows.toDisplay(710) });
+    expect(map.toDisplay({ x: 123, y: 510 })).toBeNull();
     expect(map.toTable({ x: 45, y: 300 })).toEqual({ x: 45, y: rows.toTable(300) });
   });
 
@@ -376,7 +376,7 @@ describe('drawnDelta', () => {
   it('is the offset between where two points are drawn', () => {
     const map = tableMapOf(spreadRows(220, 1));
     const from = { x: 300, y: 295 };
-    const to = { x: 100, y: 410 };
+    const to = { x: 100, y: 470 };
     const drawnFrom = map.toDisplay(from)!;
     const drawnTo = map.toDisplay(to)!;
 

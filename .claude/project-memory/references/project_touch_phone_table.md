@@ -20,7 +20,11 @@ type: project
     A card of a stack shows the whole stack as a carousel on the card's
     line, the neighbours peeking at its sides, each card with its own
     tokens; a swipe or a tap on a neighbour switches the sheet to it.
-    The switch changes the column at once (no fade, no row slides); every
+    The switch changes the column at once (no fade, no row slides). Where
+    the column lies beside the card (a tablet's portrait card, a phone on
+    its side) it takes what the shown card's entries need, up to the
+    card's height; where it lies under the card it keeps the height of
+    the first switch, so the card does not move. Every
     carousel card keeps its face, image and token elements mounted, so
     nothing reloads. A swipe switches as the middle passes the midpoint
     (6 px slack), not at scroll end; a tap switches at once.
