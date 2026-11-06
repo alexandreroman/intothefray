@@ -12,7 +12,9 @@ type: project
 - The dialog counter is the single place of the lock: `openModal()` in
   `web/src/components/modal.svelte.ts` locks on the first open dialog and
   unlocks on the last close. Every dialog goes through it via
-  `components/Dialog.svelte`.
+  `components/Dialog.svelte`, and every modal bottom sheet via
+  `components/Sheet.svelte`; the hand sheet (`modal={false}`) leaves the
+  page and the table live, so a hand card can be dragged out of it.
 - The lock is a class on `<html>` (`tokens.css`): `scroll-locked` hides the
   page overflow and its rubber band (`overscroll-behavior: none`, iOS). The
   scroll offset stays as it is and no scroll event fires, so the compact top

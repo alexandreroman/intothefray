@@ -1,6 +1,6 @@
 ---
 name: "Compact top bar hides on scroll"
-description: "On screens up to 600px wide or 500px tall, the top bar slides away on scroll down and returns when needed"
+description: "On screens up to 600px wide or 500px tall, outside dock mode on the table, the top bar slides away on scroll down and returns when needed"
 type: project
 ---
 
@@ -25,9 +25,7 @@ type: project
   floats over the play area, and overlays at its top (the catalog notice,
   the preview) stay clear of it while it shows; larger screens give it its
   own row.
-- In dock mode (a small touch screen) the top bar is always visible,
-  never auto-hides and takes its own room above the table (right of the
-  rail on a phone on its side), below the notch (`autoHide={false}`; see
+- In dock mode (a small touch screen) the bar never auto-hides (see
   [[project_touch_phone_table]]).
 
 **Why:** decided with the user: a phone gains the bar's room

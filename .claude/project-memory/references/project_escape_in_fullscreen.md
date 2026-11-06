@@ -7,8 +7,10 @@ type: project
 # Escape in fullscreen
 
 - Every layer that closes something on Escape calls
-  `event.preventDefault()`: `Dialog.svelte`, `ContextMenu.svelte`, the
-  ScenarioPicker menu, the pinned hand (`Hand.svelte`), and the table
+  `event.preventDefault()`: `Dialog.svelte`, every bottom sheet
+  (`Sheet.svelte`), `ContextMenu.svelte`, the ScenarioPicker menu, the
+  pinned hand (`Hand.svelte`), touch select mode (Table.svelte
+  `onKeydown`, which keeps the group), and the table
   through `handleKey` in `web/src/table/keys.ts` when
   `interaction.escape()` reports that it dropped something (a pinned pill,
   a group, the band, an arrow, a tap selection).

@@ -14,8 +14,8 @@ type: project
   (condensed black italic display, normal UI, semi-condensed caps labels).
 - The logo is a tilted card split by a fracture, with a yellow spark;
   `Logo.svelte` draws the mark, the horizontal and the stacked lockups.
-- Every app bar shows the full "INTO THE FRAY" wordmark. On a touch
-  screen too narrow for it (up to 600px wide), the wordmark scales down
+- Every app bar shows the full "INTO THE FRAY" wordmark. On a bar up to
+  600px wide, the wordmark scales down
   to the room the bar's actions leave; below a 22px "FRAY" the mark shows
   alone, as in the table bar with the view switch on a phone
   (`TopBar.svelte`, `--logo-words-display` in `Logo.svelte`).

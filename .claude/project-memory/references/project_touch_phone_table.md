@@ -7,9 +7,10 @@ type: project
 # Touch and phone table
 
 - **Touch mode** is `TOUCH_MODE_QUERY` (`(hover: none) and (pointer:
-  coarse)`, web/src/table/touch.ts): phones and tablets. **Dock mode** is
-  touch mode on a small screen (`SMALL_SCREEN_QUERY`), `.app.dock-mode`.
-  A mouse or a pen never gets either, at any width.
+  coarse)`, web/src/lib/screen.ts): phones and tablets. **Dock mode** is
+  touch mode on a small screen (`SMALL_SCREEN_QUERY`), `.app.dock-mode`;
+  a **tablet** is touch mode outside dock mode, `.app.tablet`. A screen
+  whose main pointer is a mouse or a pen never gets either, at any width.
 - Touch mode, every size:
   - A tap on a table card, a pile or a token opens the **inspector**
     (`CardSheet.svelte` in a bottom `Sheet`): the card large, its tokens,
@@ -45,8 +46,9 @@ type: project
     reveal leaves it on the deck. In a turn, the name and the entries show
     the new side from the start, at once (no button fades, no row slides):
     a revealed card's actions replace the deck's as the reveal lands; only
-    the face turns, and the layout follows it once edge-on. Its opening, closing, drill-down,
-    counters and presses animate (none under reduced motion). A tap on a
+    the face turns, and the layout follows it once edge-on. Its opening,
+    closing, drill-down, counters and presses animate (none under reduced
+    motion). A tap on a
     raised hand card lifts it to read it, a second one lets it go: the
     fan's cards are played and discarded by drag and drop; the inspector
     serves table cards and piles.
@@ -59,18 +61,22 @@ type: project
     stay the content's (carousels, a hand card dragged up). Let go past
     60 px or flung (> 0.5 px/ms), it closes; else it springs back
     (160 ms). A mouse or a pen drags the grab handle only.
-  - A press on a table card, pile or marker picks it up after a 300 ms
+  - A press of a finger or a pen on a table card, pile or marker picks it
+    up after a 300 ms
     hold within 10 px (`gestures.ts` `HOLD_MS`, `HOLD_SLOP`; a 10 ms
-    vibration); a quicker move scrolls the table. Hand cards drag at once.
+    vibration); a quicker move scrolls the table. Hand cards drag at once,
+    and so does a mouse.
     A second finger lets go of a press that has not moved.
   - On tablets, two fingers pinch-zoom and pan (`touchZoom.ts`) and a
-    double tap on an empty spot toggles between the fit zoom and the
-    readable zoom (100 %, 150 % when the fit is already about 100 %).
+    double tap on an empty spot toggles between 100 % and 150 % (from any
+    other zoom it goes to 150 %).
     Pinch and double tap belong to tablets only: phones (dock mode) never
     zoom (no pinch, no double tap, a saved `itf-zoom` ignored), and
     one-finger scrolling stays. The page itself never pinch-zooms on the
     table screen.
   - Card boxes do not focus their filter, so no keyboard pops up.
+  - No card preview and no keyboard-shortcuts button (the keys still
+    work); the top bar's buttons are 44 px high (`TopBar.svelte`).
 - Tablets (touch mode off dock mode) keep the desktop layout, fitted to a
   finger:
   - The inspector follows the screen's orientation (`SIDEWAYS_QUERY`,
@@ -93,8 +99,7 @@ type: project
     too), a column shorter than the card is centred on its height (a
     stack's: on the shown card); a taller one scrolls from its top.
     Submenu pages are centred the same way. A stack follows its main
-    card. A
-    face that changes shape (a flip, a scheme revealed from a deck's
+    card. A face that changes shape (a flip, a scheme revealed from a deck's
     inspector) changes layout once edge-on in its turn; a revealed scheme
     shows as it is, landscape, with no handling of its own.
   - The inspector has one gutter, in every layout (phones too): what
@@ -112,7 +117,8 @@ type: project
     [[project_hand_sizes]]).
   - The history panel's buttons and the card box's footer and filter are
     44 px high, and the hero selector's avatars have 44 px hit areas, the
-    avatars drawn at their own size (`.app.touch:not(.dock-mode)`).
+    avatars drawn at their own size, and the hero selector's step arrow
+    is 44 px wide (`.app.tablet`).
 - Dock mode (phones):
   - A dock (`Dock.svelte`) at the bottom, or a 64 px rail on the left on
     a phone on its side, holds the hand button (hero avatar, mini cards,
@@ -126,7 +132,9 @@ type: project
     takes its own room above the table (right of the rail on a phone on
     its side), below the notch (`TopBar` `autoHide={false}`).
   - The hand opens as a carousel sheet (`HandSheet.svelte`, non-modal):
-    one card at 64 % of the width, with Play and Discard only; a card
+    one card as large as the sheet's room allows (upright at most 80 % of
+    its width, on its side as high as the sheet), with Play and Discard
+    only; a card
     dragged up out of it goes onto the table. It closes when the viewer's
     own Play or Discard empties the hand.
   - A card played or discarded from the hand rises and fades out where it
@@ -135,7 +143,8 @@ type: project
   - The history opens as a sheet (`HistorySheet.svelte`) from the dock's
     or rail's History button.
   - Dock mode never shows the history panel nor its strip, at any width:
-    the table takes the window, the bar's icons 8 px from its right edge.
+    the table takes the window, the bar's icons 8 px from its right safe
+    edge.
   - Sheets and card boxes take the whole screen. The inspector shows the
     card on top (at most 42 % of the height) with its list under it when
     upright, the card beside its list on its side; the hand sheet on its
@@ -165,9 +174,10 @@ type: project
     first half column past the line and a gap, so no owner line runs
     over another frame, line or card.
   - During a drag the rows lay themselves out as if the dragged unit lay
-    in its drop slot (the `preview` input of `dockLayout`, spec 3.8): the
+    in its drop slot (the `preview` input of `dockLayout`): the
     cards after it glide aside (180 ms, none under reduced motion) and
-    glide back on a cancel.
+    glide back on a cancel. Markers never travel with the dragged card:
+    they anchor, as after the drop, to the card nearest them.
   - The dock zoom is fixed: it fits the widest row's indent plus three
     card slots in the width, never above 100 %.
   - A table card's counters take three disjoint regions
@@ -176,12 +186,14 @@ type: project
     the right edge (bottom-up, damage in the corner; a scheme top-down,
     threat in the corner), statuses as initial chips ("S", "T×2", "R2")
     in a row under the title band from the left, modifiers as whole
-    badges ("+1 DEF") in a column standing out of the card's left edge,
-    as on desktop. A full region shows what fits but one, then "+N"; the
-    inspector shows them all.
+    badges ("+1 DEF") in a column up from the bottom-left corner,
+    standing out of the left edge only as far as a badge wider than the
+    room left of the tokens needs. A full region shows what fits but one,
+    then "+N"; the inspector shows them all.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
-  safe areas; a web app manifest (`display: standalone`) lets a game
-  added to the home screen run full screen on iOS.
+  safe areas, its top bar included (the bar's edges follow the content
+  column's safe padding); a web app manifest (`display: standalone`)
+  lets a game added to the home screen run full screen on iOS.
 
 **Why:** designed with the user from phone mockups (direction "camera,
 inspector and dock"): on a phone the table text is unreadable and hover
