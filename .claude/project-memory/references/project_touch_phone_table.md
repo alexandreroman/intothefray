@@ -1,6 +1,6 @@
 ---
 name: "Touch and phone table"
-description: "Touch mode: inspector sheet, hold to drag, pinch; tablets: card beside actions, History sheet, 44 px targets; dock mode on small touch screens: dock, hand carousel, small cards"
+description: "Touch mode: inspector sheet, hold to drag, pinch; tablets: inspector follows the orientation, History sheet, 44 px targets; dock mode on small touch screens: dock, hand carousel, small cards"
 type: project
 ---
 
@@ -21,13 +21,14 @@ type: project
     line, the neighbours peeking at its sides, each card with its own
     tokens; a swipe or a tap on a neighbour switches the sheet to it.
     The switch changes the column at once (no fade, no row slides). Where
-    the column lies beside the card (a tablet's portrait card, a phone on
-    its side) it takes what the shown card's entries need, up to the
-    card's height; where it lies under the card it keeps the height of
-    the first switch, so the card does not move. Every
-    carousel card keeps its face, image and token elements mounted, so
-    nothing reloads. A swipe switches as the middle passes the midpoint
-    (6 px slack), not at scroll end; a tap switches at once.
+    the column lies beside the card (a tablet's portrait card, every card
+    on a tablet on its side, a phone on its side) it takes what the shown
+    card's entries need, up to the card's height; where it lies under
+    the card it keeps the height of the first switch, so the card does
+    not move. Every carousel card keeps its face, image and token
+    elements mounted, so nothing reloads. A swipe switches as the middle
+    passes the midpoint (6 px slack), not at scroll end; a tap switches
+    at once.
     The first menu group shows as big buttons (default in Fray red; laid
     out as [[project_no_lone_button]] says), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
@@ -72,15 +73,27 @@ type: project
   - Card boxes do not focus their filter, so no keyboard pops up.
 - Tablets (touch mode off dock mode) keep the desktop layout, fitted to a
   finger:
-  - The inspector is a sheet at most 760 px wide (`Sheet` `wide`, other
-    sheets 480 px). A portrait card lies beside its actions, as on a
-    phone on its side: the card `min(460px, 70dvh)` high on the left,
-    the name, main buttons and rows (44 px) in one column on its right,
-    the only part that scrolls, at most as high as the card. A landscape
-    card (a scheme) lies above its actions: the card on top, centred,
-    three quarters as wide as a portrait card is high, the name and
-    actions full width under it, the sheet scrolling as a whole. A stack
-    follows its main card. A
+  - The inspector follows the screen's orientation (`SIDEWAYS_QUERY`,
+    `(orientation: landscape)`; turning the tablet lays it out again).
+    A portrait card lies beside its actions either way, as on a phone on
+    its side: the card `min(460px, 70dvh)` high on the left, the main
+    buttons and rows (44 px) in one column on its right, the only part
+    that scrolls, at most as high as the card, in a sheet at most 760 px
+    wide (`Sheet` `wide`, other sheets 480 px).
+  - On a tablet on its side every card lies beside its actions, a scheme
+    included, at full size: a landscape card as wide as a portrait card
+    is high (460 × 329 px), top-aligned, the column about 340 px wide
+    and at most the room high. That sheet is as wide as its content
+    (`Sheet` `fit`), up to the window less 16 px a side: ≈ 890 × 390 px
+    for a main scheme at 1180 × 820.
+  - On a tablet upright a scheme lies above its actions: the card on
+    top, centred, three quarters as wide as a portrait card is high, the
+    actions full width under it, the sheet scrolling as a whole.
+  - Wherever the column lies beside the card (dock mode on its side
+    too), a column shorter than the card is centred on its height (a
+    stack's: on the shown card); a taller one scrolls from its top.
+    Submenu pages are centred the same way. A stack follows its main
+    card. A
     face that changes shape (a flip, a scheme revealed from a deck's
     inspector) changes layout once edge-on in its turn; a revealed scheme
     shows as it is, landscape, with no handling of its own.
@@ -177,8 +190,10 @@ the screen goes to the table. Tablets have the room for the desktop
 layout; what they adapt is what a mouse does and a finger cannot (hover
 to raise the hand or read the history, small targets), and a sheet up to
 760 px wide uses their room to show the card large. Decided with the
-user: a tablet's hand cards play by drag and drop, a scheme reads best
-above its actions.
+user: a tablet's hand cards play by drag and drop; a tablet on its side
+has width to spare, and a scheme stacked above its actions ran out of
+height there, so every card lies beside its actions; upright, a scheme
+reads best above them; the column is centred on the card.
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action

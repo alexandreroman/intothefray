@@ -66,7 +66,13 @@ async function swipe(
 }
 
 function renderSheet(
-  props: { maxHeight?: string; modal?: boolean; dock?: boolean; wide?: boolean } = {},
+  props: {
+    maxHeight?: string;
+    modal?: boolean;
+    dock?: boolean;
+    wide?: boolean;
+    fit?: boolean;
+  } = {},
 ) {
   const onclose = vi.fn();
   const view = render(Sheet, { label: 'Rhino', onclose, children: content, ...props });
@@ -415,6 +421,24 @@ describe('Sheet', () => {
 
       expect(sheet.classList).toContain('wide');
       expect(rule('.sheet.wide', 4)).toContain('max-width: min(760px, calc(100% - 32px));');
+    });
+
+    it('fits its content when asked, never nearer than 16 px to the sides', () => {
+      const { sheet } = renderSheet({ wide: true, fit: true });
+
+      expect(sheet.classList).toContain('fit');
+      const fit = rule('.sheet.wide.fit', 4);
+      expect(fit).toContain('width: fit-content;');
+      expect(fit).toContain('max-width: calc(100% - 32px);');
+    });
+
+    it('fits its content only when wide, and never in dock mode', () => {
+      const { sheet, view } = renderSheet({ fit: true });
+      expect(sheet.classList).not.toContain('fit');
+      view.unmount();
+
+      const docked = renderSheet({ dock: true, wide: true, fit: true });
+      expect(docked.sheet.classList).not.toContain('fit');
     });
 
     it('is not, by default: at most 480 px wide', () => {

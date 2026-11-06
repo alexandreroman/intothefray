@@ -4,7 +4,13 @@ import CardSheet from './CardSheet.svelte';
 import sheetSource from './CardSheet.svelte?raw';
 import countersSource from './CardCounters.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
-import { LANDSCAPE_PHONE, mockScreen, PHONE, type TestScreen } from '../lib/screen.testing';
+import {
+  LANDSCAPE_PHONE,
+  mockScreen,
+  PHONE,
+  resizeScreen,
+  type TestScreen,
+} from '../lib/screen.testing';
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
@@ -154,6 +160,8 @@ const ARMOR_HEADER: ContextHeader = {
 
 /** A tablet on its side, with a finger: neither dock mode nor a phone on its side. */
 const TOUCH_TABLET: TestScreen = { width: 1180, height: 820, touch: true };
+/** The same tablet upright. */
+const TOUCH_TABLET_UPRIGHT: TestScreen = { width: 820, height: 1180, touch: true };
 
 /** The strip of the stack under the card, if shown. */
 /** The carousel of the stack in place of the card, if shown. */
@@ -773,6 +781,78 @@ describe('CardSheet', () => {
       expect(inspectorClasses()).toContain('column');
     });
 
+    describe("following the screen's orientation", () => {
+      afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+      });
+
+      it('on its side, lays a landscape card beside its column, in a sheet as wide as its content', () => {
+        mockScreen(TOUCH_TABLET);
+        renderSheet({ dock: false, landscape: true });
+
+        expect(inspectorClasses()).toContain('beside');
+        expect(inspectorClasses()).toContain('land');
+        expect(inspectorClasses()).not.toContain('column');
+        const sheet = screen.getByRole('dialog');
+        expect(sheet.classList).toContain('wide');
+        expect(sheet.classList).toContain('fit');
+      });
+
+      it('upright, lays a landscape card above its column, in a wide sheet', () => {
+        mockScreen(TOUCH_TABLET_UPRIGHT);
+        renderSheet({ dock: false, landscape: true });
+
+        expect(inspectorClasses()).toContain('column');
+        expect(inspectorClasses()).not.toContain('beside');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+      });
+
+      it.each([
+        ['on its side', TOUCH_TABLET],
+        ['upright', TOUCH_TABLET_UPRIGHT],
+      ])('%s, lays a portrait card beside its column, in a wide sheet', (_, screenSize) => {
+        mockScreen(screenSize);
+        renderSheet({ dock: false });
+
+        expect(inspectorClasses()).toContain('beside');
+        expect(inspectorClasses()).not.toContain('land');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+      });
+
+      it("on its side, lays a stack out beside its column by its main card's orientation", () => {
+        mockScreen(TOUCH_TABLET);
+        const scheme: StackCard = { ...STACK[0]!, landscape: true };
+        renderSheet({ dock: false, stack: [scheme, STACK[1]!], cardId: 'armor' });
+
+        expect(inspectorClasses()).toContain('beside');
+        expect(inspectorClasses()).toContain('land');
+      });
+
+      it('lays the sheet out again as the tablet turns', async () => {
+        const lists = mockScreen(TOUCH_TABLET);
+        renderSheet({ dock: false, landscape: true });
+
+        await resizeScreen(lists, TOUCH_TABLET_UPRIGHT);
+        expect(inspectorClasses()).toContain('column');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+
+        await resizeScreen(lists, TOUCH_TABLET);
+        expect(inspectorClasses()).toContain('beside');
+        expect(screen.getByRole('dialog').classList).toContain('fit');
+      });
+
+      it("leaves dock mode's layout alone, a phone on its side included", () => {
+        mockScreen(LANDSCAPE_PHONE);
+        renderSheet({ dock: true, landscape: true });
+
+        expect(inspectorClasses()).toContain('dock');
+        expect(inspectorClasses()).not.toContain('tablet');
+        expect(inspectorClasses()).not.toContain('land');
+        expect(screen.getByRole('dialog').classList).not.toContain('fit');
+      });
+    });
+
     it('makes a portrait card as high as the room, at most 460 px and 70 % of the screen', () => {
       expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
       const tablet = rule('.inspector.tablet');
@@ -786,15 +866,15 @@ describe('CardSheet', () => {
       expect(rule('.top')).not.toContain('flex-direction');
     });
 
-    it("starts the column beside a stack level with its shown card's top, under the carousel's padding", () => {
+    it("keeps the column beside a stack level with its shown card, inside the carousel's padding and dots", () => {
       expect(rule('.inspector')).toContain('--carousel-top: 10px;');
       expect(rule('.carousel')).toContain('padding-block: var(--carousel-top) 14px;');
       expect(rule('.inspector.beside .visual.stacked + .side')).toContain(
-        'padding-top: var(--carousel-top);',
+        'padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));',
       );
       const onItsSide = block('@media (max-height: 500px)');
       expect(ruleIn(onItsSide, '.inspector.dock .visual.stacked + .side')).toContain(
-        'padding-top: var(--carousel-top);',
+        'padding-block: var(--carousel-top) calc(var(--carousel-chrome) - var(--carousel-top));',
       );
     });
 
@@ -802,18 +882,62 @@ describe('CardSheet', () => {
       const stacked = rule('.inspector.beside .visual.stacked');
       expect(stacked).toContain('--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));');
       expect(stacked).toContain('width: calc(var(--slide-h) * 5 / 7 + 88px);');
-      expect(rule('.visual.stacked')).toContain('--carousel-chrome: 38px;');
+      expect(rule('.inspector')).toContain('--carousel-chrome: 38px;');
     });
 
     it('keeps the column beside a portrait card at most as high as it, the only part that scrolls', () => {
       const column = rule('.inspector.beside .side');
+      expect(column).toContain('align-self: stretch;');
       expect(column).toContain('max-height: var(--sheet-room);');
       expect(column).toContain('overflow-y: auto;');
       expect(column).toContain('overscroll-behavior: contain;');
       expect(rule('.side')).toContain('container-type: inline-size;');
     });
 
-    it('puts a landscape card on top, centred, 3 / 4 as wide as the room, its column full width under it', () => {
+    it("centres the column's content on the card beside it, its auto margins sharing the room", () => {
+      // Auto margins rather than justify-content: a column taller than the card starts at its top.
+      const firsts =
+        '.inspector.beside .side > :first-child,\n  .inspector.beside .pages.held > .page > :first-child';
+      const lasts =
+        '.inspector.beside .side > :last-child,\n  .inspector.beside .pages.held > .page > :last-child';
+      expect(rule(firsts)).toContain('margin-top: auto;');
+      expect(rule(lasts)).toContain('margin-bottom: auto;');
+      expect(rule('.inspector.beside .side')).not.toContain('justify-content');
+      const onItsSide = block('@media (max-height: 500px)');
+      expect(ruleIn(onItsSide, '.inspector.dock .side')).toContain('align-self: stretch;');
+      const dockFirsts = firsts.replaceAll('beside', 'dock').replace('\n  ', '\n    ');
+      const dockLasts = lasts.replaceAll('beside', 'dock').replace('\n  ', '\n    ');
+      expect(ruleIn(onItsSide, dockFirsts)).toContain('margin-top: auto;');
+      expect(ruleIn(onItsSide, dockLasts)).toContain('margin-bottom: auto;');
+      // Under the card (dock mode upright, a tablet upright's scheme), the column needs no margin.
+      expect(rule('.inspector.column .side')).not.toContain('margin');
+    });
+
+    it('on its side, lays a landscape card as wide as the room beside a column of about 340 px', () => {
+      expect(rule('.inspector.beside.land')).toContain('--landscape-w: var(--sheet-room);');
+      const face = rule('.inspector.beside .visual > .face.land');
+      expect(face).toContain('width: var(--sheet-room);');
+      expect(face).toContain('height: auto;');
+      // Top-aligned beside its column, which keeps its width rather than growing.
+      expect(rule('.top')).toContain('align-items: flex-start;');
+      const column = rule('.inspector.beside.land .side');
+      expect(column).toContain('width: 340px;');
+      expect(column).toContain('flex: 0 1 auto;');
+      // At most as high as the room, scrolling past it, as beside a portrait card.
+      expect(rule('.inspector.beside .side')).toContain('max-height: var(--sheet-room);');
+      const stacked = rule('.inspector.beside.land .visual.stacked');
+      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) * 5 / 7);');
+      expect(stacked).toContain('--slide-max: 100%;');
+      expect(stacked).toContain('width: calc(var(--sheet-room) + 88px);');
+    });
+
+    it('measures a side beside a landscape card at the width the sheet will fit it to', () => {
+      const copy = rule('.inspector.measure.land');
+      expect(copy).toContain('width: max-content;');
+      expect(copy).toContain('max-width: calc(100vw - 34px);');
+    });
+
+    it('upright, puts a landscape card on top, 3 / 4 as wide as the room, its column full width under it', () => {
       const top = rule('.inspector.column .top');
       expect(top).toContain('flex-direction: column;');
       expect(top).toContain('align-items: center;');
@@ -1103,12 +1227,23 @@ describe('CardSheet', () => {
         expect(pages.classList).toContain('held');
       });
 
-      it("keeps the main page's height on a tablet under a landscape card", async () => {
+      it("keeps the main page's height on a tablet upright under a landscape card", async () => {
         const scheme: StackCard = { ...STACK[0]!, landscape: true };
-        const pages = await switchOn(TOUCH_TABLET, { dock: false, stack: [scheme, STACK[1]!] });
+        const pages = await switchOn(TOUCH_TABLET_UPRIGHT, {
+          dock: false,
+          stack: [scheme, STACK[1]!],
+        });
 
         expect(pages.style.height).toBe('233px');
         expect(pages.classList).toContain('held');
+      });
+
+      it('holds no height on a tablet on its side beside a landscape card', async () => {
+        const scheme: StackCard = { ...STACK[0]!, landscape: true };
+        const pages = await switchOn(TOUCH_TABLET, { dock: false, stack: [scheme, STACK[1]!] });
+
+        expect(pages.style.height).toBe('');
+        expect(pages.classList).not.toContain('held');
       });
 
       it('holds no height on a tablet beside a portrait card: the column takes what the new card needs', async () => {
@@ -1555,6 +1690,41 @@ describe('CardSheet', () => {
           expect(inspector.classList).not.toContain('beside');
         } finally {
           heights.mockRestore();
+        }
+      });
+
+      it('on a tablet on its side, measures a card turning to a scheme beside its column, at its width', async () => {
+        mockScreen(TOUCH_TABLET);
+        const measured: { land: boolean; width: string }[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              measured.push({ land: this.classList.contains('land'), width: this.style.width });
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet({ dock: false });
+          const inspector = document.querySelector<HTMLElement>('.inspector')!;
+          const sheet = screen.getByRole('dialog');
+
+          await rerender({ images: ['scheme.png'], landscape: true, header: TURNED });
+          await tick();
+
+          // Laid out by the sheet's own width rule, not the content's width now.
+          expect(measured).toEqual([{ land: true, width: '' }]);
+          expect(sheet.classList).not.toContain('fit');
+
+          await finishAnimations();
+          expect(inspector.classList).toContain('beside');
+          expect(inspector.classList).toContain('land');
+          expect(sheet.classList).toContain('fit');
+        } finally {
+          heights.mockRestore();
+          vi.restoreAllMocks();
+          vi.unstubAllGlobals();
         }
       });
 

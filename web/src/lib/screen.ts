@@ -15,6 +15,12 @@ export const SMALL_SCREEN_QUERY = '(max-width: 600px), (max-height: 500px)';
  */
 export const SHORT_SCREEN_QUERY = '(max-height: 500px)';
 
+/**
+ * A screen wider than it is high: a tablet on its side, whose inspector lays every card beside its
+ * actions, a scheme included (CardSheet.svelte).
+ */
+export const SIDEWAYS_QUERY = '(orientation: landscape)';
+
 /** A narrow screen, up to 900px wide: the table's side column goes, the history is not shown. */
 export const NARROW_SCREEN_QUERY = '(max-width: 900px)';
 

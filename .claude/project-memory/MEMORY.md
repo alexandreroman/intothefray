@@ -99,7 +99,7 @@
 - [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists games being played; Home capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() locks html scroll; offset kept; gutter only for a classic scrollbar
 - [Pile counts step aside during animations](references/project_pile_count_hush.md) — badge fades out while a pile animates; back with final count
-- [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold, pinch; tablet: card beside actions, History; phone dock
+- [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold, pinch; tablet inspector follows orientation; phone dock
 - [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector: .count-pill
 - [No button alone on a line](references/project_no_lone_button.md) — buttonGrid: 1 full, pairs, 3 in a row if ≥96 px, else default on top
 - [Full-bleed favicon](references/project_favicon.md) — one opaque icon for tabs and search; favicon.ico from favicon.svg
