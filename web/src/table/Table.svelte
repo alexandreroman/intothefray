@@ -2616,7 +2616,7 @@
             <Icon name="undo" />
           </button>
           {#if historySheetMode}
-            <!-- The dock's History button, its clock face drawn at Undo's size. -->
+            <!-- The dock's History button, at Undo's size. -->
             <button
               class="btn-ghost"
               aria-label="History"
@@ -2624,17 +2624,7 @@
               onclick={openHistory}
               {@attach pointerBlur}
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7.5V12l3 2" />
-              </svg>
+              <Icon name="history" />
             </button>
           {/if}
         </div>
