@@ -869,12 +869,12 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
 
   // The fit: both rows' indent (the villain and the identity at 300, drawn 180) and three slots of
   // a 67.2 card and a 24 gap, 453.6, in 390 − 2 × 24 − 12 = 330 px: 72 %. The rows wrap at
-  // (390 − 48) / 0.72 = 475: the identity, c1 and c2 fit the first line (180, 271.2, 362.4), c3 to
-  // c5 the second, c6 and c7 the third, then the empty slot (362.4). The villain's row is 12 +
-  // 118.2 (its frame, from 20 to 197) + 16, then an empty second line (94.2 + 16), + 20 = 276.4
-  // high; Alex's row starts there, its first line 12 lower, at 288.4, its cards 18 under it
-  // (306.4); the second line at 288.4 + 118.2 + 16 = 422.6, the third at 422.6 + 94.2 + 16 =
-  // 532.8, their cards at their top.
+  // (390 − 48) / 0.72 = 475: the identity, c1 and c2 fit the first line (180, 271.2, 362.4); c3 to
+  // c7 the second, from the row's left edge, the frame's −6, a slot every 91.2 (−6 to 358.8); the
+  // empty slot the third, from −6 too. The villain's row is 12 + 118.2 (its frame, from 20 to 197)
+  // + 16, then an empty second line (94.2 + 16), + 20 = 276.4 high; Alex's row starts there, its
+  // first line 12 lower, at 288.4, its cards 18 under it (306.4); the second line at 288.4 + 118.2
+  // + 16 = 422.6, the third at 422.6 + 94.2 + 16 = 532.8, their cards at their top.
 
   it('fits the widest indent and three cards in the width by default, never above 100 %', async () => {
     mockScreen(PHONE);
@@ -884,17 +884,17 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(storedZoom()).toBeNull();
   });
 
-  it('wraps a long row under its identity: a card past the width goes on a new line', async () => {
+  it('wraps a long row from its left edge: a card past the width goes on a new line, under the frame', async () => {
     mockScreen(PHONE);
     await renderTable(busyView());
 
     // The identity and the two first cards on the first line, a slot apart.
     expectAt('id', 180, 306.4);
     expectAt('c2', 362.4, 306.4);
-    // c3 and c4 from the indent on the second line, c7 on the third.
-    expectAt('c3', 180, 422.6);
-    expectAt('c4', 271.2, 422.6);
-    expectAt('c7', 271.2, 532.8);
+    // c3 to c7 on the second line, from the frame's left edge.
+    expectAt('c3', -6, 422.6);
+    expectAt('c4', 85.2, 422.6);
+    expectAt('c7', 358.8, 422.6);
     // The villain's row holds one line: its piles and Rhino at 0.6.
     expectAt('v', 180, 30);
     for (const id of ['id', ...PLAYED]) {
@@ -952,11 +952,12 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
   it('keeps a stack together on its main card’s line', async () => {
     mockScreen(PHONE);
     // Tucked under c2, 100 right and 20 down: the stack, 212 wide (127.2 drawn), would end past
-    // 475 on the first line. Both start the second, the upgrade 60 right of c2 and 12 down.
+    // 475 on the first line. Both start the second at its left edge, the upgrade 60 right of c2 and
+    // 12 down.
     await renderTable(busyView([card('up', { x: 720, y: 430, parent: 'c2' })]));
 
-    expectAt('c2', 180, 422.6);
-    expectAt('up', 240, 434.6);
+    expectAt('c2', -6, 422.6);
+    expectAt('up', 54, 434.6);
   });
 
   it('makes the surface as high as the drawn rows, and as wide as what shows', async () => {
@@ -1027,10 +1028,10 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     const { session } = await renderTable(busyView());
     measureDrawn();
 
-    // In the gap between c4 (271.2..338.4) and c5 on the second line: before c5, whose slot's
-    // middle (396) lies right of it. c4 runs 940..1052 on the table, c5 1100..1212: c1 goes to
+    // In the gap between c4 (85.2..152.4) and c5 on the second line: before c5, whose slot's
+    // middle (210) lies right of it. c4 runs 940..1052 on the table, c5 1100..1212: c1 goes to
     // (1052 + 1100) / 2 − 56 = 1020, at c4's y.
-    await dragMiddleTo('c1', 350, 470);
+    await dragMiddleTo('c1', 160, 470);
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       { kind: 'move', card: 'c1', x: 1020, y: 410 },
@@ -1043,9 +1044,9 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     const { session } = await renderTable(busyView());
     measureDrawn();
 
-    // The slot follows c7 on the third line, from 362.4: c1 goes 40 past c7's right edge (1532),
-    // up to the grid, at the row's card y.
-    await dragMiddleTo('c1', 396, 580);
+    // The slot follows c7 on the third line, from the left edge (−6): c1 goes 40 past c7's right
+    // edge (1532), up to the grid, at the row's card y.
+    await dragMiddleTo('c1', 30, 580);
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
       { kind: 'move', card: 'c1', x: 1580, y: 410 },
@@ -1063,9 +1064,10 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await dragMiddleTo('c2', 165, 410);
     expect(session.act).toHaveBeenLastCalledWith({ kind: 'move', card: 'c2', x: 220, y: 410 }, 0);
 
-    // c3 let go between c2's slot and c4's: where it lies already, nothing sent.
+    // c3 let go under the frame, left of c4's middle on the second line: between c2 and c4, where
+    // it lies already, nothing sent.
     vi.mocked(session.act).mockClear();
-    await dragMiddleTo('c3', 213.6, 470);
+    await dragMiddleTo('c3', 30, 470);
     expect(session.act).not.toHaveBeenCalled();
   });
 

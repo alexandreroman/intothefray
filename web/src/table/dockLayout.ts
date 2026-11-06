@@ -3,11 +3,12 @@
 // keeps its owner frames and piles at their scaled place on its first line; past them, from the
 // row's indent, its units (a card with everything that travels with it, or a frame with its piles)
 // flow in their order on the table, one drawn gap apart, top-aligned, a unit that does not fit
-// the wrap width starting the next line at the indent. An empty card slot follows the last unit,
-// and a row whose units all fit its first line keeps an empty second line under it, room to drop
-// a card after them. Rows are as tall as their content and stack one under the other. Shared positions never
-// change: only where they are drawn does, and a drop on a row is an insertion among its units
-// (insertAt), placed on the table so that it sorts there.
+// the wrap width starting the next line. The lines under the first start at the row's left edge
+// (where its frames and piles start), so that they use the room under them too. An empty card
+// slot follows the last unit, and a row whose units all fit its first line keeps an empty second
+// line under it, room to drop a card after them. Rows are as tall as their content and stack one
+// under the other. Shared positions never change: only where they are drawn does, and a drop on a
+// row is an insertion among its units (insertAt), placed on the table so that it sorts there.
 
 import { DOCK_SCALE, type Placement } from './dockPiles';
 import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
@@ -91,7 +92,7 @@ export interface DockLayout {
   rowTop(row: number): number | null;
   /** The drawn height of a row: its name room, its lines and its gap; null when it is not shown. */
   rowHeight(row: number): number | null;
-  /** The drawn x wrapped lines of a row start at, or null when it is not shown. */
+  /** The drawn x a row's first line starts its units at, or null when it is not shown. */
   indent(row: number): number | null;
   /** The drawn height of every shown row. */
   readonly height: number;
@@ -137,6 +138,8 @@ interface Row {
   top: number;
   height: number;
   indent: number;
+  /** The drawn x its other lines start at: the left of its frames and piles. */
+  leftEdge: number;
   lines: Line[];
   /** The frames and piles left of its units, drawn at their scaled place on its first line. */
   fixed: DockItem[];
@@ -264,6 +267,17 @@ function indentOf({ units, fixedRight }: Split, scale: number): number {
   return fixedRight === null ? own : Math.max(own, (fixedRight + SLOT_GAP) * scale);
 }
 
+/**
+ * The drawn x the lines under a row's first one start at: the left edge of
+ * its frames and piles, as they show; the indent for a row without them.
+ */
+function leftEdgeOf({ fixed }: Split, indent: number, scale: number): number {
+  if (fixed.length === 0) {
+    return indent;
+  }
+  return Math.min(...fixed.map((item) => visualBox(item).left)) * scale;
+}
+
 /** How many lines a row has at least: its first, and an empty one to drop on under it. */
 const MIN_LINES = 2;
 
@@ -336,6 +350,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   for (const rowNumber of input.rows) {
     const split = splitRow(groupsOf.get(rowNumber) ?? new Map());
     const indent = indentOf(split, scale);
+    const leftEdge = leftEdgeOf(split, indent, scale);
     const row: Row = {
       tableTop: rowTop(rowNumber),
       tableHeight: rowHeight(rowNumber),
@@ -343,14 +358,15 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       top,
       height: 0,
       indent,
+      leftEdge,
       lines: [],
       fixed: split.fixed,
       fixedRight: split.fixedRight,
       units: split.units,
     };
 
-    // The units flow from the indent, one gap apart; one that does not fit starts the next line,
-    // its box at the indent (its turned cards may reach left of it).
+    // The units flow from the indent, the first one's box there (its turned cards may reach left
+    // of it), one gap apart; one that does not fit starts the next line, its slot at the left edge.
     let line = 0;
     let cursor: number | null = null;
     for (const unit of row.units) {
@@ -358,7 +374,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       let x: number = cursor === null ? indent - unit.lead * scale : cursor + gap;
       if (cursor !== null && x + unit.slotW > input.wrapWidth) {
         line += 1;
-        x = indent - unit.lead * scale;
+        x = leftEdge;
       }
       unit.line = line;
       unit.slotX = x;
@@ -373,7 +389,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       slotX = cursor + gap;
       if (slotX + slotW > input.wrapWidth) {
         slotLine += 1;
-        slotX = indent;
+        slotX = leftEdge;
       }
     } else if (row.fixedRight !== null) {
       slotX = (row.fixedRight + SLOT_GAP) * scale;
