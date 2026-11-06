@@ -67,6 +67,12 @@ type: project
     vibration); a quicker move scrolls the table. Hand cards drag at once,
     and so does a mouse.
     A second finger lets go of a press that has not moved.
+  - A mouse, a trackpad or a pen on a touch-mode screen (an iPad with a
+    trackpad, an Apple Pencil) leaves the screen in touch mode. Its hover
+    raises the resting hand as on a desktop and takes over a hand a
+    finger pinned (the hand follows the pointer from then on), but no
+    hand card pops under it, and its click or tap lifts no hand card:
+    lifting a card to read it is a finger's tap.
   - On tablets, two fingers pinch-zoom and pan (`touchZoom.ts`) and a
     double tap on an empty spot toggles between 100 % and 150 % (from any
     other zoom it goes to 150 %).
@@ -178,8 +184,11 @@ type: project
     cards after it glide aside (180 ms, none under reduced motion) and
     glide back on a cancel. Markers never travel with the dragged card:
     they anchor, as after the drop, to the card nearest them.
-  - The dock zoom is fixed: it fits the widest row's indent plus three
-    card slots in the width, never above 100 %.
+  - The dock zoom is fixed, never above 100 %: it fits in the width the
+    widest indent of the rows' frames and piles plus three card slots
+    (`dockFitWidth`). Owner lines do not count: a row whose owner line is
+    wider than its frame starts its cards further right, and fewer slots
+    show past it.
   - A table card's counters take three disjoint regions
     (`dockCounterLayout`, web/src/table/dockCounters.ts), at a fixed
     screen size, numbers 11 px: tokens in a column of touching discs on
@@ -192,8 +201,11 @@ type: project
     then "+N"; the inspector shows them all.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
   safe areas, its top bar included (the bar's edges follow the content
-  column's safe padding); a web app manifest (`display: standalone`)
-  lets a game added to the home screen run full screen on iOS.
+  column's safe padding). A web app manifest (`display: standalone`,
+  `start_url` and `scope` `./`, the site root under the base path) lets
+  the app run full screen from the home screen on iOS; its icon opens
+  Home, whatever page was added, since a game expires after 24 h. The
+  icons' render recipe is in DEVELOPMENT.md (see [[project_favicon]]).
 
 **Why:** designed with the user from phone mockups (direction "camera,
 inspector and dock"): on a phone the table text is unreadable and hover
@@ -205,7 +217,11 @@ to raise the hand or read the history, small targets), and a sheet up to
 user: a tablet's hand cards play by drag and drop; a tablet on its side
 has width to spare, and a scheme stacked above its actions ran out of
 height there, so every card lies beside its actions; upright, a scheme
-reads best above them; the column is centred on the card.
+reads best above them; the column is centred on the card. Also decided
+with the user: touch mode follows the screen's main pointer alone, so a
+mouse, trackpad or pen on a touch screen gets no mode of its own (a pen's
+hover moving the hand and a pen tap lifting nothing are accepted); the
+dock zoom ignores owner lines, a simple fit over a slot more in view.
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action
