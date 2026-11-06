@@ -198,6 +198,11 @@
     color: var(--text-soft);
   }
 
+  /* A finger needs a 44 px target: the arrow, as tall as the bar buttons, is as wide too. */
+  :global(.app.touch) .step {
+    min-width: var(--bar-button);
+  }
+
   .heroes {
     --avatar: 34px;
     --spacing: 20px;
