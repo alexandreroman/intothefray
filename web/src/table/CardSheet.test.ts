@@ -773,6 +773,19 @@ describe('CardSheet', () => {
       expect(onclose).not.toHaveBeenCalled();
     });
 
+    it('asks for a neighbour picked with Enter or Space', async () => {
+      const { onpick } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      await fireEvent.keyDown(peeks()[0]!, { key: 'Enter' });
+      await fireEvent.keyDown(peeks()[1]!, { key: ' ' });
+
+      expect(onpick.mock.calls).toEqual([['armor'], ['hidden']]);
+    });
+
+    it('lays no tap highlight over a tapped neighbour as it glides to the middle', () => {
+      expect(rule('.slide')).toContain('-webkit-tap-highlight-color: transparent;');
+    });
+
     it('asks for the card a swipe leaves in the middle, once the scroll settles', async () => {
       vi.useFakeTimers();
       try {
@@ -1008,41 +1021,57 @@ describe('CardSheet', () => {
     });
 
     describe('switching to another card of the stack (F-U15)', () => {
-      /** The halves of the fade of the card's column, out then in: the carousel scrolls itself. */
-      function fades(): { element: Element; keyframes: Keyframe[] }[] {
-        return animationsOf(90).filter(({ element }) => element.matches('.side'));
+      /** The other card's entries: Discard gone, so that a row leaves as the sheet switches. */
+      const ARMOR_ENTRIES = ENTRIES.filter((entry) => entry !== ENTRIES[3]);
+
+      async function switchToArmor(
+        rerender: ReturnType<typeof renderSheet>['rerender'],
+      ): Promise<void> {
+        await rerender({
+          cardId: 'armor',
+          header: ARMOR_HEADER,
+          images: ['armor.png'],
+          entries: ARMOR_ENTRIES,
+        });
       }
 
-      it('fades the column out and in with the new card, without turning the card over', async () => {
+      it('switches the column at once: no fade, no turn, no row sliding, never an empty column', async () => {
         const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
 
-        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        await switchToArmor(rerender);
 
-        // Still the old card's column as it fades out.
-        expect(screen.getByText('Rhino', { selector: '.name' })).toBeTruthy();
-        const out = fades();
-        expect(out).toHaveLength(1);
-        expect(out[0]?.keyframes.map((frame) => frame.opacity)).toEqual([1, 0]);
-
-        await finishAnimations();
-
+        // The new card's name and entries right away, the old card's gone with nothing in between.
         expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
-        const back = fades().slice(1);
-        expect(back).toHaveLength(1);
-        expect(back[0]?.keyframes.map((frame) => frame.opacity)).toEqual([0, 1]);
-        expect(animationsOf(180)).toEqual([]);
-        expect(animationsOf(200)).toEqual([]);
-        // The face is now the centred slide's.
+        expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
+        await finishAnimations();
+        expect(animate).not.toHaveBeenCalled();
         expect(slideOf('armor').querySelector('.face img')?.getAttribute('alt')).toBe(
           'Armored Rhino',
         );
+      });
+
+      it("keeps every card's face and image through a switch, and the sheet", async () => {
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+        const dialog = screen.getByRole('dialog');
+        const faces = slides().map((slide) => slide.querySelector('.face'));
+        const images = slides().map((slide) => slide.querySelector('img'));
+
+        await switchToArmor(rerender);
+        await finishAnimations();
+
+        expect(screen.getByRole('dialog')).toBe(dialog);
+        slides().forEach((slide, i) => {
+          expect(slide.querySelector('.face')).toBe(faces[i]);
+          expect(slide.querySelector('img')).toBe(images[i]);
+        });
       });
 
       it('switches at once under reduced motion', async () => {
         motion.reduced = true;
         const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
 
-        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        await switchToArmor(rerender);
 
         expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
         expect(animate).not.toHaveBeenCalled();
@@ -1053,10 +1082,21 @@ describe('CardSheet', () => {
 
         await rerender({ images: ['rhino-2.png'] });
 
-        expect(fades()).toEqual([]);
+        expect(animationsOf(180).filter(({ element }) => element.matches('.side'))).toEqual([]);
         const turns = animationsOf(180).filter(({ element }) => element.classList.contains('face'));
         expect(turns).toHaveLength(1);
         expect(slideOf('rhino').contains(turns[0]!.element)).toBe(true);
+      });
+
+      it('turns the newly shown card, not the first one, when it flips over after a switch', async () => {
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+        await switchToArmor(rerender);
+
+        await rerender({ images: ['armor-2.png'] });
+
+        const turns = animationsOf(180).filter(({ element }) => element.classList.contains('face'));
+        expect(turns).toHaveLength(1);
+        expect(slideOf('armor').contains(turns[0]!.element)).toBe(true);
       });
     });
 

@@ -35,8 +35,11 @@
   smaller and dimmed (as HandSheet.svelte's), with a dot per card under it.
   The card a swipe leaves in the middle once the scroll settles, or a tapped
   neighbour, is asked of the caller (onpick): the same sheet then shows it,
-  its column fading out and in, never turning, its page keeping its height as
-  through a submenu. The centred card is the face that turns over on a flip.
+  its column switching at once, its rows neither sliding nor fading, never
+  turning, its page keeping its height as through a submenu. The carousel
+  bringing the card to its middle is the only motion: every card keeps its face,
+  image and counters drawn through the switch, so nothing blinks as it loads
+  again. The centred card is the face that turns over on a flip.
   A card alone shows its face alone.
 -->
 <script lang="ts">
@@ -106,8 +109,6 @@
   const TURN_PERSPECTIVE = 'perspective(700px)';
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
-  /** How long the column takes to fade out with the shown card, then in with the new one, in ms. */
-  const SWITCH_MS = 180;
   /** How long the carousel must be still before the card in its middle becomes the shown one, in ms. */
   const SETTLE_MS = 120;
 
@@ -130,8 +131,6 @@
   /** The column beside or under the card: its header, counters and, in dock mode, its entries. */
   let sideElement = $state<HTMLElement>();
   let turn: Animation | undefined;
-  /** The fades of the column as the sheet switches to another card of the stack. */
-  let fades: Animation[] = [];
   /** The carousel of the stack, in place of the face, when the card has one. */
   let carouselElement = $state<HTMLElement>();
   /** The card a swipe has brought to the carousel's middle, before it settles; null until then. */
@@ -159,10 +158,10 @@
   $effect.pre(() => {
     const now = live;
     untrack(() => {
-      // While the card turns or fades away, the newest side is the one it shows next.
+      // While the card turns away, the newest side is the one it shows next.
       if (lastSide !== null && leaving === null) {
         if (isStackSwitch(lastSide, now)) {
-          switchCard(lastSide);
+          switchCard();
         } else if (faceKey(now) !== faceKey(lastSide)) {
           changeSide(lastSide);
         }
@@ -182,7 +181,6 @@
   $effect(() => () => {
     turn?.cancel();
     resize?.cancel();
-    cancelFades();
     clearTimeout(settleTimer);
   });
 
@@ -253,45 +251,21 @@
     return from.cardId !== to.cardId && inStack(from.cardId) && inStack(to.cardId);
   }
 
-  function cancelFades(): void {
-    for (const fade of fades) {
-      fade.cancel();
-    }
-    fades = [];
-  }
-
   /**
-   * Shows another card of the stack: the page keeps its height and goes back to the main page at
-   * once, then the column fades out with the old card and in with the new one; the carousel
-   * brings the card to its middle itself. Under reduced motion, the column just changes.
+   * Shows another card of the stack at once: the page keeps its height and goes back to the main
+   * page, and the column changes in place, its rows neither sliding nor fading (atOnce). A fade
+   * would dip the column to nothing between the two cards; the carousel gliding to the new one is
+   * motion enough. Its faces stay as they are, the shown one's counters coming to life.
    */
-  function switchCard(from: Side): void {
-    keepHeightForStack();
-    void closeSubAtOnce();
-    if (motionMs(SWITCH_MS) === 0 || sideElement === undefined) {
-      return;
-    }
-    const column = sideElement;
+  function switchCard(): void {
     turn?.cancel();
     resize?.cancel();
-    cancelFades();
-    leaving = from;
-    const half = SWITCH_MS / 2;
-    const away = column.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: half,
-      easing: 'ease-in',
-      fill: 'forwards',
-    });
-    fades = [away];
-    away.onfinish = () => {
-      leaving = null;
-      const back = column.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: half,
-        easing: 'ease-out',
-      });
-      fades = [back];
-      away.cancel();
-    };
+    keepHeightForStack();
+    atOnce = true;
+    pageStep = -1;
+    openId = null;
+    // The rows and pages that come or go with this update take their transitions at its end.
+    void tick().then(() => (atOnce = false));
   }
 
   /**
@@ -381,8 +355,8 @@
   let heldHeight = $state<number | null>(null);
   /** The sheet has gone to another card of the stack: its page keeps its height from then on. */
   let heldForStack = false;
-  /** The next page change happens at once, without a slide: a switch to another card of the stack. */
-  let pagesAtOnce = false;
+  /** The pages and rows of this update come and go at once: a switch to another card of the stack. */
+  let atOnce = false;
 
   /** Holds the page at its height as the sheet goes from card to card of the stack, for good. */
   function keepHeightForStack(): void {
@@ -390,23 +364,29 @@
     heldForStack = true;
   }
 
-  /** Back to the main page without a slide, as the sheet switches to another card of the stack. */
-  async function closeSubAtOnce(): Promise<void> {
-    if (openId === null) {
-      return;
-    }
-    pagesAtOnce = true;
-    pageStep = -1;
-    openId = null;
-    await tick();
-    pagesAtOnce = false;
-  }
-
   /** A tap on a neighbour in the carousel: it becomes the shown one. */
   function pick(card: StackCard): void {
     if (card.id !== cardId) {
       onpick?.(card.id);
     }
+  }
+
+  /** Enter or Space on a neighbour, which is a button: it becomes the shown one. */
+  function pickByKey(event: KeyboardEvent, card: StackCard): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      pick(card);
+    }
+  }
+
+  /** Makes a card's face in the carousel the one that turns over, while it is the shown one. */
+  function holdFace(element: HTMLElement): () => void {
+    faceElement = element;
+    return () => {
+      if (faceElement === element) {
+        faceElement = undefined;
+      }
+    };
   }
 
   // Found again in every redraw's entries: a submenu whose row went, or got refused, closes.
@@ -461,13 +441,13 @@
 
   /** The slide of a row that comes or goes after an update. */
   function rowSlide(): { duration: number; easing: (t: number) => number } {
-    return { duration: motionMs(ROW_MS), easing: cubicOut };
+    return { duration: atOnce ? 0 : motionMs(ROW_MS), easing: cubicOut };
   }
 
   /** A page slides in from the side it is reached from, and out to the other: right for a submenu. */
   function pageSlide(direction: 'in' | 'out'): Parameters<typeof fly>[1] {
     const side = direction === 'in' ? pageStep : -pageStep;
-    const duration = pagesAtOnce ? 0 : motionMs(PAGE_MS);
+    const duration = atOnce ? 0 : motionMs(PAGE_MS);
     return { x: `${100 * side}%`, duration, easing: cubicOut };
   }
 
@@ -614,7 +594,11 @@
   <i class="spacer" class:land={card.landscape} aria-hidden="true"></i>
 {/snippet}
 
-<!-- The stack in place of the face: the shown card centred, the others peeking at its sides. -->
+<!--
+  The stack in place of the face: the shown card centred, the others peeking at its sides. A card
+  keeps the same face whether it is shown or peeks, so that a switch draws none of them again: a
+  neighbour is a button around a picture of its face; the shown card, its live face and counters.
+-->
 {#snippet stackCarousel()}
   <div
     class="carousel"
@@ -626,30 +610,39 @@
     {@render spacer(stack[0]!)}
     {#each stack as card (card.id)}
       {@const shown = card.id === side.cardId}
+      {@const landscape = shown ? side.landscape : card.landscape}
+      <!-- A neighbour is a button: its role is set as it peeks, which the check cannot follow. -->
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
         class="slide"
-        class:land={shown ? side.landscape : card.landscape}
+        class:land={landscape}
         class:dim={card.id !== centredId}
         data-id={card.id}
         aria-current={card.id === cardId ? 'true' : undefined}
+        role={shown ? undefined : 'button'}
+        tabindex={shown ? undefined : 0}
+        aria-label={shown ? undefined : card.name}
+        onclick={shown ? undefined : () => pick(card)}
+        onkeydown={shown ? undefined : (event) => pickByKey(event, card)}
       >
-        {#if shown}
-          <div class="face" class:land={side.landscape} bind:this={faceElement}>
-            <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
-            {@render faceCounters()}
-          </div>
-        {:else}
-          <button type="button" class="peek" aria-label={card.name} onclick={() => pick(card)}>
-            <span class="peek-face" aria-hidden="true">
-              <CardFace images={card.images} name={card.name} landscape={card.landscape} />
-              <CardCounters
-                counters={card.counters ?? []}
-                landscape={card.landscape}
-                scheme={card.scheme ?? false}
-              />
-            </span>
-          </button>
-        {/if}
+        <div
+          class="face"
+          class:land={landscape}
+          aria-hidden={shown ? undefined : 'true'}
+          {@attach shown && holdFace}
+        >
+          <CardFace
+            images={shown ? side.images : card.images}
+            name={shown ? side.header.name : card.name}
+            {landscape}
+          />
+          <CardCounters
+            counters={shown ? side.counters : (card.counters ?? [])}
+            {landscape}
+            scheme={(shown ? side.header.scheme : card.scheme) ?? false}
+            onstep={shown ? onstep : undefined}
+          />
+        </div>
       </div>
     {/each}
     {@render spacer(stack.at(-1)!)}
@@ -856,12 +849,14 @@
     width: calc((100% - var(--slide-w)) / 2 - var(--gap));
   }
 
+  /* A tapped neighbour gets no highlight over it: it lights up as it glides to the middle. */
   .slide {
     position: relative;
     flex: none;
     width: var(--slide-w);
     aspect-ratio: var(--face-ratio);
     scroll-snap-align: center;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .slide.dim {
@@ -875,30 +870,19 @@
     height: 100%;
   }
 
-  .peek {
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    border: 0;
-    border-radius: var(--card-radius);
-    background: none;
+  /* A neighbour, smaller and dimmed, with a lighter shadow. */
+  .slide.dim > .face {
     box-shadow: 2px 4px 10px #000a;
   }
 
-  .slide.land .peek {
-    border-radius: var(--card-radius-land);
+  .slide[role='button'] {
+    cursor: pointer;
   }
 
-  .peek:hover:not(:disabled) {
-    background: none;
-  }
-
-  .peek-face {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 100%;
+  .slide[role='button']:focus-visible {
+    outline: 2px solid var(--sel);
+    outline-offset: 2px;
+    border-radius: var(--card-radius);
   }
 
   /* A dot per card, the centred one long and lit, as in the hand sheet. */

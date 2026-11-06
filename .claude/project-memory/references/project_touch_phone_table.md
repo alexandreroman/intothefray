@@ -18,6 +18,8 @@ type: project
     A card of a stack shows the whole stack as a carousel on the card's
     line, the neighbours peeking at its sides, each card with its own
     tokens; a swipe or a tap on a neighbour switches the sheet to it.
+    The switch changes the column at once (no fade, no row slides); every
+    carousel card keeps its face and image mounted, so nothing reloads.
     The first menu group shows as big buttons (default in Fray red; laid
     out as [[project_no_lone_button]] says), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
