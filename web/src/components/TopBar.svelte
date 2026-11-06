@@ -8,7 +8,8 @@
   import { overflowTip } from '../lib/overflowTip';
   import { pointerBlur } from '../lib/releaseFocus';
   import { ScrollAutoHide, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
-  import { SMALL_SCREEN_QUERY } from '../lib/screen';
+  import { PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
+  import { TOUCH_MODE_QUERY } from '../table/touch';
   import {
     canFullscreen,
     isFullscreen,
@@ -115,6 +116,13 @@
   const fullscreenSupported = canFullscreen();
 
   let fullscreen = $state(isFullscreen());
+  const touch = new MediaQuery(TOUCH_MODE_QUERY);
+  const phone = new MediaQuery(PHONE_QUERY);
+  // A finger keeps Fullscreen at every width: a phone needs the room it gives the most. A narrow
+  // mouse window drops it, unless it is on, or a viewer without an Escape key could not leave it.
+  const showFullscreen = $derived(
+    fullscreenSupported && (touch.current || !phone.current || fullscreen),
+  );
   const fullscreenLabel = $derived(fullscreen ? 'Exit fullscreen' : 'Fullscreen');
 
   function syncFullscreen(): void {
@@ -146,7 +154,9 @@
       </button>
     {/if}
     <!-- Plain left clicks navigate in place: the router handles every link to an app route. -->
-    <a class="home" href={href('/')} aria-label="Into the Fray: home"><Logo /></a>
+    <a class="home" href={href('/')} aria-label="Into the Fray: home">
+      <span class="fit"><Logo size="inherit" spark={false} /></span>
+    </a>
     {#if crumbHead !== undefined}
       <span class="divider" aria-hidden="true"></span>
       <span class="crumbs" use:overflowTip>
@@ -185,9 +195,9 @@
           <Icon name="ready-all" />
         </button>
       {/if}
-      {#if fullscreenSupported}
+      {#if showFullscreen}
         <button
-          class="icon-button fullscreen"
+          class="icon-button"
           class:active={fullscreen}
           aria-label={fullscreenLabel}
           title={fullscreenLabel}
@@ -267,10 +277,14 @@
     padding-inline: var(--content-gutter, 24px) var(--bar-gutter-end, var(--content-gutter, 24px));
   }
 
-  /* As the logo alone: no underline, no box of its own but the focus ring. */
+  /*
+   * As the logo alone: no underline, no box of its own but the focus ring. Its font size is the
+   * logo's full size, the size of "FRAY".
+   */
   .home {
     flex: none;
     display: inline-flex;
+    font-size: 28px;
     color: inherit;
     text-decoration: none;
     border-radius: 6px;
@@ -279,6 +293,10 @@
   .home:focus-visible {
     outline: 2px solid var(--sel);
     outline-offset: 4px;
+  }
+
+  .fit {
+    display: inline-flex;
   }
 
   .divider {
@@ -358,13 +376,28 @@
     display: block;
   }
 
+  /* A finger needs taller targets: touch mode (TOUCH_MODE_QUERY, table/touch). */
+  @media (hover: none) and (pointer: coarse) {
+    .actions {
+      --segmented-height: 44px;
+    }
+
+    .icon-button,
+    .pill {
+      height: 44px;
+    }
+
+    .icon-button {
+      width: 44px;
+    }
+  }
+
   /*
-   * A narrow bar drops its least useful items first: the crumb, Fullscreen,
-   * then the spectator count. The logo and End game always stay. Fullscreen
-   * stays while active, or a viewer without an Escape key could not leave it.
-   * The items follow the width only: the bar also hides on scroll on a short
-   * screen (SMALL_SCREEN_QUERY, lib/screen), a phone on its side, which has the
-   * room for all of them.
+   * A narrow bar drops its least useful items first: the crumb, then the
+   * spectator count. A mouse window also drops Fullscreen (showFullscreen). The
+   * logo and End game always stay. The items follow the width only: the bar
+   * also hides on scroll on a short screen (SMALL_SCREEN_QUERY, lib/screen), a
+   * phone on its side, which has the room for all of them.
    */
   @media (max-width: 600px) {
     .bar {
@@ -377,9 +410,33 @@
     }
 
     .divider,
-    .crumbs,
-    .fullscreen:not(.active) {
+    .crumbs {
       display: none;
+    }
+
+    /*
+     * The logo gives way to the actions: it takes the room they leave, up to its full width
+     * (6.06em, rounded up). Its wordmark shrinks to fit, the whole lockup in em.
+     */
+    .home {
+      flex: 0 1 6.1em;
+      min-width: 0;
+      container-type: inline-size;
+    }
+
+    .fit {
+      font-size: min(1em, 100cqi / 6.1);
+    }
+  }
+
+  /*
+   * Below a "FRAY" of 22px, "INTO THE" (0.357em) would be smaller than 8px and
+   * hard to read: the mark stays alone, at its full size.
+   */
+  @container (width < 135px) {
+    .fit {
+      font-size: 1em;
+      --logo-words-display: none;
     }
   }
 

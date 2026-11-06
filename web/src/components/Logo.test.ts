@@ -46,6 +46,11 @@ describe('Logo', () => {
     expect(document.querySelectorAll('.spark')).toHaveLength(1);
   });
 
+  it('drops the spark from a mark of inherited size that is known to stay small', () => {
+    const { container } = render(Logo, { size: 'inherit', spark: false });
+    expect(container.querySelector('.spark')).toBeNull();
+  });
+
   it('gives each logo its own clip paths', () => {
     render(Logo);
     render(Logo);
