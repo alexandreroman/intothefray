@@ -77,9 +77,10 @@ type: project
     phone on its side: the card `min(460px, 70dvh)` high on the left,
     the name, main buttons and rows (44 px) in one column on its right,
     the only part that scrolls, at most as high as the card. A landscape
-    card (a scheme) lies above its actions: the card on top, centred, as
-    wide as a portrait card is high, the name and actions full width under
-    it, the sheet scrolling as a whole. A stack follows its main card. A
+    card (a scheme) lies above its actions: the card on top, centred,
+    three quarters as wide as a portrait card is high, the name and
+    actions full width under it, the sheet scrolling as a whole. A stack
+    follows its main card. A
     face that changes shape (a flip, a scheme revealed from a deck's
     inspector) changes layout once edge-on in its turn; a revealed scheme
     shows as it is, landscape, with no handling of its own.

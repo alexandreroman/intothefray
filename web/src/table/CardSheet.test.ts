@@ -777,7 +777,8 @@ describe('CardSheet', () => {
       expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
       const tablet = rule('.inspector.tablet');
       expect(tablet).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
-      expect(tablet).toContain('--landscape-w: var(--sheet-room);');
+      expect(tablet).toContain('--land-room: calc(var(--sheet-room) * 3 / 4);');
+      expect(tablet).toContain('--landscape-w: var(--land-room);');
       // The sheet pads its bottom by 14 px (Sheet.svelte), its sides not at all.
       expect(tablet).toContain('padding: 0 var(--gutter) calc(var(--gutter) - 14px);');
       expect(rule('.inspector.beside .visual > .face')).toContain('height: var(--sheet-room);');
@@ -812,15 +813,15 @@ describe('CardSheet', () => {
       expect(rule('.side')).toContain('container-type: inline-size;');
     });
 
-    it('puts a landscape card on top, centred, as wide as the room, its column full width under it', () => {
+    it('puts a landscape card on top, centred, 3 / 4 as wide as the room, its column full width under it', () => {
       const top = rule('.inspector.column .top');
       expect(top).toContain('flex-direction: column;');
       expect(top).toContain('align-items: center;');
       expect(rule('.inspector.column .visual > .face')).toContain(
-        'width: min(var(--sheet-room), 100%);',
+        'width: min(var(--land-room), 100%);',
       );
       expect(rule('.inspector.column .visual.stacked')).toContain(
-        '--slide-h: calc(var(--sheet-room) * 5 / 7);',
+        '--slide-h: calc(var(--land-room) * 5 / 7);',
       );
       const column = rule('.inspector.column .side');
       expect(column).toContain('align-self: stretch;');

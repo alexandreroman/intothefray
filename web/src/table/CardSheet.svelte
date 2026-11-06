@@ -22,8 +22,8 @@
   and 70 % of the screen. A portrait card lays out as a phone on its side: the
   card on the left, as high as the room, and the column on its right, at most
   as high as the card, the only part that scrolls. A landscape card (a scheme)
-  is on top, centred, as wide as the room, and its column full width under it,
-  the whole sheet scrolling if it must. A stack follows its main card, so that
+  is on top, centred, three quarters as wide as the room, and its column full
+  width under it, the whole sheet scrolling if it must. A stack follows its main card, so that
   a swipe never changes the layout; a card turning over to the other
   orientation keeps the old layout until it is edge-on, as for its face.
   Buttons and rows are 44 px high, on a phone and a tablet alike.
@@ -1258,12 +1258,13 @@
 
   /*
     A tablet, in a wide sheet (Sheet.svelte). --sheet-room: at most 460 px and 70 % of the screen,
-    the height of a portrait card and the width of a landscape one.
+    the height of a portrait card. --land-room: three quarters of it, the width of a landscape one.
   */
   .inspector.tablet {
     --sheet-room: min(460px, 70dvh);
+    --land-room: calc(var(--sheet-room) * 3 / 4);
     --portrait-w: calc(var(--sheet-room) * 5 / 7);
-    --landscape-w: var(--sheet-room);
+    --landscape-w: var(--land-room);
     padding: 0 var(--gutter) calc(var(--gutter) - 14px);
   }
 
@@ -1293,7 +1294,7 @@
   }
 
   /*
-    Under a landscape card: the card on top, centred, as wide as the room (never wider than the
+    Under a landscape card: the card on top, centred, as wide as --land-room (never wider than the
     sheet), and its column full width under it; the sheet scrolls the whole, if it must. The
     carousel's cards as high as a landscape card of that width.
   */
@@ -1308,12 +1309,12 @@
   }
 
   .inspector.column .visual.stacked {
-    --slide-h: calc(var(--sheet-room) * 5 / 7);
+    --slide-h: calc(var(--land-room) * 5 / 7);
     align-items: stretch;
   }
 
   .inspector.column .visual > .face {
-    width: min(var(--sheet-room), 100%);
+    width: min(var(--land-room), 100%);
   }
 
   .inspector.column .side {
