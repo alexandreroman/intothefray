@@ -483,6 +483,25 @@ describe('a touch press on a hand card in the carousel', () => {
   });
 });
 
+describe('a pen press on a table card, in touch mode', () => {
+  beforeEach(() => {
+    mockScreen(TOUCH_TABLET);
+  });
+
+  // The card lets the browser pan under a pen as under a finger: a pen that dragged at once would
+  // pan the table, and its pointercancel would end the drag.
+  it('waits for the hold, then arms', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400, 'pen');
+    expect(interaction.awaitingHold).toBe(true);
+    expect(interaction.armed).toBe(false);
+
+    await wait(300);
+    expect(interaction.armed).toBe(true);
+    expect(placed('mine').classList).toContain('armed');
+  });
+});
+
 describe('a mouse press', () => {
   it.each([
     ['outside touch mode', DESKTOP],

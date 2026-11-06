@@ -162,8 +162,8 @@ class TableInteraction {
   /** The element pressed or dragged, if any. */
   held = $state.raw<Held | null>(null);
   /**
-   * A touch press on a table card, a pile or a marker, in touch mode, was held still for HOLD_MS
-   * (spec 3.2): it shows lifted, and moves drag it, until it is let go.
+   * A press of a finger or a pen on a table card, a pile or a marker, in touch mode, was held still
+   * for HOLD_MS: it shows lifted, and moves drag it, until it is let go.
    */
   armed = $state(false);
   /** What the dragged element would be dropped on, outlined. */
@@ -192,8 +192,9 @@ class TableInteraction {
   #touchMode = false;
   // When the current press began: the timeStamp of its event.
   #pressedAt = 0;
-  // The press is a touch in touch mode on a table card, a pile or a marker: it waits for the hold
-  // before it may drag, and a move past the slop meanwhile scrolls the table instead (spec 3.2).
+  // The press is a finger or a pen in touch mode on a table card, a pile or a marker: it waits for
+  // the hold before it may drag, and a move past the slop meanwhile scrolls the table instead.
+  // Both, as the browser pans under them there (touch-action: pan-x pan-y).
   #awaitingHold = $state(false);
   // When the press waiting for the hold began: the timeStamp of its pointerdown.
   #holdStart = 0;
@@ -378,7 +379,7 @@ class TableInteraction {
     };
     // A hand card drags at once: there is nothing to scroll under it.
     this.#awaitingHold =
-      this.#touchMode && event.pointerType === 'touch' && element.kind !== 'hand';
+      this.#touchMode && event.pointerType !== 'mouse' && element.kind !== 'hand';
     this.#holdStart = event.timeStamp;
     const target = event.currentTarget;
     this.#inCarousel = target instanceof Element && target.closest('[data-carousel]') !== null;
