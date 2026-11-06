@@ -14,12 +14,16 @@ type: project
   - A tap on a table card, a pile or a token opens the **inspector**
     (`CardSheet.svelte` in a bottom `Sheet`): the card large, its tokens,
     status tabs and modifier badges drawn on its image (`CardCounters`),
-    where they change: a tap on one opens a − / + pill (a status: ✕).
+    where they change: a tap on one opens a − / + pill. A status's pill
+    is − / + like a token's: its tab shows its count ("Tough ×2"), and
+    − at 1 removes it.
     A card of a stack shows the whole stack as a carousel on the card's
     line, the neighbours peeking at its sides, each card with its own
     tokens; a swipe or a tap on a neighbour switches the sheet to it.
     The switch changes the column at once (no fade, no row slides); every
-    carousel card keeps its face and image mounted, so nothing reloads.
+    carousel card keeps its face, image and token elements mounted, so
+    nothing reloads. A swipe switches as the middle passes the midpoint
+    (6 px slack), not at scroll end; a tap switches at once.
     The first menu group shows as big buttons (default in Fray red; laid
     out as [[project_no_lone_button]] says), the rest as rows, submenus as
     drill-down; the action menu's entries without key hints, refused
@@ -107,6 +111,14 @@ type: project
     glide back on a cancel.
   - The dock zoom is fixed: it fits the widest row's indent plus three
     card slots in the width, never above 100 %.
+  - A table card's counters take three disjoint regions inside the card
+    (`dockCounterLayout`, web/src/table/dockCounters.ts), at a fixed
+    screen size, numbers 11 px: tokens in a column of touching discs on
+    the right edge (bottom-up, damage in the corner; a scheme top-down,
+    threat in the corner), statuses as initial chips ("S", "T×2", "R2")
+    in a row under the title band from the left, modifiers up the left
+    edge ("+1 ATK", else "+1ATK"). A full region shows what fits but one,
+    then "+N"; the inspector shows them all.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
   safe areas; a web app manifest (`display: standalone`) lets a game
   added to the home screen run full screen on iOS.

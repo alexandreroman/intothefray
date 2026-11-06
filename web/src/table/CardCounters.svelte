@@ -5,10 +5,11 @@
   zoomed to the face's. The exhausted tilt is left out: the face stays upright.
 
   On the shown card they are the controls: a tap on one opens a pill next to
-  it, − value + (a status: ✕ alone, which takes one away), as the table's
-  TokenPill.svelte, with 44 px buttons. The pill stays until a press lands
-  outside it and its token, or on another token, and follows its token as the
-  value changes; a counter stepped down to zero fades out, its pill with it.
+  it, − value +, as the table's TokenPill.svelte, with 44 px buttons: a status
+  steps as a token does, its tab showing its count ("Tough ×2"). The pill stays
+  until a press lands outside it and its token, or on another token, and
+  follows its token as the value changes; a counter stepped down to zero fades
+  out, its pill with it.
   On a card of the stack that is not shown, they are a picture alone: the same
   elements, out of reach (inert), so that the card the sheet switches to keeps
   its tokens as they are, none drawn again nor fading in.
@@ -281,30 +282,21 @@
       bind:this={pill}
       transition:fade={{ duration: motionMs(FADE_MS) }}
     >
-      {#if counter.kind === 'status'}
-        <button
-          type="button"
-          class="btn-ghost"
-          aria-label="Remove {counterName('status', counter.name)}"
-          onclick={() => onstep(counter, -1)}>✕</button
-        >
-      {:else}
-        <button
-          type="button"
-          class="btn-ghost"
-          aria-label={stepLabel(counter, -1)}
-          disabled={counter.signed && counter.value <= -MAX_MODIFIER}
-          onclick={() => onstep(counter, -1)}>−</button
-        >
-        <span class="value">{counter.signed ? withSign(counter.value) : counter.value}</span>
-        <button
-          type="button"
-          class="btn-ghost"
-          aria-label={stepLabel(counter, 1)}
-          disabled={counter.signed && counter.value >= MAX_MODIFIER}
-          onclick={() => onstep(counter, 1)}>+</button
-        >
-      {/if}
+      <button
+        type="button"
+        class="btn-ghost"
+        aria-label={stepLabel(counter, -1)}
+        disabled={counter.signed && counter.value <= -MAX_MODIFIER}
+        onclick={() => onstep(counter, -1)}>−</button
+      >
+      <span class="value">{counter.signed ? withSign(counter.value) : counter.value}</span>
+      <button
+        type="button"
+        class="btn-ghost"
+        aria-label={stepLabel(counter, 1)}
+        disabled={counter.signed && counter.value >= MAX_MODIFIER}
+        onclick={() => onstep(counter, 1)}>+</button
+      >
     </div>
   {/if}
 </div>

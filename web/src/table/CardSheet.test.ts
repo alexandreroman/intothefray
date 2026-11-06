@@ -70,6 +70,14 @@ const STUNNED: SheetCounter = {
   signed: false,
 };
 
+const TOUGH: SheetCounter = {
+  kind: 'status',
+  name: 'tough',
+  label: 'Tough',
+  value: 1,
+  signed: false,
+};
+
 function modifier(value: number): SheetCounter {
   return { kind: 'modifier', name: 'def', label: 'DEF', value, signed: true };
 }
@@ -487,15 +495,45 @@ describe('CardSheet', () => {
       expect(screen.getByRole('button', { name: 'Damage, 4' }).textContent).toBe('4');
     });
 
-    it('gives a status a single ✕, which removes one', async () => {
-      const { onstep } = renderSheet({ entries: [], counters: [STUNNED] });
+    it('gives a status a − / + pill: + adds one, − takes one away', async () => {
+      const { onstep } = renderSheet({ entries: [], counters: [TOUGH] });
 
-      await fireEvent.click(screen.getByRole('button', { name: 'Stunned' }));
-      const pill = screen.getByRole('group', { name: 'Change stunned' });
-      expect(within(pill).getAllByRole('button')).toHaveLength(1);
-      await fireEvent.click(within(pill).getByRole('button', { name: 'Remove stunned' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Tough' }));
+      const pill = screen.getByRole('group', { name: 'Change tough' });
+      expect(within(pill).getAllByRole('button')).toHaveLength(2);
+      expect(within(pill).getByText('1')).toBeTruthy();
+      await fireEvent.click(within(pill).getByRole('button', { name: 'Add one tough' }));
+      await fireEvent.click(within(pill).getByRole('button', { name: 'Remove one tough' }));
 
-      expect(onstep).toHaveBeenCalledWith(STUNNED, -1);
+      expect(onstep.mock.calls).toEqual([
+        [TOUGH, 1],
+        [TOUGH, -1],
+      ]);
+    });
+
+    it('shows a status count of several on its tab and in its pill', async () => {
+      const { rerender } = renderSheet({ entries: [], counters: [TOUGH] });
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Tough' }));
+      await rerender({ counters: [{ ...TOUGH, value: 2 }] });
+
+      const tab = screen.getByRole('button', { name: 'Tough, 2' });
+      expect(tab.textContent?.trim()).toBe('Tough ×2');
+      const pill = screen.getByRole('group', { name: 'Change tough' });
+      expect(within(pill).getByText('2')).toBeTruthy();
+    });
+
+    it('lets a status and its pill go once − takes its last one away', async () => {
+      const { onstep, rerender } = renderSheet({ entries: [], counters: [TOUGH] });
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Tough' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Remove one tough' }));
+      expect(onstep).toHaveBeenCalledWith(TOUGH, -1);
+      await rerender({ counters: [] });
+      await tick();
+
+      expect(screen.queryByRole('button', { name: /Tough/ })).toBeNull();
+      expect(screen.queryByRole('group', { name: 'Change tough' })).toBeNull();
     });
 
     it('closes the pill on a press elsewhere, and on a second tap of its token', async () => {

@@ -504,7 +504,7 @@ describe('tokens and statuses', () => {
     expect(noPreview()).toBe(true);
   });
 
-  it("the inspector stays through steps in its token pills, a status's ✕ included", async () => {
+  it("the inspector stays through steps in its token pills, a status's included", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable(viewWithCounters());
@@ -521,7 +521,12 @@ describe('tokens and statuses', () => {
     expect(inspector()).not.toBeNull();
 
     await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Stunned' }));
-    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Remove stunned' }));
+    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Add one stunned' }));
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'status', card: 'mine', name: 'stunned', delta: 1 },
+      0,
+    );
+    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Remove one stunned' }));
     expect(session.act).toHaveBeenLastCalledWith(
       { kind: 'status', card: 'mine', name: 'stunned', delta: -1 },
       0,
