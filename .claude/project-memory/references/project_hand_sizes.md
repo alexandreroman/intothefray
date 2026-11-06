@@ -16,6 +16,9 @@ type: project
 - The resting hand draws the raised cards as large as the base card at
   `HAND_REST_SCALE` (82 %), on the base card's fan, and drops them so that
   they show as tall a part as the base card dropped by its base drop
+  (140 px on a wide screen; on a small screen, and on a narrow touch
+  screen, the same share of its card, `smallHandDrop`: about 70 px of the
+  narrow card shows on a tablet upright, a finger's target)
   (`handRestScale`, `restingFanPositions`, `handRestDrop` in
   `web/src/table/layout.ts`). The small-screen controls clear the strip
   `restingStrip` gives for the base card.

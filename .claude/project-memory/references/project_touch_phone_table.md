@@ -1,6 +1,6 @@
 ---
 name: "Touch and phone table"
-description: "Touch mode: inspector sheet, hold to drag, pinch; dock mode on small touch screens: dock, hand carousel, small cards"
+description: "Touch mode: inspector sheet, hold to drag, pinch; tablets: card beside actions, History sheet, 44 px targets; dock mode on small touch screens: dock, hand carousel, small cards"
 type: project
 ---
 
@@ -61,6 +61,24 @@ type: project
     one-finger scrolling stays. The page itself never pinch-zooms on the
     table screen.
   - Card boxes do not focus their filter, so no keyboard pops up.
+- Tablets (touch mode off dock mode) keep the desktop layout, fitted to a
+  finger:
+  - The inspector lays the card beside its actions, as a phone on its
+    side does: a sheet at most 760 px wide (`Sheet` `wide`, other sheets
+    480 px), the card `min(460px, 70dvh)` high on the left, the name,
+    main buttons and rows (44 px) in one column on its right, the only
+    part that scrolls, at most as high as the card. The column stays wide
+    enough for two main buttons side by side, a landscape card included.
+  - Without the history column (a narrow screen), a History button beside
+    the floating Undo opens the history sheet dock mode uses
+    (`historySheetMode` in Table.svelte); the history column shows on
+    wider tablets, as on desktop.
+  - On a narrow screen the resting hand drops by the same share of its
+    card as on a wide one, so its strip is a finger's target (see
+    [[project_hand_sizes]]).
+  - The hero selector's avatars, the history panel's buttons and the card
+    box's footer and filter have 44 px targets
+    (`.app.touch:not(.dock-mode)`), their look unchanged.
 - Dock mode (phones):
   - A dock (`Dock.svelte`) at the bottom, or a 64 px rail on the left on
     a phone on its side, holds the hand button (hero avatar, mini cards,
@@ -134,8 +152,10 @@ type: project
 **Why:** designed with the user from phone mockups (direction "camera,
 inspector and dock"): on a phone the table text is unreadable and hover
 does not exist, so cards are read in the inspector, moved by a hold and
-the screen goes to the table; tablets get the touch interactions and keep
-the desktop layout.
+the screen goes to the table. Tablets have the room for the desktop
+layout; what changes on them is only what a mouse does and a finger
+cannot: hover to raise the hand or read the history, small targets, and
+a narrow sheet that leaves a large screen's room unused.
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action

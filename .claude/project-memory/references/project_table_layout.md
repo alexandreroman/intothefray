@@ -75,7 +75,8 @@ type: project
   collapsed to a slim strip that keeps Undo, remembered per viewer
   (`itf-history-collapsed`). The card preview floats over the play area at
   every width. On a narrow screen the history is hidden and a floating
-  button offers Undo ("Undo last action").
+  button offers Undo ("Undo last action"); in touch mode a History button
+  beside it opens the history sheet (see [[project_touch_phone_table]]).
 - Cards and piles act through their action menu (see
   [[project_action_bars]]).
 - While the viewer has not chosen a zoom (`itf-zoom`), a window up to
