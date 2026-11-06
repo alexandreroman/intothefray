@@ -5,7 +5,7 @@
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
   control, unless it would hide the whole hovered element there, and never
   the hero selector's corner; touch mode previews nothing (touch.ts). On a
-  narrow screen there is no side column.
+  narrow screen and in dock mode there is no side column.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -542,6 +542,9 @@
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
+  // The history column beside the table: none on a narrow screen, nor in dock mode at any width,
+  // where the dock's History button opens the history sheet.
+  const sidePanel = $derived(!narrow.current && !dockMode);
   // The cards and piles below read it too: small cards and small piles (spec 3.6).
   setDockMode({
     get current() {
@@ -2412,7 +2415,7 @@
   class="app"
   class:arrowing={interaction.arrowFrom !== null}
   class:dragging={interaction.dragging !== null}
-  class:history-collapsed={historyCollapsed && !narrow.current}
+  class:history-collapsed={historyCollapsed && sidePanel}
   class:banding={interaction.band !== null}
   class:compact={small.current}
   class:touch={touchMode.current}
@@ -2777,7 +2780,7 @@
 
   <Tooltip />
 
-  {#if !narrow.current}
+  {#if sidePanel}
     <aside class="side" id="history-panel" aria-label="History">
       <SidePanel
         log={view.log}
@@ -3220,9 +3223,9 @@
   /*
     On a small screen the top bar floats over the top of the play area, which takes the window's
     whole height: sliding away, it shows the table under it, and nothing else moves. A short screen
-    wider than a narrow one (a large phone on its side) keeps the history column, which then runs
-    from the top of the window: the bar floats over the play area only, its icons on the play
-    area's edge.
+    wider than a narrow one (a short window with a mouse) keeps the history column, which then
+    runs from the top of the window: the bar floats over the play area only, its icons on the play
+    area's edge. Dock mode never has the column (below).
   */
   .app.compact {
     grid-template-rows: minmax(0, 1fr);
@@ -3244,6 +3247,19 @@
     .app.compact .top {
       --bar-gutter-end: 8px;
     }
+  }
+
+  /*
+    Dock mode has no history column at any width, even on a large phone on its side: the table
+    takes the window and the bar's icons sit close to the window's edge.
+  */
+  .app.dock-mode {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'table';
+  }
+
+  .app.dock-mode .top {
+    --bar-gutter-end: 8px;
   }
 
   /*

@@ -75,7 +75,10 @@ type: project
   - A card played or discarded from the hand rises and fades out where it
     was shown: the hand sheet, the inspector or the dock's hand button
     (`RiseFlight` in motion.svelte.ts, 300 ms).
-  - The history opens as a sheet (`HistorySheet.svelte`).
+  - The history opens as a sheet (`HistorySheet.svelte`) from the dock's
+    or rail's History button.
+  - Dock mode never shows the history panel nor its strip, at any width:
+    the table takes the window, the bar's icons 8 px from its right edge.
   - Sheets and card boxes take the whole screen. The inspector shows the
     card on top (at most 42 % of the height) with its list under it when
     upright, the card beside its list on its side; the hand sheet on its

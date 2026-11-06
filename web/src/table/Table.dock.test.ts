@@ -571,6 +571,58 @@ describe('the history sheet', () => {
   });
 });
 
+describe('the history panel on a large phone on its side', () => {
+  /** A Pixel 7 on its side: wider than a narrow screen (900px), yet a phone. */
+  const LARGE_LANDSCAPE: TestScreen = { width: 915, height: 412, touch: true };
+
+  function historyPanel(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('#history-panel');
+  }
+
+  it('draws no history panel nor its strip in dock mode, at any width', async () => {
+    localStorage.setItem('itf-history-collapsed', '1');
+    mockScreen(LARGE_LANDSCAPE);
+    await renderTable();
+
+    expect(dock()).not.toBeNull();
+    expect(historyPanel()).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Expand history' })).toBeNull();
+    expect(document.querySelector('.app')!.classList).not.toContain('history-collapsed');
+  });
+
+  it("opens the history sheet from the dock's History button", async () => {
+    mockScreen(LARGE_LANDSCAPE);
+    await renderTable();
+
+    await fireEvent.click(within(dock()!).getByRole('button', { name: /^History/ }));
+    const sheet = screen.getByRole('dialog', { name: 'History' });
+    expect(within(sheet).getAllByRole('listitem')).toHaveLength(LOG.length);
+  });
+
+  it('keeps the history panel for a mouse on a window that size', async () => {
+    mockScreen({ ...LARGE_LANDSCAPE, touch: false });
+    await renderTable();
+
+    expect(dock()).toBeNull();
+    expect(historyPanel()).not.toBeNull();
+  });
+
+  it('gives the table the whole width, the bar icons 8px from the edge', () => {
+    // jsdom applies no stylesheet: the rules themselves are checked. They follow the compact
+    // rules, which keep the history column on a short screen wider than 900px.
+    const compactAt = tableSource.indexOf('\n  .app.compact {');
+    const dockRule = /\n {2}\.app\.dock-mode \{([^}]*)\}/.exec(tableSource);
+    expect(dockRule?.[1]).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+    expect(dockRule?.[1]).toMatch(/grid-template-areas: 'table';/);
+    expect(dockRule!.index).toBeGreaterThan(compactAt);
+
+    const barRules = [...tableSource.matchAll(/\n {2}\.app\.dock-mode \.top \{([^}]*)\}/g)];
+    const gutter = barRules.find((rule) => rule[1]?.includes('--bar-gutter-end'));
+    expect(gutter?.[1]).toMatch(/--bar-gutter-end: 8px;/);
+    expect(gutter!.index).toBeGreaterThan(compactAt);
+  });
+});
+
 describe('the top bar in dock mode', () => {
   function app(): HTMLElement {
     return document.querySelector<HTMLElement>('.app')!;
