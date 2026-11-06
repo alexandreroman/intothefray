@@ -698,6 +698,9 @@ export function restingFanPositions(
 const SLOT_ROW_HEIGHT = PORTRAIT_CARD.h;
 export const SLOT_GAP = 40;
 
+/** What the free slot of a row depends on: what lies on the table. */
+type SlotTable = Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>;
+
 /**
  * The free slot for a played card, from the hand or from a pile box: the
  * first spot of the player's row, from its deck on, where the card, as wide as
@@ -713,16 +716,49 @@ export const SLOT_GAP = 40;
  */
 export function freeSlot(
   played: CardView,
-  table: Pick<TableView, 'cards' | 'piles' | 'firstPlayer' | 'active'>,
+  table: SlotTable,
   seat: number,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const { cards, piles, firstPlayer, active } = table;
   // Played from the hand or explicitly from a pile, a card lands face up (applyPlay, internal/game/apply.go).
   const width = cardBox(sizeOf(played), { faceDown: false }).w;
-  const deck = piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
-  const start = deck?.x ?? 0;
-  const y = deck?.y ?? 0;
+  const deck = table.piles.find((pile) => pile.kind === 'deck' && pile.owner === seat);
+  return slotInRow(width, { x: deck?.x ?? 0, y: deck?.y ?? 0 }, table, sizeOf);
+}
+
+/**
+ * Where a card taken off its stack goes (the inspector's Detach): in the row of
+ * its stack, as a played card lands in a player's row (freeSlot), the spots
+ * tried starting from the stack's main card, `host`, so that the card lands
+ * past the stack, or in the first hole wide enough after it. The card lies as
+ * it shows, face down or not; it is not in its own way.
+ */
+export function detachSlot(
+  detached: CardView,
+  host: CardView,
+  table: SlotTable,
+  sizeOf: (card: CardView) => Size,
+): { x: number; y: number } {
+  const width = cardBox(sizeOf(detached), { faceDown: detached.faceDown }).w;
+  const others = { ...table, cards: table.cards.filter((card) => card.id !== detached.id) };
+  return slotInRow(width, { x: host.x, y: host.y }, others, sizeOf);
+}
+
+/**
+ * The first spot of the row starting at `start`, from its x on, where a card
+ * that wide keeps SLOT_GAP free on each side: the start itself, or SLOT_GAP
+ * past the right edge of a thing in the row, taken up to the grid, from left
+ * to right. Every table card and pile reaching into the row, as high as a
+ * portrait card, is in the way, and so is every marker the table has.
+ */
+function slotInRow(
+  width: number,
+  start: { x: number; y: number },
+  table: SlotTable,
+  sizeOf: (card: CardView) => Size,
+): { x: number; y: number } {
+  const { cards, piles, firstPlayer, active } = table;
+  const { y } = start;
   const markers = [
     ...(firstPlayer ? [{ id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX }] : []),
     ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
@@ -737,8 +773,8 @@ export function freeSlot(
     });
   const pastItems = items
     .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
-    .filter((x) => x >= start);
-  const candidates = [start, ...pastItems].sort((a, b) => a - b);
+    .filter((x) => x >= start.x);
+  const candidates = [start.x, ...pastItems].sort((a, b) => a - b);
   // The last spot lies past every item, so there is always a free one.
   return { x: candidates.find(isFree) ?? Math.max(...candidates), y };
 }

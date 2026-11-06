@@ -54,6 +54,7 @@
     type CountQuestion,
     type LocalAction,
     type TableElement,
+    type TouchOptions,
   } from './actions';
   import ArrowHint from './ArrowHint.svelte';
   import Arrows from './Arrows.svelte';
@@ -1369,11 +1370,11 @@
   // A hand card is no such element: it has no context menu and no inspector.
   type SurfaceElement = Exclude<TableElement, { kind: 'hand' }>;
 
-  function contextContentOf(element: TableElement): ContextContent | null {
+  function contextContentOf(element: TableElement, touch?: TouchOptions): ContextContent | null {
     if (element.kind === 'hand') {
       return null;
     }
-    const items = actionsFor(element, view, lang, interaction.group);
+    const items = actionsFor(element, view, lang, interaction.group, touch);
     if (!Array.isArray(items)) {
       return { entries: [], note: items.text };
     }
@@ -1526,9 +1527,12 @@
     item: { id: 'select', label: 'Select', group: 0 },
   };
 
-  /** What the inspector lists: the context menu's entries, and Select for a card in play. */
+  /**
+   * What the inspector lists: the context menu's entries with those of a touch screen (Detach, which
+   * a mouse drags), and Select for a card in play.
+   */
   function inspectorContentOf(element: TableElement): ContextContent | null {
-    const content = contextContentOf(element);
+    const content = contextContentOf(element, { sizeOf });
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
     if (content === null || content.entries.length === 0 || !card || !isFree(card)) {
       return content;

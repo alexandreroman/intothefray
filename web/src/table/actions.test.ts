@@ -538,6 +538,87 @@ describe('actionsFor', () => {
     expect(groups(itemsFor({ kind: 'card', id: 'v' }, villain))[0]).toEqual(['exhaust', 'stage']);
   });
 
+  describe('Detach, on a touch screen', () => {
+    const touch = { sizeOf: () => 'std' as const };
+    /**
+     * Alex's stack in his row at y 360: host (300–412), up tucked under it (310–422), next under up
+     * (320–432); a loose card beside it when `beside` gives its x.
+     */
+    const stackView = (beside?: number) =>
+      makeView({
+        cards: [
+          card('host', { x: 300, y: 360, z: 3 }),
+          card('up', { code: '01117', parent: 'host', x: 310, y: 380, z: 2 }),
+          card('next', { parent: 'up', x: 320, y: 400, z: 1 }),
+          card('mine', { x: 0, y: 0 }),
+          ...(beside === undefined ? [] : [card('beside', { x: beside, y: 360 })]),
+        ],
+      });
+    const touchItemsFor = (id: string, view = stackView(), you?: YouView) => {
+      const result = actionsFor(
+        { kind: 'card', id },
+        you ? { ...view, you } : view,
+        'en',
+        undefined,
+        touch,
+      );
+      if (!Array.isArray(result)) {
+        throw new Error(`expected items, got the text "${result.text}"`);
+      }
+      return result;
+    };
+
+    it('follows Exhaust and Flip on a tucked card, without a key', () => {
+      const items = touchItemsFor('up');
+
+      expect(groups(items)[0]).toEqual(['exhaust', 'flip', 'detach']);
+      const detach = item(items, 'detach');
+      expect(detach).toMatchObject({ label: 'Detach' });
+      expect(detach.key).toBeUndefined();
+      expect(detach.default).toBeUndefined();
+    });
+
+    it('sends the card past its stack, 40 clear of it, in its row', () => {
+      // The stack, the detached card left out, reaches 432: 40 past it, on the grid, is 480.
+      expect(actionOf(item(touchItemsFor('up'), 'detach'))).toEqual({
+        kind: 'detach',
+        card: 'up',
+        x: 480,
+        y: 360,
+      });
+    });
+
+    it('lands in the first hole wide enough past the stack', () => {
+      // A card at 700 leaves 480–592 with 40 free on each side.
+      expect(actionOf(item(touchItemsFor('up', stackView(700)), 'detach'))).toMatchObject({
+        x: 480,
+      });
+      // A card at 520 does not: the card goes 40 past it (632), at 680.
+      expect(actionOf(item(touchItemsFor('up', stackView(520)), 'detach'))).toMatchObject({
+        x: 680,
+      });
+    });
+
+    it('is not offered by the mouse menu and keys, which drag the card off', () => {
+      expect(itemsFor({ kind: 'card', id: 'up' }, stackView()).map((i) => i.id)).not.toContain(
+        'detach',
+      );
+    });
+
+    it('is not offered on a main card, nor on a card alone', () => {
+      for (const id of ['host', 'mine']) {
+        expect(
+          touchItemsFor(id).map((i) => i.id),
+          id,
+        ).not.toContain('detach');
+      }
+    });
+
+    it('is not offered to a spectator', () => {
+      expect(touchItemsFor('up', stackView(), KIM)).toEqual([]);
+    });
+  });
+
   describe('Exhaust on a villain or a scheme', () => {
     /** One card of the encounter on the table, outside any stage. */
     const encounterCard = (code: string, extra: Partial<CardView> = {}) =>

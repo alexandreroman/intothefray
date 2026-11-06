@@ -89,7 +89,7 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		return Action{Kind: ActPlay, Card: pick(hand)}
 	}
 
-	switch r.IntN(31) {
+	switch r.IntN(32) {
 	case 0, 1:
 		return Action{Kind: ActDraw, N: 1 + r.IntN(3)}
 	case 2:
@@ -176,6 +176,8 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		return Action{Kind: kind, Pile: oneOf(deck, PileEncounter, PileEncounterDiscard), N: 3}
 	case 26:
 		return Action{Kind: ActModifier, Card: pick(onTable), Name: oneOf("atk", "def", "hp"), Delta: 1 - 2*r.IntN(2)}
+	case 27:
+		return Action{Kind: ActDetach, Card: pick(onTable), X: x, Y: y}
 	default:
 		return Action{Kind: ActUndo}
 	}

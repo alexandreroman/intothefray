@@ -681,6 +681,40 @@ describe('the inspector, a stack of cards (F-U15)', () => {
     expect(centred()).toBe('t2');
   });
 
+  it('offers Detach on a tucked card, which sends it past its stack and closes', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session } = await renderTable(makeView(STACKED));
+    await tap(placed('t1'));
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Detach/ }));
+
+    expect(session.act).toHaveBeenCalledOnce();
+    const [action] = vi.mocked(session.act).mock.calls[0]!;
+    // In the stack's row, past its last card (120–232) with 40 free.
+    expect(action).toMatchObject({ kind: 'detach', card: 't1', y: 100 });
+    expect(action.x).toBeGreaterThanOrEqual(272);
+    expect(sheet()).toBeNull();
+  });
+
+  it('offers no Detach on the main card of a stack', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable(makeView(STACKED));
+
+    await tap(placed('host'));
+
+    expect(within(sheet()!).queryByRole('button', { name: /^Detach/ })).toBeNull();
+  });
+
+  it('leaves Detach out of the mouse menu, a mouse dragging the card off', async () => {
+    await renderTable(makeView(STACKED));
+
+    await fireEvent.click(placed('t1'));
+
+    expect(contextMenu()).not.toBeNull();
+    expect(within(contextMenu()!).queryByText('Detach')).toBeNull();
+    expect(within(contextMenu()!).getByText('Flip')).toBeTruthy();
+  });
+
   it('shows the card alone for a card on its own, or a pile', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     await renderTable(makeView(STACKED));

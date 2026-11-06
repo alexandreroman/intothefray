@@ -31,6 +31,12 @@ type: project
   submenu, then "Draw an arrow" for a card in play. Each entry that has
   a key shows it (the modifier entries have none); a refused one is
   greyed with its reason.
+- Detach is a touch inspector entry only, for a tucked card in play: in
+  the first group right after the default and Flip (a large button), no
+  key; a mouse or a pen drags the card off its stack instead. The
+  inspector passes `TouchOptions` (`sizeOf`) to `actionsFor`, which adds
+  it; the mouse menu and the keys call `actionsFor` without them. Never
+  for spectators. See [[project_stack_moves]].
 - A villain, a main scheme, a side scheme and a player side scheme never
   offer Exhaust (menu, E key, inspector): their default is Flip when they
   have one, else "Change card…". One already exhausted still offers

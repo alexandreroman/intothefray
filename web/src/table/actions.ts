@@ -6,8 +6,8 @@
 import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
-import { stackOf } from './drag';
-import { freeSlot, isOutOfPlay } from './layout';
+import { mainCardOf, stackOf } from './drag';
+import { detachSlot, freeSlot, isOutOfPlay } from './layout';
 import {
   areaOf,
   asideId,
@@ -222,12 +222,25 @@ export function counterName(kind: CounterKind, name: string): string {
   return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
 }
 
-/** What every builder needs to know: the table, the viewer's own seats and the language of card names. */
+/**
+ * What a touch screen's inspector offers beyond the menu and the keys: Detach,
+ * which a mouse or a pen does by dragging the card off its stack. The card
+ * sizes place the detached card in its row.
+ */
+export interface TouchOptions {
+  sizeOf: (card: CardView) => Size;
+}
+
+/**
+ * What every builder needs to know: the table, the viewer's own seats, the language of card names,
+ * and on a touch screen its options.
+ */
 interface Context {
   view: View;
   table: TableView;
   seats: number[];
   lang: Lang;
+  touch?: TouchOptions;
 }
 
 /**
@@ -236,13 +249,15 @@ interface Context {
  * actions are handActions'), empty piles and elements no longer on the
  * table get nothing, nor does a viewer of an unknown token. Spectators only
  * look: see spectatorActions. On a card of the selected group, Discard and
- * Move to take the whole group (spec 2).
+ * Move to take the whole group (spec 2). With `touch`, for a touch screen's
+ * inspector, a tucked card offers Detach too.
  */
 export function actionsFor(
   el: TableElement,
   view: View,
   lang: Lang,
   group?: ReadonlySet<string>,
+  touch?: TouchOptions,
 ): ActionItem[] | { text: string } {
   if (!view.table) {
     return [];
@@ -254,7 +269,7 @@ export function actionsFor(
   if (seats.length === 0) {
     return [];
   }
-  const context: Context = { view, table: view.table, seats, lang };
+  const context: Context = { view, table: view.table, seats, lang, touch };
 
   switch (el.kind) {
     case 'card': {
@@ -353,6 +368,9 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
   const firstTurn = items.find((item) => item.group === GROUP_TURN);
   if (!revealed && !exhausts && firstTurn) {
     firstTurn.default = true;
+  }
+  if (context.touch && card.parent !== undefined && !revealed) {
+    items.push(detachItem(card, context.table, context.touch.sizeOf));
   }
   items.push(counterMenu(card, 'token'));
   if (!revealed) {
@@ -477,6 +495,25 @@ function flipItem(card: CardView): ActionItem {
     group: GROUP_TURN,
     // The server picks the face the card ends on (resolveFlip).
     run: () => ({ kind: 'flip', card: card.id }),
+  };
+}
+
+/**
+ * Detach takes a tucked card off its stack, alone, which closes up (applyDetach, internal/game): on
+ * a touch screen, where the card lies mostly covered, it stands for the drag off the stack. The
+ * card goes to the first free spot of its stack's row past the stack (detachSlot). No key: a
+ * keyboard comes with a mouse, which drags the card.
+ */
+function detachItem(card: CardView, table: TableView, sizeOf: TouchOptions['sizeOf']): ActionItem {
+  return {
+    id: 'detach',
+    label: 'Detach',
+    group: GROUP_TURN,
+    run: () => {
+      const host = mainCardOf(card, table.cards);
+      const { x, y } = detachSlot(card, host, table, sizeOf);
+      return { kind: 'detach', card: card.id, x, y };
+    },
   };
 }
 
