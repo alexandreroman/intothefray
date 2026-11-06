@@ -1,5 +1,11 @@
 import type { Placement } from './dockPiles';
-import { dockFitWidth, dockLayout, type DockItem, type DockLayoutInput } from './dockLayout';
+import {
+  blockRowOf,
+  dockFitWidth,
+  dockLayout,
+  type DockItem,
+  type DockLayoutInput,
+} from './dockLayout';
 
 // Every expected value below is worked out by hand, in drawn units (table units × 0.6). The rooms
 // are set in each test: a 10-unit name room above a row's lines, a 10-unit gap under each line and
@@ -453,6 +459,85 @@ describe('dockLayout', () => {
 
   it('needs a row to show', () => {
     expect(() => dockLayout({ items: [], rows: [], wrapWidth: 500 })).toThrow();
+  });
+});
+
+describe('a row of no seat in dock mode', () => {
+  // A one-player game: Nick Fury dropped at (300, 700), in row 2 (600..820), which no seat has. It
+  // flows in player 1's block after its own units: the identity at 176.4, c1 at 267.6, c2 at 358.8,
+  // then Fury on the next column, 450, on line 0 (its top 10, its units 18 under it); the empty
+  // slot at 541.2 fits the 1000 wrap width. Fury is drawn 450 − 300 × 0.6 = 270 right of its
+  // scaled table x.
+  const folded = () =>
+    dockLayout({
+      ...playerRow(2, 1000),
+      items: [...playerRow(2, 1000).items, card('fury', 300, 700)],
+      seatRows: [1],
+    });
+
+  it('is drawn in the block of the last seat row above it, after its units', () => {
+    const layout = folded();
+
+    expectBox(layout.itemBox('fury'), cardAt(450, 28));
+    expect(layout.rowTop(2)).toBeNull();
+    // 10 + 128.2 + 104.2 + 20, as without Fury.
+    expect(layout.rowHeight(1)).toBeCloseTo(262.4, 6);
+    expect(layout.width).toBeCloseTo(541.2 + 67.2, 6);
+  });
+
+  it('draws a point of its row with its units, and brings it back to its row', () => {
+    const layout = folded();
+
+    // With Fury: 320 × 0.6 + 270, 28 + 20 × 0.6.
+    expectPoint(layout.toDisplay({ x: 320, y: 720 }), { x: 462, y: 40 });
+    expectPoint(layout.toTable({ x: 462, y: 40 }), { x: 320, y: 720 });
+  });
+
+  it("takes a drop on its slot into the seat row's band, after the row's own units", () => {
+    const layout = folded();
+
+    // Left of Fury's middle (483.6), after it, or on the empty slot: past c2 (604..716), 756 up
+    // to the grid, at player 1's card y.
+    expect(layout.insertAt({ x: 480, y: 60 }, 112)).toEqual({ x: 760, y: 410 });
+    expect(layout.insertAt({ x: 500, y: 60 }, 112)).toEqual({ x: 760, y: 410 });
+    expect(layout.insertAt({ x: 560, y: 60 }, 112)).toEqual({ x: 760, y: 410 });
+    // On the empty second line too.
+    expect(layout.insertAt({ x: 50, y: 180 }, 112)).toEqual({ x: 760, y: 410 });
+    // Fury dragged and dropped back on its own slot keeps its spot.
+    expect(layout.insertAt({ x: 480, y: 60 }, 112, new Set(['fury']))).toEqual({ x: 300, y: 700 });
+  });
+
+  it('keeps every seat row in its own block', () => {
+    // A two-player game: player 2's identity in row 2 stays there, under player 1's row.
+    const layout = dockLayout({
+      items: [
+        ...PLAYER_PILES,
+        frame('p2-frame', -10, 620, 262, 177),
+        card('p2-identity', 300, 630),
+      ],
+      rows: [1, 2],
+      seatRows: [1, 2],
+      wrapWidth: 1000,
+      ...ROOMS,
+    });
+
+    expect(layout.rowTop(2)).toBeCloseTo(262.4, 6);
+    expectBox(layout.itemBox('p2-identity'), cardAt(176.4, 262.4 + 28));
+  });
+});
+
+describe('blockRowOf', () => {
+  it('is the row itself for the villain row, a seat row, or a row under no seat row', () => {
+    expect(blockRowOf(0, [1])).toBe(0);
+    expect(blockRowOf(2, [1, 2])).toBe(2);
+    expect(blockRowOf(2, [])).toBe(2);
+    expect(blockRowOf(1, [2])).toBe(1);
+  });
+
+  it('is the last seat row above a row of no seat', () => {
+    expect(blockRowOf(2, [1])).toBe(1);
+    expect(blockRowOf(5, [1, 3])).toBe(3);
+    expect(blockRowOf(3, [2, 1])).toBe(2);
   });
 });
 

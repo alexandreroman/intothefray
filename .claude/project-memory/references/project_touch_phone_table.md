@@ -72,6 +72,11 @@ type: project
     and keep an empty second line; a drop inserts between neighbours,
     placing the shared x so the card sorts there. Positions on the shared
     table never depend on the phone.
+  - A row band no seat has, below a seat's row (a card dropped under the
+    last player's band), is drawn in the block of the last seat row above
+    it, its units flowing after that row's own (`blockRowOf`); a drop
+    there inserts in that seat's band. Every seat row keeps its own block,
+    even empty; the villain row is never folded.
   - Owner lines show the hero's (villain's) avatar at the chips' height
     instead of the name (scenario decks keep their name); every chip line
     ends on one shared right edge.

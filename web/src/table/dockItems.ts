@@ -4,7 +4,7 @@
 // that pile, a pile with its owner frame, and a marker with the card it lies by.
 
 import type { CardView, MarkerName, PileView, Point, Size } from '../lib/types';
-import type { DockItem } from './dockLayout';
+import { blockRowOf, type DockItem } from './dockLayout';
 import { isHidden } from './face';
 import {
   ACTIVE_COUNTER_BOX,
@@ -112,19 +112,24 @@ export function dockItems(table: DockTable): DockItem[] {
 
 /**
  * The rows dock mode shows, top to bottom: in "Villain + player" the villain's
- * and the shown row; in "All" the villain's and every row an item lies in, so
- * that nothing below the last seat's row is lost. An item that travels with
- * another lies in that item's row.
+ * and the shown row; in "All" the villain's, every seat's (`seatRows`) and
+ * every row an item lies in, so that nothing below the last seat's row is
+ * lost. A row of no seat is shown in the block of the last seat row above it
+ * (blockRowOf). An item that travels with another lies in that item's row.
  */
-export function dockRows(items: readonly DockItem[], shownRow?: number): number[] {
+export function dockRows(
+  items: readonly DockItem[],
+  shownRow?: number,
+  seatRows: readonly number[] = [],
+): number[] {
   if (shownRow !== undefined) {
     return [0, shownRow];
   }
   const ids = new Set(items.map((item) => item.id));
-  const rows = new Set([0]);
+  const rows = new Set([0, ...seatRows]);
   for (const item of items) {
     if (item.anchor === undefined || !ids.has(item.anchor)) {
-      rows.add(rowOf(item.y));
+      rows.add(blockRowOf(rowOf(item.y), seatRows));
     }
   }
   return [...rows].sort((a, b) => a - b);

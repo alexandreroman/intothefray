@@ -9,9 +9,11 @@
 // column, under them, so that cards line up down the lines and across the rows; a unit that does
 // not fit the wrap width starts the next line. An empty card slot follows the last unit, and a row
 // whose units all fit its first line keeps an empty second line under it, room to drop a card after
-// them. Rows are as tall as their content and stack one under the other. Shared positions never
-// change: only where they are drawn does, and a drop on a row is an insertion among its units
-// (insertAt), placed on the table so that it sorts there.
+// them. Rows are as tall as their content and stack one under the other. A row no seat has, below
+// a seat's (a card dropped under the last player's band), is drawn in the block of the last seat
+// row above it: its units flow after that row's own. Shared positions never change: only where
+// they are drawn does, and a drop on a row is an insertion among its units (insertAt), placed on
+// the table so that it sorts there, in the band of the row it is shown in.
 
 import { DOCK_SCALE, type Placement } from './dockPiles';
 import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
@@ -47,8 +49,10 @@ export interface DockItem {
 
 export interface DockLayoutInput {
   items: readonly DockItem[];
-  /** The rows of the table shown, top to bottom. */
+  /** The rows of the table shown, top to bottom: blocks (blockRowOf), never a folded row. */
   rows: readonly number[];
+  /** The rows the seats' decks lie in (rowOfSeat); none unless given, so that no row is folded. */
+  seatRows?: readonly number[];
   /** The width a row wraps at, in drawn units. */
   wrapWidth: number;
   /** Drawn units per table unit: DOCK_SCALE unless given. */
@@ -126,6 +130,9 @@ interface Unit {
   cellW: number;
   /** How far right of its scaled table x it is drawn. */
   dx: number;
+  /** The row of the table it lies in, and whether that row is folded into the block it is drawn in. */
+  tableRow: number;
+  folded: boolean;
 }
 
 /** A line of a row, in drawn units: the units on it lie `inset` under its top. */
@@ -137,6 +144,8 @@ interface Line {
 
 /** A shown row of the table and where it is drawn. */
 interface Row {
+  /** The row of the table, the block's own. */
+  number: number;
   tableTop: number;
   tableHeight: number;
   /** Where its cards lie on the table, as the setup puts them (ROW_LABEL_ROOM under its top). */
@@ -189,19 +198,44 @@ function byPlace(a: DockItem, b: DockItem): number {
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
-/** The items of each shown row, grouped by the item they travel with: each in that item's row. */
+/**
+ * The block a row of the table is drawn in, in dock mode: the row itself
+ * when it is the villain's or a seat's, else the last seat row above it; a
+ * row under no seat row keeps its own.
+ */
+export function blockRowOf(row: number, seatRows: readonly number[]): number {
+  if (row === 0 || seatRows.includes(row)) {
+    return row;
+  }
+  const above = seatRows.filter((seatRow) => seatRow < row);
+  return above.length > 0 ? Math.max(...above) : row;
+}
+
+/** A block's groups, each by the item they travel with: those of its own row, and those folded into it. */
+interface BlockGroups {
+  own: Map<DockItem, DockItem[]>;
+  folded: Map<DockItem, DockItem[]>;
+}
+
+/** The items of each shown block, grouped by the item they travel with: each in that item's row's block. */
 function groupsByRow(
   items: readonly DockItem[],
   rows: readonly number[],
-): Map<number, Map<DockItem, DockItem[]>> {
+  seatRows: readonly number[],
+): Map<number, BlockGroups> {
   const byId = new Map(items.map((item) => [item.id, item]));
-  const groupsOf = new Map<number, Map<DockItem, DockItem[]>>(rows.map((row) => [row, new Map()]));
+  const groupsOf = new Map<number, BlockGroups>(
+    rows.map((row) => [row, { own: new Map(), folded: new Map() }]),
+  );
   for (const item of items) {
     const root = rootOf(item, byId);
-    const groups = groupsOf.get(rowOf(root.y));
-    if (groups === undefined) {
+    const row = rowOf(root.y);
+    const blockRow = blockRowOf(row, seatRows);
+    const block = groupsOf.get(blockRow);
+    if (block === undefined) {
       continue;
     }
+    const groups = blockRow === row ? block.own : block.folded;
     const group = groups.get(root) ?? [];
     group.push(item);
     groups.set(root, group);
@@ -217,29 +251,33 @@ interface Split {
 }
 
 /**
- * Splits a row's groups: past the first item that is neither a pile nor a
- * frame, every group is a unit, frames with their piles too; the frames and
- * piles left of it stay where they lie.
+ * Splits a block's groups: past the first item of its own row that is
+ * neither a pile nor a frame, every group is a unit, frames with their piles
+ * too; the frames and piles left of it stay where they lie. The groups folded
+ * into the block are units after its own, row by row.
  */
-function splitRow(groups: ReadonlyMap<DockItem, DockItem[]>): Split {
-  const leading = [...groups.keys()].filter(isLeading);
+function splitRow({ own, folded }: BlockGroups): Split {
+  const leading = [...own.keys()].filter(isLeading);
   const firstX = leading.length > 0 ? Math.min(...leading.map((root) => root.x)) : Infinity;
   const units: Unit[] = [];
   const fixed: DockItem[] = [];
-  for (const [root, members] of groups) {
+  for (const [root, members] of own) {
     if (isLeading(root) || root.x >= firstX) {
-      units.push(unitOf(root, members));
+      units.push(unitOf(root, members, false));
     } else {
       fixed.push(...members);
     }
   }
   units.sort((a, b) => byPlace(a.root, b.root));
+  const foldedUnits = [...folded].map(([root, members]) => unitOf(root, members, true));
+  foldedUnits.sort((a, b) => a.tableRow - b.tableRow || byPlace(a.root, b.root));
+  units.push(...foldedUnits);
   const fixedRight =
     fixed.length > 0 ? Math.max(...fixed.map((item) => visualBox(item).right)) : null;
   return { units, fixed, fixedRight };
 }
 
-function unitOf(root: DockItem, members: DockItem[]): Unit {
+function unitOf(root: DockItem, members: DockItem[], folded: boolean): Unit {
   const shown = members.map((item) => visualBox(item));
   const left = Math.min(...shown.map((box) => box.left));
   return {
@@ -256,6 +294,8 @@ function unitOf(root: DockItem, members: DockItem[]): Unit {
     cellX: 0,
     cellW: 0,
     dx: 0,
+    tableRow: rowOf(root.y),
+    folded,
   };
 }
 
@@ -322,9 +362,10 @@ const FIT_SLOTS = 3;
 export function dockFitWidth(
   items: readonly DockItem[],
   rows: readonly number[],
+  seatRows: readonly number[] = [],
   scale = DOCK_SCALE,
 ): number {
-  const splits = [...groupsByRow(items, rows).values()].map((groups) => splitRow(groups));
+  const splits = [...groupsByRow(items, rows, seatRows).values()].map((groups) => splitRow(groups));
   const grid = gridOf(splits, scale);
   const indents = splits.map((split) => indentOf(split, grid, scale));
   return Math.max(0, ...indents) + FIT_SLOTS * grid.pitch;
@@ -369,8 +410,10 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   const slotW = PORTRAIT_CARD.w * scale;
   const slotH = PORTRAIT_CARD.h * scale;
 
-  const groupsOf = groupsByRow(input.items, input.rows);
-  const splits = input.rows.map((row) => splitRow(groupsOf.get(row) ?? new Map()));
+  const groupsOf = groupsByRow(input.items, input.rows, input.seatRows ?? []);
+  const splits = input.rows.map((row) =>
+    splitRow(groupsOf.get(row) ?? { own: new Map(), folded: new Map() }),
+  );
   const grid = gridOf(splits, scale);
   const rows = new Map<number, Row>();
   const placed = new Map<string, Placed>();
@@ -380,6 +423,7 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
   for (const [rowIndex, rowNumber] of input.rows.entries()) {
     const split = splits[rowIndex] as Split;
     const row: Row = {
+      number: rowNumber,
       tableTop: rowTop(rowNumber),
       tableHeight: rowHeight(rowNumber),
       cardY: rowTop(rowNumber) + ROW_LABEL_ROOM,
@@ -487,17 +531,34 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       x = (p.x - unit.dx) / scale;
       y = unit.top + (p.y - line.top - line.inset) / scale;
     }
-    const inRow = Math.min(Math.max(y, row.tableTop), row.tableTop + row.tableHeight - 1);
+    // Within the band of the row it lies in: a folded unit's own row.
+    let bandTop = row.tableTop;
+    let bandHeight = row.tableHeight;
+    if (unit?.folded) {
+      bandTop = rowTop(unit.tableRow);
+      bandHeight = rowHeight(unit.tableRow);
+    }
+    const inRow = Math.min(Math.max(y, bandTop), bandTop + bandHeight - 1);
     return { x, y: inRow };
   }
 
-  /** The unit a point of the table lies past in its row: the last one at or left of it. */
-  function unitPast(row: Row, x: number): Unit | null {
+  /**
+   * The unit a point of the table lies past in its block: the last one of its
+   * row at or left of it. A point of a folded row left of all of its units goes
+   * with the first of them (with the block's last unit when it has none), as
+   * the frames and piles it would else go with lie in another row.
+   */
+  function unitPast(row: Row, p: Point): Unit | null {
+    const tableRow = rowOf(p.y);
+    const ofRow = row.units.filter((unit) => unit.tableRow === tableRow);
     let found: Unit | null = null;
-    for (const unit of row.units) {
-      if (unit.root.x <= x) {
+    for (const unit of ofRow) {
+      if (unit.root.x <= p.x) {
         found = unit;
       }
+    }
+    if (found === null && tableRow !== row.number) {
+      return ofRow[0] ?? row.units.at(-1) ?? null;
     }
     return found;
   }
@@ -566,8 +627,8 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       if (own !== undefined) {
         return drawnWith(own.row, own.unit, p);
       }
-      const row = rows.get(rowOf(p.y));
-      return row === undefined ? null : drawnWith(row, unitPast(row, p.x), p);
+      const row = rows.get(blockRowOf(rowOf(p.y), input.seatRows ?? []));
+      return row === undefined ? null : drawnWith(row, unitPast(row, p), p);
     },
     toTable(p) {
       const row = lastAbove(shown, p.y);
@@ -600,6 +661,12 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
         .find((unit) => exclude.has(unit.root.id) && unit.root.kind === 'card');
       if (itself !== undefined) {
         return { x: itself.root.x, y: itself.root.y };
+      }
+      // Among the folded units, or right before them: after the row's own units, in its band, as
+      // they all come before the folded ones however they lie.
+      if (before?.folded || after?.folded) {
+        const lastOwn = kept.filter((unit) => !unit.folded).at(-1);
+        return between(row, lastOwn, undefined, width, exclude);
       }
       return between(row, before, after, width, exclude);
     },

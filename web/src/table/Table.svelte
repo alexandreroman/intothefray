@@ -660,14 +660,18 @@
       sizeOf,
     }),
   );
-  const dockShownRows = $derived(dockRows(dockTableItems, shownRow));
+  // The rows the seats' decks lie in: a row of none is drawn in the block of the last of them above.
+  const seatRows = $derived(seats.map((seat) => rowOfSeat(piles, seat)));
+  const dockShownRows = $derived(dockRows(dockTableItems, shownRow, seatRows));
   // The width the rows wrap at, in drawn units: what shows of the surface at the zoom. Unmeasured
   // (before the first layout), nothing wraps.
   const wrapWidth = $derived.by(() =>
     visibleWidth > 0 ? (visibleWidth - 2 * SCROLL_PADDING) / zoom : Number.POSITIVE_INFINITY,
   );
   const dockView: DockLayout | null = $derived(
-    dockMode ? dockLayout({ items: dockTableItems, rows: dockShownRows, wrapWidth }) : null,
+    dockMode
+      ? dockLayout({ items: dockTableItems, rows: dockShownRows, seatRows, wrapWidth })
+      : null,
   );
   /** Where every layer draws a point of the table, and reads one back: the one map of the table. */
   const tableMap: TableMap = $derived(dockView ?? tableMapOf(rowMap));
@@ -698,7 +702,7 @@
   // (spec 3.7): the rows wrap at the width that shows and the table scrolls down.
   const dockFit = $derived(
     fitZoom(
-      dockFitWidth(dockTableItems, dockShownRows),
+      dockFitWidth(dockTableItems, dockShownRows, seatRows),
       scrollerWidth - 2 * SCROLL_PADDING - SCROLLBAR_ROOM,
       zoomMin,
     ),

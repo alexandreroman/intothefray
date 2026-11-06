@@ -103,6 +103,16 @@ describe('dockRows', () => {
     expect(dockRows(items)).toEqual([0, 1, 5]);
   });
 
+  it('folds a row of no seat into the last seat row above it, and shows every seat row', () => {
+    const items = dockItems(table({ cards: [card('fury', { x: 300, y: 700 })] }));
+
+    // A one-player game: Fury, in row 2, shows in player 1's row.
+    expect(dockRows(items, undefined, [1])).toEqual([0, 1]);
+    // A two-player game: row 2 is player 2's, shown even with no card.
+    expect(dockRows(dockItems(table()), undefined, [1, 2])).toEqual([0, 1, 2]);
+    expect(dockRows(items, undefined, [1, 2])).toEqual([0, 1, 2]);
+  });
+
   it('shows the villain row and the shown row in "Villain + player"', () => {
     expect(dockRows(dockItems(table()), 3)).toEqual([0, 3]);
   });
