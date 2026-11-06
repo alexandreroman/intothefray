@@ -1,6 +1,6 @@
 // A card discarded or played from the viewer's hand in dock mode (spec 3.4, 5.5): the hand is not
 // drawn on the table, so the card does not fly across it. Where the viewer saw it (the hand sheet's
-// carousel, the inspector, or else the dock's hand button), a copy rises and fades out; the pile
+// carousel, or else the dock's hand button), a copy rises and fades out; the pile
 // shows a discarded card at once.
 import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
@@ -84,7 +84,7 @@ function handSheet(app: HTMLElement): void {
   app.append(hand);
 }
 
-/** The inspector open on the hand card. */
+/** The inspector open on a table card, which never shows a hand card. */
 function inspector(app: HTMLElement): void {
   const content = document.createElement('div');
   content.className = 'inspector dock';
@@ -143,7 +143,6 @@ describe('a card discarded from the hand in dock mode', () => {
         kind: 'rise',
         card: { id: 'a' },
         from: { cx: 195, cy: 375, w: 250, h: 350 },
-        portrait: true,
         zoomed: false,
         delay: 0,
       },
@@ -153,18 +152,16 @@ describe('a card discarded from the hand in dock mode', () => {
     expect(motion.isHushed('disc:p0')).toBe(false);
   });
 
-  it("rises from the inspector's card when no hand sheet shows it", async () => {
+  it("rises from the dock's hand button, not from a table card's inspector left open", async () => {
     const app = page(true);
     inspector(app);
 
     await discard(app);
 
-    expect(motion.flights).toMatchObject([
-      { kind: 'rise', from: { cx: 195, cy: 193, w: 190, h: 266 }, portrait: false, zoomed: false },
-    ]);
+    expect(motion.flights).toMatchObject([{ kind: 'rise', zoomed: true }]);
   });
 
-  it("rises from the dock's hand button, as a card the table draws, with neither sheet open", async () => {
+  it("rises from the dock's hand button, as a card the table draws, with no hand sheet open", async () => {
     const app = page(true);
 
     await discard(app);
@@ -178,7 +175,6 @@ describe('a card discarded from the hand in dock mode', () => {
           w: PORTRAIT_CARD.w * DOCK_SCALE * ZOOM,
           h: PORTRAIT_CARD.h * DOCK_SCALE * ZOOM,
         },
-        portrait: true,
         zoomed: true,
       },
     ]);
@@ -305,7 +301,6 @@ describe('a card played from the hand in dock mode', () => {
         kind: 'rise',
         card: { id: 'a', zone: 'hand' },
         from: { cx: 195, cy: 375, w: 250, h: 350 },
-        portrait: true,
         zoomed: false,
         delay: 0,
       },
@@ -314,18 +309,7 @@ describe('a card played from the hand in dock mode', () => {
     expect(animate.mock.contexts).toContain(placed);
   });
 
-  it("rises from the inspector's card when no hand sheet shows it", async () => {
-    const app = page(true);
-    inspector(app);
-
-    await play(app);
-
-    expect(motion.flights).toMatchObject([
-      { kind: 'rise', from: { cx: 195, cy: 193, w: 190, h: 266 }, portrait: false, zoomed: false },
-    ]);
-  });
-
-  it("rises from the dock's hand button, as a card the table draws, with neither sheet open", async () => {
+  it("rises from the dock's hand button, as a card the table draws, with no hand sheet open", async () => {
     const app = page(true);
 
     await play(app);
@@ -339,7 +323,6 @@ describe('a card played from the hand in dock mode', () => {
           w: PORTRAIT_CARD.w * DOCK_SCALE * ZOOM,
           h: PORTRAIT_CARD.h * DOCK_SCALE * ZOOM,
         },
-        portrait: true,
         zoomed: true,
       },
     ]);
