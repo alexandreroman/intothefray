@@ -1,7 +1,7 @@
 <!--
   A bottom sheet, the touch screens' modal layer: a veil that dims the page,
   and a panel that slides up from the bottom edge with a grab handle on top.
-  A tap on the veil, a swipe down on the handle or Escape closes it. Like a
+  A tap on the veil, a swipe down or Escape closes it. Like a
   dialog (Dialog.svelte), it counts as a modal while shown (see
   modal.svelte.ts), keeps the focus inside and gives it back when it closes.
   A sheet that is not modal (the hand's) leaves the table live, so that a
@@ -10,6 +10,12 @@
   mode (a phone, spec 3.4) it spans the whole width and may take the whole
   height but the top safe area; its content decides its height below that,
   and reads the room it has in --sheet-room.
+  The swipe: a mouse or a pen drags the handle down; a finger drags the whole
+  sheet, from anywhere on it, once it has moved 10 px mostly downward (a
+  shorter press is a tap), unless the area under it is scrolled down, which
+  scrolls back up first. A sideways or upward move is the content's: a
+  carousel's scroll, a hand card's drag. Let go past 60 px or flung down, the
+  sheet closes; else it springs back.
   It leaves sliding down as its veil fades out, however its caller removes it
   (global transitions); as it starts leaving, it lets the page go and gives
   the focus back, and takes no more taps or keys.
@@ -32,6 +38,7 @@
 
 <script lang="ts">
   import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
+  import { on } from 'svelte/events';
   import { cubicOut } from 'svelte/easing';
   import { fade, fly } from 'svelte/transition';
   import { lastPressByPointer, openModal } from './modal.svelte';
@@ -56,8 +63,17 @@
     children: Snippet;
   } = $props();
 
-  /** How far down the handle must be dragged, in px, for the sheet to close. */
+  /** How far down the sheet must be dragged, in px, for it to close. */
   const CLOSE_DISTANCE = 60;
+
+  /** How far a finger must move, in px, before it may drag the sheet: a shorter press is a tap. */
+  const TOUCH_SLOP = 10;
+
+  /** How fast a finger letting go must move down, in px/ms, to fling the sheet shut however short its swipe. */
+  const FLING_SPEED = 0.5;
+
+  /** How far back the finger's speed is measured as it lets go, in ms. */
+  const FLING_WINDOW_MS = 100;
 
   /** How long the sheet takes to slide down as it leaves, in ms. */
   const LEAVE_MS = 240;
@@ -150,43 +166,205 @@
     }
   }
 
-  // The swipe on the handle: the pointer that pressed it, where it pressed,
-  // and how far down the panel follows it. Followed on the window, so that the
-  // swipe goes on wherever the finger goes.
-  let swipe: { pointerId: number; startY: number } | null = null;
+  // How far down the panel follows the swipe, and whether it follows it now (no glide back then).
   let offset = $state(0);
+  let dragging = $state(false);
 
-  function onGrabPointerDown(event: PointerEvent): void {
-    swipe = { pointerId: event.pointerId, startY: event.clientY };
+  /** Puts the panel back where it rests, gliding there (the sheet's transition). */
+  function springBack(): void {
+    dragging = false;
     offset = 0;
   }
 
+  /** Ends a swipe let go `distance` px down: past CLOSE_DISTANCE, or flung, it closes the sheet. */
+  function release(distance: number, flung = false): void {
+    // A closing swipe leaves the sheet where the finger let go: it slides down on from there.
+    if (distance >= CLOSE_DISTANCE || flung) {
+      dragging = false;
+      onclose();
+    } else {
+      springBack();
+    }
+  }
+
+  // The swipe of a mouse or a pen on the handle: the pointer that pressed it and where it pressed.
+  // Followed on the window, so that the swipe goes on wherever the pointer goes. A finger's is
+  // the touch swipe below, from anywhere on the sheet, the handle too.
+  let handleSwipe: { pointerId: number; startY: number } | null = null;
+
+  function onGrabPointerDown(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      return;
+    }
+    handleSwipe = { pointerId: event.pointerId, startY: event.clientY };
+    offset = 0;
+    dragging = true;
+  }
+
   function onWindowPointerMove(event: PointerEvent): void {
-    if (swipe && event.pointerId === swipe.pointerId) {
-      offset = Math.max(0, event.clientY - swipe.startY);
+    if (handleSwipe && event.pointerId === handleSwipe.pointerId) {
+      offset = Math.max(0, event.clientY - handleSwipe.startY);
     }
   }
 
   function onWindowPointerUp(event: PointerEvent): void {
-    if (!swipe || event.pointerId !== swipe.pointerId) {
+    if (!handleSwipe || event.pointerId !== handleSwipe.pointerId) {
       return;
     }
-    const distance = event.clientY - swipe.startY;
-    swipe = null;
-    // A closing swipe leaves the sheet where the finger let go: it slides down on from there.
-    if (distance >= CLOSE_DISTANCE) {
-      onclose();
-    } else {
-      offset = 0;
-    }
+    const distance = event.clientY - handleSwipe.startY;
+    handleSwipe = null;
+    release(distance);
   }
 
   function onWindowPointerCancel(event: PointerEvent): void {
-    if (swipe && event.pointerId === swipe.pointerId) {
-      swipe = null;
-      offset = 0;
+    if (handleSwipe && event.pointerId === handleSwipe.pointerId) {
+      handleSwipe = null;
+      springBack();
     }
   }
+
+  /** Where the finger was, and when (the event's timeStamp, in ms). */
+  type Sample = { y: number; at: number };
+
+  // The swipe of a finger on the sheet: the touch, where it pressed, and once it drags the sheet,
+  // where that drag began and its last moves, which measure its speed as it lets go. Touch
+  // events rather than pointer ones: only a touchmove can be prevented, to keep the browser from
+  // scrolling the content under a finger that drags the sheet, and decided only past the slop.
+  let touchSwipe: {
+    id: number;
+    startX: number;
+    startY: number;
+    drag: { startY: number; samples: Sample[] } | null;
+  } | null = null;
+
+  /** The finger of the touch swipe among the event's changed touches, if it is one of them. */
+  function swipingTouch(event: TouchEvent): Touch | null {
+    if (!touchSwipe) {
+      return null;
+    }
+    const id = touchSwipe.id;
+    return [...event.changedTouches].find((touch) => touch.identifier === id) ?? null;
+  }
+
+  /** Whether an area the finger pressed in, up to the panel, is scrolled down from its top. */
+  function scrolledDown(target: EventTarget | null): boolean {
+    let element = target instanceof Element ? target : null;
+    while (element && panel?.contains(element)) {
+      if (element.scrollTop > 0) {
+        return true;
+      }
+      element = element.parentElement;
+    }
+    return false;
+  }
+
+  function onTouchStart(event: TouchEvent): void {
+    // A second finger is a pinch or a mistake: no swipe of the sheet.
+    if (event.touches.length > 1) {
+      if (touchSwipe?.drag) {
+        springBack();
+      }
+      touchSwipe = null;
+      return;
+    }
+    const touch = event.changedTouches[0];
+    if (leaving || !touch || scrolledDown(event.target)) {
+      return;
+    }
+    touchSwipe = { id: touch.identifier, startX: touch.clientX, startY: touch.clientY, drag: null };
+  }
+
+  function onTouchMove(event: TouchEvent): void {
+    const touch = swipingTouch(event);
+    if (!touchSwipe || !touch) {
+      return;
+    }
+    if (!touchSwipe.drag) {
+      const dx = touch.clientX - touchSwipe.startX;
+      const dy = touch.clientY - touchSwipe.startY;
+      if (Math.hypot(dx, dy) < TOUCH_SLOP) {
+        return;
+      }
+      // Past the slop, only a move mostly down drags the sheet, and only while the browser has not
+      // begun scrolling (the move is still cancelable); any other is the content's to the end.
+      if (dy <= Math.abs(dx) || !event.cancelable) {
+        touchSwipe = null;
+        return;
+      }
+      touchSwipe.drag = { startY: touch.clientY, samples: [] };
+      dragging = true;
+    }
+    event.preventDefault();
+    offset = Math.max(0, touch.clientY - touchSwipe.drag.startY);
+    remember(touchSwipe.drag.samples, { y: touch.clientY, at: event.timeStamp });
+  }
+
+  /** Keeps the finger's moves of the last FLING_WINDOW_MS, the latest one last. */
+  function remember(samples: Sample[], sample: Sample): void {
+    samples.push(sample);
+    while (samples[0] && sample.at - samples[0].at > FLING_WINDOW_MS) {
+      samples.shift();
+    }
+  }
+
+  /** The finger's speed down over its last moves, in px/ms: none for a finger held still. */
+  function speedDown(samples: Sample[]): number {
+    const first = samples[0];
+    const last = samples.at(-1);
+    if (!first || !last || last.at <= first.at) {
+      return 0;
+    }
+    return (last.y - first.y) / (last.at - first.at);
+  }
+
+  function onTouchEnd(event: TouchEvent): void {
+    const touch = swipingTouch(event);
+    const drag = touchSwipe?.drag;
+    if (!touch) {
+      return;
+    }
+    touchSwipe = null;
+    if (!drag) {
+      return;
+    }
+    // A drag is no tap: no click on what the finger lets go of.
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+    remember(drag.samples, { y: touch.clientY, at: event.timeStamp });
+    release(touch.clientY - drag.startY, speedDown(drag.samples) > FLING_SPEED);
+  }
+
+  function onTouchCancel(event: TouchEvent): void {
+    const touch = swipingTouch(event);
+    if (!touch) {
+      return;
+    }
+    if (touchSwipe?.drag) {
+      springBack();
+    }
+    touchSwipe = null;
+  }
+
+  // Not passive, as Svelte's touch handlers are: the sheet prevents the moves of the finger that
+  // drags it, and the end of that drag.
+  onMount(() => {
+    if (!panel) {
+      return;
+    }
+    const options = { passive: false };
+    const removers = [
+      on(panel, 'touchstart', onTouchStart, options),
+      on(panel, 'touchmove', onTouchMove, options),
+      on(panel, 'touchend', onTouchEnd, options),
+      on(panel, 'touchcancel', onTouchCancel, options),
+    ];
+    return () => {
+      for (const remove of removers) {
+        remove();
+      }
+    };
+  });
 </script>
 
 <!-- On the window: Escape must work wherever the focus is, and a swipe goes on outside the handle. -->
@@ -208,6 +386,7 @@
 <div
   class="sheet"
   class:dock
+  class:dragging
   role="dialog"
   aria-modal={modal}
   aria-label={label}
@@ -251,6 +430,13 @@
     border-radius: 16px 16px 0 0;
     box-shadow: 0 -12px 40px #0009;
     animation: slideup 0.26s ease-out;
+    /* The glide back after a swipe too short to close it. */
+    transition: transform 0.16s ease-out;
+  }
+
+  /* Dragged: it follows the finger at once. */
+  .sheet.dragging {
+    transition: none;
   }
 
   .sheet:focus {
@@ -330,6 +516,7 @@
     .veil,
     .sheet {
       animation: none;
+      transition: none;
     }
   }
 </style>

@@ -36,6 +36,13 @@ type: project
     raised hand card opens it with Play and Discard (`handActions`).
     "Select" enters select mode: taps toggle table cards in the group, a
     pill "N selected · Done" ends it.
+  - Every bottom sheet (inspector, hand, history; `Sheet.svelte`) closes
+    by a finger swipe down from anywhere on it: past 10 px mostly
+    downward it follows the finger, unless the area under the finger is
+    scrolled down (that scrolls back up first); sideways and upward moves
+    stay the content's (carousels, a hand card dragged up). Let go past
+    60 px or flung (> 0.5 px/ms), it closes; else it springs back
+    (160 ms). A mouse or a pen drags the grab handle only.
   - A press on a table card, pile or marker picks it up after a 300 ms
     hold within 10 px (`gestures.ts` `HOLD_MS`, `HOLD_SLOP`; a 10 ms
     vibration); a quicker move scrolls the table. Hand cards drag at once.

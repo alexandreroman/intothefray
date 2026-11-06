@@ -10,7 +10,9 @@
   the card and its slots. Its data-carousel tells the drag layer that a finger
   moving sideways scrolls it rather than drags the card, as the fan's would.
   The sheet closes once the drag starts, and the card goes on to the table
-  under the finger.
+  under the finger. A finger moving down on a card drags the sheet down
+  instead (Sheet.svelte), as anywhere else on it: the drag layer lets such a
+  press go.
 
   The sheet uses the whole screen (Sheet.svelte's dock mode). Upright, a
   one-line header, the card as large as fits, and the actions under it. On
@@ -239,7 +241,7 @@
     text-align: center;
   }
 
-  /* Sideways only: a vertical move on a card is the card's drag (DragLayer.svelte). */
+  /* Sideways only: an upward move on a card is its drag (DragLayer.svelte), a downward one the sheet's. */
   .hand {
     display: flex;
     gap: var(--gap);

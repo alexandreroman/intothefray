@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { createEvent, fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet, flushSync } from 'svelte';
 import HandSheet from './HandSheet.svelte';
 import sheetSource from './HandSheet.svelte?raw';
@@ -79,6 +79,21 @@ afterEach(() => {
   vi.restoreAllMocks();
   interaction.reset();
 });
+
+/** Fires a touch event of one finger at (x, y), at `at` ms; tells whether it was let through. */
+async function touch(
+  target: Element,
+  type: 'touchStart' | 'touchMove' | 'touchEnd',
+  x: number,
+  y: number,
+  at: number,
+): Promise<boolean> {
+  const point = { identifier: 1, clientX: x, clientY: y };
+  const touches = type === 'touchEnd' ? [] : [point];
+  const event = createEvent[type](target, { touches, changedTouches: [point] });
+  Object.defineProperty(event, 'timeStamp', { value: at });
+  return fireEvent(target, event);
+}
 
 /** The header's title: "Your hand", then the hand size. */
 function title(): HTMLElement {
@@ -230,6 +245,39 @@ describe('HandSheet', () => {
     flushSync();
 
     expect(onclose).toHaveBeenCalledOnce();
+  });
+
+  describe('a finger on a card', () => {
+    const finger = { pointerId: 3, pointerType: 'touch', isPrimary: true, button: 0 };
+
+    it('swiping down drags the sheet down and closes it, no card drag started', async () => {
+      const { onclose } = renderSheet();
+      const card = cardItems()[1]!;
+
+      await fireEvent.pointerDown(card, { ...finger, clientX: 150, clientY: 200 });
+      await touch(card, 'touchStart', 150, 200, 0);
+      expect(await touch(card, 'touchMove', 150, 220, 100)).toBe(false);
+      await touch(card, 'touchMove', 150, 300, 400);
+      expect(screen.getByRole('dialog', { name: 'Your hand' }).style.transform).toBe(
+        'translateY(80px)',
+      );
+      await touch(card, 'touchEnd', 150, 300, 800);
+
+      expect(onclose).toHaveBeenCalledOnce();
+      expect(interaction.dragging).toBeNull();
+    });
+
+    it('moving up is left to the card drag', async () => {
+      const { onclose } = renderSheet();
+      const card = cardItems()[1]!;
+
+      await touch(card, 'touchStart', 150, 200, 0);
+      expect(await touch(card, 'touchMove', 150, 180, 50)).toBe(true);
+      await touch(card, 'touchMove', 150, 100, 100);
+      await touch(card, 'touchEnd', 150, 100, 150);
+
+      expect(onclose).not.toHaveBeenCalled();
+    });
   });
 
   describe('the screen used to the full', () => {

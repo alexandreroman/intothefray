@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { createEvent, fireEvent, render, screen } from '@testing-library/svelte';
 import { createRawSnippet, flushSync, mount, tick, unmount } from 'svelte';
 import { modal } from './modal.svelte';
 import Sheet, { motionMs } from './Sheet.svelte';
@@ -24,6 +24,45 @@ const content = createRawSnippet(() => ({
 function rule(selector: string): string {
   const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
   return pattern.exec(sheetSource)?.[1] ?? '';
+}
+
+type TouchType = 'touchStart' | 'touchMove' | 'touchEnd' | 'touchCancel';
+
+/**
+ * Fires a touch event of one finger at (x, y), at `at` ms, and tells whether it was let through
+ * (not prevented): a prevented move scrolls nothing, a prevented end makes no click.
+ */
+async function touch(
+  target: Element,
+  type: TouchType,
+  x: number,
+  y: number,
+  at = 0,
+): Promise<boolean> {
+  const point = { identifier: 1, clientX: x, clientY: y };
+  const lifted = type === 'touchEnd' || type === 'touchCancel';
+  const event = createEvent[type](target, {
+    touches: lifted ? [] : [point],
+    changedTouches: [point],
+  });
+  Object.defineProperty(event, 'timeStamp', { value: at });
+  return fireEvent(target, event);
+}
+
+/** Where a finger is, and when: x and y in px, then the time in ms. */
+type TouchPoint = [x: number, y: number, at: number];
+
+/** A finger pressing at the first point, moving through the others, and lifted at the last. */
+async function swipe(
+  target: Element,
+  [first, ...rest]: [TouchPoint, ...TouchPoint[]],
+): Promise<void> {
+  const last = rest.at(-1) ?? first;
+  await touch(target, 'touchStart', ...first);
+  for (const point of rest) {
+    await touch(target, 'touchMove', ...point);
+  }
+  await touch(target, 'touchEnd', ...last);
 }
 
 function renderSheet(props: { maxHeight?: string; modal?: boolean; dock?: boolean } = {}) {
@@ -96,6 +135,153 @@ describe('Sheet', () => {
     await fireEvent.pointerUp(window, { clientY: 400, pointerId: 1 });
 
     expect(onclose).not.toHaveBeenCalled();
+  });
+
+  describe('a touch swipe anywhere on it', () => {
+    function play(): HTMLElement {
+      return screen.getByRole('button', { name: 'Play' });
+    }
+
+    it('drags it down with the finger past 10 px, and closes it past 60 px', async () => {
+      const { onclose, sheet } = renderSheet();
+
+      await touch(play(), 'touchStart', 100, 300, 0);
+      // Within 10 px: still a tap, which the sheet leaves alone.
+      expect(await touch(play(), 'touchMove', 100, 308, 50)).toBe(true);
+      expect(sheet.style.transform).toBe('');
+      // Past them: the sheet's, which no scroll takes.
+      expect(await touch(play(), 'touchMove', 100, 320, 100)).toBe(false);
+      expect(await touch(play(), 'touchMove', 100, 390, 400)).toBe(false);
+      // It follows the finger from where the drag began, without a jump.
+      expect(sheet.style.transform).toBe('translateY(70px)');
+      expect(sheet.classList).toContain('dragging');
+      expect(onclose).not.toHaveBeenCalled();
+
+      // A drag makes no click on what the finger lets go of.
+      expect(await touch(play(), 'touchEnd', 100, 390, 800)).toBe(false);
+      expect(onclose).toHaveBeenCalledOnce();
+    });
+
+    it('springs back after a slow swipe shorter than 60 px', async () => {
+      const { onclose, sheet } = renderSheet();
+
+      await swipe(play(), [
+        [100, 300, 0],
+        [100, 320, 100],
+        [100, 360, 400],
+        [100, 360, 800],
+      ]);
+
+      expect(onclose).not.toHaveBeenCalled();
+      expect(sheet.style.transform).toBe('');
+      expect(sheet.classList).not.toContain('dragging');
+      // It glides back in 160 ms, and follows the finger at once while dragged.
+      expect(rule('.sheet')).toContain('transition: transform 0.16s ease-out;');
+      expect(rule('.sheet.dragging')).toContain('transition: none;');
+    });
+
+    it('closes on a fast fling down, however short', async () => {
+      const { onclose } = renderSheet();
+
+      // 20 px in 30 ms past the slop: 0.67 px/ms.
+      await swipe(play(), [
+        [100, 300, 0],
+        [100, 315, 10],
+        [100, 335, 40],
+      ]);
+
+      expect(onclose).toHaveBeenCalledOnce();
+    });
+
+    it('leaves a scrolled content to scroll back up first', async () => {
+      const { onclose, sheet } = renderSheet();
+      const content = sheet.querySelector<HTMLElement>('.content')!;
+      let scrollTop = 40;
+      Object.defineProperty(content, 'scrollTop', { get: () => scrollTop });
+
+      await touch(play(), 'touchStart', 100, 300, 0);
+      // The browser's to scroll: not prevented, and the sheet stays put.
+      expect(await touch(play(), 'touchMove', 100, 330, 50)).toBe(true);
+      expect(await touch(play(), 'touchMove', 100, 400, 100)).toBe(true);
+      await touch(play(), 'touchEnd', 100, 400, 150);
+      expect(sheet.style.transform).toBe('');
+      expect(onclose).not.toHaveBeenCalled();
+
+      // Back at its top, a new swipe drags the sheet.
+      scrollTop = 0;
+      await swipe(play(), [
+        [100, 300, 1000],
+        [100, 320, 1100],
+        [100, 400, 1400],
+        [100, 400, 1800],
+      ]);
+      expect(onclose).toHaveBeenCalledOnce();
+    });
+
+    it('leaves a mostly sideways move to the content, for the rest of the touch', async () => {
+      const { onclose, sheet } = renderSheet();
+
+      await touch(play(), 'touchStart', 100, 300, 0);
+      expect(await touch(play(), 'touchMove', 140, 310, 50)).toBe(true);
+      expect(await touch(play(), 'touchMove', 150, 400, 100)).toBe(true);
+      await touch(play(), 'touchEnd', 150, 400, 150);
+
+      expect(sheet.style.transform).toBe('');
+      expect(onclose).not.toHaveBeenCalled();
+    });
+
+    it('leaves an upward move to the content', async () => {
+      const { onclose, sheet } = renderSheet();
+
+      await swipe(play(), [
+        [100, 300, 0],
+        [100, 280, 10],
+        [100, 200, 40],
+      ]);
+
+      expect(sheet.style.transform).toBe('');
+      expect(onclose).not.toHaveBeenCalled();
+    });
+
+    it('is no drag for a tap, which keeps its click', async () => {
+      const { onclose, sheet } = renderSheet();
+
+      await touch(play(), 'touchStart', 100, 300, 0);
+      await touch(play(), 'touchMove', 103, 306, 30);
+
+      expect(await touch(play(), 'touchEnd', 103, 306, 60)).toBe(true);
+      expect(sheet.style.transform).toBe('');
+      expect(onclose).not.toHaveBeenCalled();
+    });
+
+    it('springs back when the browser takes the touch over', async () => {
+      const { onclose, sheet } = renderSheet();
+
+      await touch(play(), 'touchStart', 100, 300, 0);
+      await touch(play(), 'touchMove', 100, 320, 50);
+      await touch(play(), 'touchMove', 100, 400, 100);
+      await touch(play(), 'touchCancel', 100, 400, 150);
+
+      expect(sheet.style.transform).toBe('');
+      expect(onclose).not.toHaveBeenCalled();
+    });
+
+    it('closes once on a touch swipe on the handle, which also moves a touch pointer', async () => {
+      const { onclose, sheet } = renderSheet();
+      const grab = sheet.querySelector('.grab')!;
+      const pointer = { pointerId: 1, pointerType: 'touch' };
+
+      await fireEvent.pointerDown(grab, { ...pointer, clientY: 300 });
+      await touch(grab, 'touchStart', 100, 300, 0);
+      await fireEvent.pointerMove(window, { ...pointer, clientY: 320 });
+      await touch(grab, 'touchMove', 100, 320, 100);
+      await fireEvent.pointerMove(window, { ...pointer, clientY: 400 });
+      await touch(grab, 'touchMove', 100, 400, 400);
+      await fireEvent.pointerUp(window, { ...pointer, clientY: 400 });
+      await touch(grab, 'touchEnd', 100, 400, 800);
+
+      expect(onclose).toHaveBeenCalledOnce();
+    });
   });
 
   it('locks the page scroll while it is open', () => {
