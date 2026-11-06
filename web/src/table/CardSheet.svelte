@@ -16,11 +16,15 @@
   left, and everything else in one column on its right, the only part that
   scrolls.
   On a tablet (outside dock mode, as only a touch screen opens the inspector),
-  the sheet is wide (Sheet.svelte) and lays out as a phone on its side: the
-  card on the left, as high as its room (--sheet-room: at most 460 px and 70 %
-  of the screen), a landscape one as wide as a portrait one is high, and the
-  column on its right, at most as high as the card, the only part that
-  scrolls. Buttons and rows are 44 px high, on a phone and a tablet alike.
+  the sheet is wide (Sheet.svelte). Its room (--sheet-room) is at most 460 px
+  and 70 % of the screen. A portrait card lays out as a phone on its side: the
+  card on the left, as high as the room, and the column on its right, at most
+  as high as the card, the only part that scrolls. A landscape card (a scheme)
+  is on top, centred, as wide as the room, and its column full width under it,
+  the whole sheet scrolling if it must. A stack follows its main card, so that
+  a swipe never changes the layout; a card turning over to the other
+  orientation keeps the old layout until it is edge-on, as for its face.
+  Buttons and rows are 44 px high, on a phone and a tablet alike.
   Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
   back the other way; an entry that comes or goes after an update slides open
@@ -156,6 +160,20 @@
   let measureElement = $state<HTMLElement | null>(null);
   /** The width the copy is drawn at: the content's, in px; null while nothing is measured. */
   let measureWidth = $state<number | null>(null);
+
+  /**
+   * The classes of the inspector's layout for a side: dock mode's on a phone; on a tablet, the column
+   * beside a portrait card, or under a landscape one. A stack follows its main card, so that a swipe
+   * never changes the layout; the main card shown follows the side, which may have just turned.
+   */
+  function layoutOf(of: Side): string[] {
+    if (dock.current) {
+      return ['dock'];
+    }
+    const main = stack.length > 1 ? stack[0] : undefined;
+    const landscape = main === undefined || main.id === of.cardId ? of.landscape : main.landscape;
+    return ['tablet', landscape ? 'column' : 'beside'];
+  }
 
   /** What tells one face from another: a new array of the same images is the same face. */
   function faceKey(of: Side): string {
@@ -704,7 +722,7 @@
 {/snippet}
 
 <Sheet label={header.label} dock={dock.current} wide={!dock.current} {onclose}>
-  <div class="inspector" class:dock={dock.current} class:tablet={!dock.current} bind:this={content}>
+  <div class={['inspector', layoutOf(side)]} bind:this={content}>
     <div class="top">
       <div class="visual" class:stacked={stack.length > 1}>
         {#if stack.length > 1}
@@ -726,9 +744,7 @@
   <!-- Drawn for a moment only, unseen and out of reach, the time to measure the new side. -->
   {#if measureWidth !== null}
     <div
-      class="inspector measure"
-      class:dock={dock.current}
-      class:tablet={!dock.current}
+      class={['inspector', 'measure', layoutOf(live)]}
       style:width="{measureWidth}px"
       aria-hidden="true"
       inert
@@ -1204,42 +1220,58 @@
   }
 
   /*
-    A tablet: laid out as a phone on its side, in a wide sheet (Sheet.svelte). --sheet-room is the
-    card's height: at most 460 px and 70 % of the screen. Only the column scrolls, once it is
-    higher than the card.
+    A tablet, in a wide sheet (Sheet.svelte). --sheet-room: at most 460 px and 70 % of the screen,
+    the height of a portrait card and the width of a landscape one.
   */
   .inspector.tablet {
     --sheet-room: min(460px, 70dvh);
   }
 
-  /* A container, for a landscape face to leave its column room enough (see below). */
-  .inspector.tablet .top {
-    container-type: inline-size;
-  }
-
-  /* The carousel's cards as high as the room less its chrome, 44 px on each side for the neighbours. */
-  .inspector.tablet .visual.stacked {
+  /*
+    Beside a portrait card: laid out as a phone on its side, the card as high as the room, its
+    column at most as high and the only part that scrolls. The carousel's cards as high as the room
+    less its chrome, 44 px on each side for the neighbours.
+  */
+  .inspector.beside .visual.stacked {
     --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
     width: calc(var(--slide-h) * 5 / 7 + 88px);
   }
 
-  /*
-    A card alone, not the carousel's cards. A landscape one is as wide as a portrait one is high,
-    but leaves its column at least 300 px past the gap (12 px): narrower, its main buttons would go
-    one per line (.main-grid's 260 px container query).
-  */
-  .inspector.tablet .visual > .face {
+  .inspector.beside .visual > .face {
     height: var(--sheet-room);
   }
 
-  .inspector.tablet .visual > .face.land {
-    width: min(var(--sheet-room), 100cqi - 312px);
-    height: auto;
-  }
-
-  .inspector.tablet .side {
+  .inspector.beside .side {
     max-height: var(--sheet-room);
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  /*
+    Under a landscape card: the card on top, centred, as wide as the room (never wider than the
+    sheet), and its column full width under it; the sheet scrolls the whole, if it must. The
+    carousel's cards as high as a landscape card of that width.
+  */
+  .inspector.column .top {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .inspector.column .visual {
+    width: 100%;
+    align-items: center;
+  }
+
+  .inspector.column .visual.stacked {
+    --slide-h: calc(var(--sheet-room) * 5 / 7);
+    align-items: stretch;
+  }
+
+  .inspector.column .visual > .face {
+    width: min(var(--sheet-room), 100%);
+  }
+
+  .inspector.column .side {
+    align-self: stretch;
   }
 </style>

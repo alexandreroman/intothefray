@@ -742,31 +742,67 @@ describe('CardSheet', () => {
       expect(within(column).getByRole('button', { name: 'Hand' })).toBeTruthy();
     });
 
-    it('makes the card at most 460 px and 70 % of the screen high, a landscape one at most that wide', () => {
+    /** The classes of the inspector shown, not of the hidden copy that measures the sheet. */
+    function inspectorClasses(): DOMTokenList {
+      return document.querySelector<HTMLElement>('.inspector:not(.measure)')!.classList;
+    }
+
+    it('lays the column beside a portrait card, under a landscape one', () => {
+      const { unmount } = renderSheet({ dock: false });
+      expect(inspectorClasses()).toContain('beside');
+      expect(inspectorClasses()).not.toContain('column');
+      unmount();
+
+      renderSheet({ dock: false, landscape: true });
+      expect(inspectorClasses()).toContain('column');
+      expect(inspectorClasses()).not.toContain('beside');
+      // Still a wide sheet.
+      expect(screen.getByRole('dialog').classList).toContain('wide');
+    });
+
+    it("lays a stack out by its main card's orientation, whichever card is shown", () => {
+      const scheme: StackCard = { ...STACK[0]!, landscape: true };
+      renderSheet({ dock: false, stack: [scheme, STACK[1]!], cardId: 'armor' });
+
+      expect(inspectorClasses()).toContain('column');
+    });
+
+    it('makes a portrait card as high as the room, at most 460 px and 70 % of the screen', () => {
       expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
-      expect(rule('.inspector.tablet .visual > .face')).toContain('height: var(--sheet-room);');
-      const land = rule('.inspector.tablet .visual > .face.land');
-      // The column keeps 300 px beside a landscape face, for its main buttons to pair up.
-      expect(land).toContain('width: min(var(--sheet-room), 100cqi - 312px);');
-      expect(rule('.inspector.tablet .top')).toContain('container-type: inline-size;');
-      expect(land).toContain('height: auto;');
+      expect(rule('.inspector.beside .visual > .face')).toContain('height: var(--sheet-room);');
       // Side by side: the face beside its column.
       expect(rule('.top')).not.toContain('flex-direction');
     });
 
-    it("sizes a stack's carousel as a phone on its side does", () => {
-      const stacked = rule('.inspector.tablet .visual.stacked');
+    it("sizes a portrait stack's carousel as a phone on its side does", () => {
+      const stacked = rule('.inspector.beside .visual.stacked');
       expect(stacked).toContain('--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));');
       expect(stacked).toContain('width: calc(var(--slide-h) * 5 / 7 + 88px);');
       expect(rule('.visual.stacked')).toContain('--carousel-chrome: 38px;');
     });
 
-    it('keeps the column at most as high as the card, the only part that scrolls', () => {
-      const column = rule('.inspector.tablet .side');
+    it('keeps the column beside a portrait card at most as high as it, the only part that scrolls', () => {
+      const column = rule('.inspector.beside .side');
       expect(column).toContain('max-height: var(--sheet-room);');
       expect(column).toContain('overflow-y: auto;');
       expect(column).toContain('overscroll-behavior: contain;');
       expect(rule('.side')).toContain('container-type: inline-size;');
+    });
+
+    it('puts a landscape card on top, centred, as wide as the room, its column full width under it', () => {
+      const top = rule('.inspector.column .top');
+      expect(top).toContain('flex-direction: column;');
+      expect(top).toContain('align-items: center;');
+      expect(rule('.inspector.column .visual > .face')).toContain(
+        'width: min(var(--sheet-room), 100%);',
+      );
+      expect(rule('.inspector.column .visual.stacked')).toContain(
+        '--slide-h: calc(var(--sheet-room) * 5 / 7);',
+      );
+      const column = rule('.inspector.column .side');
+      expect(column).toContain('align-self: stretch;');
+      // The whole sheet scrolls (Sheet.svelte), not the column.
+      expect(column).not.toContain('overflow-y');
     });
 
     it('lays the main buttons out as on a phone', () => {
@@ -1405,6 +1441,41 @@ describe('CardSheet', () => {
           }
         },
       );
+
+      it('on a tablet, keeps the old layout until edge-on as the card turns to the other orientation', async () => {
+        // jsdom lays nothing out: the measured copy, in the new side's layout, is 300 px high.
+        const measuredLayouts: string[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              measuredLayouts.push(this.classList.contains('column') ? 'column' : 'beside');
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet({ dock: false });
+          const inspector = document.querySelector<HTMLElement>('.inspector')!;
+
+          await rerender({ images: ['scheme.png'], landscape: true, header: TURNED });
+          await tick();
+
+          expect(measuredLayouts).toEqual(['column']);
+          expect(inspector.classList).toContain('beside');
+
+          // The resize ends, the card turns away: still the old layout until edge-on.
+          running.shift()?.onfinish?.();
+          await tick();
+          expect(inspector.classList).toContain('beside');
+
+          await finishAnimations();
+          expect(inspector.classList).toContain('column');
+          expect(inspector.classList).not.toContain('beside');
+        } finally {
+          heights.mockRestore();
+        }
+      });
 
       it("keeps the face at the card's ratio whatever its scan, as the measured copy draws it", () => {
         // An image would otherwise make the face as tall as the scan's own ratio, which the copy,
