@@ -9,7 +9,8 @@ type: project
 - One icon serves the browser tab and search engines: `favicon.svg` is a
   full-bleed `#0D111B` square with the mark inside its inscribed circle.
   The PNG icons (`apple-touch-icon.png`, `icon-192.png`, `icon-512.png`)
-  are full-bleed too.
+  are full-bleed too: renders of `web/images/touch-icon.html` at 180,
+  192 and 512 px.
 - `web/public/favicon.ico` (16, 32, 48 px, fully opaque) is rendered from
   `favicon.svg` and served at `/favicon.ico`; `index.html` declares only
   the SVG. The render command is in `DEVELOPMENT.md`.
