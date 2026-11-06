@@ -168,6 +168,23 @@ chrome --headless=new --disable-gpu --hide-scrollbars \
 `--window-size=180,180`. The pages load the Archivo font from Google
 Fonts, so render them online.
 
+`web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`,
+where crawlers look for a favicon by default; the pages declare
+`favicon.svg` only. After a change to `favicon.svg`, render it again with
+headless Chrome and ImageMagick (`magick`):
+
+```bash
+cd web
+chrome --headless=new --disable-gpu --hide-scrollbars \
+  --window-size=512,512 --screenshot=/tmp/favicon.png \
+  "file://$PWD/public/favicon.svg"
+magick /tmp/favicon.png -alpha off \
+  -define icon:auto-resize=48,32,16 public/favicon.ico
+```
+
+Every icon is full-bleed, with no transparent corners: Google crops a
+favicon into a circle and fills its transparent pixels with white.
+
 ## Architecture
 
 ```mermaid
