@@ -304,7 +304,8 @@
 
   /**
    * Shows the card's new side: the old one stays until the card is edge-on, while the hidden copy
-   * measures the new one. Under reduced motion, the face and the rest just change.
+   * measures the new one; then the column changes at once (turnOver). Under reduced motion, the
+   * face and the rest just change.
    */
   function changeSide(from: Side): void {
     if (motionMs(TURN_MS) === 0 || faceElement === undefined || content === undefined) {
@@ -327,8 +328,8 @@
       turnOver();
       return;
     }
-    // Held at the new size until the turn ends: the entries sliding in and out as the side changes
-    // do not move the sheet again.
+    // Held at the new size until the turn ends: the column changing as the card is edge-on does not
+    // move the sheet again.
     const easing = content.animate([{ height: `${current}px` }, { height: `${target}px` }], {
       duration: RESIZE_MS,
       easing: 'ease-out',
@@ -341,7 +342,10 @@
   /**
    * Turns the card over around its vertical axis, as a table card does (motion.svelte.ts #flip):
    * its old side (leaving) turns away to edge-on, lifted, then its new side turns back flat and
-   * comes down. The sheet takes its own height back once the turn ends.
+   * comes down. Edge-on, the column changes at once (atOnce), its entries neither fading nor
+   * sliding: both sides' entries in the column together would mix in its grid and overlap; the
+   * card hides the change and the sheet already has the new side's height. The sheet takes its
+   * own height back once the turn ends.
    */
   function turnOver(): void {
     if (faceElement === undefined) {
@@ -360,7 +364,10 @@
     });
     turn = away;
     away.onfinish = () => {
+      atOnce = true;
       leaving = null;
+      // The rows and pages that come or go with this update take their transitions at its end.
+      void tick().then(() => (atOnce = false));
       const back = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
       turn = back;
       away.cancel();
@@ -389,7 +396,10 @@
   let heldHeight = $state<number | null>(null);
   /** The sheet has gone to another card of the stack: its page keeps its height from then on. */
   let heldForStack = false;
-  /** The pages and rows of this update come and go at once: a switch to another card of the stack. */
+  /**
+   * The pages and rows of this update come and go at once: a switch to another card of the stack,
+   * or the column of a turning card as it is edge-on.
+   */
   let atOnce = false;
 
   /** Holds the page at its height as the sheet goes from card to card of the stack, for good. */

@@ -1523,6 +1523,32 @@ describe('CardSheet', () => {
         expect(screen.getByRole('dialog')).toBe(dialog);
       });
 
+      it("changes the column at once as the card is edge-on: the old side's entries never linger", async () => {
+        const REVEAL = item('reveal');
+        const deckEntries: ContextEntry[] = [
+          { kind: 'action', item: REVEAL },
+          { kind: 'separator' },
+          { kind: 'action', item: DISCARD },
+        ];
+        const { rerender } = renderSheet({ entries: deckEntries });
+        await finishAnimations();
+        animate.mockClear();
+
+        await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
+        expect(screen.getByRole('button', { name: 'Reveal' })).toBeTruthy();
+
+        // The card turns away; edge-on, the new side's entries alone, none fading or sliding out.
+        expect(running).toHaveLength(1);
+        running.shift()?.onfinish?.();
+        await tick();
+        expect(screen.queryByRole('button', { name: 'Reveal' })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
+        // The face alone moves: it turns back flat.
+        const moved = animate.mock.contexts as Element[];
+        expect(moved.filter((element) => !element.classList.contains('face'))).toEqual([]);
+      });
+
       it("turns a deck's back over to the card revealed on it, its count and counters switching once edge-on", async () => {
         const deck: ContextHeader = {
           ...HEADER,

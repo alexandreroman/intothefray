@@ -37,7 +37,9 @@ type: project
     card over in it (360 ms). Reveal from a deck's inspector keeps it open
     and switches it to the revealed card once the table shows it: the
     sheet first eases to the new size, then the card turns; a refused
-    reveal leaves it on the deck. Its opening, closing, drill-down,
+    reveal leaves it on the deck. In a turn, the name and the entries
+    change at once as the card is edge-on: no button fades, no row
+    slides, so the two sides' entries never share the column. Its opening, closing, drill-down,
     counters and presses animate (none under reduced motion). A tap on a
     raised hand card lifts it to read it, a second one lets it go: the
     fan's cards are played and discarded by drag and drop; the inspector
