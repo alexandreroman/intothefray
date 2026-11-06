@@ -544,6 +544,79 @@ describe('the hand sheet', () => {
     expect(within(handSheet()!).getAllByRole('listitem')).toHaveLength(1);
     expect(handButton().getAttribute('aria-label')).toBe('Hand · 1, Ant-Man');
   });
+
+  /**
+   * The fixture with Alex's hand holding `hand` alone: the other cards of it played onto the
+   * table, or with `discarded`, gone to the discard pile.
+   */
+  function withHand(hand: string[], { discarded = false }: { discarded?: boolean } = {}): View {
+    const view = makeView();
+    const table = view.table!;
+    const leaving = (c: TableCard) => c.zone === 'hand' && c.owner === 0 && !hand.includes(c.id);
+    const cards = discarded
+      ? table.cards.filter((c) => !leaving(c))
+      : table.cards.map((c) => (leaving(c) ? { ...c, zone: 'table' as const, x: 500, y: 300 } : c));
+    return { ...view, table: { ...table, cards, hands: { ...table.hands, p0: hand } } };
+  }
+
+  it('closes once the last card played from it leaves the hand', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(withHand(['h1']));
+    await fireEvent.click(handButton());
+
+    await fireEvent.click(within(handSheet()!).getByRole('button', { name: 'Play' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'play', card: 'h1' }),
+      0,
+    );
+    // Until the view shows the hand empty, the card is still there.
+    expect(handSheet()).not.toBeNull();
+
+    await rerender({ session, view: withHand([]) });
+    expect(handSheet()).toBeNull();
+  });
+
+  it('closes once the last card discarded from it leaves the hand', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(withHand(['h1']));
+    await fireEvent.click(handButton());
+
+    await fireEvent.click(within(handSheet()!).getByRole('button', { name: 'Discard' }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h1' }, 0);
+
+    await rerender({ session, view: withHand([], { discarded: true }) });
+    expect(handSheet()).toBeNull();
+  });
+
+  it('stays open on the cards left after a Play or a Discard', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(withHand(['h1', 'h2']));
+    await fireEvent.click(handButton());
+
+    await fireEvent.click(within(handSheet()!).getByRole('button', { name: 'Play' }));
+    await rerender({ session, view: withHand(['h2']) });
+
+    expect(within(handSheet()!).getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('opens on an empty hand, and stays open on it', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(withHand([]));
+    await fireEvent.click(handButton());
+
+    expect(within(handSheet()!).getByText('No cards in hand')).toBeTruthy();
+    await rerender({ session, view: withHand([], { discarded: true }) });
+    expect(within(handSheet()!).getByText('No cards in hand')).toBeTruthy();
+  });
+
+  it('stays open when the hand empties by no Play nor Discard of the viewer', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(withHand(['h1']));
+    await fireEvent.click(handButton());
+
+    await rerender({ session, view: withHand([]) });
+    expect(within(handSheet()!).getByText('No cards in hand')).toBeTruthy();
+  });
 });
 
 describe('the history sheet', () => {

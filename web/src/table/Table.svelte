@@ -1710,6 +1710,9 @@
     const result = item.run?.();
     if (result && 'kind' in result) {
       send(result, targetOfKey(result));
+      if (result.card !== undefined) {
+        watchLeavingHand(result.card);
+      }
     }
   }
 
@@ -1813,6 +1816,35 @@
   function closeHandSheet(): void {
     handSheetShown = false;
   }
+
+  // The hand card the viewer just played or discarded (hand sheet or inspector), and its seat,
+  // until the view shows it out of that hand. If it was the last card, the hand sheet closes: by
+  // then the card's rise has been measured from the carousel (motion.animate, before the view is
+  // drawn) and plays on above the sheet sliding away. Any other way the hand empties keeps it open.
+  let leavingHand = $state.raw<{ id: string; seat: number } | null>(null);
+
+  /** Notes a hand card the viewer sent away from its hand, for the effect below to watch. */
+  function watchLeavingHand(id: string): void {
+    const seat = own.find((s) => view.table?.hands?.[areaOf(s)]?.includes(id));
+    leavingHand = seat === undefined ? null : { id, seat };
+  }
+
+  $effect(() => {
+    const leaving = leavingHand;
+    if (leaving === null) {
+      return;
+    }
+    const hand = view.table?.hands?.[areaOf(leaving.seat)] ?? [];
+    if (hand.includes(leaving.id)) {
+      return;
+    }
+    untrack(() => {
+      leavingHand = null;
+      if (hand.length === 0 && selected === leaving.seat) {
+        closeHandSheet();
+      }
+    });
+  });
 
   /** Play or Discard on a card of the hand sheet: what the inspector's entry sends (handActions). */
   function runHandAction(id: string, action: 'play' | 'discard'): void {
