@@ -79,7 +79,7 @@
   import Hand from './Hand.svelte';
   import HandSheet from './HandSheet.svelte';
   import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
-  import HistorySheet, { unread } from './HistorySheet.svelte';
+  import HistorySheet from './HistorySheet.svelte';
   import { countersFor, type SheetCounter } from './inspector';
   import { interaction, LANDING_MS, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
@@ -471,6 +471,27 @@
     });
   });
 
+  /** The image of the current villain's face, the villain frame's avatar in dock mode; null when none shows. */
+  const villainImage = $derived.by((): string | null => {
+    const stage = view.table?.stages.find((s) => s.villain);
+    const villain = stage && cards.find((c) => c.id === stage.current);
+    return faceOf(villain)?.images[0] ?? null;
+  });
+
+  /**
+   * The avatar an owner's frame shows in place of its name in dock mode (F-U13): the hero's, the
+   * current villain's on the villain's frame; none on a scenario deck's frame, which keeps its name.
+   */
+  function frameAvatar(frame: OwnerFrame): string | null | undefined {
+    if (dockView === null || frame.label !== undefined) {
+      return undefined;
+    }
+    if (frame.owner === -1) {
+      return villainImage;
+    }
+    return seatDeck(view, frame.owner)?.heroImage ?? null;
+  }
+
   /** The frames around each owner's deck and discard pile, named after their owner. */
   const owners = $derived.by(() => {
     const chips = chipsByFrame(
@@ -484,6 +505,10 @@
       const owner: OwnerBox = { frame, name, color, outOfPlay };
       if (nameRoom !== undefined) {
         owner.nameRoom = nameRoom;
+      }
+      const avatar = frameAvatar(frame);
+      if (avatar !== undefined) {
+        owner.avatar = avatar;
       }
       // Only a seated deck has a hand: neither the villain nor an empty seat.
       const deck = seatDeck(view, frame.owner);
@@ -1695,27 +1720,14 @@
     openHandInspector(id);
   }
 
-  // The time of the last log line the viewer has seen: the newest one when the table opened, then
-  // the newest one each time the history sheet opens or closes. The dock's badge counts the lines
-  // written since. A table opened on an empty history has seen none of them: the epoch.
-  const NOTHING_SEEN = new Date(0).toISOString();
-  let seenAt = $state(untrack(() => view.log.at(-1)?.at ?? NOTHING_SEEN));
-  const historyUnread = $derived(historyShown ? 0 : unread(view.log, seenAt));
-
-  function markHistorySeen(): void {
-    seenAt = view.log.at(-1)?.at ?? NOTHING_SEEN;
-  }
-
   function openHistory(): void {
     if (modal.open) {
       return;
     }
-    markHistorySeen();
     historyShown = true;
   }
 
   function closeHistory(): void {
-    markHistorySeen();
     historyShown = false;
   }
 
@@ -2532,7 +2544,6 @@
       heroName={dockDeck?.heroName ?? ''}
       color={dockColor}
       canUndo={view.canUndo ?? false}
-      unread={historyUnread}
       dropActive={dockDropActive}
       landscape={dockRail}
       showHand={selected !== null}

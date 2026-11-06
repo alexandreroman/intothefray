@@ -1,7 +1,7 @@
 // The owner frames and their piles in dock mode (spec 3.7): the table hands them where its
 // projection draws them (dockLayout.ts); the piles draw themselves at 60 % from there, the frame at
 // its drawn box, while the name line and the chips keep the frame's full width.
-import { render } from '@testing-library/svelte';
+import { render, within } from '@testing-library/svelte';
 import type { PileView as TablePile } from '../lib/types';
 import { DOCK_MODE_KEY } from './dockMode';
 import { pile } from './fixtures.testing';
@@ -117,6 +117,137 @@ describe('Surface in dock mode', () => {
     expect(box.style.getPropertyValue('--name-room')).toBe('262px');
     const owner = /\n {2}\.owner \{([^}]*)\}/.exec(surfaceSource)?.[1];
     expect(owner).toMatch(/max-width: max\(\s*calc\(var\(--name-room, 100%\) - /);
+  });
+});
+
+describe('the chip lines and the avatars in dock mode (F-U12, F-U13)', () => {
+  const ASIDE = { kind: 'aside', pile: 'aside', label: 'Set-aside cards', count: 0 } as const;
+  // Hercules's frame holds four piles (deck, discard and two side piles): drawn 313.2 wide, twice
+  // the villain's 157.2, both from −6.
+  const VILLAIN: OwnerBox = {
+    frame: { owner: -1, x: -6, y: 24, w: 157.2, h: 106.2 },
+    nameRoom: 262,
+    name: 'Villain',
+    color: 'var(--villain)',
+    avatar: 'rhino.png',
+    outOfPlay: [...VICTORY, ASIDE],
+  };
+  const HERCULES: OwnerBox = {
+    frame: { owner: 0, x: -6, y: 200, w: 313.2, h: 106.2 },
+    nameRoom: 522,
+    name: 'Alex · Hercules',
+    color: 'var(--p1)',
+    avatar: 'hercules.png',
+    tip: '5 cards in hand',
+    outOfPlay: [{ ...ASIDE, pile: 'aside:p0' }],
+  };
+
+  function renderOwners(owners: OwnerBox[], dock = true) {
+    return render(Surface, {
+      props: {
+        cards: [],
+        piles: [],
+        owners,
+        topOf: () => undefined,
+        faceOf: () => null,
+        captionOf: () => undefined,
+        onbrowse: () => {},
+        width: 1000,
+        height: 1000,
+        markers: {},
+      },
+      context: new Map([[DOCK_MODE_KEY, { current: dock }]]),
+    });
+  }
+
+  it('ends every chip line at one right edge, the furthest any line needs, whatever the frame widths', () => {
+    const { container } = renderOwners([VILLAIN, HERCULES]);
+
+    // Each line needs its drawn frame's width, or its chips past its avatar when wider.
+    const surface = element(container, '.surface');
+    expect(surface.style.getPropertyValue('--lines-right')).toBe(
+      'max(' +
+        '-6px + max(157.2px, 2 * var(--chip-room) + var(--avatar-room) + 8 * var(--lu)), ' +
+        '-6px + max(313.2px, 1 * var(--chip-room) + var(--avatar-room) + 8 * var(--lu)))',
+    );
+    const lines = [...container.querySelectorAll<HTMLElement>('.chips')];
+    expect(lines.map((line) => line.style.left)).toEqual(['-6px', '-6px']);
+    expect(lines.map((line) => line.style.getPropertyValue('--line-w'))).toEqual([
+      'calc(var(--lines-right) - -6px)',
+      'calc(var(--lines-right) - -6px)',
+    ]);
+    const chips = /\n {2}\.chips \{([^}]*)\}/.exec(surfaceSource)?.[1];
+    expect(chips).toMatch(/width: var\(\s*--line-w,/);
+  });
+
+  it("measures a line that shows its name by the name's room", () => {
+    const deck: OwnerBox = {
+      frame: { owner: -1, label: 'Hydra Patrol', x: 300, y: 24, w: 157.2, h: 106.2 },
+      nameRoom: 262,
+      name: 'Hydra Patrol',
+      color: 'var(--villain)',
+      outOfPlay: [ASIDE],
+    };
+    const { container } = renderOwners([deck]);
+
+    expect(element(container, '.surface').style.getPropertyValue('--lines-right')).toBe(
+      'max(300px + max(262px, 1 * var(--chip-room) + var(--name-min) + 8 * var(--lu)))',
+    );
+    expect(element(container, '.owner').textContent).toBe('Hydra Patrol');
+  });
+
+  it("shows the owner's avatar where the name starts, the full name as its name and tooltip", () => {
+    const { container } = renderOwners([VILLAIN, HERCULES]);
+
+    const hero = element(container, '.ownerbox[data-owner="0"]');
+    const avatar = within(hero).getByRole('img', { name: 'Alex · Hercules' });
+    expect(avatar.dataset.tip).toBe('Alex · Hercules');
+    expect(avatar.querySelector('img')?.getAttribute('src')).toBe('hercules.png');
+    expect(hero.querySelector('.owner')).toBeNull();
+    expect(hero.dataset.tip).toBe('5 cards in hand');
+    expect(hero.textContent).toContain('5 cards in hand');
+    expect(
+      within(element(container, '.ownerbox[data-owner="-1"]')).getByRole('img', {
+        name: 'Villain',
+      }),
+    ).toBeTruthy();
+  });
+
+  it("draws the avatar the chips' height, on their line, in a 2 screen px ring", () => {
+    const declarations = (selector: string) =>
+      new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`).exec(
+        surfaceSource,
+      )?.[1] ?? '';
+    const chipHeight = /height: (calc\(22 \* var\(--lu\)\));/.exec(declarations('.chips'))?.[1];
+    expect(chipHeight).toBe('calc(22 * var(--lu))');
+    expect(declarations('.surface')).toContain(`--avatar: ${chipHeight};`);
+    expect(declarations('.surface')).toContain('--avatar-ring: calc(2px / var(--z, 1));');
+    // The chips lie from 30 to 8 units above the frame, as the avatar does.
+    expect(declarations('.chips')).toContain('margin-top: calc(-30 * var(--lu));');
+    expect(declarations('.avatar')).toContain('bottom: calc(100% + 2px + 8 * var(--lu));');
+  });
+
+  it('draws a plain disc of the owner colour for an owner with no hero', () => {
+    const { container } = renderOwners([{ ...HERCULES, avatar: null }]);
+
+    const avatar = within(element(container, '.ownerbox')).getByRole('img', {
+      name: 'Alex · Hercules',
+    });
+    expect(avatar.classList).toContain('empty');
+    expect(avatar.querySelector('img')).toBeNull();
+  });
+
+  it('leaves the chip lines their own widths out of dock mode', () => {
+    const owners = [VILLAIN, HERCULES].map(({ avatar: _, nameRoom: __, ...owner }) => owner);
+    const { container } = renderOwners(owners, false);
+
+    expect(element(container, '.surface').style.getPropertyValue('--lines-right')).toBe('');
+    const lines = [...container.querySelectorAll<HTMLElement>('.chips')];
+    expect(lines.map((line) => line.style.getPropertyValue('--line-w'))).toEqual(['', '']);
+    expect(lines.map((line) => line.style.getPropertyValue('--frame-w'))).toEqual([
+      '157.2px',
+      '313.2px',
+    ]);
   });
 });
 

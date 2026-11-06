@@ -3,28 +3,12 @@
   (SidePanel.svelte), newest first and worded the same, and the Undo button under them. In dock
   mode it may take the whole height, its lines compact.
 -->
-<script module lang="ts">
-  import type { LogView } from '../lib/types';
-
-  /**
-   * The log lines written since the history was last seen, at seenAt, for the dock's badge; none
-   * before it was ever seen (null). Counted by time rather than by length, as an undo removes lines.
-   */
-  export function unread(log: LogView[], seenAt: string | null): number {
-    if (seenAt === null) {
-      return 0;
-    }
-    // Compared as instants: RFC 3339 times may differ in their fractions of a second or offset.
-    const seen = Date.parse(seenAt);
-    return log.filter((entry) => Date.parse(entry.at) > seen).length;
-  }
-</script>
-
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
   import Sheet from '../components/Sheet.svelte';
   import { playerColorVar } from '../lib/playerColor';
   import { pointerBlur } from '../lib/releaseFocus';
+  import type { LogView } from '../lib/types';
   import { dockMode } from './dockMode';
   import { partsOf, timeOf, type NameOf } from './historyLines';
   import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';

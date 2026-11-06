@@ -791,8 +791,10 @@ describe('Table labels when zoomed out', () => {
     // Sam's deck and discard, 112 units each and 18 apart, in 10 units of padding each side.
     expect(chips.style.getPropertyValue('--frame-w')).toBe('262px');
     expect(chips.style.getPropertyValue('--chips')).toBe('1');
+    // Out of dock mode no common line width (--line-w) stands in for the frame's.
+    expect(chips.style.getPropertyValue('--line-w')).toBe('');
     const rule = /\n {2}\.chips \{([^}]*)\}/.exec(surfaceSource)?.[1];
-    expect(rule).toMatch(/width: max\(\s*var\(--frame-w\),/);
+    expect(rule).toMatch(/width: var\(\s*--line-w,\s*max\(var\(--frame-w\),/);
   });
 });
 

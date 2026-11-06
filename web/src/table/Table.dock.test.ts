@@ -553,7 +553,7 @@ describe('the history sheet', () => {
     return within(dock()!).getByRole('button', { name: /^History/ });
   }
 
-  it('counts the lines written since it was opened, none at first (history_unread_resets_on_open)', async () => {
+  it('names the History button plainly as lines are written, with no unread count (F-U14)', async () => {
     mockScreen(PHONE);
     const { rerender } = await renderTable();
     expect(historyButton().getAttribute('aria-label')).toBe('History');
@@ -564,24 +564,12 @@ describe('the history sheet', () => {
       line('drew', '2026-11-05T20:03:00Z'),
     ];
     await rerender({ view: makeView({ log: newer }) });
-    expect(historyButton().getAttribute('aria-label')).toBe('History, 2 new');
+    expect(historyButton().getAttribute('aria-label')).toBe('History');
+    expect(historyButton().querySelector('.badge')).toBeNull();
 
     await fireEvent.click(historyButton());
     const sheet = screen.getByRole('dialog', { name: 'History' });
     expect(within(sheet).getAllByRole('listitem')).toHaveLength(4);
-
-    await fireEvent.keyDown(window, { key: 'Escape' });
-    expect(screen.queryByRole('dialog', { name: 'History' })).toBeNull();
-    expect(historyButton().getAttribute('aria-label')).toBe('History');
-  });
-
-  it('counts every line of a game that starts with an empty history', async () => {
-    mockScreen(PHONE);
-    const { rerender } = await renderTable(makeView({ log: [] }));
-
-    await rerender({ view: makeView() });
-
-    expect(historyButton().getAttribute('aria-label')).toBe('History, 2 new');
   });
 });
 
@@ -927,6 +915,38 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     const discard = drawnBox(placed('discard:p0', '.pile'));
     expect(discard.x).toBeCloseTo(78, 4);
     expect(discard.y).toBeCloseTo(306.4, 4);
+  });
+
+  it("shows each owner line's avatar in place of its name, the full name kept to read (F-U13)", async () => {
+    mockScreen(PHONE);
+    const view = busyView();
+    view.table!.stages = [
+      { key: 'villain', label: 'Villain', current: 'v', cards: ['v'], villain: true },
+    ];
+    await renderTable(view);
+
+    const villain = document.querySelector<HTMLElement>('.ownerbox[data-owner="-1"]')!;
+    const hero = document.querySelector<HTMLElement>('.ownerbox[data-owner="0"]')!;
+    // The current villain's art in the villain's ring, the hero's in the seat colour.
+    const villainAvatar = within(villain).getByRole('img', { name: 'Villain' });
+    expect(villainAvatar.dataset.tip).toBe('Villain');
+    expect(villainAvatar.querySelector('img')?.getAttribute('src')).toBe('01094.png');
+    const heroAvatar = within(hero).getByRole('img', { name: 'Alex · Spider-Man' });
+    expect(heroAvatar.dataset.tip).toBe('Alex · Spider-Man');
+    expect(heroAvatar.querySelector('img')?.getAttribute('src')).toBe('spidey.png');
+    expect(hero.querySelector('.owner')).toBeNull();
+    // The hand count stays the frame's tooltip, and is read.
+    expect(hero.dataset.tip).toBe('2 cards in hand');
+    expect(hero.textContent).toContain('2 cards in hand');
+  });
+
+  it('keeps the names as text on a touch tablet (F-U13)', async () => {
+    mockScreen(TOUCH_TABLET);
+    await renderTable(busyView());
+
+    const names = [...document.querySelectorAll('.ownerbox .owner')].map((el) => el.textContent);
+    expect(names).toEqual(['Villain', 'Alex · Spider-Man']);
+    expect(document.querySelector('.ownerbox .avatar')).toBeNull();
   });
 
   it('keeps a stack together on its main card’s line', async () => {

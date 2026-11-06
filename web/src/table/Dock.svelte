@@ -1,11 +1,11 @@
 <!--
   The dock of a small touch screen (dock mode): a bar floating at the bottom of the table, above
   the safe area, with the hand button (the current deck's hero, up to four mini cards of the hand,
-  its size and the hero's name), Undo, and the history with a badge of the log lines added since it
-  was last opened. In landscape it stands as a rail down the left edge, its hand button the avatar
-  and the hand size only. A spectator, who has no hand, gets no hand button. During a drag of a
-  card that can go to a hand, or of a hand card, the hand button is the drop target, the only hand
-  the drag layer knows in dock mode (DragLayer.svelte). The parent places nothing: the dock floats.
+  its size and the hero's name), Undo, and the history. In landscape it stands as a rail down the
+  left edge, its hand button the avatar and the hand size only. A spectator, who has no hand, gets
+  no hand button. During a drag of a card that can go to a hand, or of a hand card, the hand button
+  is the drop target, the only hand the drag layer knows in dock mode (DragLayer.svelte). The
+  parent places nothing: the dock floats.
 -->
 <script lang="ts">
   import CardArt from '../components/CardArt.svelte';
@@ -22,7 +22,6 @@
     heroName,
     color,
     canUndo,
-    unread,
     dropActive,
     landscape,
     showHand,
@@ -39,8 +38,6 @@
     /** The seat colour, a CSS value: the ring around the avatar. */
     color: string;
     canUndo: boolean;
-    /** The log lines added since the history was last opened. */
-    unread: number;
     /** A dragged card can go back to a hand: the hand button is its drop target. */
     dropActive: boolean;
     /** A small screen in landscape: a rail down the left edge rather than a bar at the bottom. */
@@ -53,7 +50,6 @@
   } = $props();
 
   const MAX_MINIS = 4;
-  const MAX_UNREAD = 9;
   const DROP_LABEL = 'Drop here: back to hand';
 
   // Read aloud and shown as a tooltip in the rail; the button itself shows the size in a capsule.
@@ -66,8 +62,6 @@
   });
   // The art shows the hero's first image, as the hero selector does.
   const avatarSrc = $derived(avatar?.[0]);
-  const badge = $derived(unread > MAX_UNREAD ? `${MAX_UNREAD}+` : String(unread));
-  const historyLabel = $derived(unread > 0 ? `History, ${badge} new` : 'History');
 </script>
 
 <nav class="dock" class:rail={landscape} aria-label="Table controls">
@@ -132,7 +126,7 @@
 
   <button
     class="ib btn-ghost"
-    aria-label={historyLabel}
+    aria-label="History"
     data-tip="History"
     onclick={onhistory}
     {@attach pointerBlur}
@@ -142,9 +136,6 @@
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7.5V12l3 2" />
     </svg>
-    {#if unread > 0}
-      <span class="badge" aria-hidden="true">{badge}</span>
-    {/if}
   </button>
 </nav>
 
@@ -189,7 +180,6 @@
 
   .ib {
     flex: none;
-    position: relative;
     display: grid;
     place-items: center;
     width: 48px;
@@ -208,20 +198,6 @@
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  /* The unread log lines, top right of the history button. */
-  .badge {
-    position: absolute;
-    top: 4px;
-    right: 3px;
-    min-width: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--bg);
-    font: 800 11px/16px var(--font);
-    text-align: center;
   }
 
   /* The hand button takes the bar's free width. */

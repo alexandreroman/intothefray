@@ -3,7 +3,9 @@
   the dot grid, a framed box around each owner's deck and discard pile, with
   the chips opening that owner's out-of-play piles, the piles, the cards and
   the markers (the first player token, the active counter). The table scrolls
-  it both ways and zooms it as a whole.
+  it both ways and zooms it as a whole. In dock mode the frames show their
+  owner's avatar rather than the name, and every chip line ends at one right
+  edge.
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
@@ -20,6 +22,12 @@
     nameRoom?: number;
     /** The player's name, "Villain", or the label of a scenario deck. */
     name: string;
+    /**
+     * The round avatar the name line shows in place of the name, in dock mode: the image of the hero's
+     * or the villain's face, null for a plain disc of the owner's colour. Absent where the line shows
+     * the name: out of dock mode, and on a scenario deck's frame.
+     */
+    avatar?: string | null;
     /** CSS colour of the frame and the name: the player's seat colour, or the villain's. */
     color: string;
     /** The tooltip: how many cards the player holds. */
@@ -27,9 +35,33 @@
     /** The owner's out-of-play piles, as chips at the right of the name line. */
     outOfPlay: OutOfPlayChip[];
   }
+
+  /**
+   * The right edge a chip line needs, as a CSS sum: its frame's, or further as its chips and the
+   * room before them need. A line with an avatar keeps to the frame as drawn; one with a name keeps
+   * the name's room (nameRoom).
+   */
+  function lineRight(owner: OwnerBox): string {
+    const showsName = owner.avatar === undefined;
+    const width = showsName ? (owner.nameRoom ?? owner.frame.w) : owner.frame.w;
+    const before = showsName ? 'var(--name-min)' : 'var(--avatar-room)';
+    const chips = `${owner.outOfPlay.length} * var(--chip-room) + ${before} + 8 * var(--lu)`;
+    return `${owner.frame.x}px + max(${width}px, ${chips})`;
+  }
+
+  /**
+   * The one right edge every chip line ends at in dock mode, as a CSS length: the furthest any of them
+   * needs, so that the chips line up from row to row whatever the widths of their frames. Undefined
+   * without chips.
+   */
+  export function chipLinesRight(owners: readonly OwnerBox[]): string | undefined {
+    const lines = owners.filter((owner) => owner.outOfPlay.length > 0);
+    return lines.length === 0 ? undefined : `max(${lines.map(lineRight).join(', ')})`;
+  }
 </script>
 
 <script lang="ts">
+  import CardArt from '../components/CardArt.svelte';
   import Icon, { type IconName } from '../components/Icon.svelte';
   import type {
     MarkerName,
@@ -92,6 +124,10 @@
   const dock = dockMode();
   const DOCK_DOTS = `${DOCK_DOT_PITCH * DOCK_SCALE}px ${DOCK_DOT_PITCH * DOCK_SCALE}px`;
 
+  // In dock mode the frames are drawn smaller, each at its own width: rather than end at its own
+  // frame, every chip line ends at the right edge the furthest of them needs (F-U12).
+  const linesRight = $derived(dock.current ? chipLinesRight(owners) : undefined);
+
   const MARKER_TIPS: Record<MarkerName, string> = {
     firstPlayer: 'First player: drag it to the next player',
     active: 'Active counter: drag to move',
@@ -124,6 +160,7 @@
   style:width="{width}px"
   style:height="{height}px"
   style:background-size={dock.current ? DOCK_DOTS : undefined}
+  style:--lines-right={linesRight}
 >
   {#each owners as owner (`${owner.frame.owner}:${owner.frame.label ?? ''}`)}
     <div
@@ -138,7 +175,21 @@
       style:width="{owner.frame.w}px"
       style:height="{owner.frame.h}px"
     >
-      <span class="owner" use:overflowTip>{owner.name}</span>
+      {#if owner.avatar === undefined}
+        <span class="owner" use:overflowTip>{owner.name}</span>
+      {:else}
+        <span
+          class="avatar"
+          class:empty={owner.avatar === null}
+          role="img"
+          aria-label={owner.name}
+          data-tip={owner.name}
+        >
+          {#if owner.avatar}
+            <CardArt src={owner.avatar} aspect={1} />
+          {/if}
+        </span>
+      {/if}
       {#if owner.tip}
         <!-- The tooltip is for the pointer: screen readers read the hand count here. -->
         <span class="sr-only">: {owner.tip}</span>
@@ -157,6 +208,9 @@
         style:--owner={owner.color}
         style:--chips={owner.outOfPlay.length}
         style:--frame-w="{owner.nameRoom ?? owner.frame.w}px"
+        style:--line-w={linesRight === undefined
+          ? undefined
+          : `calc(var(--lines-right) - ${owner.frame.x}px)`}
         style:left="{owner.frame.x}px"
         style:top="{owner.frame.y}px"
       >
@@ -226,6 +280,14 @@
       row's cards.
     */
     --name-min: calc(56 * var(--lu));
+    /*
+      In dock mode, an owner's avatar in place of the name: the chips' height, in a ring of the
+      owner's colour 2 screen px wide. The room before the chips takes the frame's border, the
+      avatar's 4px of margin, the avatar and its ring.
+    */
+    --avatar: calc(22 * var(--lu));
+    --avatar-ring: calc(2px / var(--z, 1));
+    --avatar-room: calc(6px + var(--avatar) + 2 * var(--avatar-ring));
     position: relative;
     isolation: isolate;
     zoom: var(--z, 1);
@@ -265,20 +327,41 @@
   }
 
   /*
+    The avatar where the name starts, on the chips' line, from 30 to 8 units above the frame (the
+    name's offsets, see .owner); before a hero, a disc of the owner's colour, as the hero selector
+    draws it.
+  */
+  .avatar {
+    position: absolute;
+    left: calc(4px + var(--avatar-ring));
+    bottom: calc(100% + 2px + 8 * var(--lu));
+    width: var(--avatar);
+    height: var(--avatar);
+    overflow: hidden;
+    border-radius: 50%;
+    background: #000;
+    box-shadow: 0 0 0 var(--avatar-ring) var(--owner);
+  }
+
+  .avatar.empty {
+    background: var(--owner);
+  }
+
+  /*
     The name line of a frame: the chips sit at its right end, centred on the name, 19 units above
     the frame, so from 30 to 8 units above it. The 8 units of clear space keep the line apart from
     the frame's border; more would push the villain's line, whose frame lies 20 units under the
     surface's top, past the scroller's 24px padding at the largest zoom (2). Counter-scaled far
     out, the line takes 30 × 11/12 ≈ 27.5 screen px, which the padding and those 20 units still
-    hold at 30 %. As wide as the frame, or wider when the chips and --name-min need it. Above
-    every card (Table.svelte).
+    hold at 30 %. As wide as the frame, or wider when the chips and --name-min need it; in dock
+    mode, as far as the one right edge of every line (--line-w). Above every card (Table.svelte).
   */
   .chips {
     position: absolute;
     z-index: var(--above-cards);
-    width: max(
-      var(--frame-w),
-      calc(var(--chips) * var(--chip-room) + var(--name-min) + 8 * var(--lu))
+    width: var(
+      --line-w,
+      max(var(--frame-w), calc(var(--chips) * var(--chip-room) + var(--name-min) + 8 * var(--lu)))
     );
     height: calc(22 * var(--lu));
     margin-top: calc(-30 * var(--lu));

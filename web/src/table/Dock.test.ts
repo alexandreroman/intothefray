@@ -18,7 +18,6 @@ function props(overrides: Record<string, unknown> = {}) {
     heroName: 'Rocket Raccoon',
     color: 'var(--p1)',
     canUndo: true,
-    unread: 0,
     dropActive: false,
     landscape: false,
     showHand: true,
@@ -76,24 +75,15 @@ describe('Dock', () => {
     expect(avatar?.querySelector('img')).toBeNull();
   });
 
-  it('caps the unread badge at 9+', () => {
-    render(Dock, props({ unread: 12 }));
-    const history = screen.getByRole('button', { name: /History/ });
-    expect(history.querySelector('.badge')?.textContent).toBe('9+');
-    expect(history.getAttribute('aria-label')).toBe('History, 9+ new');
-  });
-
-  it('shows the unread count up to 9', () => {
-    render(Dock, props({ unread: 3 }));
-    expect(
-      screen.getByRole('button', { name: /History/ }).querySelector('.badge')?.textContent,
-    ).toBe('3');
-  });
-
-  it('shows no badge without unread lines', () => {
-    render(Dock, props({ unread: 0 }));
-    expect(screen.getByRole('button', { name: 'History' }).querySelector('.badge')).toBeNull();
-  });
+  it.each([false, true])(
+    'keeps the History button a plain icon, with no unread count (landscape %s, F-U14)',
+    (landscape) => {
+      render(Dock, props({ landscape }));
+      const history = screen.getByRole('button', { name: 'History' });
+      expect(history.querySelector('.badge')).toBeNull();
+      expect(history.textContent?.trim()).toBe('');
+    },
+  );
 
   it('turns the hand button into a drop target during a drag', () => {
     render(Dock, props({ dropActive: true }));
