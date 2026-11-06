@@ -2,11 +2,12 @@
 // from table units to drawn units, and back for drops. Everything is drawn at DOCK_SCALE. Each row
 // keeps its owner frames and piles at their scaled place on its first line; past them, its units (a
 // card with everything that travels with it, or a frame with its piles) flow in their order on the
-// table, top-aligned, on the columns of a grid every row shares: from the left of the frames and
-// piles, one drawn card slot apart, each unit's box on a column (an exhausted card turns in place),
-// a unit drawn wider than a slot spanning as many columns as it needs.
-// The first line starts at the first column past the frames and piles, the others at the first
-// column, under them, so that cards line up down the lines and across the rows; a unit that does
+// table, top-aligned, on the half columns of a grid every row shares: from the left of the frames
+// and piles, half a drawn card slot apart, each unit's box on a half column (an exhausted card
+// turns in place), a unit taking as many half columns as its drawn width needs, two at least (a
+// portrait card, a small stack or an exhausted card a slot, a landscape card three).
+// The first line starts at the first half column past the frames and piles, the others at the
+// first one, under them, so that cards line up down the lines and across the rows; a unit that does
 // not fit the wrap width starts the next line. An empty card slot follows the last unit, and a row
 // whose units all fit its first line keeps an empty second line under it, room to drop a card after
 // them. Rows are as tall as their content and stack one under the other. A row no seat has, below
@@ -105,7 +106,7 @@ export interface DockLayout {
   /**
    * Where a card `width` table units wide, dropped with its middle drawn at
    * `p`, goes on the table: in the row and the line of `p`, before the first
-   * unit whose columns' middle lies right of it (else after the line's last
+   * unit whose half columns' middle lies right of it (else after the line's last
    * unit), placed so that it sorts exactly there. The units of `exclude`
    * (what is dragged) are left out, and its cards from the units they are
    * part of; a card dropped back between the units around it keeps its spot.
@@ -143,7 +144,7 @@ interface Unit {
   line: number;
   slotX: number;
   slotW: number;
-  /** The drawn x of the column its box starts on, and the width of its columns less the gap after them. */
+  /** The drawn x of the half column its box starts on, and the width of its half columns less the gap after them. */
   cellX: number;
   cellW: number;
   /** How far right of its scaled table x it is drawn. */
@@ -365,50 +366,58 @@ function unitOf(root: DockItem, members: DockItem[], folded: boolean): Unit {
   };
 }
 
-// Absorbs the rounding of drawn widths that are a whole number of columns.
+// Absorbs the rounding of drawn widths that are a whole number of half columns.
 const EPSILON = 1e-6;
 
 /**
- * The columns every shown row lays its units on, in drawn units: from the
- * left of the frames and piles (0 when no row has any), one drawn portrait
- * card and the drawn gap after it apart.
+ * The half columns every shown row lays its units on, in drawn units: from
+ * the left of the frames and piles (0 when no row has any), half a slot
+ * apart. A slot (the pitch) is a drawn portrait card and the drawn gap after it.
  */
 interface Grid {
   origin: number;
   pitch: number;
+  step: number;
 }
 
 function gridOf(splits: readonly Split[], scale: number): Grid {
   const lefts = splits.flatMap(({ fixed }) => fixed.map((item) => visualBox(item).left));
+  const pitch = (PORTRAIT_CARD.w + SLOT_GAP) * scale;
   return {
     origin: lefts.length > 0 ? Math.min(...lefts) * scale : 0,
-    pitch: (PORTRAIT_CARD.w + SLOT_GAP) * scale,
+    pitch,
+    step: pitch / 2,
   };
 }
 
+/** The drawn x of a half column of the grid. */
 function columnX(grid: Grid, column: number): number {
-  return grid.origin + column * grid.pitch;
+  return grid.origin + column * grid.step;
 }
 
-/** The column a row's first line starts at: the first one past its frames and piles and a gap. */
+/** The half column a row's first line starts at: the first one past its frames and piles and a gap. */
 function firstColumn({ fixedRight }: Split, grid: Grid, scale: number): number {
   if (fixedRight === null) {
     return 0;
   }
   const past = (fixedRight + SLOT_GAP) * scale;
-  return Math.max(0, Math.ceil((past - grid.origin) / grid.pitch - EPSILON));
+  return Math.max(0, Math.ceil((past - grid.origin) / grid.step - EPSILON));
 }
+
+/** How many half columns a unit takes at least: a slot, so that a portrait card keeps its look. */
+const MIN_SPAN = 2;
 
 /**
- * How many columns a slot `slotW` drawn units wide spans, one at least: a
- * unit up to a column wide, its gap left out, keeps one, so that a small stack
- * or an exhausted card holds one column and turning a card never reflows its row.
+ * How many half columns a slot `slotW` drawn units wide takes: as many as it
+ * needs, two at least. A portrait card, a small stack or an exhausted card
+ * (89.3 drawn) takes two, so that turning a card never reflows its row; a
+ * landscape card (94.2) three, its gap to the next unit about 43.
  */
 function spanOf(slotW: number, grid: Grid): number {
-  return Math.max(1, Math.ceil(slotW / grid.pitch - EPSILON));
+  return Math.max(MIN_SPAN, Math.ceil(slotW / grid.step - EPSILON));
 }
 
-/** The drawn x a row's first line starts its units at, on its first column; 0 for a row without units. */
+/** The drawn x a row's first line starts its units at, on its first half column; 0 for a row without units. */
 function indentOf(split: Split, grid: Grid, scale: number): number {
   return split.units.length === 0 ? 0 : columnX(grid, firstColumn(split, grid, scale));
 }
@@ -504,9 +513,9 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       units: split.units,
     };
 
-    // The units flow on the columns, the first line from its first column, each unit's box on the
-    // column after the last one's (its turned cards may reach left of it); one that does not fit
-    // starts the next line, on the first column.
+    // The units flow on the half columns, the first line from its first one, each unit's box on
+    // the half column after the last one's (its turned cards may reach left of it); one that does
+    // not fit starts the next line, on the first half column.
     let line = 0;
     let column = firstColumn(split, grid, scale);
     let lineIsEmpty = true;
@@ -520,14 +529,14 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       const span = spanOf(unit.slotW, grid);
       unit.line = line;
       unit.cellX = columnX(grid, column);
-      unit.cellW = span * grid.pitch - gap;
+      unit.cellW = span * grid.step - gap;
       unit.slotX = unit.cellX - lead;
       unit.dx = unit.slotX - unit.left * scale;
       column += span;
       lineIsEmpty = false;
     }
-    // The empty slot: on the column after the last unit when it fits there, else on the first
-    // column of a new line; in a row without units, on the first column past its frames and piles.
+    // The empty slot: on the half column after the last unit when it fits there, else on the first
+    // one of a new line; in a row without units, on the first one past its frames and piles.
     let slotLine = line;
     if (!lineIsEmpty && columnX(grid, column) + slotW > input.wrapWidth) {
       slotLine += 1;

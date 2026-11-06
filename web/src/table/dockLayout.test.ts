@@ -12,12 +12,13 @@ import {
 // are set in each test: a 10-unit name room above a row's lines, a 10-unit gap under each line and
 // a 20-unit gap under each row. A portrait card is drawn 67.2 × 94.2, the gap between two units 24
 // (40 × 0.6): a slot every 91.2. On a row's first line the units lie 18 under its top (30 × 0.6,
-// where the setup puts a row's cards), on its other lines at their top. Every unit starts on a
-// column of a grid all rows share: from the left of the frames and piles, −6 here, a slot apart
-// (91.2), at −6, 85.2, 176.4, 267.6, 358.8, 450, 541.2, …: a unit's box starts on a column, and a
-// unit drawn wider than a slot (91.2, the gap after it left out) spans as many columns as it needs.
-// Line 0 starts at the first column past the frames and piles and a gap, every other line at the
-// first column.
+// where the setup puts a row's cards), on its other lines at their top. Every unit starts on a half
+// column of a grid all rows share: from the left of the frames and piles, −6 here, half a slot
+// apart (45.6), at −6, 39.6, 85.2, 130.8, 176.4, 222, 267.6, 313.2, 358.8, 404.4, 450, 495.6,
+// 541.2, …: a unit's box starts on a half column, and it takes as many half columns as its drawn
+// width needs, two at least: a portrait card (67.2), a small stack or an exhausted card two (a
+// slot, 91.2), a landscape card (94.2) three (136.8). Line 0 starts at the first half column past
+// the frames and piles and a gap, every other line at the first one.
 const ROOMS = { nameRoom: 10, lineGap: 10, rowGap: 20 };
 
 function card(id: string, x: number, y: number, more: Partial<DockItem> = {}): DockItem {
@@ -92,7 +93,7 @@ function playerRow(
 }
 
 describe('dockLayout', () => {
-  it('draws a row that fits the wrap width at 0.6, its units on columns, the landscape one on two', () => {
+  it('draws a row that fits the wrap width at 0.6, its units on half columns, the landscape one on three', () => {
     // The villain's row alone, without a name room.
     const layout = dockLayout({
       items: [
@@ -102,6 +103,7 @@ describe('dockLayout', () => {
         card('villain', 300, 30),
         card('scheme', 460, 30, { w: 157, h: 112 }),
         card('next', 650, 30),
+        card('last', 800, 30),
       ],
       rows: [0],
       wrapWidth: 1000,
@@ -114,20 +116,83 @@ describe('dockLayout', () => {
     expectBox(layout.itemBox('deck'), cardAt(0, 18));
     expectBox(layout.itemBox('discard'), cardAt(78, 18));
     expectBox(layout.itemBox('villain'), cardAt(176.4, 18));
-    // On the next column, not 48 × 0.6 past the villain as on the table; 94.2 wide, with the gap
-    // after it more than a slot: it spans two columns, and the next card starts on the third.
+    // A slot past the villain, not 48 × 0.6 past it as on the table; 94.2 wide: three half
+    // columns (2.07 of them), to 404.4, and the next card starts on the half column there.
     expectBox(layout.itemBox('scheme'), { x: 267.6, y: 18, w: 94.2, h: 67.2 });
-    expectBox(layout.itemBox('next'), cardAt(450, 18));
+    expectBox(layout.itemBox('next'), cardAt(404.4, 18));
+    expectBox(layout.itemBox('last'), cardAt(495.6, 18));
     expect(layout.indent(0)).toBeCloseTo(176.4, 6);
-    // A drop goes by the middle of the scheme's two columns, 346.8, not of its card (314.7): before
-    // it, between the villain (300..412) and the scheme (460), 436 − 56 = 380.
+    // A drop goes by the middle of the scheme's half columns, 267.6 + (136.8 − 24) / 2 = 324, not of
+    // its card (314.7): before it, between the villain (300..412) and the scheme (460), 436 − 56 =
+    // 380; right of it, between the scheme (460..617) and next (650), 633.5 − 56 = 577.5, to 580.
     expect(layout.insertAt({ x: 320, y: 40 }, 112)).toEqual({ x: 380, y: 30 });
+    expect(layout.insertAt({ x: 330, y: 40 }, 112)).toEqual({ x: 580, y: 30 });
     expect(layout.rowTop(0)).toBe(0);
-    // The frame's 118.2 of content and a 10 line gap; the empty slot, at 541.2, fits the first
+    // The frame's 118.2 of content and a 10 line gap; the empty slot, at 586.8, fits the first
     // line, and an empty second line of a card's height and a gap, 104.2; a 20 row gap.
     expect(layout.rowHeight(0)).toBeCloseTo(252.4, 6);
     expect(layout.height).toBeCloseTo(252.4, 6);
-    expect(layout.width).toBeCloseTo(541.2 + 67.2, 6);
+    expect(layout.width).toBeCloseTo(586.8 + 67.2, 6);
+  });
+
+  it('draws two landscape cards in a row three half columns apart', () => {
+    // The main scheme and a side scheme by the villain: 136.8 apart, a gap of 136.8 − 94.2 = 42.6.
+    const layout = dockLayout({
+      items: [
+        frame('frame', -10, 20, 262, 177),
+        pile('deck', 0, 30, { anchor: 'frame' }),
+        card('villain', 300, 30),
+        card('main', 460, 30, { w: 157, h: 112 }),
+        card('side', 657, 30, { w: 157, h: 112 }),
+        card('minion', 854, 30),
+      ],
+      rows: [0],
+      wrapWidth: 1000,
+      ...ROOMS,
+    });
+
+    expectBox(layout.itemBox('main'), { x: 267.6, y: 28, w: 94.2, h: 67.2 });
+    expectBox(layout.itemBox('side'), { x: 404.4, y: 28, w: 94.2, h: 67.2 });
+    // Six half columns past the main scheme: back on a whole slot of the grid.
+    expectBox(layout.itemBox('minion'), cardAt(541.2, 28));
+    // The empty slot after the minion, at 632.4.
+    expect(layout.width).toBeCloseTo(632.4 + 67.2, 6);
+  });
+
+  it('wraps a landscape card that does not fit, and lines the cards after it up on half columns', () => {
+    // At 450 the side scheme would end at 544.2, past 520: the second line, from −6, to 130.8; the
+    // portrait cards after it on 130.8 and 222.
+    const layout = dockLayout({
+      items: [
+        ...PLAYER_PILES,
+        ...played(2),
+        card('side', 756, 410, { w: 157, h: 112 }),
+        card('c3', 953, 410),
+        card('c4', 1105, 410),
+      ],
+      rows: [1],
+      wrapWidth: 520,
+      ...ROOMS,
+    });
+
+    expectBox(layout.itemBox('c2'), cardAt(358.8, 28));
+    expectBox(layout.itemBox('side'), { x: -6, y: 138.2, w: 94.2, h: 67.2 });
+    expectBox(layout.itemBox('c3'), cardAt(130.8, 138.2));
+    expectBox(layout.itemBox('c4'), cardAt(222, 138.2));
+  });
+
+  it('keeps a line of portrait cards a slot apart, on whole slots of the grid', () => {
+    const layout = dockLayout(playerRow(4, 1000));
+
+    for (const [id, x] of [
+      ['identity', 176.4],
+      ['c1', 267.6],
+      ['c2', 358.8],
+      ['c3', 450],
+      ['c4', 541.2],
+    ] as const) {
+      expectBox(layout.itemBox(id), cardAt(x, 28));
+    }
   });
 
   it('takes another scale', () => {
@@ -220,7 +285,7 @@ describe('dockLayout', () => {
 
   it('moves a stack as one unit, as wide and high as its cards, never split', () => {
     // The stack: main at 700, tucked cards 10 right and 20 down each, 132 × 197 in all, drawn
-    // 79.2 × 118.2: one column. At 267.6 it would end at 346.8, past 340: it starts the second
+    // 79.2 × 118.2: two half columns, a slot. At 267.6 it would end at 346.8, past 340: it starts the second
     // line.
     const layout = dockLayout({
       items: [
@@ -246,7 +311,7 @@ describe('dockLayout', () => {
 
   it('turns an exhausted card in place on its column: exhausting never reflows the row', () => {
     // Turned 15°, a portrait card spans 112 cos 15° + 157 sin 15° across, about its middle: 89.3
-    // drawn, within a slot, so one column.
+    // drawn, within a slot, so two half columns.
     const turned = 112 * Math.cos(Math.PI / 12) + 157 * Math.sin(Math.PI / 12);
     expect(turned * 0.6).toBeLessThan(91.2);
     const row = (exhausted: boolean) =>
@@ -287,7 +352,7 @@ describe('dockLayout', () => {
 
   it('keeps a marker by its card, and draws it at 0.6', () => {
     // The token, 40 past c7's right edge (1476), makes c7's unit 1600 − 1364 = 236 wide, 141.6
-    // drawn, two columns: from 358.8 it would end at 500.4, past 500, so it starts the third line.
+    // drawn, four half columns: from 358.8 it would end at 500.4, past 500, so it starts the third line.
     const items = [
       ...playerRow(7, 500).items,
       { id: 'token', x: 1516, y: 450, w: 84, h: 70, kind: 'marker' as const, anchor: 'c7' },
@@ -296,7 +361,7 @@ describe('dockLayout', () => {
 
     expectBox(layout.itemBox('c7'), cardAt(-6, 242.4));
     expectBox(layout.itemBox('token'), { x: 85.2, y: 266.4, w: 50.4, h: 42 });
-    // The empty slot fits after its two columns, at 176.4: three lines.
+    // The empty slot fits after its four half columns, at 176.4: three lines.
     expect(layout.rowHeight(1)).toBeCloseTo(366.6, 6);
   });
 
@@ -357,15 +422,15 @@ describe('dockLayout', () => {
     expectBox(layout.itemBox('crew1'), { x: 174, y: 22, w: 120, h: 79.2 });
     expectBox(layout.itemBox('crew1-discard'), { x: 240, y: 28, w: 48, h: 67.2 });
     expectBox(layout.itemBox('villain1'), cardAt(358.8, 28));
-    // The scheme on two columns, to 544.2.
+    // The scheme on three half columns, to 586.8.
     expectBox(layout.itemBox('scheme'), { x: 450, y: 28, w: 94.2, h: 67.2 });
-    // crew2, 120 wide (two columns), at 632.4 would end past 550: the second line, from the first
-    // column, its piles with it, the frame at the top.
+    // crew2, 120 wide (three half columns), at 586.8 would end past 550: the second line, from the
+    // first half column, its piles with it, the frame at the top.
     expectBox(layout.itemBox('crew2'), { x: -6, y: 138.2, w: 120, h: 79.2 });
     expectBox(layout.itemBox('crew2-deck'), { x: 0, y: 144.2, w: 48, h: 67.2 });
     expectBox(layout.itemBox('crew2-discard'), { x: 60, y: 144.2, w: 48, h: 67.2 });
-    expectBox(layout.itemBox('villain2'), cardAt(176.4, 138.2));
-    // 10 + 128.2 + 104.2 + 20: the empty slot fits after villain 2, at 267.6.
+    expectBox(layout.itemBox('villain2'), cardAt(130.8, 138.2));
+    // 10 + 128.2 + 104.2 + 20: the empty slot fits after villain 2, at 222.
     expect(layout.height).toBeCloseTo(262.4, 6);
   });
 
@@ -648,7 +713,7 @@ describe('a drop on a row of dock mode (insertAt)', () => {
       ...ROOMS,
     });
 
-    // The two cards' stack, 79.2 drawn, holds one column, from 267.6, its middle 301.2; next the
+    // The two cards' stack, 79.2 drawn, holds two half columns, from 267.6, its middle 301.2; next the
     // column after it, from 358.8, its middle 392.4.
     expectBox(stacked.itemBox('main'), cardAt(267.6, 28));
     expectBox(stacked.itemBox('next'), cardAt(358.8, 28));
