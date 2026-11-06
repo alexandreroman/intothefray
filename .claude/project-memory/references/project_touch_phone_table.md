@@ -39,7 +39,9 @@ type: project
     sheet first eases to the new size, then the card turns; a refused
     reveal leaves it on the deck. Its opening, closing, drill-down,
     counters and presses animate (none under reduced motion). A tap on a
-    raised hand card opens it with Play and Discard (`handActions`).
+    raised hand card lifts it to read it, a second one lets it go: the
+    fan's cards are played and discarded by drag and drop, with no
+    inspector.
     "Select" enters select mode: taps toggle table cards in the group, a
     pill "N selected · Done" ends it.
   - Every bottom sheet (inspector, hand, history; `Sheet.svelte`) closes
@@ -63,12 +65,17 @@ type: project
   - Card boxes do not focus their filter, so no keyboard pops up.
 - Tablets (touch mode off dock mode) keep the desktop layout, fitted to a
   finger:
-  - The inspector lays the card beside its actions, as a phone on its
-    side does: a sheet at most 760 px wide (`Sheet` `wide`, other sheets
-    480 px), the card `min(460px, 70dvh)` high on the left, the name,
-    main buttons and rows (44 px) in one column on its right, the only
-    part that scrolls, at most as high as the card. The column stays wide
-    enough for two main buttons side by side, a landscape card included.
+  - The inspector is a sheet at most 760 px wide (`Sheet` `wide`, other
+    sheets 480 px). A portrait card lies beside its actions, as on a
+    phone on its side: the card `min(460px, 70dvh)` high on the left,
+    the name, main buttons and rows (44 px) in one column on its right,
+    the only part that scrolls, at most as high as the card. A landscape
+    card (a scheme) lies above its actions: the card on top, centred, as
+    wide as a portrait card is high, the name and actions full width under
+    it, the sheet scrolling as a whole. A stack follows its main card. A
+    face that changes shape (a flip, a scheme revealed from a deck's
+    inspector) changes layout once edge-on in its turn; a revealed scheme
+    shows as it is, landscape, with no handling of its own.
   - Without the history column (a narrow screen), a History button beside
     the floating Undo opens the history sheet dock mode uses
     (`historySheetMode` in Table.svelte); the history column shows on

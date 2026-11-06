@@ -31,6 +31,11 @@ type: project
   submenu, then "Draw an arrow" for a card in play. Each entry that has
   a key shows it (the modifier entries have none); a refused one is
   greyed with its reason.
+- A villain, a main scheme, a side scheme and a player side scheme never
+  offer Exhaust (menu, E key, inspector): their default is Flip, or
+  "Change card…" on a stage card. One already exhausted still offers
+  Ready. A card whose face is unknown (face down, not in the catalog)
+  keeps Exhaust (`canExhaust` in actions.ts).
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W), Reveal (R) │ Top X
   (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X), Shuffle (U);
   encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X,
@@ -61,8 +66,9 @@ type: project
   and keeps the group selection.
 - Hand cards are played by dragging, P, and X or Backspace to discard. On
   touch, a tap on the lowered hand raises and pins it; a tap on a card then
-  opens its inspector (Play, Discard, from `handActions`); a tap on the
-  table, Esc, a downward swipe, a drop on the table or a dialog lowers it.
+  lifts it to read it (no inspector: a hand card plays and discards by
+  drag and drop); a tap on the table, Esc, a downward swipe, a drop on the
+  table or a dialog lowers it.
   In dock mode the hand is a carousel sheet (see
   [[project_touch_phone_table]]).
 - Tokens come from the submenus, the keys and the token pill.
