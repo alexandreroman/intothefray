@@ -118,9 +118,9 @@ export const KEYS = {
   play: 'P',
 } as const;
 
-// Groups of a card in play, in menu order: Exhaust and Flip (or the stage
-// choice) turn the card, the token, status and modifier submenus mark it,
-// Discard and Move to take it away.
+// Groups of a card in play, in menu order: Exhaust (none on a villain or a
+// scheme) and Flip (or the stage choice) turn the card, the token, status and
+// modifier submenus mark it, Discard and Move to take it away.
 const GROUP_TURN = 0;
 const GROUP_MARK = 1;
 const GROUP_LEAVE = 2;
@@ -332,7 +332,9 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
   const revealed = card.onPile !== undefined;
   const items: ActionItem[] = [];
   if (!revealed) {
-    items.push(exhaustItem(card));
+    if (canExhaust(card)) {
+      items.push(exhaustItem(card));
+    }
   } else if (drawsRevealed(card, context)) {
     items.push(drawRevealedItem(card));
   }
@@ -345,6 +347,11 @@ function cardActions(card: CardView, context: Context, units: CardView[]): Actio
     items.push(stageItem());
   } else if (canFlip(card)) {
     items.push(flipItem(card));
+  }
+  // Without Exhaust, a card in play makes its first turning action the default: Flip or Change card….
+  const firstTurn = items.find((item) => item.group === GROUP_TURN);
+  if (!revealed && firstTurn && !items.some((item) => item.default)) {
+    firstTurn.default = true;
   }
   items.push(counterMenu(card, 'token'));
   if (!revealed) {
@@ -374,6 +381,27 @@ function drawRevealedItem(card: CardView): ActionItem {
     group: GROUP_TURN,
     run: () => ({ kind: 'draw', n: 1, pile: card.onPile }),
   };
+}
+
+/** The card types that never exhaust in the game: the villain and the schemes. */
+const UNEXHAUSTED_TYPES: readonly string[] = [
+  'villain',
+  'main_scheme',
+  'side_scheme',
+  'player_side_scheme',
+];
+
+/**
+ * Whether the card offers Exhaust (or Ready): a villain or a scheme does not, unless it is
+ * somehow exhausted already, so that it can always be readied. A card whose face the viewer
+ * does not know (face down, or not in the catalog yet) keeps it.
+ */
+function canExhaust(card: CardView): boolean {
+  if (card.exhausted || card.faceDown || !card.code) {
+    return true;
+  }
+  const face = knownCard(card.code)?.card.faces[card.face];
+  return !face || !UNEXHAUSTED_TYPES.includes(face.type);
 }
 
 function exhaustItem(card: CardView): ActionItem {

@@ -222,9 +222,9 @@ describe('contextItems', () => {
     const entries = entriesFor({ kind: 'card', id: 'v' });
     const reason = 'The villain card stays on the table: choose another card to show';
 
+    // The villain never exhausts: its card choice is its default.
     expect(texts(entries)).toEqual([
-      '*Exhaust [E]',
-      'Change card… [V]',
+      '*Change card… [V]',
       '---',
       'Add a token ▸',
       'Add a status ▸',

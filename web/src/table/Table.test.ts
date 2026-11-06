@@ -85,6 +85,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01097': [{ name: 'The Break-In!', type: 'main_scheme', size: 'land' }],
   '01001': [{ name: 'Spider-Man', type: 'hero' }],
   '01010': [{ name: 'Giant form', type: 'hero', size: 'dstd' }],
+  '01147': [{ name: 'Hydra Mercenary', type: 'minion' }],
 };
 
 const infoOf = infoFrom(FACES);
@@ -1449,6 +1450,8 @@ describe('several decks', () => {
       cards: [
         card('v', { code: '01094', owner: -1, back: 'villain', x: 300, y: 30 }),
         card('s', { code: '01097', owner: -1, back: 'encounter', x: 460, y: 30 }),
+        // A shared card that exhausts, unlike the villain and the scheme.
+        card('m', { code: '01147', owner: -1, back: 'encounter', x: 620, y: 30 }),
         card('a', { code: '01001', owner: 0, x: 300, y: 410 }),
         card('b', { code: '01001', owner: 1, x: 300, y: 630 }),
         card('c', { code: '01001', owner: 2, x: 300, y: 850 }),
@@ -1725,9 +1728,9 @@ describe('several decks', () => {
     await within(hand()).findByRole('img', { name: 'Spider-Man' });
     await fireEvent.keyDown(window, { key: 'q' });
 
-    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="m"]')!);
     await choose('Exhaust');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'm' }, 1);
   });
 
   it("credits an action on a shared card to the last own deck while another player's swatch is picked", async () => {
@@ -1738,9 +1741,9 @@ describe('several decks', () => {
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Alex · Ant-Man' }));
     await fireEvent.click(within(picker()).getByRole('radio', { name: 'Sam · She-Hulk' }));
 
-    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="s"]')!);
+    await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="m"]')!);
     await choose('Exhaust');
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 's' }, 1);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'm' }, 1);
   });
 
   it('credits a box action on an own card of a shared pile to the card', async () => {
@@ -1871,9 +1874,9 @@ describe('several decks', () => {
       expect(antMan.classList).not.toContain('open');
       expect(spiderMan.classList).not.toContain('hidden');
 
-      await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="v"]')!);
+      await fireEvent.click(surface().querySelector<HTMLElement>('.card[data-id="m"]')!);
       await choose('Exhaust');
-      expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'v' }, 1);
+      expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'm' }, 1);
     } finally {
       vi.restoreAllMocks();
     }

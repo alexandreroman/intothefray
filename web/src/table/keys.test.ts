@@ -17,12 +17,13 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01010': [{ name: 'Giant form', size: 'dstd' }],
-  '01094': [{ name: 'Rhino', stage: 'I' }],
-  '01095': [{ name: 'Rhino', stage: 'II' }],
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01095': [{ name: 'Rhino', type: 'villain', stage: 'II' }],
   '01097': [
-    { name: 'The Break-In!', size: 'land' },
-    { name: 'The Break-In!', size: 'land' },
+    { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
+    { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
   ],
+  '01107': [{ name: "Breakin' & Takin'", type: 'side_scheme', size: 'land' }],
 };
 
 const infoOf = infoFrom(FACES);
@@ -434,6 +435,26 @@ describe('keys on the table', () => {
     await press('Backspace');
     await press('b');
     expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it('E does nothing on the villain or a scheme, but readies one somehow exhausted', async () => {
+    const cards = [
+      card('v', { code: '01094', owner: -1, back: 'villain' }),
+      card('s', { code: '01097', owner: -1, back: 'encounter', x: 280 }),
+      card('side', { code: '01107', owner: -1, back: 'encounter', x: 560 }),
+      card('tired', { code: '01107', owner: -1, back: 'encounter', x: 840, exhausted: true }),
+    ];
+    const { session } = await renderTable(makeView({ cards }));
+
+    for (const id of ['v', 's', 'side']) {
+      await fireEvent.pointerEnter(placed(id));
+      await press('e');
+    }
+    expect(session.act).not.toHaveBeenCalled();
+
+    await fireEvent.pointerEnter(placed('tired'));
+    await press('e');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'tired' }, 0);
   });
 
   it('B sends a card in play to the bottom of its deck', async () => {

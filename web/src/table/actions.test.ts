@@ -21,19 +21,23 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01002': [{ name: 'Peter Parker' }, { name: 'Spider-Man' }],
-  '01094': [{ name: 'Rhino', stage: 'I' }],
-  '01095': [{ name: 'Rhino', stage: 'II' }],
-  '01096': [{ name: 'Rhino', stage: 'III' }],
+  '01094': [{ name: 'Rhino', type: 'villain', stage: 'I' }],
+  '01095': [{ name: 'Rhino', type: 'villain', stage: 'II' }],
+  '01096': [{ name: 'Rhino', type: 'villain', stage: 'III' }],
   '01097': [
-    { name: 'The Break-In!', size: 'land' },
-    { name: 'The Break-In!', size: 'land' },
+    { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
+    { name: 'The Break-In!', type: 'main_scheme', size: 'land' },
   ],
   '01100': [{ name: 'Hard to Keep Down', localized: { fr: { name: 'Coriace' } } }],
+  '01107': [{ name: "Breakin' & Takin'", type: 'side_scheme', size: 'land' }],
+  '01113': [{ name: 'Black Cat', type: 'ally' }],
+  '01117': [{ name: 'Web-Shooter', type: 'upgrade' }],
+  '01118': [{ name: 'Spider-Man', type: 'hero' }],
   // A villain whose stages are the faces of one card.
   '99001': [
-    { name: 'Spiral', stage: 'I' },
-    { name: 'Spiral', stage: 'II' },
-    { name: 'Spiral', stage: 'III' },
+    { name: 'Spiral', type: 'villain', stage: 'I' },
+    { name: 'Spiral', type: 'villain', stage: 'II' },
+    { name: 'Spiral', type: 'villain', stage: 'III' },
   ],
 };
 
@@ -463,7 +467,7 @@ describe('actionsFor', () => {
     const items = itemsFor({ kind: 'card', id: 's' });
 
     expect(groups(items)).toEqual([
-      ['exhaust', 'flip', 'stage'],
+      ['flip', 'stage'],
       ['tokens', 'statuses', 'modifiers'],
       ['discard', 'moveTo'],
     ]);
@@ -519,12 +523,9 @@ describe('actionsFor', () => {
 
   it('a single-faced villain stage card has no Flip, only its card choice, even with a next stage', () => {
     for (const id of ['v1', 'v2', 'v3']) {
-      expect(groups(itemsFor({ kind: 'card', id }, villainStages(id)))[0]).toEqual([
-        'exhaust',
-        'stage',
-      ]);
+      expect(groups(itemsFor({ kind: 'card', id }, villainStages(id)))[0]).toEqual(['stage']);
     }
-    expect(groups(itemsFor({ kind: 'card', id: 'v' }))[0]).toEqual(['exhaust', 'stage']);
+    expect(groups(itemsFor({ kind: 'card', id: 'v' }))[0]).toEqual(['stage']);
   });
 
   it('a stage card the catalog does not know yet has no Flip', () => {
@@ -535,6 +536,49 @@ describe('actionsFor', () => {
       cards: [card('v', { code: '99001', owner: -1, back: 'villain', stage: 'villain' })],
     });
     expect(groups(itemsFor({ kind: 'card', id: 'v' }, villain))[0]).toEqual(['exhaust', 'stage']);
+  });
+
+  describe('Exhaust on a villain or a scheme', () => {
+    /** One card of the encounter on the table, outside any stage. */
+    const encounterCard = (code: string, extra: Partial<CardView> = {}) =>
+      makeView({ cards: [card('e', { code, owner: -1, back: 'encounter', ...extra })] });
+
+    it('the villain and the main scheme get none, Flip or Change card… their default', () => {
+      const villain = itemsFor({ kind: 'card', id: 'v' });
+      expect(villain.map((it) => it.id)).not.toContain('exhaust');
+      expect(item(villain, 'stage').default).toBe(true);
+
+      const scheme = itemsFor({ kind: 'card', id: 's' });
+      expect(scheme.map((it) => it.id)).not.toContain('exhaust');
+      expect(item(scheme, 'flip').default).toBe(true);
+      expect(scheme.filter((it) => it.default)).toHaveLength(1);
+    });
+
+    it('a side scheme gets none, Flip its default', () => {
+      const items = itemsFor({ kind: 'card', id: 'e' }, encounterCard('01107'));
+
+      expect(groups(items)[0]).toEqual(['flip']);
+      expect(item(items, 'flip').default).toBe(true);
+    });
+
+    it('an exhausted villain or scheme still offers Ready, its default', () => {
+      for (const code of ['01094', '01097', '01107']) {
+        const items = itemsFor({ kind: 'card', id: 'e' }, encounterCard(code, { exhausted: true }));
+
+        expect(item(items, 'exhaust')).toMatchObject({ label: 'Ready', key: 'E', default: true });
+        expect(items.filter((it) => it.default)).toHaveLength(1);
+      }
+    });
+
+    it('an ally, an upgrade and a hero keep Exhaust, their default', () => {
+      for (const code of ['01113', '01117', '01118']) {
+        const view = makeView({ cards: [card('mine', { code })] });
+        const items = itemsFor({ kind: 'card', id: 'mine' }, view);
+
+        expect(item(items, 'exhaust')).toMatchObject({ label: 'Exhaust', default: true });
+        expect(items.filter((it) => it.default)).toHaveLength(1);
+      }
+    });
   });
 
   it('a stage top card cannot leave the table', () => {
