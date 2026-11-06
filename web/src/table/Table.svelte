@@ -126,6 +126,7 @@
     storedViewMode,
     tableMapOf,
     type TableMap,
+    VILLAIN_ROW_HEIGHT,
     type ViewMode,
   } from './rows';
   import { motion } from './motion.svelte';
@@ -643,14 +644,20 @@
   const rowsBottom = $derived(dockMode ? bottomPadding : Math.max(restingRoom, controlsRoom));
   // Numbers, so that the row map, which the layers re-measure on, changes only with them.
   const lastDeckRow = $derived(lastRow(piles));
+  // On a tablet (touch mode outside dock mode) the villain's row is drawn at its full height: a row of
+  // cards fits between the villain's cards and the first player's row, where a finger lays them. A
+  // window short of height scrolls. Elsewhere the villain's row takes rowPitch's default minimum.
+  const minVillain = $derived(touchMode.current && !dockMode ? VILLAIN_ROW_HEIGHT : undefined);
   // The rows spread over the visible height they have, at zoom 1: the villain's row and two players'
   // rows, or a single deck's one, fill it. Zooming out shows more of the table, it does not spread
   // its rows further (rowPitch).
-  const pitch = $derived(rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow));
+  const pitch = $derived(
+    rowPitch(visibleHeight - topPadding - rowsBottom, lastDeckRow, minVillain),
+  );
   const shownRow = $derived(
     focused && shownSeat !== null ? rowOfSeat(piles, shownSeat) : undefined,
   );
-  const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow));
+  const rowMap = $derived(spreadRows(pitch, lastDeckRow, shownRow, minVillain));
 
   // ---- Dock mode's compact, wrapped table (spec 3.7) ----
 

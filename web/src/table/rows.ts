@@ -134,15 +134,24 @@ const VILLAIN_CONTENT = 210;
  * which the villain's row is drawn as high as (villainPitch), takes all the
  * height above the player's band. Computed at zoom 1: zooming out shows more
  * of the table, it does not spread its rows.
+ *
+ * The villain's row is drawn at least `minVillain` high (villainPitch). A
+ * tablet passes VILLAIN_ROW_HEIGHT: a row of cards then fits between the
+ * villain's cards and the first player's row, where a finger lays them, and a
+ * window short of height scrolls.
  */
-export function rowPitch(available: number, lastRow: number): number {
+export function rowPitch(
+  available: number,
+  lastRow: number,
+  minVillain = MIN_VILLAIN_PITCH,
+): number {
   // A third or a fourth deck's row is drawn below the screen's height, a pitch apart.
   const fittedRows = lastRow === 1 ? 1 : 2;
   let pitch = (available - ROW_HEIGHT) / fittedRows;
   // The villain's row is drawn higher than a pitch this short (villainPitch): with two players'
   // rows, the one pitch left takes what that row leaves.
-  if (fittedRows === 2 && pitch < MIN_VILLAIN_PITCH) {
-    pitch = available - ROW_HEIGHT - MIN_VILLAIN_PITCH;
+  if (fittedRows === 2 && pitch < minVillain) {
+    pitch = available - ROW_HEIGHT - minVillain;
   }
   const onGrid = Math.floor(pitch / GRID) * GRID;
   return Math.min(MAX_PITCH, Math.max(MIN_PITCH, onGrid));
@@ -150,11 +159,13 @@ export function rowPitch(available: number, lastRow: number): number {
 
 /**
  * The drawn height of the villain's row for a pitch: the same, so that every
- * row lies as far from the next, but never so short that the active counter
- * runs into player 1's identity.
+ * row lies as far from the next, but never less than `minVillain`: by default
+ * the least height at which the active counter clears player 1's identity. A
+ * tablet passes VILLAIN_ROW_HEIGHT, the row's full height, so that a row of
+ * cards fits between the villain's cards and the first player's row (rowPitch).
  */
-export function villainPitch(pitch: number): number {
-  return Math.max(pitch, MIN_VILLAIN_PITCH);
+export function villainPitch(pitch: number, minVillain = MIN_VILLAIN_PITCH): number {
+  return Math.max(pitch, minVillain);
 }
 
 /** A row of the table where it is drawn, in table units. */
@@ -192,9 +203,12 @@ function tableOffset(band: Band, offset: number): number {
 
 /**
  * The rows drawn `pitch` apart (rowPitch), the villain's villainPitch high,
- * whatever their height on the table: "All" draws every row, down to the
- * last one, `lastRow`; "Villain + player" the villain's and the shown row
- * right under it, the others hidden. Within a row, its content is drawn as
+ * at least `minVillain`, whatever their height on the table: "All" draws
+ * every row, down to the last one, `lastRow`; "Villain + player" the
+ * villain's and the shown row right under it, the others hidden. A tablet
+ * passes VILLAIN_ROW_HEIGHT: a row of cards fits between the villain's cards
+ * and the first player's row, where a finger lays them, and a window short
+ * of height scrolls. Within a row, its content is drawn as
  * it is and its empty tail squeezed or stretched to the drawn height, so that
  * a card dropped in a gap lands near where it was dropped: drops snap to the
  * table's grid (drag.ts, spotOf), whose lines a stretched tail draws up to
@@ -205,8 +219,13 @@ function tableOffset(band: Band, offset: number): number {
  * on its last height, so that nothing drawn lands in the hidden row after it.
  * Heights above the table belong to the villain's row.
  */
-export function spreadRows(pitch: number, lastRow: number, shownRow?: number): RowMap {
-  const villain = villainPitch(pitch);
+export function spreadRows(
+  pitch: number,
+  lastRow: number,
+  shownRow?: number,
+  minVillain = MIN_VILLAIN_PITCH,
+): RowMap {
+  const villain = villainPitch(pitch, minVillain);
   const rows =
     shownRow === undefined ? Array.from({ length: lastRow + 1 }, (_, row) => row) : [0, shownRow];
   // Top to bottom, as drawn.

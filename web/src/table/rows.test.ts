@@ -91,6 +91,51 @@ describe('rows', () => {
     expect(villainPitch(340)).toBe(340);
   });
 
+  describe("a tablet's minimum, the villain's row at its full height", () => {
+    const tablet = VILLAIN_ROW_HEIGHT;
+
+    it("draws the villain's row 380 high with a single deck, whatever the height available", () => {
+      for (const available of [0, 475, 568, 820, 5000]) {
+        expect(villainPitch(rowPitch(available, 1, tablet), tablet)).toBe(VILLAIN_ROW_HEIGHT);
+      }
+      // The player's pitch is the same as with the default minimum.
+      expect(rowPitch(568, 1, tablet)).toBe(rowPitch(568, 1));
+    });
+
+    it("draws the villain's row 380 high with two decks, the one pitch left taking what it leaves", () => {
+      // Halved, 948 would give 364: the villain's row 380 high, the pitch 948 − 600 = 348, 340.
+      expect(rowPitch(948, 2, tablet)).toBe(340);
+      expect(rowPitch(948, 2)).toBe(360);
+      // The pitch keeps its own bounds.
+      expect(rowPitch(700, 2, tablet)).toBe(ROW_HEIGHT);
+      expect(rowPitch(5000, 2, tablet)).toBe(VILLAIN_ROW_HEIGHT);
+      for (let available = 0; available < 1200; available++) {
+        const pitch = rowPitch(available, 2, tablet);
+        expect(villainPitch(pitch, tablet)).toBe(VILLAIN_ROW_HEIGHT);
+        if (pitch > ROW_HEIGHT) {
+          expect(VILLAIN_ROW_HEIGHT + pitch + ROW_HEIGHT).toBeLessThanOrEqual(available);
+        }
+      }
+    });
+
+    it("draws the villain's row where it lies, the first player's row right under it", () => {
+      const rows = spreadRows(ROW_HEIGHT, 2, undefined, tablet);
+      for (const y of [-10, 0, 187, 210, 300, 379]) {
+        expect(rows.toDisplay(y)).toBe(y);
+        expect(rows.toTable(y)).toBe(y);
+      }
+      expect(rows.toDisplay(380)).toBe(380);
+      expect(rows.toDisplay(600)).toBe(600);
+      // "Villain + player": the shown row right under the villain's 380.
+      expect(spreadRows(ROW_HEIGHT, 3, 2, tablet).toDisplay(600)).toBe(380);
+    });
+
+    it('keeps the default minimum of 270 without one', () => {
+      expect(villainPitch(220)).toBe(270);
+      expect(spreadRows(ROW_HEIGHT, 2).toDisplay(380)).toBe(270);
+    });
+  });
+
   describe('"All", one pitch apart', () => {
     // Three rows, drawn at 0, 340 and 680.
     const rows = spreadRows(340, 2);

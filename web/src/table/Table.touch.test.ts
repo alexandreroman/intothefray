@@ -264,6 +264,27 @@ describe('select mode', () => {
   });
 });
 
+describe("the villain's row on a tablet", () => {
+  // An iPad on its side. jsdom's table shows no height, so the rows are drawn as close as they go.
+  const IPAD: TestScreen = { width: 1180, height: 820 };
+
+  /** Where a card 30 into player 1's row, at 410, is drawn. */
+  async function playerCardTop(): Promise<string | undefined> {
+    await renderTable(makeView([card('mine', { y: 410 }), ...OTHERS]));
+    return placed('mine').style.top;
+  }
+
+  it('is drawn at its full height in touch mode, a row of cards fitting under its own', async () => {
+    mockScreen({ ...IPAD, touch: true });
+    expect(await playerCardTop()).toBe('410px');
+  });
+
+  it('is drawn squeezed to 270 with a mouse on the same screen', async () => {
+    mockScreen(IPAD);
+    expect(await playerCardTop()).toBe('300px');
+  });
+});
+
 describe('touch zoom', () => {
   it('a pinch on the table zooms and remembers the zoom (pinch_saves_zoom)', async () => {
     mockScreen({ ...DESKTOP, touch: true });
