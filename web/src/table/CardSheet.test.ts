@@ -680,6 +680,20 @@ describe('CardSheet', () => {
       expect(rule('.face.land')).toContain('--face-ratio: 7 / 5;');
     });
 
+    it('keeps one gutter around the card and its column, the sheet padding its edges by 12 px', () => {
+      // The status tabs and modifier badges stand 6 table units out of the card (CardCounters).
+      const inspector = rule('.inspector');
+      expect(inspector).toContain(
+        '--overhang: max(var(--portrait-w) * 6 / 112, var(--landscape-w) * 6 / 157);',
+      );
+      expect(inspector).toContain('--gutter: calc(var(--overhang) + 12px);');
+      expect(rule('.top')).toContain('gap: var(--gutter);');
+      const dock = rule('.inspector.dock');
+      expect(dock).toContain('--portrait-w: min(100dvw - 24px, 42dvh * 5 / 7);');
+      expect(dock).toContain('--landscape-w: min(100dvw - 24px, 42dvh * 7 / 5);');
+      expect(dock).toContain('padding: 0 calc(var(--gutter) - 12px) calc(var(--gutter) - 12px);');
+    });
+
     it('upright, lays the header, the counters and the entries full width under the card', () => {
       const column = rule('.inspector.dock .side');
       expect(column).toContain('align-self: stretch;');
@@ -691,11 +705,16 @@ describe('CardSheet', () => {
     it('on its side, keeps the card the whole sheet high beside a column that scrolls', () => {
       const side = block('@media (max-height: 500px)');
       expect(ruleIn(side, '.inspector.dock .top')).toContain('flex-direction: row;');
+      // The card and its column as high as the sheet's room less the gutter under them.
+      const dock = ruleIn(side, '.inspector.dock');
+      expect(dock).toContain('--card-room: calc(var(--sheet-room) - var(--gutter) + 12px);');
+      expect(dock).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
+      expect(dock).toContain('--landscape-w: calc(var(--sheet-room) * 7 / 5);');
       const face = ruleIn(side, '.inspector.dock .face');
-      expect(face).toContain('height: var(--sheet-room);');
+      expect(face).toContain('height: var(--card-room);');
       expect(face).toContain('width: auto;');
       const column = ruleIn(side, '.inspector.dock .side');
-      expect(column).toContain('max-height: var(--sheet-room);');
+      expect(column).toContain('max-height: var(--card-room);');
       expect(column).toContain('overflow-y: auto;');
     });
 
@@ -769,6 +788,11 @@ describe('CardSheet', () => {
 
     it('makes a portrait card as high as the room, at most 460 px and 70 % of the screen', () => {
       expect(rule('.inspector.tablet')).toContain('--sheet-room: min(460px, 70dvh);');
+      const tablet = rule('.inspector.tablet');
+      expect(tablet).toContain('--portrait-w: calc(var(--sheet-room) * 5 / 7);');
+      expect(tablet).toContain('--landscape-w: var(--sheet-room);');
+      // The sheet pads its bottom by 14 px (Sheet.svelte), its sides not at all.
+      expect(tablet).toContain('padding: 0 var(--gutter) calc(var(--gutter) - 14px);');
       expect(rule('.inspector.beside .visual > .face')).toContain('height: var(--sheet-room);');
       // Side by side: the face beside its column.
       expect(rule('.top')).not.toContain('flex-direction');
@@ -1095,7 +1119,7 @@ describe('CardSheet', () => {
       expect(rule('.inspector.dock .visual.stacked')).toContain('--slide-h: 42dvh;');
       const side = block('@media (max-height: 500px)');
       expect(ruleIn(side, '.inspector.dock .visual.stacked')).toContain(
-        '--slide-h: calc(var(--sheet-room) - var(--carousel-chrome));',
+        '--slide-h: calc(var(--card-room) - var(--carousel-chrome));',
       );
     });
   });
@@ -1495,16 +1519,16 @@ describe('CardSheet', () => {
         ).toEqual([]);
       });
 
-      it('turns the face away to edge-on, lifted, then shows the new side, its name and entries', async () => {
+      it('turns the face away to edge-on, lifted, then shows the new side on it', async () => {
         const { rerender } = renderSheet();
         const dialog = screen.getByRole('dialog');
 
         await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
 
-        // Still the old side, its name and entries, as it turns away.
+        // Still the old face as it turns away; the column shows the new side's name and entries.
         expect(faceImage().getAttribute('src')).toBe('rhino.png');
-        expect(screen.getByText('Rhino', { selector: '.name' })).toBeTruthy();
-        expect(screen.queryByRole('button', { name: 'Change card…' })).toBeNull();
+        expect(screen.getByText('Rhino II', { selector: '.name' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
         const away = turns()[0]!;
         expect(away.keyframes[0]?.transform).toContain('rotateY(0deg)');
         expect(away.keyframes.at(-1)?.transform).toContain('rotateY(90deg)');
@@ -1523,7 +1547,7 @@ describe('CardSheet', () => {
         expect(screen.getByRole('dialog')).toBe(dialog);
       });
 
-      it("changes the column at once as the card is edge-on: the old side's entries never linger", async () => {
+      it("changes the column at once as the card turns: the old side's entries never linger", async () => {
         const REVEAL = item('reveal');
         const deckEntries: ContextEntry[] = [
           { kind: 'action', item: REVEAL },
@@ -1535,21 +1559,25 @@ describe('CardSheet', () => {
         animate.mockClear();
 
         await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
-        expect(screen.getByRole('button', { name: 'Reveal' })).toBeTruthy();
 
-        // The card turns away; edge-on, the new side's entries alone, none fading or sliding out.
-        expect(running).toHaveLength(1);
-        running.shift()?.onfinish?.();
-        await tick();
+        // From the update on, before any animation ends: the new side's entries alone, none fading
+        // or sliding out, while the face still shows the old side as it turns away.
         expect(screen.queryByRole('button', { name: 'Reveal' })).toBeNull();
         expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Change card…' })).toBeTruthy();
-        // The face alone moves: it turns back flat.
+        expect(faceImage().getAttribute('src')).toBe('rhino.png');
+        expect(running).toHaveLength(1);
+
+        running.shift()?.onfinish?.();
+        await tick();
+        expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+        expect(screen.queryByRole('button', { name: 'Reveal' })).toBeNull();
+        // The face alone moves: it turns away, then back flat.
         const moved = animate.mock.contexts as Element[];
         expect(moved.filter((element) => !element.classList.contains('face'))).toEqual([]);
       });
 
-      it("turns a deck's back over to the card revealed on it, its count and counters switching once edge-on", async () => {
+      it("turns a deck's back over to the card revealed on it, its count gone at once, its counters once edge-on", async () => {
         const deck: ContextHeader = {
           ...HEADER,
           name: 'Encounter deck',
@@ -1564,9 +1592,7 @@ describe('CardSheet', () => {
         await rerender({ header: TURNED, images: ['rhino-2.png'], counters: [DAMAGE] });
 
         expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
-        expect(
-          screen.getByText('20', { selector: '.count' }).classList.contains('count-pill'),
-        ).toBe(true);
+        expect(document.querySelector('.inspector .count')).toBeNull();
         expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
         expect(turns()).toHaveLength(1);
 

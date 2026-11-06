@@ -31,12 +31,16 @@
   or closed; a token fades in or out; a pressed button sinks. When the
   face the card shows changes (a flip, a stage turned, a card turned face
   down or up, a deck's back giving way to the card revealed on it), the card
-  turns over as a table card does, in place: the name, the count, the
-  counters and the entries follow its new side once it is edge-on. When the
-  new side needs another size, the sheet eases to it first, the old side
-  still shown, then the card turns: the new side is measured beforehand in a
-  hidden copy of the content. Another element opens a sheet of its own
-  (Table.svelte keys it), which does not turn.
+  turns over as a table card does, in place: the name, the count and the
+  entries show the new side at once, so that the old side's actions (a deck's
+  Reveal) never linger; the face, its counters and the layout around it
+  follow once it is edge-on. When the new side needs another size, the sheet
+  eases to it first, the old face still shown, then the card turns: the new
+  side is measured beforehand in a hidden copy of the content. Another
+  element opens a sheet of its own (Table.svelte keys it), which does not
+  turn.
+  One gutter keeps the card, its column and the sheet's edges apart, wide
+  enough for the tabs and badges standing out of the card's edges.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
   A card of a stack shows the whole stack in place of its face: a carousel
@@ -138,9 +142,13 @@
   };
 
   const live = $derived<Side>({ images, landscape, header, counters, entries, cardId });
-  /** The side the card turns away from, shown until it is edge-on; null while it does not turn. */
+  /**
+   * The side the card turns away from, which its face shows until it is edge-on; null while it does
+   * not turn. The column, its name and entries, shows the live side from the update that brings it.
+   */
   let leaving = $state.raw<Side | null>(null);
-  const side = $derived(leaving ?? live);
+  /** The side the face shows, with its counters and the layout around it. */
+  const faceSide = $derived(leaving ?? live);
 
   let faceElement = $state<HTMLElement>();
   let turn: Animation | undefined;
@@ -154,6 +162,8 @@
   let centredOnce = false;
   /** The ease of the sheet to the new side's size; it holds that size until the turn ends. */
   let resize: Animation | undefined;
+  /** The content's height before the new side's column came in, which the ease starts from, in px. */
+  let heightBefore = 0;
   /** The side of the last update, which a new face turns away from. */
   let lastSide: Side | null = null;
   /** The hidden copy of the content, drawn with the new side to measure its height. */
@@ -180,7 +190,7 @@
     return `${of.landscape ? 'land' : 'portrait'}|${of.images.join('|')}`;
   }
 
-  // Before the sheet is drawn again: the old side stays on screen until the turn reaches edge-on.
+  // Before the sheet is drawn again: the old face stays on screen until the turn reaches edge-on.
   $effect.pre(() => {
     const now = live;
     untrack(() => {
@@ -303,9 +313,10 @@
   }
 
   /**
-   * Shows the card's new side: the old one stays until the card is edge-on, while the hidden copy
-   * measures the new one; then the column changes at once (turnOver). Under reduced motion, the
-   * face and the rest just change.
+   * Shows the card's new side: the column changes at once, its rows neither sliding nor fading
+   * (atOnce), while the face keeps the old side until it is edge-on (turnOver) and the hidden copy
+   * measures the new one. Run before the update is drawn: the content's height is still the old
+   * side's, which the sheet eases from. Under reduced motion, the face and the rest just change.
    */
   function changeSide(from: Side): void {
     if (motionMs(TURN_MS) === 0 || faceElement === undefined || content === undefined) {
@@ -313,24 +324,32 @@
     }
     turn?.cancel();
     resize?.cancel();
+    heightBefore = content.offsetHeight;
     leaving = from;
     measureWidth = content.offsetWidth;
+    atOnce = true;
+    // The rows and pages that come or go with this update take their transitions at its end.
+    void tick().then(() => (atOnce = false));
   }
 
-  /** Eases the sheet to the new side's height, if it differs, then turns the card over. */
+  /**
+   * Eases the sheet from the old side's height to the new side's, then turns the card over. Run
+   * before the update is painted: the content, with the new column beside the old face, never
+   * shows at a height of its own. No ease when neither differs from the new side's.
+   */
   function resizeThenTurn(target: number): void {
     measureWidth = null;
     if (content === undefined) {
       return;
     }
     const current = content.offsetHeight;
-    if (Math.abs(target - current) < 1) {
+    if (Math.abs(target - heightBefore) < 1 && Math.abs(target - current) < 1) {
       turnOver();
       return;
     }
-    // Held at the new size until the turn ends: the column changing as the card is edge-on does not
+    // Held at the new size until the turn ends: the layout changing as the card is edge-on does not
     // move the sheet again.
-    const easing = content.animate([{ height: `${current}px` }, { height: `${target}px` }], {
+    const easing = content.animate([{ height: `${heightBefore}px` }, { height: `${target}px` }], {
       duration: RESIZE_MS,
       easing: 'ease-out',
       fill: 'forwards',
@@ -342,10 +361,9 @@
   /**
    * Turns the card over around its vertical axis, as a table card does (motion.svelte.ts #flip):
    * its old side (leaving) turns away to edge-on, lifted, then its new side turns back flat and
-   * comes down. Edge-on, the column changes at once (atOnce), its entries neither fading nor
-   * sliding: both sides' entries in the column together would mix in its grid and overlap; the
-   * card hides the change and the sheet already has the new side's height. The sheet takes its
-   * own height back once the turn ends.
+   * comes down. Edge-on, the face, its counters and the layout take the new side, which the column
+   * shows already; the sheet has the new side's height by then. The sheet takes its own height
+   * back once the turn ends.
    */
   function turnOver(): void {
     if (faceElement === undefined) {
@@ -364,10 +382,7 @@
     });
     turn = away;
     away.onfinish = () => {
-      atOnce = true;
       leaving = null;
-      // The rows and pages that come or go with this update take their transitions at its end.
-      void tick().then(() => (atOnce = false));
       const back = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
       turn = back;
       away.cancel();
@@ -378,7 +393,7 @@
     };
   }
 
-  const shown = $derived(visibleEntries(side.entries));
+  const shown = $derived(visibleEntries(live.entries));
   const split = $derived(splitEntries(shown));
 
   let openId = $state<string | null>(null);
@@ -398,7 +413,8 @@
   let heldForStack = false;
   /**
    * The pages and rows of this update come and go at once: a switch to another card of the stack,
-   * or the column of a turning card as it is edge-on.
+   * or the column of a card that turns over: both sides' entries in the column together would mix
+   * in its grid and overlap.
    */
   let atOnce = false;
 
@@ -626,9 +642,9 @@
 <!-- The shown card's tokens, tabs and badges, on its face: the way to change them. -->
 {#snippet faceCounters()}
   <CardCounters
-    counters={side.counters}
-    landscape={side.landscape}
-    scheme={side.header.scheme ?? false}
+    counters={faceSide.counters}
+    landscape={faceSide.landscape}
+    scheme={faceSide.header.scheme ?? false}
     {onstep}
   />
 {/snippet}
@@ -654,8 +670,8 @@
   >
     {@render spacer(stack[0]!)}
     {#each stack as card (card.id)}
-      {@const shown = card.id === side.cardId}
-      {@const landscape = shown ? side.landscape : card.landscape}
+      {@const shown = card.id === faceSide.cardId}
+      {@const landscape = shown ? faceSide.landscape : card.landscape}
       <!-- A neighbour is a button: its role is set as it peeks, which the check cannot follow. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
@@ -677,14 +693,14 @@
           {@attach shown && holdFace}
         >
           <CardFace
-            images={shown ? side.images : card.images}
-            name={shown ? side.header.name : card.name}
+            images={shown ? faceSide.images : card.images}
+            name={shown ? faceSide.header.name : card.name}
             {landscape}
           />
           <CardCounters
-            counters={shown ? side.counters : (card.counters ?? [])}
+            counters={shown ? faceSide.counters : (card.counters ?? [])}
             {landscape}
-            scheme={(shown ? side.header.scheme : card.scheme) ?? false}
+            scheme={(shown ? faceSide.header.scheme : card.scheme) ?? false}
             onstep={shown ? onstep : undefined}
           />
         </div>
@@ -732,20 +748,24 @@
 {/snippet}
 
 <Sheet label={header.label} dock={dock.current} wide {onclose}>
-  <div class={['inspector', layoutOf(side)]} bind:this={content}>
+  <div class={['inspector', layoutOf(faceSide)]} bind:this={content}>
     <div class="top">
       <div class="visual" class:stacked={stack.length > 1}>
         {#if stack.length > 1}
           {@render stackCarousel()}
         {:else}
-          <div class="face" class:land={side.landscape} bind:this={faceElement}>
-            <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+          <div class="face" class:land={faceSide.landscape} bind:this={faceElement}>
+            <CardFace
+              images={faceSide.images}
+              name={faceSide.header.name}
+              landscape={faceSide.landscape}
+            />
             {@render faceCounters()}
           </div>
         {/if}
       </div>
       <div class="side">
-        {@render nameline(side.header)}
+        {@render nameline(live.header)}
         {@render entriesBlock()}
       </div>
     </div>
@@ -778,10 +798,20 @@
 </Sheet>
 
 <style>
+  /*
+    One gutter, --gutter, on every side of the card and its column: from the sheet's edges to the
+    card, between the card and the column, from the column to the sheet's edge, and under the card.
+    It keeps 12 px clear around the status tabs and modifier badges, which stand 6 table units out
+    of the card's edges (CardCounters.svelte), --overhang: 6 / 112 of a portrait face's width, 6 /
+    157 of a landscape one's, the widest of the two as each layout sets their widths (--portrait-w,
+    --landscape-w), so that a card turning over keeps the gutter it had. The sheet pads its own
+    edges (Sheet.svelte): the inspector pads the rest.
+  */
   .inspector {
+    --overhang: max(var(--portrait-w) * 6 / 112, var(--landscape-w) * 6 / 157);
+    --gutter: calc(var(--overhang) + 12px);
     display: flex;
     flex-direction: column;
-    padding: 0 14px;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -798,7 +828,7 @@
   /* The face beside its column: its name and entries. */
   .top {
     display: flex;
-    gap: 12px;
+    gap: var(--gutter);
     align-items: flex-start;
   }
 
@@ -1160,10 +1190,13 @@
     Dock mode upright: the card on top, centred, as wide as the sheet allows
     while it stays at most 42 % of the screen high; the name, the counters
     and the entries full width under it. The
-    sheet pads them and scrolls the whole (Sheet.svelte), if it must.
+    sheet pads them and scrolls the whole (Sheet.svelte), if it must. A face
+    is at most as wide as the sheet, which pads its edges by 12 px.
   */
   .inspector.dock {
-    padding: 0;
+    --portrait-w: min(100dvw - 24px, 42dvh * 5 / 7);
+    --landscape-w: min(100dvw - 24px, 42dvh * 7 / 5);
+    padding: 0 calc(var(--gutter) - 12px) calc(var(--gutter) - 12px);
   }
 
   .inspector.dock .top {
@@ -1196,8 +1229,15 @@
     A phone on its side: two columns, the card as high as the sheet, as wide as
     its aspect makes it, on the left, and the rest on its right. Only the
     column scrolls, once its content is higher than the room the sheet has.
+    --card-room: their height, the sheet's room less the gutter under them.
   */
   @media (max-height: 500px) {
+    .inspector.dock {
+      --card-room: calc(var(--sheet-room) - var(--gutter) + 12px);
+      --portrait-w: calc(var(--sheet-room) * 5 / 7);
+      --landscape-w: calc(var(--sheet-room) * 7 / 5);
+    }
+
     .inspector.dock .top {
       flex-direction: row;
       align-items: flex-start;
@@ -1210,18 +1250,18 @@
 
     /* The carousel as high as the sheet; as wide as a card with 44 px on each side for its neighbours. */
     .inspector.dock .visual.stacked {
-      --slide-h: calc(var(--sheet-room) - var(--carousel-chrome));
+      --slide-h: calc(var(--card-room) - var(--carousel-chrome));
       width: calc(var(--slide-h) * 5 / 7 + 88px);
     }
 
     .inspector.dock .face {
       width: auto;
-      height: var(--sheet-room);
+      height: var(--card-room);
     }
 
     .inspector.dock .side {
       align-self: auto;
-      max-height: var(--sheet-room);
+      max-height: var(--card-room);
       overflow-y: auto;
       overscroll-behavior: contain;
     }
@@ -1237,6 +1277,9 @@
   */
   .inspector.tablet {
     --sheet-room: min(460px, 70dvh);
+    --portrait-w: calc(var(--sheet-room) * 5 / 7);
+    --landscape-w: var(--sheet-room);
+    padding: 0 var(--gutter) calc(var(--gutter) - 14px);
   }
 
   /*
