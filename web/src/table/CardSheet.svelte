@@ -51,7 +51,9 @@
   moves, or a tapped neighbour, at once, is asked of the caller (onpick): the
   same sheet then shows it, the carousel gliding on to it,
   its column switching at once, its rows neither sliding nor fading, never
-  turning, its page keeping its height as through a submenu. The carousel
+  turning. Under the card, its page keeps its height as through a submenu;
+  beside it, the card sets the sheet's height, and the page takes what the
+  new card's entries need, up to the room. The carousel
   bringing the card to its middle is the only motion: every card keeps its face,
   image and counters drawn through the switch, so nothing blinks as it loads
   again. The centred card is the face that turns over on a flip.
@@ -61,10 +63,12 @@
   import { tick, untrack } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
+  import { MediaQuery } from 'svelte/reactivity';
   import { fade, fly, slide } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
   import { buttonGrid } from '../lib/buttonGrid';
   import { overflowTip } from '../lib/overflowTip';
+  import { SHORT_SCREEN_QUERY } from '../lib/screen';
   import CardCounters from './CardCounters.svelte';
   import CardFace from './CardFace.svelte';
   import './countPill.css';
@@ -113,6 +117,8 @@
   } = $props();
 
   const dock = dockMode();
+  /** A phone on its side: in dock mode, the column lies beside the card (the @media rule below). */
+  const short = new MediaQuery(SHORT_SCREEN_QUERY);
 
   /** How long a page takes to slide in as the other one leaves, in ms. */
   const PAGE_MS = 220;
@@ -183,6 +189,14 @@
     const main = stack.length > 1 ? stack[0] : undefined;
     const landscape = main === undefined || main.id === of.cardId ? of.landscape : main.landscape;
     return ['tablet', landscape ? 'column' : 'beside'];
+  }
+
+  /**
+   * Whether the column lies beside the card, which sets the sheet's height then: a phone on its
+   * side, or a tablet beside a portrait card. Under the card, the sheet's height follows the column.
+   */
+  function columnBesideCard(of: Side): boolean {
+    return dock.current ? short.current : layoutOf(of).includes('beside');
   }
 
   /** What tells one face from another: a new array of the same images is the same face. */
@@ -296,15 +310,21 @@
   }
 
   /**
-   * Shows another card of the stack at once: the page keeps its height and goes back to the main
-   * page, and the column changes in place, its rows neither sliding nor fading (atOnce). A fade
-   * would dip the column to nothing between the two cards; the carousel gliding to the new one is
-   * motion enough. Its faces stay as they are, the shown one's counters coming to life.
+   * Shows another card of the stack at once: the page goes back to the main page, and the column
+   * changes in place, its rows neither sliding nor fading (atOnce). A fade would dip the column to
+   * nothing between the two cards; the carousel gliding to the new one is motion enough. Its faces
+   * stay as they are, the shown one's counters coming to life. Under the card, the page keeps its
+   * height, so that the sheet does not jump nor the card move; beside it, the card keeps the sheet's
+   * height anyway, and the page takes what the new card's entries need, scrolling only past the room.
    */
   function switchCard(): void {
     turn?.cancel();
     resize?.cancel();
-    keepHeightForStack();
+    if (columnBesideCard(live)) {
+      heldHeight = null;
+    } else {
+      keepHeightForStack();
+    }
     atOnce = true;
     pageStep = -1;
     openId = null;
@@ -409,7 +429,10 @@
    * size follows its content.
    */
   let heldHeight = $state<number | null>(null);
-  /** The sheet has gone to another card of the stack: its page keeps its height from then on. */
+  /**
+   * The sheet has gone to another card of the stack, its column under the card: its page keeps its
+   * height from then on.
+   */
   let heldForStack = false;
   /**
    * The pages and rows of this update come and go at once: a switch to another card of the stack,

@@ -4,6 +4,7 @@ import CardSheet from './CardSheet.svelte';
 import sheetSource from './CardSheet.svelte?raw';
 import countersSource from './CardCounters.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
+import { LANDSCAPE_PHONE, mockScreen, PHONE, type TestScreen } from '../lib/screen.testing';
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
@@ -131,6 +132,9 @@ const ARMOR_HEADER: ContextHeader = {
   color: '#a66bff',
   label: 'Armored Rhino, Attachment',
 };
+
+/** A tablet on its side, with a finger: neither dock mode nor a phone on its side. */
+const TOUCH_TABLET: TestScreen = { width: 1180, height: 820, touch: true };
 
 /** The strip of the stack under the card, if shown. */
 /** The carousel of the stack in place of the card, if shown. */
@@ -1074,14 +1078,71 @@ describe('CardSheet', () => {
       ]);
     });
 
-    it("keeps the main page's height through a switch, as through a submenu", async () => {
-      const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
-      const pages = pagesOf(233);
+    describe("the page's height through a switch", () => {
+      afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+      });
 
-      await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+      /** Opens the stack on its main card, its page 233 px high, and switches to the next card. */
+      async function switchOn(
+        screenSize: TestScreen,
+        options: { dock: boolean; stack?: StackCard[] },
+      ) {
+        mockScreen(screenSize);
+        const { rerender } = renderSheet({
+          dock: options.dock,
+          stack: options.stack ?? STACK,
+          cardId: 'rhino',
+        });
+        const pages = pagesOf(233);
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        return pages;
+      }
 
-      expect(pages.style.height).toBe('233px');
-      expect(pages.classList).toContain('held');
+      it("keeps the main page's height on a phone upright, as through a submenu", async () => {
+        const pages = await switchOn(PHONE, { dock: true });
+
+        expect(pages.style.height).toBe('233px');
+        expect(pages.classList).toContain('held');
+      });
+
+      it("keeps the main page's height on a tablet under a landscape card", async () => {
+        const scheme: StackCard = { ...STACK[0]!, landscape: true };
+        const pages = await switchOn(TOUCH_TABLET, { dock: false, stack: [scheme, STACK[1]!] });
+
+        expect(pages.style.height).toBe('233px');
+        expect(pages.classList).toContain('held');
+      });
+
+      it('holds no height on a tablet beside a portrait card: the column takes what the new card needs', async () => {
+        const pages = await switchOn(TOUCH_TABLET, { dock: false });
+
+        expect(pages.style.height).toBe('');
+        expect(pages.classList).not.toContain('held');
+      });
+
+      it('holds no height on a phone on its side, beside the card', async () => {
+        const pages = await switchOn(LANDSCAPE_PHONE, { dock: true });
+
+        expect(pages.style.height).toBe('');
+        expect(pages.classList).not.toContain('held');
+      });
+
+      it("lets a submenu's hold go as it switches beside the card, and holds a later submenu again", async () => {
+        mockScreen(TOUCH_TABLET);
+        const { rerender } = renderSheet({ dock: false, stack: STACK, cardId: 'rhino' });
+        pagesOf(233);
+        await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        await tick();
+
+        const pages = pagesOf(180);
+        expect(pages.style.height).toBe('');
+        await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+        expect(pages.style.height).toBe('180px');
+      });
     });
 
     it('closes an open submenu as it switches', async () => {

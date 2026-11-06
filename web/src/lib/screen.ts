@@ -9,6 +9,12 @@
  */
 export const SMALL_SCREEN_QUERY = '(max-width: 600px), (max-height: 500px)';
 
+/**
+ * A phone on its side, up to 500px tall: in dock mode, the card inspector lays the card's column
+ * beside it rather than under it (CardSheet.svelte).
+ */
+export const SHORT_SCREEN_QUERY = '(max-height: 500px)';
+
 /** A narrow screen, up to 900px wide: the table's side column goes, the history is not shown. */
 export const NARROW_SCREEN_QUERY = '(max-width: 900px)';
 
