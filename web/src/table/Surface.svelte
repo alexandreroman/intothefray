@@ -4,8 +4,9 @@
   the chips opening that owner's out-of-play piles, the piles, the cards and
   the markers (the first player token, the active counter). The table scrolls
   it both ways and zooms it as a whole. In dock mode the frames show their
-  owner's avatar rather than the name, the chips right after it, and during a
-  drag what it pushes aside is drawn shifted from its place (spec 3.8).
+  owner's avatar rather than the name, the chips right after it, a name that
+  shows kept within its frame's drawn width, and during a drag what it pushes
+  aside is drawn shifted from its place (spec 3.8).
 -->
 <script lang="ts" module>
   import type { TableElement } from './actions';
@@ -16,8 +17,8 @@
     /** The frame as drawn: in dock mode, where the table's projection draws it, smaller. */
     frame: OwnerFrame;
     /**
-     * The width the name line keeps over the frame, in drawn units, when it is not the frame's: in
-     * dock mode the frame is drawn smaller but its name line is not, and it keeps the frame's full width.
+     * The frame's width at full size, in dock mode. The surface does not read it: a name line keeps
+     * within the frame's drawn width.
      */
     nameRoom?: number;
     /** The player's name, "Villain", or the label of a scenario deck. */
@@ -163,7 +164,7 @@
       data-tip={owner.tip}
       style:--owner={owner.color}
       style:--chips={owner.outOfPlay.length}
-      style:--name-room={owner.nameRoom === undefined ? undefined : `${owner.nameRoom}px`}
+      style:--frame-w="{owner.frame.w}px"
       style:left="{owner.frame.x}px"
       style:top="{owner.frame.y}px"
       style:width="{owner.frame.w}px"
@@ -171,7 +172,7 @@
       style:translate={shift}
     >
       {#if owner.avatar === undefined}
-        <span class="owner" use:overflowTip>{owner.name}</span>
+        <span class="owner" class:fitted={dock.current} use:overflowTip>{owner.name}</span>
       {:else}
         <span
           class="avatar"
@@ -204,7 +205,7 @@
         data-owner={owner.frame.owner}
         style:--owner={owner.color}
         style:--chips={owner.outOfPlay.length}
-        style:--frame-w="{owner.nameRoom ?? owner.frame.w}px"
+        style:--frame-w="{owner.frame.w}px"
         style:left="{owner.frame.x}px"
         style:top="{owner.frame.y}px"
         style:translate={shift}
@@ -312,20 +313,24 @@
   }
 
   /*
+    In dock mode a name line ends within its frame's drawn width (--frame-w): the name, from 6px
+    inside the frame's left edge (.owner, .name-room), takes what is left after --chip-lead and its
+    chips, down to nothing on a frame too narrow for them.
+  */
+  :is(.ownerbox, .chips) {
+    --name-fit: max(0px, var(--frame-w) - 6px - var(--chip-lead) - var(--chips) * var(--chip-room));
+  }
+
+  /*
     The owner's name, in the room above the frame, clear of it and of the chips at its right: its
     line, 14 units high, lies from 26 to 12 units above the frame, centred on the chips (in --lu,
     as all of the name line). The offset runs from inside the frame's 2-unit border, hence the 2px.
-    In dock mode the frame is drawn smaller but the name line is not: the name keeps the room of the
-    frame at full size (--name-room), as the chips do.
   */
   .owner {
     position: absolute;
     left: 4px;
     bottom: calc(100% + 2px + 12 * var(--lu));
-    max-width: max(
-      calc(var(--name-room, 100%) - 8 * var(--lu) - var(--chips) * var(--chip-room)),
-      var(--name-min)
-    );
+    max-width: max(calc(100% - 8 * var(--lu) - var(--chips) * var(--chip-room)), var(--name-min));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -333,6 +338,11 @@
     line-height: calc(14 * var(--lu));
     font-weight: 700;
     color: var(--owner);
+  }
+
+  /* In dock mode, a name line that shows its name (a scenario deck's) keeps within the drawn frame. */
+  .owner.fitted {
+    max-width: var(--name-fit);
   }
 
   /*
@@ -401,10 +411,7 @@
     the frame's 2-unit border), as wide as it shows, ellipsis included, then --chip-lead.
   */
   .name-room {
-    max-width: max(
-      calc(var(--frame-w) - 8 * var(--lu) - var(--chips) * var(--chip-room)),
-      var(--name-min)
-    );
+    max-width: var(--name-fit);
     margin: 0 calc(var(--chip-lead) - var(--chip-gap)) 0 6px;
     overflow: hidden;
     text-overflow: ellipsis;

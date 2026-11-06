@@ -1,6 +1,6 @@
 // The owner frames and their piles in dock mode (spec 3.7): the table hands them where its
 // projection draws them (dockLayout.ts); the piles draw themselves at 60 % from there, the frame at
-// its drawn box, while the name line and the chips keep the frame's full width.
+// its drawn box, and the name line keeps within the drawn frame's width.
 import { render, within } from '@testing-library/svelte';
 import type { PileView as TablePile } from '../lib/types';
 import { DOCK_MODE_KEY } from './dockMode';
@@ -88,13 +88,13 @@ describe('Surface in dock mode', () => {
     expectPlaced(element(container, '.pile[data-id="encounterDiscard"]'), [78, 30, 67.2, 94.2]);
   });
 
-  it('puts the chips on the drawn frame, over the frame width as it would be at full size', () => {
+  it('puts the chips on the drawn frame, over its drawn width', () => {
     const { container } = renderSurface(true);
 
     const chips = element(container, '.chips');
     expect(chips.style.left).toBe('-6px');
     expect(chips.style.top).toBe('24px');
-    expect(chips.style.getPropertyValue('--frame-w')).toBe('262px');
+    expect(chips.style.getPropertyValue('--frame-w')).toBe('157.2px');
   });
 
   it('draws the markers at 60 % from their drawn corner, their art zoomed with them', () => {
@@ -110,13 +110,12 @@ describe('Surface in dock mode', () => {
     expectPlaced(element(container, '.marker[data-marker="active"]'), [200, 140, 42, 42]);
   });
 
-  it('lets the owner name use up to the full-size frame width', () => {
+  it('keeps the owner name within the drawn frame width', () => {
     const { container } = renderSurface(true);
 
     const box = element(container, '.ownerbox');
-    expect(box.style.getPropertyValue('--name-room')).toBe('262px');
-    const owner = /\n {2}\.owner \{([^}]*)\}/.exec(surfaceSource)?.[1];
-    expect(owner).toMatch(/max-width: max\(\s*calc\(var\(--name-room, 100%\) - /);
+    expect(box.style.getPropertyValue('--frame-w')).toBe('157.2px');
+    expect(box.style.getPropertyValue('--name-room')).toBe('');
   });
 });
 
@@ -222,6 +221,55 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
     expect(declarations('.owner')).toContain('left: 4px;');
   });
 
+  it("cuts a scenario deck's name longer than its drawn frame with an ellipsis, before its chips", () => {
+    // A one-pile frame, drawn 79.2 wide (132 at full size).
+    const weapons: OwnerBox = {
+      frame: { owner: -1, label: 'Experimental Weapons', x: 300, y: 24, w: 79.2, h: 106.2 },
+      nameRoom: 132,
+      name: 'Experimental Weapons',
+      color: 'var(--villain)',
+      outOfPlay: [ASIDE],
+    };
+    const { container } = renderOwners([weapons]);
+
+    // The frame and its chip line both measure the drawn width, not the full-size one.
+    const box = element(container, '.ownerbox');
+    expect(box.style.getPropertyValue('--frame-w')).toBe('79.2px');
+    expect(box.style.getPropertyValue('--chips')).toBe('1');
+    expect(element(container, '.chips').style.getPropertyValue('--frame-w')).toBe('79.2px');
+    // The room the name has: the frame's drawn width less the name's left inset (the frame's
+    // border and 4px), the space before the chips and the chips; never below nothing.
+    expect(surfaceSource).toMatch(
+      /:is\(\.ownerbox, \.chips\) \{\s*--name-fit: max\(\s*0px,\s*var\(--frame-w\) - 6px - var\(--chip-lead\) - var\(--chips\) \* var\(--chip-room\)\s*\);/,
+    );
+    // The name, cut to that room on one line with an ellipsis, a tooltip while it is cut, and its
+    // unseen copy, which the chips follow, cut the same.
+    const name = element(container, '.owner');
+    expect(name.classList).toContain('fitted');
+    expect(name.textContent).toBe('Experimental Weapons');
+    expect(declarations('.owner.fitted')).toContain('max-width: var(--name-fit);');
+    expect(declarations('.owner')).toContain('overflow: hidden;');
+    expect(declarations('.owner')).toContain('text-overflow: ellipsis;');
+    expect(declarations('.owner')).toContain('white-space: nowrap;');
+    expect(declarations('.name-room')).toContain('max-width: var(--name-fit);');
+  });
+
+  it("gives the tooltip the full name of a cut scenario deck's name", () => {
+    const weapons: OwnerBox = {
+      frame: { owner: -1, label: 'Experimental Weapons', x: 300, y: 24, w: 79.2, h: 106.2 },
+      name: 'Experimental Weapons',
+      color: 'var(--villain)',
+      outOfPlay: [],
+    };
+    const { container } = renderOwners([weapons]);
+
+    const name = element(container, '.owner');
+    Object.defineProperty(name, 'clientWidth', { value: 40 });
+    Object.defineProperty(name, 'scrollWidth', { value: 150 });
+    name.dispatchEvent(new Event('pointerover'));
+    expect(name.dataset.tip).toBe('Experimental Weapons');
+  });
+
   it("shows the owner's avatar where the name starts, the full name as its name and tooltip", () => {
     const { container } = renderOwners([VILLAIN, HERCULES]);
 
@@ -270,6 +318,7 @@ describe('the chip lines and the avatars in dock mode (F-U13)', () => {
       expect(line.querySelector('.name-room')).toBeNull();
     }
     expect(declarations('.chips')).toContain('justify-content: flex-end;');
+    expect(container.querySelector('.owner.fitted')).toBeNull();
     expect(lines.map((line) => line.style.getPropertyValue('--frame-w'))).toEqual([
       '157.2px',
       '313.2px',
