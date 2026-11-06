@@ -1493,7 +1493,8 @@
   // ---- The inspector (touch mode) ----
 
   // The element whose inspector (CardSheet.svelte) is open: a table card or pile, which a tap opens
-  // in place of the context menu, or a card of the raised hand. Its own state, not the context
+  // in place of the context menu. A hand card has none: it is played or discarded by a drag, or
+  // from the hand sheet in dock mode. Its own state, not the context
   // menu's: the sheet is modal, and a modal lets go of the context menu (see below).
   let inspected = $state.raw<TableElement | null>(null);
   // How many times an inspector has opened: each opening draws a sheet of its own. The switch from
@@ -1506,12 +1507,8 @@
     item: { id: 'select', label: 'Select', group: 0 },
   };
 
-  /** What the inspector lists: the context menu's entries, Select for a card in play, or a hand card's actions. */
+  /** What the inspector lists: the context menu's entries, and Select for a card in play. */
   function inspectorContentOf(element: TableElement): ContextContent | null {
-    if (element.kind === 'hand') {
-      const entries = contextItems(element, handActions(element.id, view, sizeOf));
-      return entries.length > 0 ? { entries } : null;
-    }
     const content = contextContentOf(element);
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
     if (content === null || content.entries.length === 0 || !card || !isFree(card)) {
@@ -1608,7 +1605,7 @@
     return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
   }
 
-  /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile or a hand card. */
+  /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile. */
   function inspectorCounters(element: TableElement): SheetCounter[] {
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
     return card ? countersFor(card) : [];
@@ -1650,10 +1647,6 @@
     inspectorOpenings += 1;
   }
 
-  function openHandInspector(id: string): void {
-    openInspector({ kind: 'hand', id });
-  }
-
   function closeInspector(): void {
     inspected = null;
   }
@@ -1691,8 +1684,7 @@
    * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
    * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
    * as for a stepper, and for a card's Flip, which it shows turning over. A deck's Reveal keeps it
-   * open too, and switches it to the revealed card once the view shows it. A hand card's Play and
-   * Discard send what their keys send (keys.ts).
+   * open too, and switches it to the revealed card once the view shows it.
    */
   function runInspectorItem(item: ActionItem): void {
     const element = inspected;
@@ -1713,22 +1705,7 @@
       enterSelectMode(element.id);
       return;
     }
-    if (element.kind === 'hand') {
-      runHandItem(item);
-      return;
-    }
     runItem(item, element);
-  }
-
-  /** Runs one of a hand card's actions (handActions): sends what its key sends (keys.ts). */
-  function runHandItem(item: ActionItem): void {
-    const result = item.run?.();
-    if (result && 'kind' in result) {
-      send(result, targetOfKey(result));
-      if (result.card !== undefined) {
-        watchLeavingHand(result.card);
-      }
-    }
   }
 
   /** A stepper of the inspector: sends what the token pill's − / + sends (stepCounter). */
@@ -1839,7 +1816,7 @@
     handSheetShown = false;
   }
 
-  // The hand card the viewer just played or discarded (hand sheet or inspector), and its seat,
+  // The hand card the viewer just played or discarded from the hand sheet, and its seat,
   // until the view shows it out of that hand. If it was the last card, the hand sheet closes: by
   // then the card's rise has been measured from the carousel (motion.animate, before the view is
   // drawn) and plays on above the sheet sliding away. Any other way the hand empties keeps it open.
@@ -1868,11 +1845,18 @@
     });
   });
 
-  /** Play or Discard on a card of the hand sheet: what the inspector's entry sends (handActions). */
+  /** Play or Discard on a card of the hand sheet (handActions): sends what its key sends (keys.ts). */
   function runHandAction(id: string, action: 'play' | 'discard'): void {
     const item = handActions(id, view, sizeOf).find((candidate) => candidate.id === action);
-    if (item && !item.disabled) {
-      runHandItem(item);
+    if (!item || item.disabled) {
+      return;
+    }
+    const result = item.run?.();
+    if (result && 'kind' in result) {
+      send(result, targetOfKey(result));
+      if (result.card !== undefined) {
+        watchLeavingHand(result.card);
+      }
     }
   }
 
@@ -2701,7 +2685,6 @@
           inset={handsRoom}
           restPlace={restPlaces[i]}
           hidden={handRaised && seat !== handSeat}
-          onopen={touchMode.current ? openHandInspector : undefined}
           bind:open={handsOpen[i]}
         />
       {/each}

@@ -178,26 +178,23 @@ describe('the inspector', () => {
     expect(sheet()).not.toBeNull();
   });
 
-  it('opens on a tap on a card of the raised hand, with Play (hand_tap_opens_sheet)', async () => {
+  it('stays shut on a tap on a card of the raised hand, which lifts it instead', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable();
     const hand = screen.getByRole('list', { name: 'Your hand' });
     const hcard = document.querySelector<HTMLElement>('.hand [data-id="h"]')!;
 
-    // The first tap raises the hand, the next one opens its card.
+    // The first tap raises the hand, the next one lifts its card to be read, a third lets it go.
     await tap(hcard);
     expect(hand.classList).toContain('open');
     expect(sheet()).toBeNull();
     await tap(hcard);
-    expect(sheet()).not.toBeNull();
-    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(false);
-
-    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Play/ }));
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ kind: 'play', card: 'h' }),
-      0,
-    );
     expect(sheet()).toBeNull();
+    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(true);
+    await tap(hcard);
+    expect(sheet()).toBeNull();
+    expect(interaction.isLocked({ kind: 'hand', id: 'h' })).toBe(false);
+    expect(session.act).not.toHaveBeenCalled();
   });
 
   it('closes when its card leaves the table (sheet_closes_when_element_goes)', async () => {
