@@ -62,45 +62,51 @@ describe('buttonGrid', () => {
     [5, 'lead'],
   ])('lays out %i buttons as %s on a narrow screen', (count, layout) => {
     const element = group(count);
-    buttonGrid()(element);
+    buttonGrid(element);
 
     expect(element.dataset.layout).toBe(layout);
   });
 
   it('sets three buttons in a row when each is wide enough and its text fits', () => {
     const element = group(3, MIN_BUTTON_WIDTH, 60);
-    buttonGrid()(element);
+    buttonGrid(element);
 
     expect(element.dataset.layout).toBe('row');
   });
 
   it('leads with the first of three buttons narrower than the least width', () => {
     const element = group(3, MIN_BUTTON_WIDTH - 1, 40);
-    buttonGrid()(element);
+    buttonGrid(element);
 
     expect(element.dataset.layout).toBe('lead');
   });
 
-  it('takes a narrower least width when given one', () => {
-    const element = group(3, 80, 40);
-    buttonGrid({ minWidth: 72 })(element);
+  it.each([
+    [97, 'row'],
+    [95, 'lead'],
+  ])(
+    'lays out three buttons %i px wide as %s, around the least width of 96 px',
+    (width, layout) => {
+      const element = group(3, width, 40);
+      buttonGrid(element);
 
-    expect(element.dataset.layout).toBe('row');
-  });
+      expect(element.dataset.layout).toBe(layout);
+    },
+  );
 
   it('leads with the first of three buttons when a text would be cut short', () => {
     const element = group(3, 120, 40);
     const label = document.createElement('span');
     setWidths(label, 100, 130);
     element.children[1]!.append(label);
-    buttonGrid()(element);
+    buttonGrid(element);
 
     expect(element.dataset.layout).toBe('lead');
   });
 
   it('lays the buttons out again as some come or go', async () => {
     const element = group(2);
-    buttonGrid()(element);
+    buttonGrid(element);
 
     element.append(document.createElement('button'));
     await mutationsDelivered();
@@ -110,7 +116,7 @@ describe('buttonGrid', () => {
 
   it('lets go of the layout when detached', () => {
     const element = group(2);
-    const detach = buttonGrid()(element);
+    const detach = buttonGrid(element);
     detach();
 
     expect(element.dataset.layout).toBeUndefined();

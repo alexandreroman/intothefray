@@ -584,7 +584,7 @@
 <!-- The main page of the entries: the first group as large buttons, the others as rows. -->
 {#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
   {#if parts.main.length > 0}
-    <div class="main-grid" {@attach buttonGrid()}>
+    <div class="main-grid" {@attach buttonGrid}>
       {#each parts.main as entry (entry.item.id)}
         <button
           type="button"

@@ -154,9 +154,9 @@ function isSeparator(entry: ContextEntry): entry is ContextSeparator {
 /**
  * Splits the entries into the main actions, the large buttons, and the rest,
  * the rows below them. The main actions are the first group's actions, at
- * most four, up to its first submenu, the default one first: on a phone it may
- * stand alone above the others (lib/buttonGrid.ts). The rest starts where they
- * end, without the separator that closed their group.
+ * most four, up to its first submenu, the default one first: in the inspector
+ * it may stand alone above the others (lib/buttonGrid.ts). The rest starts
+ * where they end, without the separator that closed their group.
  */
 export function splitEntries(entries: ContextEntry[]): {
   main: ContextAction[];
