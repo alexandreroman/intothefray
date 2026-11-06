@@ -21,6 +21,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
   '01002': [{ name: 'Peter Parker' }, { name: 'Spider-Man' }],
   '01094': [{ name: 'Rhino', stage: 'I' }],
+  '01003': [{ name: 'Web-Shooter' }],
 };
 
 const OTHERS: TableCard[] = [
@@ -522,5 +523,78 @@ describe('the inspector, flipping a card (F-U9)', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 'two' }, 0);
     expect(contextMenu()).toBeNull();
     expect(sheet()).toBeNull();
+  });
+});
+
+describe('the inspector, a stack of cards (F-U15)', () => {
+  // Spider-Man with Peter Parker tucked under it, and a Web-Shooter under Peter Parker.
+  const STACKED: TableCard[] = [
+    card('host', { x: 100, y: 100 }),
+    card('t1', { code: '01002', parent: 'host', x: 110, y: 120 }),
+    card('t2', { code: '01003', parent: 't1', x: 120, y: 140 }),
+    ...OTHERS,
+  ];
+
+  function strip(): HTMLElement | null {
+    return within(sheet()!).queryByRole('group', { name: 'Attached cards' });
+  }
+
+  function thumbnails(): HTMLElement[] {
+    return within(strip()!).getAllByRole('button');
+  }
+
+  it('shows the stack of the main card, which it rings', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable(makeView(STACKED));
+
+    await tap(placed('host'));
+
+    expect(thumbnails().map((thumb) => thumb.getAttribute('aria-label'))).toEqual([
+      'Spider-Man',
+      'Peter Parker',
+      'Web-Shooter',
+    ]);
+    expect(thumbnails()[0]!.getAttribute('aria-current')).toBe('true');
+  });
+
+  it('switches to a tucked card in the same sheet, its strip kept, sending nothing', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session } = await renderTable(makeView(STACKED));
+    await tap(placed('host'));
+    const opened = sheet();
+
+    await fireEvent.click(thumbnails()[1]!);
+
+    expect(sheet()).toBe(opened);
+    expect(within(sheet()!).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    expect(thumbnails()).toHaveLength(3);
+    expect(thumbnails()[1]!.getAttribute('aria-current')).toBe('true');
+    expect(session.act).not.toHaveBeenCalled();
+
+    // Its entries are the tucked card's: Flip sends its own flip.
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Flip/ }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 't1' }, 0);
+  });
+
+  it('shows the same stack from a tucked card', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable(makeView(STACKED));
+
+    await tap(placed('t2'));
+
+    expect(thumbnails()).toHaveLength(3);
+    expect(thumbnails()[2]!.getAttribute('aria-current')).toBe('true');
+  });
+
+  it('shows no strip for a card on its own, or a pile', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable(makeView(STACKED));
+
+    await tap(placed('two'));
+    expect(strip()).toBeNull();
+
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    await tap(placed('deck:p0'));
+    expect(strip()).toBeNull();
   });
 });

@@ -80,7 +80,7 @@
   import HandSheet from './HandSheet.svelte';
   import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
   import HistorySheet from './HistorySheet.svelte';
-  import { countersFor, type SheetCounter } from './inspector';
+  import { countersFor, stackCardsOf, type SheetCounter, type StackCard } from './inspector';
   import { interaction, LANDING_MS, type PreviewChange } from './interaction.svelte';
   import { handleKey } from './keys';
   import KeysSheet from './KeysSheet.svelte';
@@ -1518,6 +1518,30 @@
     return card ? countersFor(card) : [];
   }
 
+  /** The stack a table card belongs to, as the inspector's strip draws it; none for a card on its own or a pile. */
+  function inspectorStack(element: TableElement): StackCard[] {
+    if (element.kind !== 'card') {
+      return [];
+    }
+    return stackCardsOf(element.id, cards).map((id) => {
+      const member: TableElement = { kind: 'card', id };
+      return {
+        id,
+        name: headerOf(member)?.name ?? '',
+        images: inspectorImages(member),
+        landscape: inspectorLandscape(member),
+      };
+    });
+  }
+
+  /**
+   * Shows another card of the inspected card's stack in the inspector: no opening, the same sheet
+   * switches to it (CardSheet.svelte), as for a card revealed on a deck.
+   */
+  function inspectStackCard(id: string): void {
+    inspected = { kind: 'card', id };
+  }
+
   /** Opens the element's inspector, unless it has nothing to show. */
   function openInspector(element: TableElement): void {
     if (modal.open || interaction.dragging !== null || inspectorContentOf(element) === null) {
@@ -2627,8 +2651,11 @@
         images={inspectorImages(inspected)}
         landscape={inspectorLandscape(inspected)}
         counters={inspectorCounters(inspected)}
+        stack={inspectorStack(inspected)}
+        cardId={inspected.kind === 'card' ? inspected.id : undefined}
         onrun={runInspectorItem}
         onstep={stepInspected}
+        onpick={inspectStackCard}
         onclose={closeInspector}
       />
     {/key}

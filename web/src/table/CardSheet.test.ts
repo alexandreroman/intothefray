@@ -5,7 +5,7 @@ import sheetSource from './CardSheet.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
-import type { SheetCounter } from './inspector';
+import type { SheetCounter, StackCard } from './inspector';
 
 // Whether the viewer prefers reduced motion; the tests of the motion turn it on and off.
 const motion = vi.hoisted(() => ({ reduced: false }));
@@ -79,11 +79,14 @@ function renderSheet(
     note?: string;
     counters?: SheetCounter[];
     dock?: boolean;
+    stack?: StackCard[];
+    cardId?: string;
   } = {},
 ) {
   const onrun = vi.fn();
   const onstep = vi.fn();
   const onclose = vi.fn();
+  const onpick = vi.fn();
   const result = render(CardSheet, {
     props: {
       header: HEADER,
@@ -91,13 +94,39 @@ function renderSheet(
       note: props.note,
       images: ['rhino.png'],
       counters: props.counters ?? [],
+      stack: props.stack,
+      cardId: props.cardId,
       onrun,
       onstep,
+      onpick,
       onclose,
     },
     context: new Map([[DOCK_MODE_KEY, { current: props.dock ?? false }]]),
   });
-  return { ...result, onrun, onstep, onclose };
+  return { ...result, onrun, onstep, onpick, onclose };
+}
+
+// Rhino with two cards tucked under it, the second one face down.
+const STACK: StackCard[] = [
+  { id: 'rhino', name: 'Rhino', images: ['rhino.png'], landscape: false },
+  { id: 'armor', name: 'Armored Rhino', images: ['armor.png'], landscape: false },
+  { id: 'hidden', name: 'Face-down card', images: ['back.png'], landscape: false },
+];
+
+const ARMOR_HEADER: ContextHeader = {
+  eyebrow: 'Attachment',
+  name: 'Armored Rhino',
+  color: '#a66bff',
+  label: 'Armored Rhino, Attachment',
+};
+
+/** The strip of the stack under the card, if shown. */
+function strip(): HTMLElement | null {
+  return screen.queryByRole('group', { name: 'Attached cards' });
+}
+
+function thumbnails(): HTMLElement[] {
+  return within(strip()!).getAllByRole('button');
 }
 
 /** The declarations of a rule of the sheet's stylesheet, at the given indent. */
@@ -540,6 +569,107 @@ describe('CardSheet', () => {
     });
   });
 
+  describe('the stack of the card (F-U15)', () => {
+    it('shows the whole stack under the card, the main card first and ringed, with the count attached', () => {
+      renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      expect(thumbnails().map((thumb) => thumb.getAttribute('aria-label'))).toEqual([
+        'Rhino',
+        'Armored Rhino',
+        'Face-down card',
+      ]);
+      expect(thumbnails().map((thumb) => thumb.getAttribute('aria-current'))).toEqual([
+        'true',
+        null,
+        null,
+      ]);
+      expect(thumbnails()[0]!.classList).toContain('current');
+      const label = strip()!.querySelector('.stack-label')!;
+      expect(label.textContent).toContain('Attached');
+      expect(label.querySelector('.count-pill')?.textContent).toBe('2');
+      // Under the card, in its column.
+      expect(document.querySelector('.inspector .visual .face + .stack')).toBe(strip());
+    });
+
+    it('draws each thumbnail with its own face, a face-down card its back', () => {
+      renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      const sources = thumbnails().map((thumb) => thumb.querySelector('img')?.getAttribute('src'));
+      expect(sources).toEqual(['rhino.png', 'armor.png', 'back.png']);
+    });
+
+    it('asks for a tapped card, but not for the one shown', async () => {
+      const { onpick, onrun, onclose } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      await fireEvent.click(thumbnails()[0]!);
+      expect(onpick).not.toHaveBeenCalled();
+
+      await fireEvent.click(thumbnails()[1]!);
+      expect(onpick).toHaveBeenCalledExactlyOnceWith('armor');
+      expect(onrun).not.toHaveBeenCalled();
+      expect(onclose).not.toHaveBeenCalled();
+    });
+
+    it('switches to the tapped card in the same sheet, the strip kept with the new card ringed', async () => {
+      const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+      const dialog = screen.getByRole('dialog');
+      const shown = strip();
+
+      await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+
+      expect(screen.getByRole('dialog')).toBe(dialog);
+      expect(strip()).toBe(shown);
+      expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
+      expect(thumbnails().map((thumb) => thumb.getAttribute('aria-current'))).toEqual([
+        null,
+        'true',
+        null,
+      ]);
+    });
+
+    it("keeps the main page's height through a switch, as through a submenu", async () => {
+      const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+      const pages = pagesOf(233);
+
+      await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+
+      expect(pages.style.height).toBe('233px');
+      expect(pages.classList).toContain('held');
+    });
+
+    it('closes an open submenu as it switches', async () => {
+      const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+      await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+
+      await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+      await tick();
+
+      expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+    });
+
+    it('shows no strip for a card on its own', () => {
+      renderSheet({ stack: [], cardId: 'rhino' });
+      expect(strip()).toBeNull();
+      expect(document.querySelector('.stack')).toBeNull();
+    });
+
+    it('scrolls the strip sideways, its thumbnails a fifth of the sheet wide, the current one in signal blue', () => {
+      expect(rule('.thumbs')).toContain('overflow-x: auto;');
+      expect(rule('.thumb')).toContain('width: 22cqi;');
+      expect(rule('.thumb.current')).toContain('var(--sel)');
+      expect(rule('.inspector')).toContain('container-type: inline-size;');
+    });
+
+    it('on its side, sizes the thumbnails by their height under the card, which leaves them room', () => {
+      const side = block('@media (max-height: 500px)');
+      expect(ruleIn(side, '.inspector.dock .thumb')).toContain('height: var(--thumb-height);');
+      expect(ruleIn(side, '.inspector.dock .visual.stacked .face')).toContain(
+        'height: calc(var(--sheet-room) - var(--stack-room));',
+      );
+    });
+  });
+
   describe('motion', () => {
     // jsdom has no Web Animations: animations that run until a test finishes them, as Svelte's
     // transitions play them.
@@ -686,6 +816,55 @@ describe('CardSheet', () => {
       expect(ruleIn(moving, '.step:active:not(:disabled)')).toContain('transform: scale(0.96);');
       expect(rule('.main.default:active')).toContain('background: var(--accent-deep);');
       expect(rule('.row:active:not(:disabled)')).toContain('background-color: var(--hover);');
+    });
+
+    describe('switching to another card of the stack (F-U15)', () => {
+      /** The halves of the fade of the face and the column, out then in. */
+      function fades(): { element: Element; keyframes: Keyframe[] }[] {
+        return animationsOf(90).filter(({ element }) => element.matches('.face, .side'));
+      }
+
+      it('fades the card out and the tapped one in, without turning it over', async () => {
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+
+        // Still the old card as it fades out.
+        expect(screen.getByText('Rhino', { selector: '.name' })).toBeTruthy();
+        const out = fades();
+        expect(out.map(({ element }) => element.classList[0])).toEqual(['face', 'side']);
+        expect(out[0]?.keyframes.map((frame) => frame.opacity)).toEqual([1, 0]);
+
+        await finishAnimations();
+
+        expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
+        const back = fades().slice(2);
+        expect(back).toHaveLength(2);
+        expect(back[0]?.keyframes.map((frame) => frame.opacity)).toEqual([0, 1]);
+        expect(animationsOf(180)).toEqual([]);
+        expect(animationsOf(200)).toEqual([]);
+      });
+
+      it('switches at once under reduced motion', async () => {
+        motion.reduced = true;
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+
+        expect(screen.getByText('Armored Rhino', { selector: '.name' })).toBeTruthy();
+        expect(animate).not.toHaveBeenCalled();
+      });
+
+      it('still turns a card of the stack that flips over', async () => {
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+        await rerender({ images: ['rhino-2.png'] });
+
+        expect(fades()).toEqual([]);
+        expect(
+          animationsOf(180).filter(({ element }) => element.classList.contains('face')),
+        ).toHaveLength(1);
+      });
     });
 
     describe('turning the card over (F-U9)', () => {

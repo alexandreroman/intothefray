@@ -29,6 +29,11 @@
   (Table.svelte keys it), which does not turn.
   The sheet keeps its size through a submenu: its page is as high as the main
   page was when it opened, scrolling if longer, so the card never moves.
+  A card of a stack shows the whole stack under its face, in a strip that
+  scrolls sideways: the main card first, the shown one ringed in signal blue.
+  A tap on another card of it asks the caller to show that one (onpick): the
+  same sheet then fades the card out and the tapped one in, never turning it,
+  its page keeping its height as through a submenu, and the strip staying.
 -->
 <script lang="ts">
   import { tick, untrack } from 'svelte';
@@ -42,7 +47,7 @@
   import { LIFT_SCALE } from './motion.svelte';
   import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
   import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
-  import { splitEntries, visibleEntries, type SheetCounter } from './inspector';
+  import { splitEntries, visibleEntries, type SheetCounter, type StackCard } from './inspector';
 
   let {
     header,
@@ -51,8 +56,11 @@
     images,
     landscape = false,
     counters,
+    stack = [],
+    cardId,
     onrun,
     onstep,
+    onpick,
     onclose,
   }: {
     /** What the element is and whose; the sheet is named by its label. */
@@ -66,10 +74,16 @@
     landscape?: boolean;
     /** The tokens, statuses and modifiers the card carries (inspector.countersFor). */
     counters: SheetCounter[];
+    /** The stack the card belongs to, its main card first (inspector.stackCardsOf); none for a card on its own. */
+    stack?: StackCard[];
+    /** The id of the table card shown, which the strip rings; none for a pile or a hand card. */
+    cardId?: string;
     /** Runs a chosen item; the caller closes the sheet. */
     onrun: (item: ActionItem) => void;
     /** Adds one to a counter, or takes one away. */
     onstep: (counter: SheetCounter, delta: -1 | 1) => void;
+    /** Shows another card of the stack in the sheet, in place of the one shown. */
+    onpick?: (id: string) => void;
     onclose: () => void;
   } = $props();
 
@@ -87,6 +101,8 @@
   const TURN_PERSPECTIVE = 'perspective(700px)';
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
+  /** How long the shown card takes to fade out, then the tapped card of its stack to fade in, in ms. */
+  const SWITCH_MS = 180;
 
   /** A side of the card: the face it shows, and the header, counters and entries that go with it. */
   type Side = {
@@ -95,15 +111,20 @@
     header: ContextHeader;
     counters: SheetCounter[];
     entries: ContextEntry[];
+    cardId: string | undefined;
   };
 
-  const live = $derived<Side>({ images, landscape, header, counters, entries });
+  const live = $derived<Side>({ images, landscape, header, counters, entries, cardId });
   /** The side the card turns away from, shown until it is edge-on; null while it does not turn. */
   let leaving = $state.raw<Side | null>(null);
   const side = $derived(leaving ?? live);
 
   let faceElement = $state<HTMLElement>();
+  /** The column beside or under the card: its header, counters and, in dock mode, its entries. */
+  let sideElement = $state<HTMLElement>();
   let turn: Animation | undefined;
+  /** The fades of the face and its column as the sheet switches to another card of the stack. */
+  let fades: Animation[] = [];
   /** The ease of the sheet to the new side's size; it holds that size until the turn ends. */
   let resize: Animation | undefined;
   /** The side of the last update, which a new face turns away from. */
@@ -122,9 +143,13 @@
   $effect.pre(() => {
     const now = live;
     untrack(() => {
-      // While the card turns away, the newest side is the one it shows once edge-on.
-      if (lastSide !== null && leaving === null && faceKey(now) !== faceKey(lastSide)) {
-        changeSide(lastSide);
+      // While the card turns or fades away, the newest side is the one it shows next.
+      if (lastSide !== null && leaving === null) {
+        if (isStackSwitch(lastSide, now)) {
+          switchCard(lastSide);
+        } else if (faceKey(now) !== faceKey(lastSide)) {
+          changeSide(lastSide);
+        }
       }
       lastSide = now;
     });
@@ -141,7 +166,58 @@
   $effect(() => () => {
     turn?.cancel();
     resize?.cancel();
+    cancelFades();
   });
+
+  /** Whether the sheet goes from one card of the stack to another: not a flip, nor a reveal. */
+  function isStackSwitch(from: Side, to: Side): boolean {
+    const inStack = (id: string | undefined) => stack.some((card) => card.id === id);
+    return from.cardId !== to.cardId && inStack(from.cardId) && inStack(to.cardId);
+  }
+
+  function cancelFades(): void {
+    for (const fade of fades) {
+      fade.cancel();
+    }
+    fades = [];
+  }
+
+  /**
+   * Shows another card of the stack: the page keeps its height and goes back to the main page at
+   * once, then the face and its column fade out with the old card and in with the new one. Under
+   * reduced motion, the card just changes.
+   */
+  function switchCard(from: Side): void {
+    keepHeightForStack();
+    void closeSubAtOnce();
+    if (motionMs(SWITCH_MS) === 0 || faceElement === undefined || sideElement === undefined) {
+      return;
+    }
+    turn?.cancel();
+    resize?.cancel();
+    cancelFades();
+    leaving = from;
+    const shownParts = [faceElement, sideElement];
+    const half = SWITCH_MS / 2;
+    const away = shownParts.map((part) =>
+      part.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: half,
+        easing: 'ease-in',
+        fill: 'forwards',
+      }),
+    );
+    fades = away;
+    // Both fades run together: the first one's end is the moment the new card shows.
+    away[0]!.onfinish = () => {
+      leaving = null;
+      fades = shownParts.map((part) =>
+        part.animate([{ opacity: 0 }, { opacity: 1 }], { duration: half, easing: 'ease-out' }),
+      );
+      for (const fade of away) {
+        fade.cancel();
+      }
+    };
+  }
 
   /**
    * Shows the card's new side: the old one stays until the card is edge-on, while the hidden copy
@@ -228,6 +304,35 @@
    * size follows its content.
    */
   let heldHeight = $state<number | null>(null);
+  /** The sheet has gone to another card of the stack: its page keeps its height from then on. */
+  let heldForStack = false;
+  /** The next page change happens at once, without a slide: a switch to another card of the stack. */
+  let pagesAtOnce = false;
+
+  /** Holds the page at its height as the sheet goes from card to card of the stack, for good. */
+  function keepHeightForStack(): void {
+    heldHeight ??= pagesElement?.offsetHeight ?? null;
+    heldForStack = true;
+  }
+
+  /** Back to the main page without a slide, as the sheet switches to another card of the stack. */
+  async function closeSubAtOnce(): Promise<void> {
+    if (openId === null) {
+      return;
+    }
+    pagesAtOnce = true;
+    pageStep = -1;
+    openId = null;
+    await tick();
+    pagesAtOnce = false;
+  }
+
+  /** A tap on a card of the strip: another one is shown in its place, the shown one stays. */
+  function pick(card: StackCard): void {
+    if (card.id !== cardId) {
+      onpick?.(card.id);
+    }
+  }
 
   // Found again in every redraw's entries: a submenu whose row went, or got refused, closes.
   const openSubmenu = $derived(
@@ -296,13 +401,14 @@
   /** A page slides in from the side it is reached from, and out to the other: right for a submenu. */
   function pageSlide(direction: 'in' | 'out'): Parameters<typeof fly>[1] {
     const side = direction === 'in' ? pageStep : -pageStep;
-    return { x: `${100 * side}%`, duration: motionMs(PAGE_MS), easing: cubicOut };
+    const duration = pagesAtOnce ? 0 : motionMs(PAGE_MS);
+    return { x: `${100 * side}%`, duration, easing: cubicOut };
   }
 
   /** Once a page has slid in, the main page alone gets its own size back. */
   function onPageShown(): void {
     sliding = false;
-    if (openId === null) {
+    if (openId === null && !heldForStack) {
       heldHeight = null;
     }
   }
@@ -473,6 +579,32 @@
   </div>
 {/snippet}
 
+<!-- The stack under the card: a small face for each of its cards, which a tap shows in the sheet. -->
+{#snippet stackStrip()}
+  <div class="stack" role="group" aria-label="Attached cards">
+    <div class="stack-label" aria-hidden="true">
+      Attached <span class="stack-count count-pill">{stack.length - 1}</span>
+    </div>
+    <div class="thumbs">
+      {#each stack as card (card.id)}
+        <button
+          type="button"
+          class="thumb"
+          class:land={card.landscape}
+          class:current={card.id === cardId}
+          aria-label={card.name}
+          aria-current={card.id === cardId ? 'true' : undefined}
+          onclick={() => pick(card)}
+        >
+          <span class="thumb-face" aria-hidden="true">
+            <CardFace images={card.images} name={card.name} landscape={card.landscape} />
+          </span>
+        </button>
+      {/each}
+    </div>
+  </div>
+{/snippet}
+
 <!-- The new side's note and main page, laid out as the content lays them, to be measured. -->
 {#snippet measuredEntries()}
   {@const measured = visibleEntries(live.entries)}
@@ -480,7 +612,11 @@
     <p class="note">{note}</p>
   {/if}
   {#if measured.length > 0}
-    <div class="pages">
+    <div
+      class="pages"
+      class:held={heldHeight !== null}
+      style:height={heldHeight === null ? undefined : `${heldHeight}px`}
+    >
       <div class="page">{@render mainPage(splitEntries(measured))}</div>
     </div>
   {/if}
@@ -489,10 +625,15 @@
 <Sheet label={header.label} dock={dock.current} {onclose}>
   <div class="inspector" class:dock={dock.current} bind:this={content}>
     <div class="top">
-      <div class="face" class:land={side.landscape} bind:this={faceElement}>
-        <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+      <div class="visual" class:stacked={stack.length > 1}>
+        <div class="face" class:land={side.landscape} bind:this={faceElement}>
+          <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+        </div>
+        {#if stack.length > 1}
+          {@render stackStrip()}
+        {/if}
       </div>
-      <div class="side">
+      <div class="side" bind:this={sideElement}>
         {@render nameline(side.header)}
         {#each side.counters as counter (`${counter.kind}:${counter.name}`)}
           {@render counterRow(counter)}
@@ -519,7 +660,12 @@
       bind:this={measureElement}
     >
       <div class="top">
-        <div class="face" class:land={live.landscape}></div>
+        <div class="visual" class:stacked={stack.length > 1}>
+          <div class="face" class:land={live.landscape}></div>
+          {#if stack.length > 1}
+            {@render stackStrip()}
+          {/if}
+        </div>
         <div class="side">
           {@render nameline(live.header)}
           {#each live.counters as counter (`${counter.kind}:${counter.name}`)}
@@ -538,11 +684,13 @@
 </Sheet>
 
 <style>
+  /* A container: the thumbnails of the stack are sized by the sheet's width. */
   .inspector {
     display: flex;
     flex-direction: column;
     gap: 14px;
     padding: 0 14px;
+    container-type: inline-size;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -563,6 +711,16 @@
     align-items: flex-start;
   }
 
+  /* The face, with the strip of its stack under it. */
+  .visual {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 46%;
+    min-width: 0;
+  }
+
   /*
     --face-ratio: its width over its height, which dock mode sizes it by. No minimum size from its
     image: the face keeps the card's ratio whatever the scan's, as the copy that measures a new
@@ -573,7 +731,7 @@
     flex: none;
     min-width: 0;
     min-height: 0;
-    width: 46%;
+    width: 100%;
     aspect-ratio: var(--face-ratio);
     border-radius: var(--card-radius);
     box-shadow: 4px 6px 16px #000c;
@@ -582,6 +740,82 @@
   .face.land {
     --face-ratio: 7 / 5;
     border-radius: var(--card-radius-land);
+  }
+
+  /*
+    The stack's strip: as wide as the face's column, never wider (contain), its thumbnails in one
+    row that scrolls sideways once they do not fit.
+  */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-self: stretch;
+    min-width: 0;
+    contain: inline-size;
+  }
+
+  .stack-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 16px;
+    padding-inline: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* The count of attached cards, in a pile's capsule (countPill.css). */
+  .stack-count {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: normal;
+  }
+
+  /* Padded so that the ring of the shown card is not cut by the scrolling edges. */
+  .thumbs {
+    display: flex;
+    gap: 8px;
+    padding: 4px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  /* A card of the stack, about a fifth of the sheet wide, a landscape one on its side. */
+  .thumb {
+    flex: none;
+    width: 22cqi;
+    aspect-ratio: 5 / 7;
+    padding: 0;
+    border: 0;
+    border-radius: var(--card-radius);
+    background: none;
+    box-shadow: 2px 3px 8px #000a;
+  }
+
+  .thumb.land {
+    aspect-ratio: 7 / 5;
+    border-radius: var(--card-radius-land);
+  }
+
+  .thumb:hover:not(:disabled) {
+    background: none;
+  }
+
+  /* The card shown, in the signal blue of selection. */
+  .thumb.current {
+    outline: 2px solid var(--sel);
+    outline-offset: 2px;
+  }
+
+  .thumb-face {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .side {
@@ -884,6 +1118,12 @@
     align-items: center;
   }
 
+  /* The face centred in a full-width column, the stack's strip full width under it. */
+  .inspector.dock .visual {
+    width: 100%;
+    align-items: center;
+  }
+
   .inspector.dock .face {
     width: min(100%, calc(42dvh * var(--face-ratio)));
   }
@@ -904,9 +1144,28 @@
       align-items: flex-start;
     }
 
+    /*
+      The column as wide as the face; a strip under it takes its height from the face's: the
+      thumbnails' height, the label's and the gaps (8 + 16 + 6 px), and their padding (2 × 4 px).
+    */
+    .inspector.dock .visual {
+      width: auto;
+      --thumb-height: calc(var(--sheet-room) * 0.22);
+      --stack-room: calc(var(--thumb-height) + 38px);
+    }
+
     .inspector.dock .face {
       width: auto;
       height: var(--sheet-room);
+    }
+
+    .inspector.dock .visual.stacked .face {
+      height: calc(var(--sheet-room) - var(--stack-room));
+    }
+
+    .inspector.dock .thumb {
+      width: auto;
+      height: var(--thumb-height);
     }
 
     .inspector.dock .side {

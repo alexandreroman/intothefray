@@ -1,7 +1,8 @@
 // What the inspector (CardSheet.svelte) shows of a card or a pile on a touch
 // screen, beside the entries of its context menu (contextItems.ts): the
-// counters a card carries, with steppers, the entries it shows, and their split
-// into the large buttons of the first group and the rows of the others. Pure.
+// counters a card carries, with steppers, the entries it shows, their split
+// into the large buttons of the first group and the rows of the others, and
+// the stack the card belongs to, shown as a strip under it. Pure.
 
 import type { CardView } from '../lib/types';
 import {
@@ -15,6 +16,7 @@ import {
   type CounterKind,
 } from './actions';
 import type { ContextAction, ContextEntry, ContextSeparator } from './contextItems';
+import { mainCardOf, stackOf } from './drag';
 
 /** A token, status or modifier a card carries, as the inspector shows it with its steppers. */
 export interface SheetCounter {
@@ -26,6 +28,16 @@ export interface SheetCounter {
   value: number;
   /** A modifier: shown with its sign, "+1", "−2". */
   signed: boolean;
+}
+
+/** A card of the inspected card's stack, as the strip under it draws it. */
+export interface StackCard {
+  id: string;
+  /** What the inspector's header names it: a face-down card's name stays hidden. */
+  name: string;
+  /** Its face, or its back when it lies face down. */
+  images: string[];
+  landscape: boolean;
 }
 
 /** The most large buttons in a row, from the first group of entries. */
@@ -157,4 +169,18 @@ export function splitEntries(entries: ContextEntry[]): {
     rest.shift();
   }
   return { main, rest };
+}
+
+/**
+ * The cards of the stack the table card belongs to, the main card first, then
+ * its chain in order (drag.ts stackOf), whichever card of it is given; none
+ * for a card on its own or one not in the cards.
+ */
+export function stackCardsOf(id: string, cards: readonly CardView[]): string[] {
+  const card = cards.find((c) => c.id === id);
+  if (card === undefined) {
+    return [];
+  }
+  const stack = stackOf(mainCardOf(card, cards).id, cards);
+  return stack.length > 1 ? stack : [];
 }

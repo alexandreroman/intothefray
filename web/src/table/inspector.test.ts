@@ -1,7 +1,7 @@
 import { arrowItem, type ActionItem } from './actions';
 import type { ContextAction, ContextEntry, ContextSeparator, ContextSubmenu } from './contextItems';
 import { card } from './fixtures.testing';
-import { countersFor, splitEntries, visibleEntries } from './inspector';
+import { countersFor, splitEntries, stackCardsOf, visibleEntries } from './inspector';
 
 function action(id: string): ContextAction {
   const item: ActionItem = { id, label: id, group: 0 };
@@ -163,5 +163,29 @@ describe('visibleEntries', () => {
     const entries: ContextEntry[] = [action('a'), SEP, submenu('s1')];
 
     expect(visibleEntries(entries)).toEqual(entries);
+  });
+});
+
+describe('stackCardsOf', () => {
+  // A main card with two tucked cards, in chain order, then a card on its own.
+  const CARDS = [
+    card('second', { parent: 'first' }),
+    card('main'),
+    card('first', { parent: 'main' }),
+    card('alone'),
+  ];
+
+  it("lists a main card's whole stack, the main card first, in chain order", () => {
+    expect(stackCardsOf('main', CARDS)).toEqual(['main', 'first', 'second']);
+  });
+
+  it('lists the same stack from a tucked card', () => {
+    expect(stackCardsOf('second', CARDS)).toEqual(['main', 'first', 'second']);
+    expect(stackCardsOf('first', CARDS)).toEqual(['main', 'first', 'second']);
+  });
+
+  it('lists nothing for a card on its own, or one not on the table', () => {
+    expect(stackCardsOf('alone', CARDS)).toEqual([]);
+    expect(stackCardsOf('gone', CARDS)).toEqual([]);
   });
 });
