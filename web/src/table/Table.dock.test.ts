@@ -867,39 +867,42 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     expect(box.y).toBeCloseTo(y, 4);
   }
 
-  // The fit: both rows' indent (the villain and the identity at 300, drawn 180) and three slots of
-  // a 67.2 card and a 24 gap, 453.6, in 390 − 2 × 24 − 12 = 330 px: 72 %. The rows wrap at
-  // (390 − 48) / 0.72 = 475: the identity, c1 and c2 fit the first line (180, 271.2, 362.4); c3 to
-  // c7 the second, from the row's left edge, the frame's −6, a slot every 91.2 (−6 to 358.8); the
-  // empty slot the third, from −6 too. The villain's row is 12 + 118.2 (its frame, from 20 to 197)
-  // + 16, then an empty second line (94.2 + 16), + 20 = 276.4 high; Alex's row starts there, its
-  // first line 12 lower, at 288.4, its cards 18 under it (306.4); the second line at 288.4 + 118.2
-  // + 16 = 422.6, the third at 422.6 + 94.2 + 16 = 532.8, their cards at their top.
+  // Both rows lay their cards on the columns of one grid, from the frames' left (−6), a slot of a
+  // 67.2 card and a 24 gap apart: −6, 85.2, 176.4, 267.6, 358.8, 450. The fit: both rows' indent
+  // (the first column past the frames, 176.4) and three slots, 450, in 390 − 2 × 24 − 12 = 330 px:
+  // 73 %. The rows wrap at (390 − 48) / 0.73 = 468.5: the identity, c1 and c2 fit the first line
+  // (176.4, 267.6, 358.8); c3 to c7 the second, from the first column (−6 to 358.8), each under
+  // the card of its column; the empty slot the third, on the first column too. The villain's row
+  // is 12 + 118.2 (its frame, from 20 to 197) + 16, then an empty second line (94.2 + 16), + 20 =
+  // 276.4 high; Alex's row starts there, its first line 12 lower, at 288.4, its cards 18 under it
+  // (306.4); the second line at 288.4 + 118.2 + 16 = 422.6, the third at 422.6 + 94.2 + 16 =
+  // 532.8, their cards at their top.
 
   it('fits the widest indent and three cards in the width by default, never above 100 %', async () => {
     mockScreen(PHONE);
     await renderTable(busyView());
 
-    expect(shownZoom()).toBe(0.72);
+    expect(shownZoom()).toBe(0.73);
     expect(storedZoom()).toBeNull();
   });
 
-  it('wraps a long row from its left edge: a card past the width goes on a new line, under the frame', async () => {
+  it('wraps a long row on the columns: a card past the width goes on a new line, under the frame', async () => {
     mockScreen(PHONE);
     await renderTable(busyView());
 
     // The identity and the two first cards on the first line, a slot apart.
-    expectAt('id', 180, 306.4);
-    expectAt('c2', 362.4, 306.4);
-    // c3 to c7 on the second line, from the frame's left edge.
+    expectAt('id', 176.4, 306.4);
+    expectAt('c2', 358.8, 306.4);
+    // c3 to c7 on the second line, from the frame's left edge; c5 under the identity, c7 under c2.
     expectAt('c3', -6, 422.6);
     expectAt('c4', 85.2, 422.6);
+    expectAt('c5', 176.4, 422.6);
     expectAt('c7', 358.8, 422.6);
-    // The villain's row holds one line: its piles and Rhino at 0.6.
-    expectAt('v', 180, 30);
+    // The villain's row holds one line: its piles and Rhino at 0.6, Rhino over the identity.
+    expectAt('v', 176.4, 30);
     for (const id of ['id', ...PLAYED]) {
       const box = drawnBox(placed(id, '.card'));
-      expect(box.x + box.w).toBeLessThanOrEqual(475);
+      expect(box.x + box.w).toBeLessThanOrEqual(468.5);
     }
   });
 
@@ -952,7 +955,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
   it('keeps a stack together on its main card’s line', async () => {
     mockScreen(PHONE);
     // Tucked under c2, 100 right and 20 down: the stack, 212 wide (127.2 drawn), would end past
-    // 475 on the first line. Both start the second at its left edge, the upgrade 60 right of c2 and
+    // 468.5 on the first line. Both start the second at its left edge, the upgrade 60 right of c2 and
     // 12 down.
     await renderTable(busyView([card('up', { x: 720, y: 430, parent: 'c2' })]));
 
@@ -968,7 +971,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
     // 276.4 + 12 + 134.2 + 2 × 110.2 + 20 = 663, as high as the rows' content, rounded up.
     expect(surface.style.height).toBe('663px');
-    expect(surface.style.width).toBe('475px');
+    expect(surface.style.width).toBe('468px');
   });
 
   it('shows the villain row and the chosen player row right under it in "Villain + player"', async () => {
@@ -983,7 +986,7 @@ describe('the compact, wrapped table in dock mode (spec 3.7)', () => {
     await renderTable(view);
 
     expect(document.querySelector('.surface .card[data-id="theirs"]')).toBeNull();
-    expectAt('id', 180, 306.4);
+    expectAt('id', 176.4, 306.4);
   });
 
   /**

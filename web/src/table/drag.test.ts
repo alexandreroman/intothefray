@@ -178,11 +178,15 @@ describe('dropAction', () => {
     expect(yAt(2000)).toBe(810);
   });
 
+  // Player 1's owner frame, around piles at 0 and 130: the grid of dock mode starts at its left.
+  const FRAME: DockItem = { id: 'frame', x: -10, y: 400, w: 262, h: 177, kind: 'frame' };
+
   it('dropAction in dock mode inserts a card among the units of the row it is dropped on', () => {
-    // Player 1's row (top 380) at 0.6, wrapped at 400: c0 (the indent, 180) and c1 on the first
-    // line, its top 12, the cards 18 lower; c2 and c3 on the second, its top 12 + 112.2 + 16 =
-    // 140.2, their slots' middles at 213.6 and 304.8. The drop spot is the card's drawn middle.
-    const items: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
+    // Player 1's row (top 380) at 0.6, wrapped at 400, on columns from its frame's left (−6), 91.2
+    // apart: c0 (the indent, 176.4) and c1 on the first line, its top 12, the cards 18 lower; c2
+    // and c3 on the second, from the first column, its top 12 + 118.2 (the frame) + 16 = 146.2,
+    // their slots' middles at 27.6 and 118.8. The drop spot is the card's drawn middle.
+    const cards: DockItem[] = [300, 452, 604, 756].map((x, i) => ({
       id: `c${i}`,
       x,
       y: 410,
@@ -190,28 +194,29 @@ describe('dropAction', () => {
       h: 157,
       kind: 'card',
     }));
+    const items = [FRAME, ...cards];
     const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
     const spot = (corner: { x: number; y: number }) =>
       map.insertAt({ x: corner.x + 33.6, y: corner.y + 47.1 }, 112);
     const at = (x: number, y: number) =>
       dropAction(TABLE_CARD, TABLE, { x, y }, DEAL_TO, map, spot);
 
-    // Before c3, its middle at 283.6: between c2 (604..716) and c3 (756..868), 736 − 56.
-    expect(at(250, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
-    // Left of the indent on the second line: before c2, (564 + 604) / 2 − 56 = 528, to 530.
-    expect(at(100, 150)).toEqual({ kind: 'move', card: 'c', x: 530, y: 410 });
+    // Before c3, its middle at 83.6: between c2 (604..716) and c3 (756..868), 736 − 56.
+    expect(at(50, 150)).toEqual({ kind: 'move', card: 'c', x: 680, y: 410 });
+    // Under the frame, left of c2's middle: before c2, (564 + 604) / 2 − 56 = 528, to 530.
+    expect(at(-30, 150)).toEqual({ kind: 'move', card: 'c', x: 530, y: 410 });
     // Past c3: 40 past its right edge, 908, up to the grid.
-    expect(at(300, 150)).toEqual({ kind: 'move', card: 'c', x: 910, y: 410 });
+    expect(at(150, 150)).toEqual({ kind: 'move', card: 'c', x: 910, y: 410 });
   });
 
   it('dropAction in dock mode lays a marker where it is drawn, with the unit it lies past', () => {
-    const items: DockItem[] = [{ id: 'c0', x: 300, y: 410, w: 112, h: 157, kind: 'card' }];
+    const items: DockItem[] = [FRAME, { id: 'c0', x: 300, y: 410, w: 112, h: 157, kind: 'card' }];
     const map = dockLayout({ items, rows: [1], wrapWidth: 400 });
     const token: DragSource = { kind: 'marker', name: 'firstPlayer', x: 860, y: 40 };
     const spot = () => ({ x: 0, y: 0 });
 
-    // With c0 (drawn 180, 30 under its row's 12 of name room): 250 / 0.6 = 416.7 across,
-    // 410 + 20 / 0.6 = 443.3 down, on the grid.
+    // With c0 (300, drawn 176.4, 30 under its row's 12 of name room): 300 + 73.6 / 0.6 = 422.7
+    // across, 410 + 20 / 0.6 = 443.3 down, on the grid.
     expect(dropAction(token, TABLE, { x: 250, y: 50 }, DEAL_TO, map, spot)).toEqual({
       kind: 'marker',
       name: 'firstPlayer',
