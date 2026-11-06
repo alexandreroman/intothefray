@@ -232,9 +232,14 @@ describe('CardBox', () => {
     await renderTable(makeView({ private: SEARCH }));
 
     const dialog = box();
-    expect(screen.getByRole('dialog', { name: 'Search Your deck (3 cards)' })).toBe(dialog);
-    // The count is dimmed.
-    expect(dialog.querySelector('.aside')?.textContent).toBe('(3 cards)');
+    // The count is read in words; shown, it is a pile's capsule after the title.
+    expect(screen.getByRole('dialog', { name: 'Search Your deck, 3 cards' })).toBe(dialog);
+    expect(dialog.querySelector('.mhead b')?.textContent?.trim()).toBe('Search Your deck');
+    const count = dialog.querySelector('.mhead .title .count');
+    expect(count?.classList.contains('count-pill')).toBe(true);
+    expect(count?.textContent).toBe('3');
+    expect(count?.getAttribute('aria-hidden')).toBe('true');
+    expect(dialog.querySelector('.mhead')?.textContent).not.toContain('(3 cards)');
     expect(tileNames()).toEqual(['Web-Shooter', 'Swinging Web Kick', 'Backflip']);
     expect(tile('c1').textContent).toContain('#1');
     expect(tile('c3').textContent).toContain('#3');
@@ -293,7 +298,7 @@ describe('CardBox', () => {
     ];
     await renderTable(view);
 
-    expect(screen.getByRole('dialog', { name: 'Search Your Spider-Man deck (3 cards)' })).toBe(
+    expect(screen.getByRole('dialog', { name: 'Search Your Spider-Man deck, 3 cards' })).toBe(
       box(),
     );
   });
@@ -301,7 +306,8 @@ describe('CardBox', () => {
   it('look box titles the top count and closes with Close', async () => {
     const { session } = await renderTable(makeView({ private: LOOK }));
 
-    expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Top 3 of Your deck, 3 cards' })).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('3');
     const close = within(box()).getByRole('button', { name: 'Close' });
     expect(close.classList.contains('btn-primary')).toBe(true);
     await fireEvent.click(close);
@@ -475,7 +481,11 @@ describe('CardBox', () => {
     await clickPlaced('v');
     await fireEvent.click(menuItem('Change card…'));
 
-    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
+    // The count is the stage's cards, not their faces.
+    expect(
+      screen.getByRole('dialog', { name: 'Villain: choose the card to show, 2 cards' }),
+    ).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('2');
     // Opening a box lets go of the table: its menu goes.
     expect(contextMenu()).toBeNull();
     expect(interaction.hovered).toBeNull();
@@ -533,7 +543,8 @@ describe('CardBox', () => {
     const drawn = cards.map((c) => (c.id === 'c2' ? { ...c, zone: 'hand' as const } : c));
     await rerender(makeView({ cards: drawn, private: { ...SEARCH, cards: ['c1', 'c3'] } }));
     expect(tileNames()).toEqual(['Web-Shooter', 'Backflip']);
-    expect(screen.getByRole('dialog', { name: 'Search Your deck (2 cards)' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Search Your deck, 2 cards' })).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('2');
     expect(contextMenu()).toBeNull();
 
     await rerender(makeView({ private: { ...SEARCH, cards: [] } }));
@@ -869,7 +880,8 @@ describe('CardBox', () => {
     expect(document.querySelector('.surface [data-id="vic"]')).toBeNull();
     await fireEvent.click(chip(-1, 'Victory display (1)'));
 
-    expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Victory display, 1 card' })).toBeTruthy();
+    expect(box().querySelector('.mhead .count-pill')?.textContent).toBe('1');
     expect(tileNames()).toEqual(['Hard to Keep Down']);
     // Close is the main button of an out-of-play pile box.
     const close = within(box()).getByRole('button', { name: 'Close' });
@@ -978,7 +990,7 @@ describe('CardBox', () => {
     await clickPlaced('enc');
     expect(contextMenu()).toBeNull();
     await fireEvent.click(chip(-1, 'Victory display (1)'));
-    expect(screen.getByRole('dialog', { name: 'Victory display' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Victory display, 1 card' })).toBeTruthy();
   });
 
   it('spectator cannot open look', async () => {
@@ -1066,6 +1078,11 @@ describe('CardBox in dock mode', () => {
     const title = boxRule('.mhead.dock b');
     expect(title).toContain('text-overflow: ellipsis;');
     expect(title).toContain('white-space: nowrap;');
+    // The title is cut, never the count after it, centred on the title's line.
+    const titled = boxRule('.mhead .title');
+    expect(titled).toContain('align-items: center;');
+    expect(titled).toContain('min-width: 0;');
+    expect(boxRule('.mhead .count')).toContain('flex: none;');
     const filter = boxRule('.mhead.dock .filter');
     expect(filter).toContain('flex: 1 1 0;');
     expect(filter).toContain('height: 38px;');

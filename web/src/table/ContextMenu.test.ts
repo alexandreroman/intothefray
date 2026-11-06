@@ -745,7 +745,7 @@ describe('opening the context menu with a click', () => {
     await click(placed('disc:p0'));
     expect(labels(contextMenu()!)).toEqual(['Browse…']);
     await fireEvent.click(menuItem(contextMenu()!, 'Browse…'));
-    expect(screen.getByRole('dialog', { name: "Alex's discard" })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: "Alex's discard, 1 card" })).toBeTruthy();
   });
 
   it("opens a selected card's own menu and keeps the selection; another card's clears it", async () => {
@@ -974,7 +974,9 @@ describe('what the menu runs', () => {
     await click(placed('v'));
 
     await fireEvent.click(menuItem(contextMenu()!, 'Change card…'));
-    expect(screen.getByRole('dialog', { name: 'Villain: choose the card to show' })).toBeTruthy();
+    expect(
+      screen.getByRole('dialog', { name: 'Villain: choose the card to show, 1 card' }),
+    ).toBeTruthy();
     expect(session.act).not.toHaveBeenCalled();
   });
 });

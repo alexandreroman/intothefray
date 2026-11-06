@@ -324,7 +324,7 @@ describe('Table', () => {
     ]);
 
     await fireEvent.click(chip('vic'));
-    const box = screen.getByRole('dialog', { name: 'Victory display' });
+    const box = screen.getByRole('dialog', { name: 'Victory display, 2 cards' });
     expect(within(box).getAllByRole('listitem')).toHaveLength(2);
   });
 
@@ -356,7 +356,7 @@ describe('Table', () => {
     expect(surface().querySelector('[data-id="area:collection"]')).toBeNull();
 
     await fireEvent.click(chip('area:collection'));
-    const box = screen.getByRole('dialog', { name: 'The Collection' });
+    const box = screen.getByRole('dialog', { name: 'The Collection, 2 cards' });
     expect(within(box).getAllByRole('listitem')).toHaveLength(2);
   });
 
@@ -412,7 +412,7 @@ describe('Table', () => {
     await catalogLoaded();
 
     await fireEvent.click(chip('aside:p1'));
-    expect(screen.getByRole('dialog', { name: "Sam's set-aside cards" })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: "Sam's set-aside cards, 3 cards" })).toBeTruthy();
   });
 
   it('leaves room past the rightmost and the lowest card', async () => {

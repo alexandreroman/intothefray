@@ -16,6 +16,7 @@ const COUNTS: [file: string, selector: string][] = [
   ['HeroPicker.svelte', '.n'],
   ['CardSheet.svelte', '.count'],
   ['ContextMenu.svelte', '.count'],
+  ['CardBox.svelte', '.count'],
 ];
 
 /** The bodies of the component's own rules whose selector names the count. */

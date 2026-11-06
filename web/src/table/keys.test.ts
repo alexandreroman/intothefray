@@ -510,7 +510,7 @@ describe('keys on the table', () => {
 
   it('V opens the card choice of the villain card, and does nothing elsewhere', async () => {
     const stageBox = () =>
-      screen.queryByRole('dialog', { name: 'Villain: choose the card to show' });
+      screen.queryByRole('dialog', { name: 'Villain: choose the card to show, 1 card' });
     const { session } = await renderTable();
 
     await fireEvent.pointerEnter(placed('mine'));
@@ -525,7 +525,7 @@ describe('keys on the table', () => {
 
   it('Shift + X, B or V does nothing', async () => {
     const stageBox = () =>
-      screen.queryByRole('dialog', { name: 'Villain: choose the card to show' });
+      screen.queryByRole('dialog', { name: 'Villain: choose the card to show, 1 card' });
     const { session } = await renderTable();
 
     await fireEvent.pointerEnter(placed('mine'));

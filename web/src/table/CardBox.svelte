@@ -47,6 +47,7 @@
   import { isLandscape, isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatHero } from './seats';
   import { TOUCH_MODE_QUERY } from './touch';
+  import './countPill.css';
 
   let {
     box,
@@ -188,10 +189,8 @@
     switch (box.mode) {
       case 'top':
         return { main: `Top ${lookedAt} of ${label}` };
-      case 'search': {
-        const n = pileCards.length;
-        return { main: `Search ${label}`, aside: `(${n} ${n === 1 ? 'card' : 'cards'})` };
-      }
+      case 'search':
+        return { main: `Search ${label}` };
       case 'browse':
         return { main: label };
     }
@@ -207,7 +206,12 @@
     return hero ? label.replace(/^Your /, `Your ${hero} `) : label;
   }
 
-  const fullTitle = $derived(title.aside ? `${title.main} ${title.aside}` : title.main);
+  // The box's cards, shown in a pile's capsule after the title: a stage's cards, not their faces.
+  const cardCount = $derived(box.kind === 'stage' ? box.stage.cards.length : pileCards.length);
+  const cardCountWords = $derived(`${cardCount} ${cardCount === 1 ? 'card' : 'cards'}`);
+
+  const titleText = $derived(title.aside ? `${title.main} ${title.aside}` : title.main);
+  const fullTitle = $derived(`${titleText}, ${cardCountWords}`);
 
   // ---- Tile actions ----
 
@@ -633,10 +637,16 @@
 >
   {#snippet heading(id: string)}
     <div class="mhead" class:dock={dock.current}>
-      <b {id} use:overflowTip
-        >{title.main}
-        {#if title.aside}<span class="aside">{title.aside}</span>{/if}</b
-      >
+      <!-- The box is named by its title and its count in words: the capsule is not read. Named
+           from shown elements, browsers would read a space before the comma. -->
+      <span {id} hidden>{fullTitle}</span>
+      <span class="title">
+        <b use:overflowTip
+          >{title.main}
+          {#if title.aside}<span class="aside">{title.aside}</span>{/if}</b
+        >
+        <span class="count count-pill" aria-hidden="true">{cardCount}</span>
+      </span>
       <input
         class="filter"
         type="text"
@@ -797,6 +807,21 @@
     font-stretch: 85%;
     font-weight: 800;
     font-size: 18px;
+  }
+
+  /* The title, then the count, centred on the title's line: a long title is cut, never the count. */
+  .mhead .title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  /* The box's card count, in a pile's capsule (countPill.css), its digits lined up as they change. */
+  .mhead .count {
+    flex: none;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
   }
 
   .mhead .aside {
