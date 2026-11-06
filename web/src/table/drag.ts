@@ -492,6 +492,15 @@ export function goesToHand(drag: DragSource, units: readonly string[], view: Vie
   });
 }
 
+/**
+ * Whether the dock's hand button takes what is dragged: a hand card, which goes back to its hand
+ * and sends nothing, or what goes to a hand (goesToHand). `units` are the units of a group drag
+ * (selection.ts, dragUnits), empty when one card or stack is dragged.
+ */
+export function takesHandDrop(drag: DragSource, units: readonly string[], view: View): boolean {
+  return drag.kind === 'hand' || goesToHand(drag, units, view);
+}
+
 /** A pile a drag can go onto, and what the drop does there. */
 export interface PileTarget {
   pile: string;

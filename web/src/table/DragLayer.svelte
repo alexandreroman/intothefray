@@ -55,6 +55,7 @@
     sourceOf,
     stackOf,
     SteadyDrop,
+    takesHandDrop,
     tucks,
     unshifted,
     type DragSource,
@@ -76,7 +77,7 @@
   import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
   import { areaOf, seatHero, seatOf } from './seats';
-  import { groupAction, groupPileTargets, groupUnits } from './selection';
+  import { dragUnits, groupAction, groupPileTargets } from './selection';
   import { Sway } from './sway';
 
   let {
@@ -410,7 +411,7 @@
     stopSway();
     rise();
     grab = grabOf(from, pressedAt);
-    units = from.kind === 'card' ? groupOf(from.card) : [];
+    units = from.kind === 'card' ? dragUnits(from.card, interaction.group, cards) : [];
     let lifted: string[] = [];
     if (from.kind === 'card') {
       lifted = units.length > 0 ? groupLifted(from.card, units) : stackOf(from.card, cards);
@@ -489,15 +490,6 @@
     if (ghost) {
       motion.turnOffPile(ghost, held);
     }
-  }
-
-  /** The units of the selection when pressing that card drags it all: a selected card, 2 units at least. */
-  function groupOf(card: string): string[] {
-    if (!interaction.group.has(card)) {
-      return [];
-    }
-    const found = groupUnits(interaction.group, cards);
-    return found.length > 1 ? found : [];
   }
 
   /**
@@ -812,7 +804,7 @@
    * to the hand, which sends nothing (dropAction). Null for anything else, or with no hand button.
    */
   function dockHandTarget(from: DragSource): DropRect | null {
-    if (from.kind !== 'hand' && !goesToHand(from, units, view)) {
+    if (!takesHandDrop(from, units, view)) {
       return null;
     }
     const button = root?.querySelector('.dock .handbtn')?.getBoundingClientRect();

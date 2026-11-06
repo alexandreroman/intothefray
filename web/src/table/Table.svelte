@@ -88,7 +88,7 @@
     type DockPreview,
   } from './dockLayout';
   import { setDockMode } from './dockMode';
-  import { DRAG_THRESHOLD, goesToHand, intersect, sourceOf, type Rect } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, takesHandDrop, type Rect } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
@@ -153,7 +153,7 @@
     seatPlayer,
   } from './seats';
   import { tableCard, tablePile } from './screen';
-  import { cardsInBand, groupUnits, isFree } from './selection';
+  import { cardsInBand, dragUnits, isFree } from './selection';
   import TokenPill from './TokenPill.svelte';
   import CardPreview, { type Preview } from './CardPreview.svelte';
   import {
@@ -1811,9 +1811,8 @@
   const ownEntries = $derived(pickerEntries.filter((entry) => own.includes(entry.seat)));
 
   /**
-   * Whether the dock's hand button is the drop target of the drag, as DragLayer has it
-   * (dockHandTarget): for a hand card, which goes back there, and for what goes to a hand
-   * (goesToHand), every card of a group included.
+   * Whether the dock's hand button is the drop target of the drag, by the rule DragLayer follows
+   * (takesHandDrop).
    */
   const dockDropActive = $derived.by(() => {
     const held = interaction.dragging;
@@ -1824,14 +1823,8 @@
     if (!from) {
       return false;
     }
-    if (from.kind === 'hand') {
-      return true;
-    }
-    const grouped =
-      from.kind === 'card' && interaction.group.has(from.card)
-        ? groupUnits(interaction.group, cards)
-        : [];
-    return goesToHand(from, grouped.length > 1 ? grouped : [], view);
+    const units = from.kind === 'card' ? dragUnits(from.card, interaction.group, cards) : [];
+    return takesHandDrop(from, units, view);
   });
 
   // The sheets the dock opens: the selected deck's hand, the history. The corner's History button

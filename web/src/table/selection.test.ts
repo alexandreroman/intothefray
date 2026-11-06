@@ -1,7 +1,7 @@
 import type { Action, CardView, PileView, View } from '../lib/types';
 import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
-import { cardsInBand, groupAction, groupPileTargets, groupUnits } from './selection';
+import { cardsInBand, dragUnits, groupAction, groupPileTargets, groupUnits } from './selection';
 import { card, pile, playingView, rect } from './fixtures.testing';
 import { dockLayout } from './dockLayout';
 import { rowPitch, spreadRows, tableMapOf } from './rows';
@@ -70,6 +70,22 @@ describe('groupUnits', () => {
   it('leaves out cards off the table or lying on a pile', () => {
     const cards = [card('a'), card('b', { zone: 'hand' }), card('c', { onPile: 'deck:p0' })];
     expect(groupUnits(new Set(['a', 'b', 'c', 'gone']), cards)).toEqual(['a']);
+  });
+});
+
+describe('dragUnits', () => {
+  const cards = [card('a', { z: 1 }), card('b', { z: 2 }), card('t', { parent: 'a' }), card('c')];
+
+  it('moves the units of the selection with a selected card', () => {
+    expect(dragUnits('b', new Set(['a', 'b', 't']), cards)).toEqual(['a', 'b']);
+  });
+
+  it('moves no group with a card outside the selection', () => {
+    expect(dragUnits('c', new Set(['a', 'b']), cards)).toEqual([]);
+  });
+
+  it('moves no group when the selection holds a single unit', () => {
+    expect(dragUnits('a', new Set(['a', 't']), cards)).toEqual([]);
   });
 });
 

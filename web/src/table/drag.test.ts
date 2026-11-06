@@ -16,6 +16,7 @@ import {
   sourceOf,
   stackOf,
   SteadyDrop,
+  takesHandDrop,
   tucks,
   unshifted,
   type DragSource,
@@ -751,6 +752,30 @@ describe('goesToHand', () => {
   it('takes a group only when every unit goes to a hand', () => {
     expect(goesToHand(tableCard('mine'), ['mine', 'also'], view)).toBe(true);
     expect(goesToHand(tableCard('mine'), ['mine', 'theirs'], view)).toBe(false);
+  });
+});
+
+describe('takesHandDrop', () => {
+  const view = makeView({
+    cards: [card('mine'), card('also'), card('theirs', { owner: 1 }), card('h1', { zone: 'hand' })],
+  });
+  const tableCard = (id: string): DragSource => ({ kind: 'card', card: id, x: 0, y: 0 });
+
+  it('takes a hand card back, which goesToHand alone does not', () => {
+    const handCard: DragSource = { kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' };
+    expect(takesHandDrop(handCard, [], view)).toBe(true);
+    expect(goesToHand(handCard, [], view)).toBe(false);
+  });
+
+  it('takes what goes to a hand, one card or a whole group', () => {
+    expect(takesHandDrop(tableCard('mine'), [], view)).toBe(true);
+    expect(takesHandDrop(tableCard('theirs'), [], view)).toBe(false);
+    expect(takesHandDrop(tableCard('mine'), ['mine', 'also'], view)).toBe(true);
+    expect(takesHandDrop(tableCard('mine'), ['mine', 'theirs'], view)).toBe(false);
+  });
+
+  it('takes nothing from a pile or the encounter deck', () => {
+    expect(takesHandDrop({ kind: 'encounter', pile: 'encd' }, [], view)).toBe(false);
   });
 });
 

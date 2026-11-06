@@ -55,6 +55,23 @@ export function groupUnits(selected: ReadonlySet<string>, cards: readonly CardVi
 }
 
 /**
+ * The units a drag pressed on `card` moves together: the selection's (groupUnits) when the card is
+ * selected and the selection holds 2 units at least. None otherwise: the card, or its stack, moves
+ * alone.
+ */
+export function dragUnits(
+  card: string,
+  selected: ReadonlySet<string>,
+  cards: readonly CardView[],
+): string[] {
+  if (!selected.has(card)) {
+    return [];
+  }
+  const units = groupUnits(selected, cards);
+  return units.length > 1 ? units : [];
+}
+
+/**
  * The action a group drop sends, from the action the lead (pressed) card
  * alone would send there: every unit moves by the lead's delta, or goes to
  * the same pile, deck or hand. A group tucks under nothing: dropped over a
