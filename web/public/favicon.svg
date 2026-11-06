@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#0D111B"/>
+  <!-- Full-bleed background: search engines crop the icon into a circle and fill transparency with white. -->
+  <rect width="64" height="64" fill="#0D111B"/>
   <!-- The mark drawn for 16px: one solid card cut by an ink fracture, no spark. -->
   <g transform="rotate(-12 32 32)">
     <rect x="15" y="8" width="34" height="48" rx="6" fill="#FF4438"/>
