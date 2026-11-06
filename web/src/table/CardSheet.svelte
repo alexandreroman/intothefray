@@ -33,8 +33,9 @@
   that snaps each card to the middle, the main card first, the shown one
   centred at the size of a card alone, its neighbours peeking at the sides,
   smaller and dimmed (as HandSheet.svelte's), with a dot per card under it.
-  The card a swipe leaves in the middle once the scroll settles, or a tapped
-  neighbour, is asked of the caller (onpick): the same sheet then shows it,
+  The card a swipe brings past the midpoint to the middle, as the finger
+  moves, or a tapped neighbour, at once, is asked of the caller (onpick): the
+  same sheet then shows it, the carousel gliding on to it,
   its column switching at once, its rows neither sliding nor fading, never
   turning, its page keeping its height as through a submenu. The carousel
   bringing the card to its middle is the only motion: every card keeps its face,
@@ -109,8 +110,12 @@
   const TURN_PERSPECTIVE = 'perspective(700px)';
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
-  /** How long the carousel must be still before the card in its middle becomes the shown one, in ms. */
-  const SETTLE_MS = 120;
+  /**
+   * How much nearer the carousel's middle another card must be than the shown one before it becomes
+   * the shown one, in px: twice how far past the midpoint between them the middle must go. A finger
+   * resting on that midpoint does not flip the sheet back and forth.
+   */
+  const SWITCH_SLACK_PX = 12;
 
   /** A side of the card: the face it shows, and the header, counters and entries that go with it. */
   type Side = {
@@ -128,16 +133,13 @@
   const side = $derived(leaving ?? live);
 
   let faceElement = $state<HTMLElement>();
-  /** The column beside or under the card: its header, counters and, in dock mode, its entries. */
-  let sideElement = $state<HTMLElement>();
   let turn: Animation | undefined;
   /** The carousel of the stack, in place of the face, when the card has one. */
   let carouselElement = $state<HTMLElement>();
-  /** The card a swipe has brought to the carousel's middle, before it settles; null until then. */
-  let swipedTo = $state<string | null>(null);
-  /** The card in the carousel's middle, which shows full size and lit: the shown one when still. */
-  const centredId = $derived(swipedTo ?? cardId);
-  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  /** The card a swipe has brought to the middle and asked for: the carousel is there already. */
+  let swipedTo: string | null = null;
+  /** The card the carousel glides to after a tap: the cards it passes on the way are not asked for. */
+  let glidingTo: string | null = null;
   /** The carousel has been scrolled to the shown card once: later moves to another one glide. */
   let centredOnce = false;
   /** The ease of the sheet to the new side's size; it holds that size until the turn ends. */
@@ -181,7 +183,6 @@
   $effect(() => () => {
     turn?.cancel();
     resize?.cancel();
-    clearTimeout(settleTimer);
   });
 
   // The shown card in the carousel's middle: at once as the sheet opens, gliding there after a
@@ -193,8 +194,12 @@
       return;
     }
     untrack(() => {
-      swipedTo = null;
+      if (id === swipedTo) {
+        swipedTo = null;
+        return;
+      }
       const glide = centredOnce && !prefersReducedMotion.current;
+      glidingTo = glide ? id : null;
       centreSlide(scroller, id, glide ? 'smooth' : 'instant');
       centredOnce = true;
     });
@@ -210,39 +215,44 @@
     scroller.scrollTo({ left, behavior });
   }
 
-  /** The card nearest the carousel's middle. */
-  function slideInMiddle(): string | undefined {
-    if (carouselElement === undefined) {
-      return undefined;
-    }
-    const box = carouselElement.getBoundingClientRect();
+  /** How far each card's centre is from the carousel's middle, in px. */
+  function distancesFromMiddle(scroller: HTMLElement): { id: string; distance: number }[] {
+    const box = scroller.getBoundingClientRect();
     const middle = box.left + box.width / 2;
-    let nearest: string | undefined;
-    let nearestDistance = Infinity;
-    for (const slide of carouselElement.querySelectorAll<HTMLElement>('.slide')) {
+    return [...scroller.querySelectorAll<HTMLElement>('.slide')].map((slide) => {
       const rect = slide.getBoundingClientRect();
-      const distance = Math.abs(rect.left + rect.width / 2 - middle);
-      if (distance < nearestDistance) {
-        nearest = slide.dataset.id;
-        nearestDistance = distance;
-      }
-    }
-    return nearest;
+      return { id: slide.dataset.id!, distance: Math.abs(rect.left + rect.width / 2 - middle) };
+    });
   }
 
   /**
-   * A scroll of the carousel lights the card in its middle as it goes; once the carousel is still,
-   * that card becomes the shown one, unless it is already.
+   * As a swipe scrolls the carousel, the card nearest its middle becomes the shown one as soon as it
+   * is clearly nearer than the shown card (SWITCH_SLACK_PX): the sheet follows the finger rather than
+   * waiting for the scroll to end. A glide after a tap asks for nothing until it reaches its card.
    */
   function onCarouselScroll(): void {
-    swipedTo = slideInMiddle() ?? null;
-    clearTimeout(settleTimer);
-    settleTimer = setTimeout(() => {
-      const id = slideInMiddle();
-      if (id !== undefined && id !== cardId) {
-        onpick?.(id);
+    if (carouselElement === undefined || cardId === undefined) {
+      return;
+    }
+    const slides = distancesFromMiddle(carouselElement);
+    const shown = slides.find((slide) => slide.id === cardId);
+    const nearest = slides.reduce((best, slide) => (slide.distance < best.distance ? slide : best));
+    if (glidingTo !== null) {
+      if (nearest.id === glidingTo) {
+        glidingTo = null;
       }
-    }, SETTLE_MS);
+      return;
+    }
+    const shownDistance = shown?.distance ?? Infinity;
+    if (nearest.id !== cardId && shownDistance - nearest.distance > SWITCH_SLACK_PX) {
+      swipedTo = nearest.id;
+      onpick?.(nearest.id);
+    }
+  }
+
+  /** A finger on the carousel takes over from a glide: the cards it brings to the middle count. */
+  function onCarouselPointerDown(): void {
+    glidingTo = null;
   }
 
   /** Whether the sheet goes from one card of the stack to another: not a flip, nor a reveal. */
@@ -606,6 +616,7 @@
     aria-label="Attached cards"
     bind:this={carouselElement}
     onscroll={onCarouselScroll}
+    onpointerdown={onCarouselPointerDown}
   >
     {@render spacer(stack[0]!)}
     {#each stack as card (card.id)}
@@ -616,7 +627,7 @@
       <div
         class="slide"
         class:land={landscape}
-        class:dim={card.id !== centredId}
+        class:dim={card.id !== cardId}
         data-id={card.id}
         aria-current={card.id === cardId ? 'true' : undefined}
         role={shown ? undefined : 'button'}
@@ -649,7 +660,7 @@
   </div>
   <div class="dots" aria-hidden="true">
     {#each stack as card (card.id)}
-      <i class:on={card.id === centredId}></i>
+      <i class:on={card.id === cardId}></i>
     {/each}
   </div>
 {/snippet}
@@ -699,7 +710,7 @@
           </div>
         {/if}
       </div>
-      <div class="side" bind:this={sideElement}>
+      <div class="side">
         {@render nameline(side.header)}
         {#if dock.current}
           {@render entriesBlock()}

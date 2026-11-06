@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import CardSheet from './CardSheet.svelte';
 import sheetSource from './CardSheet.svelte?raw';
+import countersSource from './CardCounters.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
@@ -570,8 +571,11 @@ describe('CardSheet', () => {
       const peek = slideOf('armor');
       const chip = peek.querySelector('.tok.dmg')!;
       expect(chip.textContent).toBe('2');
-      expect(chip.tagName).toBe('SPAN');
-      expect(chip.closest('.layer')?.getAttribute('aria-hidden')).toBe('true');
+      const layer = chip.closest<HTMLElement>('.layer')!;
+      expect(layer.getAttribute('aria-hidden')).toBe('true');
+      // Out of reach: neither focused nor pressed, a tap on it is a tap on the card.
+      expect(layer.inert).toBe(true);
+      expect(countersSource).toMatch(/\.layer\[inert\] \.tokens,[^}]*pointer-events: none;/);
     });
   });
 
@@ -786,25 +790,84 @@ describe('CardSheet', () => {
       expect(rule('.slide')).toContain('-webkit-tap-highlight-color: transparent;');
     });
 
-    it('asks for the card a swipe leaves in the middle, once the scroll settles', async () => {
-      vi.useFakeTimers();
+    /**
+     * Lays the carousel out as scrolled by that much, as jsdom does not: 300 px wide, its middle at
+     * 150 px, its slides 200 px wide and apart, the first one centred at 0.
+     */
+    function scrollCarouselTo(offset: number): void {
+      placeBox(carousel()!, 0, 300);
+      slides().forEach((slide, i) => placeBox(slide, 50 + 200 * i - offset, 200));
+    }
+
+    it('asks for the card a swipe brings past the midpoint at once, not once the scroll ends', async () => {
+      const { onpick } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      // Short of the midpoint between the first two cards, at 100 px: still the first one.
+      scrollCarouselTo(95);
+      await fireEvent.scroll(carousel()!);
+      expect(onpick).not.toHaveBeenCalled();
+
+      // Past it: the second one, right away, while the finger still moves.
+      scrollCarouselTo(110);
+      await fireEvent.scroll(carousel()!);
+      expect(onpick).toHaveBeenCalledExactlyOnceWith('armor');
+    });
+
+    it('does not flip back and forth with a finger resting on the midpoint', async () => {
+      const { onpick, rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+      scrollCarouselTo(110);
+      await fireEvent.scroll(carousel()!);
+      await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+      onpick.mockClear();
+
+      // Back a hair over the midpoint: still the second card.
+      scrollCarouselTo(98);
+      await fireEvent.scroll(carousel()!);
+      expect(onpick).not.toHaveBeenCalled();
+
+      // Clearly back: the first one again.
+      scrollCarouselTo(90);
+      await fireEvent.scroll(carousel()!);
+      expect(onpick).toHaveBeenCalledExactlyOnceWith('rhino');
+    });
+
+    it('leaves the carousel where a swipe has put it: no glide after a swipe', async () => {
+      const scrollTo = vi.fn();
+      HTMLElement.prototype.scrollTo = scrollTo as unknown as typeof HTMLElement.prototype.scrollTo;
       try {
-        const { onpick } = renderSheet({ stack: STACK, cardId: 'rhino' });
-        // jsdom lays nothing out: the carousel 300 px wide, its slides 200 px apart, the second
-        // one in the middle after the swipe.
-        placeBox(carousel()!, 0, 300);
-        slides().forEach((slide, i) => placeBox(slide, 50 + 200 * (i - 1), 200));
+        const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+        await tick();
+        scrollTo.mockClear();
 
+        scrollCarouselTo(110);
         await fireEvent.scroll(carousel()!);
-        expect(slides()[1]!.classList).not.toContain('dim');
-        expect(onpick).not.toHaveBeenCalled();
-        await fireEvent.scroll(carousel()!);
-        vi.advanceTimersByTime(200);
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, images: ['armor.png'] });
+        await tick();
 
-        expect(onpick).toHaveBeenCalledExactlyOnceWith('armor');
+        expect(scrollTo).not.toHaveBeenCalled();
       } finally {
-        vi.useRealTimers();
+        delete (HTMLElement.prototype as Partial<HTMLElement>).scrollTo;
       }
+    });
+
+    it('asks for a tapped card at once, and none of those its glide passes', async () => {
+      const { onpick, rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
+
+      await fireEvent.click(peeks()[1]!);
+      expect(onpick).toHaveBeenCalledExactlyOnceWith('hidden');
+      await rerender({ cardId: 'hidden' });
+      onpick.mockClear();
+
+      // Gliding to the third card, the carousel passes the second one: not asked for.
+      scrollCarouselTo(200);
+      await fireEvent.scroll(carousel()!);
+      expect(onpick).not.toHaveBeenCalled();
+
+      // A finger takes over the glide: the card it brings to the middle is asked for.
+      await fireEvent.pointerDown(carousel()!);
+      scrollCarouselTo(190);
+      await fireEvent.scroll(carousel()!);
+      expect(onpick).toHaveBeenCalledExactlyOnceWith('armor');
     });
 
     it('centres the shown card: at once on opening, smoothly as it changes', async () => {
@@ -1065,6 +1128,47 @@ describe('CardSheet', () => {
           expect(slide.querySelector('.face')).toBe(faces[i]);
           expect(slide.querySelector('img')).toBe(images[i]);
         });
+      });
+
+      it("keeps every card's tokens through a switch, none fading in or out", async () => {
+        const counter: SheetCounter = { ...DAMAGE, name: 'gen', label: 'Counter', value: 1 };
+        // Table.svelte builds the stack anew on every view: new arrays, new objects.
+        const stackWith = (): StackCard[] => [
+          { ...STACK[0]!, counters: [{ ...DAMAGE }] },
+          { ...STACK[1]!, counters: [{ ...counter }] },
+          STACK[2]!,
+        ];
+        const { rerender } = renderSheet({
+          stack: stackWith(),
+          cardId: 'rhino',
+          counters: [DAMAGE],
+        });
+        await finishAnimations();
+        animate.mockClear();
+        const chips = slides().map((slide) => [...slide.querySelectorAll('[data-counter]')]);
+        expect(chips.map((list) => list.length)).toEqual([1, 1, 0]);
+
+        await rerender({
+          cardId: 'armor',
+          header: ARMOR_HEADER,
+          images: ['armor.png'],
+          counters: [{ ...counter }],
+          stack: stackWith(),
+        });
+        await finishAnimations();
+
+        slides().forEach((slide, i) => {
+          // The very same elements: none drawn again, so none fades in.
+          const now = [...slide.querySelectorAll('[data-counter]')];
+          expect(now).toHaveLength(chips[i]!.length);
+          now.forEach((chip, j) => expect(chip).toBe(chips[i]![j]));
+        });
+        expect(animate).not.toHaveBeenCalled();
+        // The shown card's token is the control now, the first card's a picture.
+        expect(slideOf('armor').querySelector('.layer')?.getAttribute('aria-hidden')).toBeNull();
+        expect(slideOf('rhino').querySelector<HTMLElement>('.layer')?.inert).toBe(true);
+        await fireEvent.click(screen.getByRole('button', { name: 'Counter, 1' }));
+        expect(screen.getByRole('group', { name: /^Change/ })).toBeTruthy();
       });
 
       it('switches at once under reduced motion', async () => {

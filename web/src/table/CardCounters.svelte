@@ -9,7 +9,9 @@
   TokenPill.svelte, with 44 px buttons. The pill stays until a press lands
   outside it and its token, or on another token, and follows its token as the
   value changes; a counter stepped down to zero fades out, its pill with it.
-  On a card of the stack that is not shown, they are a picture alone.
+  On a card of the stack that is not shown, they are a picture alone: the same
+  elements, out of reach (inert), so that the card the sheet switches to keeps
+  its tokens as they are, none drawn again nor fading in.
 
   The look and the places mirror CardView.svelte's styles, which this file
   cannot share without changing that component's output: a change to one is
@@ -116,8 +118,11 @@
     return counter.value > 1 ? `×${counter.value}` : null;
   }
 
-  /** A tap on a token opens its pill, or closes it when already open. */
+  /** A tap on a token opens its pill, or closes it when already open; a picture has none. */
   function toggle(counter: SheetCounter): void {
+    if (onstep === undefined) {
+      return;
+    }
     openKey = openKey === keyOf(counter) ? null : keyOf(counter);
   }
 
@@ -164,34 +169,25 @@
 <svelte:document onpointerdowncapture={onDocumentPointerDown} />
 
 <!--
-  A token is a button on the shown card, a picture on another one of the stack. Its fade plays when
-  its pile goes too: the last token gone takes its pile with it.
+  A token is a button, on the shown card as on another one of the stack, where the layer puts it
+  out of reach. Its fade plays when it comes or goes, and when its pile goes too: the last token
+  gone takes its pile with it.
 -->
 {#snippet chip(counter: SheetCounter, kind: string)}
-  {#if onstep}
-    {@const isOpen = open !== null && keyOf(open) === keyOf(counter)}
-    <button
-      type="button"
-      class="{kind} {counter.name}"
-      class:neg={counter.kind === 'modifier' && counter.value < 0}
-      class:open={isOpen}
-      data-counter={keyOf(counter)}
-      aria-label={nameOf(counter)}
-      aria-expanded={isOpen}
-      onclick={() => toggle(counter)}
-      transition:fade|global={{ duration: motionMs(FADE_MS) }}
-    >
-      {@render chipFace(counter)}
-    </button>
-  {:else}
-    <span
-      class="{kind} {counter.name}"
-      class:neg={counter.kind === 'modifier' && counter.value < 0}
-      data-counter={keyOf(counter)}
-    >
-      {@render chipFace(counter)}
-    </span>
-  {/if}
+  {@const isOpen = open !== null && keyOf(open) === keyOf(counter)}
+  <button
+    type="button"
+    class="{kind} {counter.name}"
+    class:neg={counter.kind === 'modifier' && counter.value < 0}
+    class:open={isOpen}
+    data-counter={keyOf(counter)}
+    aria-label={nameOf(counter)}
+    aria-expanded={onstep ? isOpen : undefined}
+    onclick={() => toggle(counter)}
+    transition:fade|global={{ duration: motionMs(FADE_MS) }}
+  >
+    {@render chipFace(counter)}
+  </button>
 {/snippet}
 
 <!-- What a chip shows, as CardView.svelte: a token's value, a tab's label, a badge's signed value. -->
@@ -220,6 +216,7 @@
   bind:this={layer}
   bind:clientWidth={layerWidth}
   aria-hidden={onstep ? undefined : 'true'}
+  inert={onstep === undefined}
 >
   <div
     class="card"
@@ -330,6 +327,13 @@
   .mods,
   .tokpill {
     pointer-events: auto;
+  }
+
+  /* A picture takes no presses: a tap on one of its tokens is a tap on its card (CardSheet.svelte). */
+  .layer[inert] .tokens,
+  .layer[inert] .statuses,
+  .layer[inert] .mods {
+    pointer-events: none;
   }
 
   /* A button drawn as the table's chip or tab: none of a button's own look. */
