@@ -185,7 +185,7 @@ class TableInteraction {
   // Where the pointer was when the table was last redrawn.
   #drawnAt = { x: NaN, y: NaN };
   #pointerType = 'mouse';
-  // Touch mode (touch.ts): nothing is ever previewed. The table keeps it in step with the screen.
+  // Touch mode (TOUCH_MODE_QUERY): nothing is ever previewed. The table keeps it in step with the screen.
   #touchMode = false;
   // When the current press began: the timeStamp of its event.
   #pressedAt = 0;

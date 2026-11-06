@@ -8,8 +8,7 @@
   import { overflowTip } from '../lib/overflowTip';
   import { pointerBlur } from '../lib/releaseFocus';
   import { ScrollAutoHide, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
-  import { PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
-  import { TOUCH_MODE_QUERY } from '../table/touch';
+  import { PHONE_QUERY, SMALL_SCREEN_QUERY, TOUCH_MODE_QUERY } from '../lib/screen';
   import {
     canFullscreen,
     isFullscreen,
@@ -376,7 +375,7 @@
     display: block;
   }
 
-  /* A finger needs taller targets: touch mode (TOUCH_MODE_QUERY, table/touch). */
+  /* A finger needs taller targets: touch mode (TOUCH_MODE_QUERY, lib/screen). */
   @media (hover: none) and (pointer: coarse) {
     .actions {
       --segmented-height: 44px;

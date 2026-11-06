@@ -4,7 +4,7 @@
   slim strip. The preview of the hovered card floats in a corner of the play
   area that focus.ts chooses (chooseCorner): the bottom right, above the zoom
   control, unless it would hide the whole hovered element there, and never
-  the hero selector's corner; touch mode previews nothing (touch.ts). On a
+  the hero selector's corner; touch mode previews nothing (lib/screen.ts). On a
   narrow screen and in dock mode there is no side column: the dock, or on a
   tablet a History button in the bottom right corner, opens the history in a
   sheet.
@@ -26,7 +26,13 @@
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
   import { pointerBlur } from '../lib/releaseFocus';
-  import { NARROW_SCREEN_QUERY, PHONE_QUERY, SMALL_SCREEN_QUERY } from '../lib/screen';
+  import {
+    NARROW_SCREEN_QUERY,
+    PHONE_QUERY,
+    SHORT_SCREEN_QUERY,
+    SMALL_SCREEN_QUERY,
+    TOUCH_MODE_QUERY,
+  } from '../lib/screen';
   import type { GameSession } from '../lib/session.svelte';
   import type {
     Action,
@@ -162,7 +168,6 @@
   import SidePanel, { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
   import Surface, { ownerLineWidth, type OwnerBox } from './Surface.svelte';
   import { backUrl } from './theme';
-  import { TOUCH_MODE_QUERY } from './touch';
   import { touchZoom } from './touchZoom';
   import ZoomControl from './ZoomControl.svelte';
   import {
@@ -532,7 +537,7 @@
   const small = new MediaQuery(SMALL_SCREEN_QUERY);
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
   // The short case of a small screen (SMALL_SCREEN_QUERY): a phone on its side.
-  const short = new MediaQuery('(max-height: 500px)');
+  const short = new MediaQuery(SHORT_SCREEN_QUERY);
 
   // Dock mode, a phone held either way on a touch screen (spec 3.4): the dock (Dock.svelte) stands in
   // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the

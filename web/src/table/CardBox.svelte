@@ -16,6 +16,7 @@
   import Dialog from '../components/Dialog.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import { releaseFocus } from '../lib/releaseFocus';
+  import { TOUCH_MODE_QUERY } from '../lib/screen';
   import { scrollFade } from '../lib/scrollFade';
   import type {
     Action,
@@ -46,7 +47,6 @@
   import { interaction, LANDING_MS } from './interaction.svelte';
   import { isLandscape, isOutOfPlay } from './layout';
   import { ownerLook, ownSeats, seatHero } from './seats';
-  import { TOUCH_MODE_QUERY } from './touch';
   import './countPill.css';
 
   let {
