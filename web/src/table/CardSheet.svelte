@@ -1,14 +1,15 @@
 <!--
   The inspector of a table card or pile on a touch screen, in place of its
   context menu (ContextMenu.svelte): a bottom sheet (Sheet.svelte) with the
-  card's face large beside its name and its counters, then the same entries
+  card's face large beside its name, its counters drawn on it, then the same entries
   as the menu (contextItems.ts). The first group shows as large buttons, the
   default one in Fray red, the others as rows; a submenu opens in the sheet,
   with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
   it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet, or keeps
-  it open for a token, status or modifier, which then shows back on the main
-  page with its steppers.
+  it open for a token, status or modifier, which then shows on the card.
+  The tokens, status tabs and modifier badges lie on the face as the table
+  draws them (CardCounters.svelte): a tap on one opens its − / + pill.
   In dock mode (a phone) the sheet uses the whole screen. Upright, the card is
   on top, centred, and everything else full width under it, the whole sheet
   scrolling if it must; on its side, the card as large as it allows on the
@@ -16,9 +17,8 @@
   scrolls.
   Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
-  back the other way; a counter
-  row or an entry that comes or goes after an update slides open or closed;
-  a counter's number bumps as it changes; a pressed button sinks. When the
+  back the other way; an entry that comes or goes after an update slides open
+  or closed; a token fades in or out; a pressed button sinks. When the
   face the card shows changes (a flip, a stage turned, a card turned face
   down or up, a deck's back giving way to the card revealed on it), the card
   turns over as a table card does, in place: the name, the count, the
@@ -43,14 +43,16 @@
   import { tick, untrack } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
-  import { fade, fly, slide, type TransitionConfig } from 'svelte/transition';
+  import { fade, fly, slide } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
+  import { buttonGrid } from '../lib/buttonGrid';
   import { overflowTip } from '../lib/overflowTip';
+  import CardCounters from './CardCounters.svelte';
   import CardFace from './CardFace.svelte';
   import './countPill.css';
   import { dockMode } from './dockMode';
   import { LIFT_SCALE } from './motion.svelte';
-  import { counterName, MAX_MODIFIER, withSign, type ActionItem } from './actions';
+  import type { ActionItem } from './actions';
   import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
   import { splitEntries, visibleEntries, type SheetCounter, type StackCard } from './inspector';
 
@@ -98,8 +100,6 @@
   const PAGE_MS = 220;
   /** How long a counter row or an entry takes to slide open or closed, in ms. */
   const ROW_MS = 200;
-  /** How long a counter's number takes to bump as it changes, in ms. */
-  const BUMP_MS = 160;
   /** How long the card takes to turn over, edge-on half way: a table card's FLIP_MS (motion.svelte.ts). */
   const TURN_MS = 360;
   /** The perspective of a table card turning over (motion.svelte.ts FLIP_PERSPECTIVE). */
@@ -442,15 +442,6 @@
     }
   }
 
-  /** What a stepper button does, as a screen reader says it: "Add one damage", "Remove one from the DEF modifier". */
-  function stepLabel(counter: SheetCounter, delta: -1 | 1): string {
-    const name = counterName(counter.kind, counter.name);
-    if (counter.kind === 'modifier') {
-      return delta === 1 ? `Add one to the ${name}` : `Remove one from the ${name}`;
-    }
-    return delta === 1 ? `Add one ${name}` : `Remove one ${name}`;
-  }
-
   /**
    * Tells the entries apart in an each block. A separator has no id: it goes by the entry before
    * it, so that it stays put, rather than sliding out and in again, when an entry above it leaves.
@@ -492,14 +483,6 @@
   function onPageOutro(event: Event): void {
     (event.currentTarget as HTMLElement).inert = true;
   }
-
-  /** A counter's number as it changes: up to 1.15 times its size and back. */
-  function bump(_node: Element): TransitionConfig {
-    return {
-      duration: motionMs(BUMP_MS),
-      css: (t) => `transform: scale(${1 + 0.15 * Math.sin(Math.PI * t)})`,
-    };
-  }
 </script>
 
 {#snippet actionRow(entry: ContextAction, run: (item: ActionItem) => void)}
@@ -515,56 +498,18 @@
   <div class="sep" role="separator"></div>
 {/snippet}
 
-{#snippet counterRow(counter: SheetCounter)}
-  <div class="counter" transition:slide={rowSlide()}>
-    <span class="what"
-      ><i class="dot {counter.kind} {counter.name}" class:neg={counter.value < 0}
-      ></i>{counter.label}</span
-    >
-    {#if counter.kind === 'status'}
-      {#if counter.value > 1}
-        {#key counter.value}<span class="value" in:bump>×{counter.value}</span>{/key}
-      {/if}
-      <button
-        type="button"
-        class="step"
-        aria-label="Remove {counterName('status', counter.name)}"
-        onclick={() => onstep(counter, -1)}>✕</button
-      >
-    {:else}
-      <button
-        type="button"
-        class="step"
-        aria-label={stepLabel(counter, -1)}
-        disabled={counter.signed && counter.value <= -MAX_MODIFIER}
-        onclick={() => onstep(counter, -1)}>−</button
-      >
-      {#key counter.value}
-        <span class="value" in:bump>{counter.signed ? withSign(counter.value) : counter.value}</span
-        >
-      {/key}
-      <button
-        type="button"
-        class="step"
-        aria-label={stepLabel(counter, 1)}
-        disabled={counter.signed && counter.value >= MAX_MODIFIER}
-        onclick={() => onstep(counter, 1)}>+</button
-      >
-    {/if}
-  </div>
-{/snippet}
-
 <!-- The main page of the entries: the first group as large buttons, the others as rows. -->
 {#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
   {#if parts.main.length > 0}
-    <div class="main-grid" style:--columns={parts.main.length}>
+    <div class="main-grid" style:--columns={parts.main.length} {@attach buttonGrid()}>
       {#each parts.main as entry (entry.item.id)}
         <button
           type="button"
           class="main"
           class:default={entry.item.default}
           onclick={() => onrun(entry.item)}
-          transition:fade={rowSlide()}><span class="label">{entry.item.label}</span></button
+          transition:fade={rowSlide()}
+          ><span class="label" use:overflowTip>{entry.item.label}</span></button
         >
       {/each}
     </div>
@@ -654,6 +599,16 @@
   </div>
 {/snippet}
 
+<!-- The shown card's tokens, tabs and badges, on its face: the way to change them. -->
+{#snippet faceCounters()}
+  <CardCounters
+    counters={side.counters}
+    landscape={side.landscape}
+    scheme={side.header.scheme ?? false}
+    {onstep}
+  />
+{/snippet}
+
 <!-- Room before the first card and after the last one, so that both can snap to the middle. -->
 {#snippet spacer(card: StackCard)}
   <i class="spacer" class:land={card.landscape} aria-hidden="true"></i>
@@ -681,11 +636,17 @@
         {#if shown}
           <div class="face" class:land={side.landscape} bind:this={faceElement}>
             <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+            {@render faceCounters()}
           </div>
         {:else}
           <button type="button" class="peek" aria-label={card.name} onclick={() => pick(card)}>
             <span class="peek-face" aria-hidden="true">
               <CardFace images={card.images} name={card.name} landscape={card.landscape} />
+              <CardCounters
+                counters={card.counters ?? []}
+                landscape={card.landscape}
+                scheme={card.scheme ?? false}
+              />
             </span>
           </button>
         {/if}
@@ -741,14 +702,12 @@
         {:else}
           <div class="face" class:land={side.landscape} bind:this={faceElement}>
             <CardFace images={side.images} name={side.header.name} landscape={side.landscape} />
+            {@render faceCounters()}
           </div>
         {/if}
       </div>
       <div class="side" bind:this={sideElement}>
         {@render nameline(side.header)}
-        {#each side.counters as counter (`${counter.kind}:${counter.name}`)}
-          {@render counterRow(counter)}
-        {/each}
         {#if dock.current}
           {@render entriesBlock()}
         {/if}
@@ -780,9 +739,6 @@
         </div>
         <div class="side">
           {@render nameline(live.header)}
-          {#each live.counters as counter (`${counter.kind}:${counter.name}`)}
-            {@render counterRow(counter)}
-          {/each}
           {#if dock.current}
             {@render measuredEntries()}
           {/if}
@@ -838,6 +794,7 @@
   */
   .face {
     --face-ratio: 5 / 7;
+    position: relative;
     flex: none;
     min-width: 0;
     min-height: 0;
@@ -938,6 +895,7 @@
   }
 
   .peek-face {
+    position: relative;
     display: block;
     width: 100%;
     height: 100%;
@@ -1003,111 +961,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* A counter: its colour and name, then its steppers. */
-  .counter {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    padding: 4px;
-    border-radius: 12px;
-    background: var(--panel-2);
-  }
-
-  .what {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding-left: 6px;
-    overflow: hidden;
-    font-size: 14px;
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* The colours of the card's discs and tabs (CardView.svelte). */
-  .dot {
-    flex: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--line-strong);
-  }
-
-  .dot.token.dmg {
-    background: #d8352b;
-  }
-
-  .dot.token.thr {
-    background: #e08a1e;
-  }
-
-  .dot.token.gen {
-    background: #1b8a4a;
-  }
-
-  .dot.token.acc {
-    background: var(--accent);
-  }
-
-  .dot.status.stunned {
-    background: #25a058;
-  }
-
-  .dot.status.confused {
-    background: #a274e6;
-  }
-
-  .dot.status.tough {
-    background: #f0a53a;
-  }
-
-  .dot.status.retaliate {
-    background: #2bb0b5;
-  }
-
-  .dot.status.locked {
-    background: #7d8aa8;
-  }
-
-  /* A modifier is a tab rather than a disc; a penalty is in the Fray red. */
-  .dot.modifier {
-    border-radius: 3px;
-    background: var(--muted);
-  }
-
-  .dot.modifier.neg {
-    background: var(--accent);
-  }
-
-  .value {
-    flex: none;
-    min-width: 30px;
-    font-size: 17px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-  }
-
-  .step {
-    flex: none;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 0;
-    border-radius: 10px;
-    background: var(--panel);
-    font-size: 22px;
-    font-weight: 700;
-  }
-
-  .step:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
   .note {
     margin: 0;
     color: var(--muted);
@@ -1134,8 +987,16 @@
     background: var(--panel-2);
     font-size: 13px;
     font-weight: 700;
-    white-space: normal;
     text-align: center;
+  }
+
+  /* A label stays on one line, cut short if it must: as wide as its text, so that its overflow
+     tells the grid a row is too narrow for it (lib/buttonGrid.ts). */
+  .main .label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .main.default {
@@ -1158,18 +1019,13 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .main,
-    .step {
+    .main {
       transition:
         background-color 0.12s,
         transform 0.08s ease-out;
     }
 
     .main:active {
-      transform: scale(0.96);
-    }
-
-    .step:active:not(:disabled) {
       transform: scale(0.96);
     }
 
@@ -1338,7 +1194,11 @@
     font-size: 18px;
   }
 
-  /* The main group: one button per row in a narrow column, two in a wide one. */
+  /*
+    The main group: one button per row in a narrow column, two in a wide one, never one alone on
+    the last line (lib/buttonGrid.ts): a lone button the whole width, three in a row when they fit
+    there, or else the first one, the default (inspector.splitEntries), the whole width on top.
+  */
   .inspector.dock .main-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 6px;
@@ -1348,6 +1208,18 @@
     .inspector.dock .main-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .inspector.dock .main-grid:global([data-layout='single']) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .inspector.dock .main-grid:global([data-layout='row']) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .inspector.dock .main-grid:global([data-layout='lead']) > .main:first-child {
+    grid-column: 1 / -1;
   }
 
   .inspector.dock .main {

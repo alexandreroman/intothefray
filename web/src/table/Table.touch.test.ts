@@ -159,6 +159,8 @@ describe('the inspector', () => {
     expect(sheet()).not.toBeNull();
     expect(tokenPill()).toBeNull();
 
+    // The token on the inspector's card opens its pill.
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Damage/ }));
     await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Add one/ }));
     // What the token pill's + sends.
     expect(session.act).toHaveBeenCalledExactlyOnceWith(
@@ -309,11 +311,12 @@ describe('the inspector, adding tokens, statuses and modifiers (F-U6)', () => {
     expect(sheet()).not.toBeNull();
   });
 
-  it('stays open after a stepper, and closes after any other entry', async () => {
+  it('stays open after a step in a token pill, and closes after any other entry', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable();
     await tap(placed('mine'));
 
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Damage/ }));
     await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Remove one/ }));
     expect(session.act).toHaveBeenCalledOnce();
     expect(sheet()).not.toBeNull();

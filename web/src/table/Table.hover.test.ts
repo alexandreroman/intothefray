@@ -494,7 +494,8 @@ describe('tokens and statuses', () => {
     await tap(placed('mine'), counter('mine', 'token:dmg'));
     await vi.advanceTimersByTimeAsync(1000);
 
-    expect(within(inspector()!).getByRole('button', { name: 'Add one damage' })).toBeTruthy();
+    // The token is drawn on the inspector's card, where a tap opens its pill.
+    expect(within(inspector()!).getByRole('button', { name: 'Damage, 2' })).toBeTruthy();
     expect(pill()).toBeNull();
     expect(interaction.counterPinned).toBe(false);
     expect(contextMenu()).toBeNull();
@@ -503,13 +504,14 @@ describe('tokens and statuses', () => {
     expect(noPreview()).toBe(true);
   });
 
-  it("the inspector stays through taps on its steppers, a status's ✕ included", async () => {
+  it("the inspector stays through steps in its token pills, a status's ✕ included", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable(viewWithCounters());
     vi.useFakeTimers();
     await tap(placed('mine'), counter('mine', 'token:dmg'));
 
+    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Damage, 2' }));
     await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Remove one damage' }));
     await vi.advanceTimersByTimeAsync(1000);
     expect(session.act).toHaveBeenLastCalledWith(
@@ -518,6 +520,7 @@ describe('tokens and statuses', () => {
     );
     expect(inspector()).not.toBeNull();
 
+    await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Stunned' }));
     await fireEvent.click(within(inspector()!).getByRole('button', { name: 'Remove stunned' }));
     expect(session.act).toHaveBeenLastCalledWith(
       { kind: 'status', card: 'mine', name: 'stunned', delta: -1 },
@@ -533,7 +536,8 @@ describe('tokens and statuses', () => {
     vi.useFakeTimers();
 
     await tap(placed('mine'));
-    expect(within(inspector()!).getByRole('button', { name: 'Add one damage' })).toBeTruthy();
+    // The token is drawn on the inspector's card, where a tap opens its pill.
+    expect(within(inspector()!).getByRole('button', { name: 'Damage, 2' })).toBeTruthy();
     expect(pill()).toBeNull();
 
     await fireEvent.keyDown(window, { key: 'Escape' });
@@ -543,7 +547,7 @@ describe('tokens and statuses', () => {
     expect(noPreview()).toBe(true);
   });
 
-  it("the inspector's row of a token goes with the token, and the inspector stays with its card", async () => {
+  it("the inspector's token goes with the table's, and the inspector stays with its card", async () => {
     // Touch mode (touch.ts), before the table is drawn.
     mockScreen({ ...DESKTOP, touch: true });
     const { rerender } = await renderTable(viewWithCounters());
@@ -551,7 +555,7 @@ describe('tokens and statuses', () => {
 
     await rerender({ view: viewWithCounters({ dmg: 0 }) });
     expect(inspector()).not.toBeNull();
-    expect(within(inspector()!).queryByRole('button', { name: 'Add one damage' })).toBeNull();
+    expect(within(inspector()!).queryByRole('button', { name: /^Damage/ })).toBeNull();
     expect(pill()).toBeNull();
   });
 

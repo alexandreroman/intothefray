@@ -38,6 +38,10 @@ export interface StackCard {
   /** Its face, or its back when it lies face down. */
   images: string[];
   landscape: boolean;
+  /** The tokens, statuses and modifiers it carries (countersFor), drawn on it in the carousel. */
+  counters?: SheetCounter[];
+  /** It is a scheme, its tokens in a scheme's places (ContextHeader.scheme). */
+  scheme?: boolean;
 }
 
 /** The most large buttons in a row, from the first group of entries. */
@@ -150,8 +154,9 @@ function isSeparator(entry: ContextEntry): entry is ContextSeparator {
 /**
  * Splits the entries into the main actions, the large buttons, and the rest,
  * the rows below them. The main actions are the first group's actions, at
- * most four, up to its first submenu; the rest starts where they end, without
- * the separator that closed their group.
+ * most four, up to its first submenu, the default one first: on a phone it may
+ * stand alone above the others (lib/buttonGrid.ts). The rest starts where they
+ * end, without the separator that closed their group.
  */
 export function splitEntries(entries: ContextEntry[]): {
   main: ContextAction[];
@@ -168,7 +173,9 @@ export function splitEntries(entries: ContextEntry[]): {
   if (main.length > 0 && rest[0]?.kind === 'separator') {
     rest.shift();
   }
-  return { main, rest };
+  const lead = main.filter((entry) => entry.item.default);
+  const others = main.filter((entry) => !entry.item.default);
+  return { main: [...lead, ...others], rest };
 }
 
 /**

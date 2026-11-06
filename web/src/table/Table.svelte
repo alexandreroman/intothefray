@@ -1742,12 +1742,6 @@
     }
   }
 
-  /** More… on a card of the hand sheet: its inspector, in place of the sheet. */
-  function inspectHandCard(id: string): void {
-    handSheetShown = false;
-    openHandInspector(id);
-  }
-
   function openHistory(): void {
     if (modal.open) {
       return;
@@ -2594,7 +2588,6 @@
       picker={deckPicker}
       onplay={(id) => runHandAction(id, 'play')}
       ondiscard={(id) => runHandAction(id, 'discard')}
-      onmore={inspectHandCard}
       onclose={closeHandSheet}
     />
   {/if}

@@ -29,7 +29,6 @@ function renderSheet(
   const handlers = {
     onplay: vi.fn(),
     ondiscard: vi.fn(),
-    onmore: vi.fn(),
     onclose: vi.fn(),
   };
   const picker = createRawSnippet(() => ({
@@ -71,7 +70,8 @@ function layOut(scroll: number): void {
 
 /** The declarations of a rule of the sheet's stylesheet. */
 function rule(selector: string): string {
-  const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+  const escaped = selector.replace(/[.()[\]*+]/g, (c) => `\\${c}`);
+  const pattern = new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`);
   return pattern.exec(sheetSource)?.[1] ?? '';
 }
 
@@ -114,29 +114,25 @@ describe('HandSheet', () => {
   });
 
   it('acts on the first card before any scroll', async () => {
-    const { onplay, ondiscard, onmore } = renderSheet();
+    const { onplay, ondiscard } = renderSheet();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     await fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'More…' }));
 
     expect(onplay).toHaveBeenCalledWith('h1');
     expect(ondiscard).toHaveBeenCalledWith('h1');
-    expect(onmore).toHaveBeenCalledWith('h1');
   });
 
   it('acts on the card the carousel snapped to the centre', async () => {
-    const { onplay, ondiscard, onmore } = renderSheet();
+    const { onplay, ondiscard } = renderSheet();
 
     layOut(212);
     await fireEvent.scroll(carousel());
     await fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     await fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'More…' }));
 
     expect(onplay).toHaveBeenCalledWith('h2');
     expect(ondiscard).toHaveBeenCalledWith('h2');
-    expect(onmore).toHaveBeenCalledWith('h2');
   });
 
   it('marks the centred card and its dot', async () => {
@@ -276,6 +272,37 @@ describe('HandSheet', () => {
       );
       expect(side).toContain('--card-w: calc(var(--card-h) * 185 / 259);');
       expect(rule('.body.landscape .actions')).toContain('grid-template-columns: 1fr;');
+    });
+
+    it('shows the hero avatar 32 px round with a 2 px ring, the whole ring inside the header', () => {
+      const avatar = rule('header :global(.deck-avatar)');
+      expect(avatar).toContain('width: 32px;');
+      expect(avatar).toContain('height: 32px;');
+      expect(avatar).toContain('box-shadow: 0 0 0 2px var(--seat);');
+      // The ring reaches 2 px past the avatar: the header leaves that much room on its left, and
+      // its 40 px line leaves 4 px above and below the 32 px avatar.
+      const header = rule('header');
+      expect(header).toContain('align-items: center;');
+      expect(header).toContain('min-height: 40px;');
+      expect(header).toContain('padding: 0 0 4px 2px;');
+    });
+  });
+
+  describe('the actions', () => {
+    it('are Play and Discard alone, Play first and twice as wide upright', () => {
+      renderSheet();
+
+      const actions = document.querySelector<HTMLElement>('.actions')!;
+      const buttons = within(actions).getAllByRole('button');
+      expect(buttons.map((button) => button.textContent)).toEqual(['Play', 'Discard']);
+      expect(rule('.actions')).toContain('grid-template-columns: 2fr 1fr;');
+    });
+
+    it('keeps a label on one line, cut short if it must', () => {
+      const button = rule('.actions button');
+      expect(button).toContain('white-space: nowrap;');
+      expect(button).toContain('text-overflow: ellipsis;');
+      expect(button).toContain('overflow: hidden;');
     });
   });
 });

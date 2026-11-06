@@ -81,6 +81,8 @@ function renderSheet(
     dock?: boolean;
     stack?: StackCard[];
     cardId?: string;
+    header?: ContextHeader;
+    landscape?: boolean;
   } = {},
 ) {
   const onrun = vi.fn();
@@ -89,10 +91,11 @@ function renderSheet(
   const onpick = vi.fn();
   const result = render(CardSheet, {
     props: {
-      header: HEADER,
+      header: props.header ?? HEADER,
       entries: props.entries ?? ENTRIES,
       note: props.note,
       images: ['rhino.png'],
+      landscape: props.landscape,
       counters: props.counters ?? [],
       stack: props.stack,
       cardId: props.cardId,
@@ -147,7 +150,7 @@ function placeBox(element: HTMLElement, left: number, width: number): void {
 
 /** The declarations of a rule of the sheet's stylesheet, at the given indent. */
 function rule(selector: string, indent = 2): string {
-  const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
+  const escaped = selector.replace(/[.()[\]*+]/g, (c) => `\\${c}`);
   const pattern = new RegExp(`\\n {${indent}}${escaped} \\{([^}]*)\\}`);
   return pattern.exec(sheetSource)?.[1] ?? '';
 }
@@ -164,7 +167,7 @@ function block(atRule: string): string {
 
 /** The declarations of a rule inside a block of the stylesheet (block), at four spaces. */
 function ruleIn(source: string, selector: string): string {
-  const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
+  const escaped = selector.replace(/[.()[\]*+]/g, (c) => `\\${c}`);
   const pattern = new RegExp(`\\n {4}${escaped} \\{([^}]*)\\}`);
   return pattern.exec(source)?.[1] ?? '';
 }
@@ -435,61 +438,141 @@ describe('CardSheet', () => {
     expect(screen.queryAllByRole('button')).toEqual([]);
   });
 
-  it('steps a token down and up', async () => {
-    const { onstep } = renderSheet({ counters: [DAMAGE] });
+  describe('the counters on the card', () => {
+    /** The layer of tokens and tabs on the shown face. */
+    function onFace(): HTMLElement {
+      return document.querySelector<HTMLElement>('.inspector:not(.measure) .face .layer')!;
+    }
 
-    expect(screen.getByText('Damage')).toBeTruthy();
-    expect(screen.getByText('3')).toBeTruthy();
-    await fireEvent.click(screen.getByRole('button', { name: 'Remove one damage' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'Add one damage' }));
+    it('draws the damage disc and the status tab on the card, with no stepper rows', () => {
+      renderSheet({ counters: [DAMAGE, STUNNED] });
 
-    expect(onstep.mock.calls).toEqual([
-      [DAMAGE, -1],
-      [DAMAGE, 1],
-    ]);
-  });
+      const damage = within(onFace()).getByRole('button', { name: 'Damage, 3' });
+      expect(damage.textContent).toBe('3');
+      expect(damage.classList).toContain('tok');
+      expect(damage.classList).toContain('dmg');
+      expect(damage.closest('.tokens')?.classList).toContain('bottom-right');
+      const stunned = within(onFace()).getByRole('button', { name: 'Stunned' });
+      expect(stunned.textContent?.trim()).toBe('Stunned');
+      expect(stunned.classList).toContain('st');
+      expect(stunned.closest('.statuses')).toBeTruthy();
+      expect(document.querySelector('.counter')).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Add one damage' })).toBeNull();
+    });
 
-  it('gives a status a single button, which removes one', async () => {
-    const { onstep } = renderSheet({ entries: [], counters: [STUNNED] });
+    it('opens a pill on a tapped token, whose + and − step it', async () => {
+      const { onstep } = renderSheet({ counters: [DAMAGE] });
 
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-    await fireEvent.click(screen.getByRole('button', { name: 'Remove stunned' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Damage, 3' }));
+      const pill = screen.getByRole('group', { name: 'Change damage' });
+      expect(within(pill).getByText('3')).toBeTruthy();
+      await fireEvent.click(within(pill).getByRole('button', { name: 'Add one damage' }));
+      await fireEvent.click(within(pill).getByRole('button', { name: 'Remove one damage' }));
 
-    expect(onstep).toHaveBeenCalledWith(STUNNED, -1);
-  });
+      expect(onstep.mock.calls).toEqual([
+        [DAMAGE, 1],
+        [DAMAGE, -1],
+      ]);
+    });
 
-  it('shows a modifier with its sign, and stops it at its largest', () => {
-    renderSheet({ counters: [modifier(MAX_MODIFIER)] });
+    it('shows the new value in the pill, which stays open', async () => {
+      const { rerender } = renderSheet({ counters: [DAMAGE] });
 
-    expect(screen.getByText('+99')).toBeTruthy();
-    expect(
-      (screen.getByRole('button', { name: 'Add one to the DEF modifier' }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
-    expect(
-      (
+      await fireEvent.click(screen.getByRole('button', { name: 'Damage, 3' }));
+      await rerender({ counters: [{ ...DAMAGE, value: 4 }] });
+
+      const pill = screen.getByRole('group', { name: 'Change damage' });
+      expect(within(pill).getByText('4')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Damage, 4' }).textContent).toBe('4');
+    });
+
+    it('gives a status a single ✕, which removes one', async () => {
+      const { onstep } = renderSheet({ entries: [], counters: [STUNNED] });
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Stunned' }));
+      const pill = screen.getByRole('group', { name: 'Change stunned' });
+      expect(within(pill).getAllByRole('button')).toHaveLength(1);
+      await fireEvent.click(within(pill).getByRole('button', { name: 'Remove stunned' }));
+
+      expect(onstep).toHaveBeenCalledWith(STUNNED, -1);
+    });
+
+    it('closes the pill on a press elsewhere, and on a second tap of its token', async () => {
+      renderSheet({ counters: [DAMAGE] });
+      const damage = screen.getByRole('button', { name: 'Damage, 3' });
+
+      await fireEvent.click(damage);
+      await fireEvent.pointerDown(screen.getByRole('button', { name: 'Exhaust' }));
+      await tick();
+      expect(screen.queryByRole('group', { name: 'Change damage' })).toBeNull();
+
+      await fireEvent.click(damage);
+      await fireEvent.click(damage);
+      await tick();
+      expect(screen.queryByRole('group', { name: 'Change damage' })).toBeNull();
+    });
+
+    it('lets the token and its pill go once the counter is down to zero', async () => {
+      const { rerender } = renderSheet({ counters: [DAMAGE] });
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Damage, 3' }));
+      await rerender({ counters: [] });
+      await tick();
+
+      expect(screen.queryByRole('button', { name: /Damage/ })).toBeNull();
+      expect(screen.queryByRole('group', { name: 'Change damage' })).toBeNull();
+    });
+
+    it('shows a modifier with its sign, and stops it at its largest and smallest', async () => {
+      const { rerender } = renderSheet({ counters: [modifier(MAX_MODIFIER)] });
+
+      await fireEvent.click(screen.getByRole('button', { name: 'DEF, +99' }));
+      const add = () =>
+        screen.getByRole('button', { name: 'Add one to the DEF modifier' }) as HTMLButtonElement;
+      const remove = () =>
         screen.getByRole('button', {
           name: 'Remove one from the DEF modifier',
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(false);
-  });
+        }) as HTMLButtonElement;
+      expect(add().disabled).toBe(true);
+      expect(remove().disabled).toBe(false);
 
-  it('stops a modifier at its smallest', () => {
-    renderSheet({ counters: [modifier(-MAX_MODIFIER)] });
+      await rerender({ counters: [modifier(-MAX_MODIFIER)] });
+      expect(screen.getByRole('button', { name: 'DEF, −99' })).toBeTruthy();
+      expect(add().disabled).toBe(false);
+      expect(remove().disabled).toBe(true);
+    });
 
-    expect(screen.getByText('−99')).toBeTruthy();
-    expect(
-      (
-        screen.getByRole('button', {
-          name: 'Remove one from the DEF modifier',
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    expect(
-      (screen.getByRole('button', { name: 'Add one to the DEF modifier' }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(false);
+    it("puts a scheme's threat in the top right corner and its tabs on the left edge", () => {
+      const threat: SheetCounter = {
+        kind: 'token',
+        name: 'thr',
+        label: 'Threat',
+        value: 5,
+        signed: false,
+      };
+      renderSheet({
+        header: { ...HEADER, scheme: true },
+        counters: [threat, STUNNED],
+        landscape: true,
+      });
+
+      const card = onFace().querySelector('.card')!;
+      expect(card.classList).toContain('scheme');
+      expect(card.classList).toContain('land');
+      const chip = screen.getByRole('button', { name: 'Threat, 5' });
+      expect(chip.closest('.tokens')?.classList).toContain('top-right');
+    });
+
+    it('draws the tokens of the other cards of the stack, as a picture alone', () => {
+      const armor: StackCard = { ...STACK[1]!, counters: [{ ...DAMAGE, value: 2 }] };
+      renderSheet({ stack: [STACK[0]!, armor, STACK[2]!], cardId: 'rhino' });
+
+      const peek = slideOf('armor');
+      const chip = peek.querySelector('.tok.dmg')!;
+      expect(chip.textContent).toBe('2');
+      expect(chip.tagName).toBe('SPAN');
+      expect(chip.closest('.layer')?.getAttribute('aria-hidden')).toBe('true');
+    });
   });
 
   it('closes on Escape', async () => {
@@ -501,7 +584,7 @@ describe('CardSheet', () => {
   });
 
   describe('in dock mode', () => {
-    it('puts every entry in the column with the header and the counters', () => {
+    it('puts every entry in the column with the header, the counters on the card', () => {
       renderSheet({ dock: true, counters: [DAMAGE], note: undefined });
 
       const sheet = screen.getByRole('dialog', { name: 'Rhino, Villain, stage I' });
@@ -509,7 +592,8 @@ describe('CardSheet', () => {
       expect(document.querySelector('.inspector')?.classList).toContain('dock');
       const column = side();
       expect(within(column).getByText('Rhino', { selector: '.name' })).toBeTruthy();
-      expect(within(column).getByRole('button', { name: 'Add one damage' })).toBeTruthy();
+      expect(within(column).queryByRole('button', { name: 'Damage, 3' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Damage, 3' }).closest('.face')).toBeTruthy();
       expect(within(column).getByRole('button', { name: 'Exhaust' })).toBeTruthy();
       expect(within(column).getByRole('button', { name: 'Discard' })).toBeTruthy();
       expect(within(column).getByRole('button', { name: /Move to/ })).toBeTruthy();
@@ -582,6 +666,63 @@ describe('CardSheet', () => {
         'grid-template-columns: repeat(2, minmax(0, 1fr));',
       );
       expect(sheetSource).toMatch(/@container \(min-width: \d+px\)/);
+    });
+  });
+
+  describe('the main buttons on a phone: never one alone on the last line', () => {
+    /** The first group of `count` actions, the second one the default. */
+    function mainEntries(count: number): ContextEntry[] {
+      return Array.from({ length: count }, (_, i) => ({
+        kind: 'action',
+        item: item(`action${i}`, { default: i === 1 ? true : undefined }),
+      }));
+    }
+
+    /** The grid of the main buttons shown, not the hidden copy that measures the sheet. */
+    function mainGrid(): HTMLElement {
+      return document.querySelector<HTMLElement>('.inspector:not(.measure) .main-grid')!;
+    }
+
+    it.each([
+      [1, 'single'],
+      [2, 'pairs'],
+      [3, 'lead'],
+      [4, 'pairs'],
+    ])('lays %i buttons out as %s on a narrow phone', (count, layout) => {
+      renderSheet({ dock: true, entries: mainEntries(count) });
+
+      expect(mainGrid().dataset.layout).toBe(layout);
+    });
+
+    it('puts the default button on top of three that have no room for a row', () => {
+      renderSheet({ dock: true, entries: mainEntries(3) });
+
+      const buttons = within(mainGrid()).getAllByRole('button');
+      expect(buttons.map((button) => button.textContent)).toEqual([
+        'Action1',
+        'Action0',
+        'Action2',
+      ]);
+      expect(buttons[0]!.classList).toContain('default');
+      expect(
+        rule(".inspector.dock .main-grid:global([data-layout='lead']) > .main:first-child"),
+      ).toContain('grid-column: 1 / -1;');
+    });
+
+    it('gives a lone button the whole width, and three in a row a third each', () => {
+      expect(rule(".inspector.dock .main-grid:global([data-layout='single'])", 4)).toContain(
+        'grid-template-columns: minmax(0, 1fr);',
+      );
+      expect(rule(".inspector.dock .main-grid:global([data-layout='row'])", 4)).toContain(
+        'grid-template-columns: repeat(3, minmax(0, 1fr));',
+      );
+    });
+
+    it('keeps a label on one line, cut short if it must', () => {
+      const label = rule('.main .label');
+      expect(label).toContain('white-space: nowrap;');
+      expect(label).toContain('text-overflow: ellipsis;');
+      expect(label).toContain('overflow: hidden;');
     });
   });
 
@@ -831,36 +972,19 @@ describe('CardSheet', () => {
       expect(animate).not.toHaveBeenCalled();
     });
 
-    it('slides a new counter row open, and one gone to zero closed', async () => {
+    it('fades a new token in on the card, and one gone to zero out', async () => {
       const { rerender } = renderSheet({ counters: [] });
 
       await rerender({ counters: [DAMAGE] });
       await finishAnimations();
-      expect(animationsOf(200).some(({ element }) => element.classList.contains('counter'))).toBe(
-        true,
-      );
+      expect(animationsOf(200).some(({ element }) => element.classList.contains('tok'))).toBe(true);
 
       animate.mockClear();
       await rerender({ counters: [] });
-      expect(screen.getByText('Damage')).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
       await finishAnimations();
-      expect(screen.queryByText('Damage')).toBeNull();
-      expect(animationsOf(200).some(({ element }) => element.classList.contains('counter'))).toBe(
-        true,
-      );
-    });
-
-    it('bumps a number as it changes', async () => {
-      const { rerender } = renderSheet({ counters: [DAMAGE] });
-
-      await rerender({ counters: [{ ...DAMAGE, value: 4 }] });
-      await finishAnimations();
-
-      const bump = animationsOf(160).find(({ element }) => element.classList.contains('value'));
-      expect(bump?.element.textContent).toBe('4');
-      expect(bump?.keyframes.some((frame) => String(frame.transform).includes('scale(1.15)'))).toBe(
-        true,
-      );
+      expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
+      expect(animationsOf(200).some(({ element }) => element.classList.contains('tok'))).toBe(true);
     });
 
     it('slides an entry that leaves after an update closed', async () => {
@@ -879,7 +1003,6 @@ describe('CardSheet', () => {
     it('sinks a pressed button, darkens the default one, and lights a pressed row', () => {
       const moving = block('@media (prefers-reduced-motion: no-preference)');
       expect(ruleIn(moving, '.main:active')).toContain('transform: scale(0.96);');
-      expect(ruleIn(moving, '.step:active:not(:disabled)')).toContain('transform: scale(0.96);');
       expect(rule('.main.default:active')).toContain('background: var(--accent-deep);');
       expect(rule('.row:active:not(:disabled)')).toContain('background-color: var(--hover);');
     });
@@ -1059,14 +1182,14 @@ describe('CardSheet', () => {
         expect(
           screen.getByText('20', { selector: '.count' }).classList.contains('count-pill'),
         ).toBe(true);
-        expect(screen.queryByText('Damage')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
         expect(turns()).toHaveLength(1);
 
         await finishAnimations();
 
         expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
         expect(document.querySelector('.inspector .count')).toBeNull();
-        expect(screen.getByText('Damage')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
       });
 
       it('turns over to a landscape face once edge-on', async () => {

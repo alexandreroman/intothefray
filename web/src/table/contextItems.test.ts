@@ -429,6 +429,14 @@ describe('cardHeader and pileHeader', () => {
     expect(header.label).toBe('The Break-In!, Main scheme, 1A');
   });
 
+  it('marks a scheme, which the inspector draws its tokens on as the table does', () => {
+    expect(headerOf(card('s', { code: '01097', owner: -1, back: 'encounter' })).scheme).toBe(true);
+    expect(headerOf(card('p', { code: '01096' })).scheme).toBe(true);
+    expect(
+      headerOf(card('v', { code: '01094', owner: -1, back: 'villain' })).scheme,
+    ).toBeUndefined();
+  });
+
   it("gives a player's card its type, in its owner's seat colour", () => {
     // Sam sits at p1 with colour 1, Alex at p0 with colour 0.
     expect(headerOf(card('cat', { code: '01099', owner: 1 }))).toEqual({

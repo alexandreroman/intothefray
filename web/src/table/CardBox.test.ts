@@ -1125,6 +1125,17 @@ describe('CardBox in dock mode', () => {
     expect(close.classList).toContain('btn-primary');
     expect([...dialog.querySelectorAll('.mfoot button')].at(-1)).toBe(close);
   });
+
+  it('shares the footer out evenly: a lone Close the whole width, two buttons half each', () => {
+    const dialog = renderBox('deck:p0', 'browse', true, makeView({ private: SEARCH }));
+
+    expect(within(dialog).getAllByRole('button', { name: 'Close' })).toHaveLength(1);
+    const button = boxRule('.mfoot.dock button');
+    expect(button).toContain('flex: 1 1 0;');
+    expect(button).toContain('white-space: nowrap;');
+    expect(button).toContain('text-overflow: ellipsis;');
+    expect(button).toContain('overflow: hidden;');
+  });
 });
 
 describe('tileActions', () => {

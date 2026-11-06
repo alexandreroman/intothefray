@@ -1014,7 +1014,8 @@
     Dock mode: the box fills the screen (Dialog.svelte). The header holds one
     line, the title cut short before the filter; the grid takes the room left,
     with as many columns of 104 px tiles at least as fit; the footer buttons
-    stand side by side, Close on the right.
+    share its width evenly, side by side, Close on the right: a lone Close
+    takes the whole width rather than standing alone in half of it.
   */
   .mhead.dock {
     flex-wrap: nowrap;
@@ -1057,10 +1058,13 @@
   }
 
   .mfoot.dock button {
-    flex: 0 1 50%;
+    flex: 1 1 0;
     min-width: 0;
     height: 44px;
     padding: 0 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* The dragged card, the tile's size, its card contained as in the tile. */

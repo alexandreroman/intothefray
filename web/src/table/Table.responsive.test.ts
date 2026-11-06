@@ -457,7 +457,7 @@ describe('Table in touch mode', () => {
     const token = cardInPlay().querySelector<HTMLElement>('[data-counter="token:dmg"]')!;
     await tap(cardInPlay(), token);
     expect(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Add one damage' }),
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Damage, 2' }),
     ).toBeTruthy();
     expect(screen.queryByRole('group', { name: /^Change / })).toBeNull();
     expect(interaction.previewed).toBeNull();

@@ -110,6 +110,13 @@ describe('splitEntries', () => {
   it('has nothing for no entries', () => {
     expect(splitEntries([])).toEqual({ main: [], rest: [] });
   });
+
+  it('puts the default main action first, the others in their order', () => {
+    const [a1, a2, a3] = [action('a1'), action('a2'), action('a3')];
+    const play: ContextAction = { kind: 'action', item: { ...a2.item, default: true } };
+
+    expect(splitEntries([a1, play, a3]).main).toEqual([play, a1, a3]);
+  });
 });
 
 describe('visibleEntries', () => {

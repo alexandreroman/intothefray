@@ -523,16 +523,14 @@ describe('the hand sheet', () => {
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'h1' }, 0);
   });
 
-  it('opens the inspector of the centred card with More…', async () => {
+  it('offers Play and Discard alone, with no More… to an inspector repeating them', async () => {
     mockScreen(PHONE);
     await renderTable();
     await fireEvent.click(handButton());
 
-    await fireEvent.click(within(handSheet()!).getByRole('button', { name: 'More…' }));
-
-    expect(handSheet()).toBeNull();
-    const inspector = screen.getByRole('dialog');
-    expect(within(inspector).getByRole('button', { name: /^Play/ })).toBeTruthy();
+    expect(within(handSheet()!).queryByRole('button', { name: 'More…' })).toBeNull();
+    expect(within(handSheet()!).getByRole('button', { name: 'Play' })).toBeTruthy();
+    expect(within(handSheet()!).getByRole('button', { name: 'Discard' })).toBeTruthy();
   });
 
   it('switches deck with the hero selector in its header, with two own decks', async () => {

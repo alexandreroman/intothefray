@@ -1,7 +1,7 @@
 <!--
   The viewer's hand in dock mode: a bottom sheet with the cards in a
   carousel that snaps each card to the middle. The centred card shows at full
-  size, the others smaller and dimmed; Play, Discard and More… act on it.
+  size, the others smaller and dimmed; Play and Discard act on it.
 
   The carousel scrolls sideways only (touch-action: pan-x), so a finger moving
   up on a card is a press the drag layer turns into a drag of that card, as on
@@ -36,7 +36,6 @@
     picker,
     onplay,
     ondiscard,
-    onmore,
     onclose,
   }: {
     /** The hand, in its order. */
@@ -53,8 +52,6 @@
     picker?: Snippet;
     onplay: (id: string) => void;
     ondiscard: (id: string) => void;
-    /** Opens the inspector of the card. */
-    onmore: (id: string) => void;
     onclose: () => void;
   } = $props();
 
@@ -154,7 +151,6 @@
       <div class="actions">
         <button type="button" class="play" onclick={() => act(onplay)}>Play</button>
         <button type="button" onclick={() => act(ondiscard)}>Discard</button>
-        <button type="button" onclick={() => act(onmore)}>More…</button>
       </div>
       <p class="hint">or drag a card up onto the table · swipe down to close</p>
     {/if}
@@ -200,8 +196,19 @@
     align-items: center;
     gap: 10px;
     min-height: 40px;
-    padding-bottom: 4px;
+    padding: 0 0 4px 2px;
     white-space: nowrap;
+  }
+
+  /*
+    The hero's avatar (Table.svelte's picker snippet), at the height of the title: its ring reaches
+    2 px past it, inside the header's padding on the left and its 40 px line above and below, which
+    the sheet's scrolling content would otherwise cut.
+  */
+  header :global(.deck-avatar) {
+    width: 32px;
+    height: 32px;
+    box-shadow: 0 0 0 2px var(--seat);
   }
 
   .title {
@@ -308,7 +315,7 @@
   .actions {
     grid-area: actions;
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 8px;
     margin-top: 8px;
   }
@@ -327,6 +334,9 @@
     font: inherit;
     font-size: 15px;
     font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .actions .play {
