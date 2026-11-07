@@ -538,6 +538,19 @@ function handSeatOf(table: TableView | undefined, id: string): number | null {
   return null;
 }
 
+/**
+ * The first element matching selector that still shows: none of an inert part of the page, as a
+ * sheet sliding away is until it is gone (Sheet.svelte).
+ */
+function shownElement(root: HTMLElement, selector: string): HTMLElement | null {
+  for (const element of root.querySelectorAll<HTMLElement>(selector)) {
+    if (!element.closest('[inert]')) {
+      return element;
+    }
+  }
+  return null;
+}
+
 /** A portrait card as high as an element, centred on it: what goes into an avatar. */
 function portraitOn(element: HTMLElement): Measured {
   const rect = element.getBoundingClientRect();
@@ -553,8 +566,8 @@ function portraitOn(element: HTMLElement): Measured {
  * Where a card drawn into a seat's hand lands in dock mode when no hand sheet shows that hand. On
  * the dock's hand button showing the seat: on the bar, the card's own mini card, or the last one for
  * a card past them; on the rail, which has none, the avatar. Else that seat's hero selector entry,
- * the hand sheet's own first, as it lies over the table. Null when none shows (no selector, a drag
- * over the hand button).
+ * the hand sheet's own first, as it lies over the table, unless the sheet is sliding away
+ * (shownElement). Null when none shows (no selector, a drag over the hand button).
  */
 function dockLanding(
   root: HTMLElement,
@@ -576,8 +589,7 @@ function dockLanding(
     return null;
   }
   const entry =
-    root.querySelector<HTMLElement>(`.sheet ${heroEntry(seat)}`) ??
-    root.querySelector<HTMLElement>(heroEntry(seat));
+    shownElement(root, `.sheet ${heroEntry(seat)}`) ?? shownElement(root, heroEntry(seat));
   const swatch = entry?.querySelector<HTMLElement>('.swatch');
   if (!swatch) {
     return null;
@@ -1310,7 +1322,7 @@ class TableMotion {
               const card = cardsAfter.get(anim.id);
               const onTable = cardsBefore.get(anim.was ?? anim.id);
               const faceUp = onTable === undefined || !isHidden(onTable);
-              const shownInSheet = root.querySelector(handCard(anim.id)) !== null;
+              const shownInSheet = shownElement(root, handCard(anim.id)) !== null;
               const flight =
                 from && card && !shownInSheet
                   ? this.#dockFlight(
@@ -2375,7 +2387,10 @@ class TableMotion {
     after: TableView | undefined,
     zoom: number,
   ): Flight {
-    const element = root.querySelector<HTMLElement>(handCard(anim.id));
+    // In dock mode the hand card is the hand sheet's, which shows it no more as it slides away.
+    const element = root.matches('.dock-mode')
+      ? shownElement(root, handCard(anim.id))
+      : root.querySelector<HTMLElement>(handCard(anim.id));
     if (!element) {
       return (
         this.#dockFlight(

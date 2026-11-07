@@ -523,6 +523,43 @@ describe('a card drawn into the hand in dock mode, the hand sheet open', () => {
   });
 });
 
+describe('a card drawn into the hand in dock mode, the hand sheet sliding away', () => {
+  // A leaving sheet stays on the page until it is gone, inert (Sheet.svelte): it shows nothing more.
+  it('flies to its mini card on the dock, not into the leaving carousel', async () => {
+    const app = page();
+    const button = dockBar(app, 0, ['d']);
+    handSheet(app, ['d']).setAttribute('inert', '');
+
+    await draw(app, ['d']);
+
+    expect(motion.flights).toMatchObject([
+      {
+        kind: 'draw',
+        to: { cx: 81, w: 22 },
+        dock: { pulse: button.querySelector('.avatar') },
+        overSheet: false,
+      },
+    ]);
+  });
+
+  it("flies to the floating hero selector's entry, not the leaving sheet's", async () => {
+    const app = page();
+    dockBar(app, 1, ['a1']);
+    heroSelector(app, [0, 1]);
+    handSheet(app, ['a1'], [0, 1]).setAttribute('inert', '');
+
+    await draw(app, ['d']);
+
+    expect(motion.flights).toMatchObject([
+      {
+        kind: 'draw',
+        dock: { pulse: app.querySelector(':scope > .picker .item[data-seat="0"] .swatch') },
+        overSheet: false,
+      },
+    ]);
+  });
+});
+
 describe('a table card taken back into the hand in dock mode', () => {
   /** The table before and after table card t went back to seat 0's hand. */
   const BEFORE = table([card('t', { x: 10, y: 10 })], { p0: [] });
@@ -605,6 +642,18 @@ describe('a table card taken back into the hand in dock mode', () => {
     expect(motion.flights).toEqual([]);
     expect(motion.drawing.size).toBe(0);
     expect(animationsOf('.hcard[data-id="t"]')).not.toEqual([]);
+  });
+
+  it('flies to the dock when the hand sheet showing its hand is sliding away', async () => {
+    const app = withCard();
+    dockBar(app, 0, ['t']);
+    const animating = motion.animate(app, TAKEN, { before: BEFORE, after: AFTER }, ZOOM);
+    app.querySelector('.surface [data-id="t"]')?.remove();
+    handSheet(app, ['t']).setAttribute('inert', '');
+    await animating;
+
+    expect(motion.flights).toMatchObject([{ kind: 'draw', card: { id: 't' }, overSheet: false }]);
+    expect(motion.drawing.has('t')).toBe(true);
   });
 
   it("does not fly for the viewer's own drop on the dock", async () => {
