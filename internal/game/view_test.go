@@ -778,3 +778,30 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 		t.Errorf("config.modulars is null in %s", data)
 	}
 }
+
+// The web client reads every stage's cards as an array: a started game holds
+// each stage's current card there, so the list is never empty, let alone null.
+func TestViewListsTheCardsOfEveryStage(t *testing.T) {
+	f := newViewFixture(t)
+
+	var got struct {
+		Table struct {
+			Stages []struct {
+				Key   string    `json:"key"`
+				Cards *[]string `json:"cards"`
+			} `json:"stages"`
+		} `json:"table"`
+	}
+	data := viewJSON(t, f.g, specToken)
+	if err := json.Unmarshal([]byte(data), &got); err != nil {
+		t.Fatalf("Unmarshal() error = %v", err)
+	}
+	if len(got.Table.Stages) == 0 {
+		t.Fatalf("no stage in %s", data)
+	}
+	for _, stage := range got.Table.Stages {
+		if stage.Cards == nil || len(*stage.Cards) == 0 {
+			t.Errorf("stage %q: cards = %v, want a non-empty array", stage.Key, stage.Cards)
+		}
+	}
+}
