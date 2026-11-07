@@ -25,8 +25,8 @@ type villainSet struct {
 }
 
 // buildScenarios lists a scenario for every villain, leader or underling set
-// and merges the curated definitions into the ones whose cards all exist, and
-// whose main scheme sets, if any, are main scheme sets. A definition
+// and merges the curated definitions into the ones whose cards and sets all
+// exist, and whose main scheme sets, if any, are main scheme sets. A definition
 // absorbs the sets it covers, and a curated set the villain sets it names:
 // they are not listed separately. A set without villain card takes its image
 // from the lowest-code villain card of the sets it absorbs; naming villain
