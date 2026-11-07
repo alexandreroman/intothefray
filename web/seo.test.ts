@@ -183,9 +183,15 @@ describe('the build', () => {
     expect(fs.existsSync(path.join(outDir, 'options.html'))).toBe(false);
   });
 
-  it('links the touch icon and tells what the app is without JavaScript on every page', () => {
+  it('links the favicons and the touch icon and tells what the app is without JavaScript on every page', () => {
+    const ico = '<link rel="icon" href="/favicon.ico" sizes="32x32" />';
+    const svg = '<link rel="icon" type="image/svg+xml" href="/favicon.svg" />';
     for (const file of ['index.html', 'g/index.html', '404.html']) {
       const html = read(file);
+      expect(html).toContain(ico);
+      expect(html).toContain(svg);
+      // The SVG last: a browser that reads it prefers it to the ICO sized 32x32.
+      expect(html.indexOf(ico)).toBeLessThan(html.indexOf(svg));
       expect(html).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png" />');
       const noscript = /<noscript>(.*?)<\/noscript>/s.exec(html)?.[1] ?? '';
       // Compared with its line breaks collapsed: index.html wraps the text.
@@ -193,8 +199,14 @@ describe('the build', () => {
     }
   });
 
-  it('publishes the share images and the touch icon', () => {
-    for (const file of ['og/home.png', 'og/invite.png', 'apple-touch-icon.png']) {
+  it('publishes the share images, the favicons and the touch icon', () => {
+    for (const file of [
+      'og/home.png',
+      'og/invite.png',
+      'favicon.ico',
+      'favicon.svg',
+      'apple-touch-icon.png',
+    ]) {
       expect(fs.existsSync(path.join(outDir, file))).toBe(true);
     }
   });
