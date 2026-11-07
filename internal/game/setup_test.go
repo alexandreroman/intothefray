@@ -42,42 +42,26 @@ func seatDeck(t *testing.T, g *Game, token string, slot int, deck DeckChoice, ca
 	player.Decks[slot] = &deck
 }
 
-// spiderManDeck builds a deck from the catalog's spider_man set, without the
-// identity and the obligation, plus ten basic cards. The identity is listed
-// too, under an alias, to check that setup skips it.
+// spiderManDeck builds a deck from the cards of Spider-Man's set, without the
+// obligation (see heroDeck), plus ten basic cards. The identity is listed too,
+// under an alias, to check that setup skips it.
 func spiderManDeck(t *testing.T, cat *pack.Catalog) DeckChoice {
 	t.Helper()
-	set, ok := cat.Set("spider_man")
-	if !ok {
-		t.Fatal("no spider_man set")
-	}
-	hero, ok := cat.HeroByIdentity(spiderManIdentity)
-	if !ok {
-		t.Fatal("no spider-man hero")
-	}
-
-	deck := DeckChoice{Name: "Spidey", Hero: spiderManIdentity, HeroName: "Spider-Man"}
-	deck.Cards = append(deck.Cards, DeckEntry{Code: spiderManIdentity, Qty: 1})
-	for _, code := range set.Cards {
-		if code == hero.Identity || code == hero.Obligation {
-			continue
-		}
-		deck.Cards = append(deck.Cards, DeckEntry{Code: code, Qty: 1})
-	}
-
-	basics := 0
-	for number := 1050; basics < 10 && number < 1100; number++ {
+	var basics []DeckEntry
+	for number := 1050; len(basics) < 10 && number < 1100; number++ {
 		code := fmt.Sprintf("%05d", number)
 		card, _, err := cat.Card(code)
 		if err != nil || card.Back != pack.BackPlayer || card.Set != "" {
 			continue
 		}
-		deck.Cards = append(deck.Cards, DeckEntry{Code: code, Qty: 1})
-		basics++
+		basics = append(basics, DeckEntry{Code: code, Qty: 1})
 	}
-	if basics < 10 {
-		t.Fatalf("found only %d basic cards", basics)
+	if len(basics) < 10 {
+		t.Fatalf("found only %d basic cards", len(basics))
 	}
+
+	deck := heroDeck(t, cat, spiderManIdentity, "Spidey", basics...)
+	deck.HeroName = "Spider-Man"
 	return deck
 }
 
