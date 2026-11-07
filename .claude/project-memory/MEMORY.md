@@ -63,7 +63,7 @@
 - [Scenario decks and several villains](references/project_scenario_decks.md) — deck cards out of the classic deck; several villains
 - [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; any deck takes its owner's cards
 - [Stage change carry-over](references/project_stage_carry_over.md) — villain keeps all but damage, main scheme only acceleration
-- [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); not offered as modulars
+- [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); never modular
 - [Action menu organisation](references/project_action_bars.md) — click opens the menu; hand by drag and keys; chips; touch: inspector sheet
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down; not in dock mode
@@ -94,7 +94,7 @@
 - [README home page screenshot](references/project_readme_screenshot.md) — refresh .github/images/home.webp when the home page changes; recipe
 - [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; tested
 - [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
-- [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only
+- [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap: home
 - [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome; (hover: hover)
 - [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists live games; Home capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() (dialogs, modal sheets) locks html scroll; offset kept
