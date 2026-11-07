@@ -15,8 +15,8 @@ type: project
   never sent to viewers. The store writes the summary with the game and
   gives it the game's TTL: `Create` sets both keys in one Lua script (SET
   NX on the game, then the summary), `Update` sets it in the game's MULTI,
-  `Touch` expires both keys in one MULTI. A game without a summary is not
-  counted.
+  and `Touch` reads the game's phase from its summary, under WATCH, and
+  expires both keys in one transaction.
 - `Store.GameSummaries` walks `game:*:info` with `SCAN ... COUNT 1000`,
   MGETs each batch and drops duplicate keys, so the figure is exact. It
   never reads a game value (30 KB to over 1 MB each). Expired or
@@ -61,8 +61,10 @@ type: project
 **Why:** a cheap social signal for visitors, and a public view of what
 people play, with Redis expiry doing the bookkeeping. The summary keeps
 the scan away from the large game values, and one scan yields both the
-count and the list. Its prefix is not `game:` because a game id comes
-from the request path: no id must name another game's summary.
+count and the list. The summary sits beside its game under
+`game:<id>:info`; a game id from a request path reaches the store only
+when it has the format of a generated id, which holds no colon
+(`validGameID`), so no path id names another game's keys.
 
 **How to apply:** any new write path of a game key writes or expires its
 summary too. Keep the public reply aggregated and anonymous (see
