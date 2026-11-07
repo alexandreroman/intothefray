@@ -1,5 +1,5 @@
-// The wording of a history line, shared by the side column (SidePanel.svelte) and the history sheet
-// (HistorySheet.svelte), so that both read the same.
+// The history lines, worded once for the side column (SidePanel.svelte) and the history sheet
+// (HistorySheet.svelte), so that both read the same; HistoryText.svelte draws their words.
 
 import type { FaceRef, LogPart, LogView } from '../lib/types';
 
@@ -35,13 +35,35 @@ function textOf(piece: LogPart, nameOf: NameOf | undefined): string {
   return nameOf?.(piece.ref) ?? piece.text;
 }
 
+/** A line of the history, as both lists draw it. */
+export interface HistoryLine {
+  /** The line's position from the oldest, which does not move when lines are added. */
+  key: number;
+  entry: LogView;
+  parts: LinePart[];
+  /** hh:mm in local time. */
+  time: string;
+}
+
+/** The lines of a log sent oldest first, newest first, keyed by their position from the oldest. */
+export function historyLines(log: LogView[], nameOf?: NameOf): HistoryLine[] {
+  return log
+    .map((entry, index) => ({
+      key: index,
+      entry,
+      parts: partsOf(entry, nameOf),
+      time: timeOf(entry.at),
+    }))
+    .reverse();
+}
+
 /** Splits a line into its card names and its bracketed details. */
-export function partsOf(entry: LogView, nameOf?: NameOf): LinePart[] {
+function partsOf(entry: LogView, nameOf?: NameOf): LinePart[] {
   const pieces = entry.parts ?? [{ text: entry.text }];
   return pieces.flatMap((piece) => splitAsides(textOf(piece, nameOf), piece.card === true));
 }
 
 /** The time of a line, hh:mm in local time. */
-export function timeOf(at: string): string {
+function timeOf(at: string): string {
   return new Date(at).toTimeString().slice(0, 5);
 }

@@ -1,11 +1,24 @@
 import type { LogView } from '../lib/types';
-import { partsOf, timeOf } from './historyLines';
+import { historyLines, type NameOf } from './historyLines';
 
 function line(extra: Partial<LogView>): LogView {
   return { who: 'Alex', color: 0, text: '', at: '2026-11-05T10:00:00Z', ...extra };
 }
 
-describe('partsOf', () => {
+/** The parts of a single entry's line. */
+function partsOf(entry: LogView, nameOf?: NameOf) {
+  return historyLines([entry], nameOf)[0]?.parts;
+}
+
+describe('historyLines', () => {
+  it('lists the lines newest first, keyed by their position from the oldest', () => {
+    const log = [line({ text: 'first' }), line({ text: 'second' }), line({ text: 'third' })];
+
+    const lines = historyLines(log);
+    expect(lines.map((l) => l.key)).toEqual([2, 1, 0]);
+    expect(lines.map((l) => l.entry)).toEqual([log[2], log[1], log[0]]);
+  });
+
   it('dims the bracketed details of a plain line', () => {
     expect(partsOf(line({ text: 'started the game (Rhino, Bomb Scare)' }))).toEqual([
       { text: 'started the game ', aside: false, card: false },
@@ -40,10 +53,9 @@ describe('partsOf', () => {
     });
     expect(partsOf(entry)).toEqual([{ text: 'Rhino', aside: false, card: true }]);
   });
-});
 
-describe('timeOf', () => {
-  it('reads hh:mm in local time', () => {
-    expect(timeOf(new Date(2026, 10, 5, 9, 7).toISOString())).toBe('09:07');
+  it('reads the time hh:mm in local time', () => {
+    const [read] = historyLines([line({ at: new Date(2026, 10, 5, 9, 7).toISOString() })]);
+    expect(read?.time).toBe('09:07');
   });
 });
