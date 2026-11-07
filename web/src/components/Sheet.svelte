@@ -326,26 +326,13 @@
     touchSwipe = null;
   }
 
-  // The moves and the end of a touch are not passive, as Svelte's touch handlers are: the sheet
-  // prevents the moves of the finger that drags it, and the end of that drag. Its start and its
-  // cancel prevent nothing, and stay passive so as not to hold up the browser's scroll.
+  // Svelte makes `ontouchmove` passive: the sheet prevents the moves of the finger that drags it,
+  // so it listens to them itself, not passive.
   onMount(() => {
     if (!panel) {
       return;
     }
-    const passive = { passive: true };
-    const blocking = { passive: false };
-    const removers = [
-      on(panel, 'touchstart', onTouchStart, passive),
-      on(panel, 'touchmove', onTouchMove, blocking),
-      on(panel, 'touchend', onTouchEnd, blocking),
-      on(panel, 'touchcancel', onTouchCancel, passive),
-    ];
-    return () => {
-      for (const remove of removers) {
-        remove();
-      }
-    };
+    return on(panel, 'touchmove', onTouchMove, { passive: false });
   });
 </script>
 
@@ -379,6 +366,9 @@
   style:transform={offset > 0 ? `translateY(${offset}px)` : undefined}
   bind:this={panel}
   onkeydown={onPanelKeydown}
+  ontouchstart={onTouchStart}
+  ontouchend={onTouchEnd}
+  ontouchcancel={onTouchCancel}
   onoutrostart={leave}
   out:fly|global={{ y: '100%', opacity: 1, duration: motionMs(LEAVE_MS), easing: cubicOut }}
 >
