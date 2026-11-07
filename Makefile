@@ -3,22 +3,15 @@
 
 .DEFAULT_GOAL := help
 
-# Canonical environment, loaded for every target.
-# A missing .env file is not an error.
-ifneq (,$(wildcard .env))
-include .env
+# Canonical environment, loaded for every target; a missing file is skipped.
+-include .env
 export
-endif
 
 # Local overrides, loaded only for the development targets of DEV_TARGETS;
-# every other target reads .env only.
-# Sequential include means later assignments win.
+# every other target reads .env only. Later assignments win.
 DEV_TARGETS := dev test check web-install web-check infra-up infra-down infra-logs
 ifneq (,$(filter $(DEV_TARGETS),$(MAKECMDGOALS)))
-ifneq (,$(wildcard .env.local))
-include .env.local
-export
-endif
+-include .env.local
 endif
 
 COMPOSE := docker compose
