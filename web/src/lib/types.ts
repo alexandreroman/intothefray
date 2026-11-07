@@ -277,7 +277,10 @@ export const MARKERS: readonly MarkerName[] = ['firstPlayer', 'active'];
  * Where a marker lies; undefined for a marker the table does not have: the first player token in a
  * one-hero game, the active counter when the scenario has none.
  */
-export function markerPoint(table: TableView, name: MarkerName): Point | undefined {
+export function markerPoint(
+  table: Pick<TableView, MarkerName>,
+  name: MarkerName,
+): Point | undefined {
   return name === 'active' ? table.active : table.firstPlayer;
 }
 

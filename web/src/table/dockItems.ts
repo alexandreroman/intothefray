@@ -6,14 +6,7 @@
 import type { CardView, MarkerName, PileView, Point, Size } from '../lib/types';
 import { blockRowOf, markerAnchor, type DockItem } from './dockLayout';
 import { isHidden } from './face';
-import {
-  ACTIVE_COUNTER_BOX,
-  cardBox,
-  FIRST_PLAYER_BOX,
-  frameLabel,
-  pileBox,
-  type OwnerFrame,
-} from './layout';
+import { cardBox, frameLabel, MARKER_BOXES, pileBox, type OwnerFrame } from './layout';
 import { rowOf } from './rows';
 
 /** The table as dock mode lays it out, in table units. */
@@ -76,8 +69,13 @@ export function dockItems(table: DockTable): DockItem[] {
   });
   const markers = (Object.entries(table.markers) as [MarkerName, Point][]).map(
     ([name, at]): DockItem => {
-      const box = name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX;
-      const marker: DockItem = { id: markerItemId(name), x: at.x, y: at.y, ...box, kind: 'marker' };
+      const marker: DockItem = {
+        id: markerItemId(name),
+        x: at.x,
+        y: at.y,
+        ...MARKER_BOXES[name],
+        kind: 'marker',
+      };
       return { ...marker, anchor: markerAnchor(marker, cards) };
     },
   );

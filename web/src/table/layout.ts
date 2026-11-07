@@ -1,5 +1,14 @@
 import { CARD_ASPECT } from '../lib/cardArt';
-import type { CardView, PileKind, PileView, Size, TableView } from '../lib/types';
+import {
+  MARKERS,
+  markerPoint,
+  type CardView,
+  type MarkerName,
+  type PileKind,
+  type PileView,
+  type Size,
+  type TableView,
+} from '../lib/types';
 import { asideId, PILE_SCENARIO_ASIDE, PILE_VICTORY } from './seats';
 
 /** Table units are multiples of this. */
@@ -324,6 +333,12 @@ export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
 
 /** The active counter, in table units. */
 export const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
+
+/** Each marker's box, in table units. */
+export const MARKER_BOXES: Record<MarkerName, { w: number; h: number }> = {
+  firstPlayer: FIRST_PLAYER_BOX,
+  active: ACTIVE_COUNTER_BOX,
+};
 
 /** A card in the hand: about two thirds larger than a card on the table at 100 % (112 × 157). */
 export const HAND_CARD = { w: 185, h: 259 } as const;
@@ -771,13 +786,12 @@ function slotInRow(
   table: SlotTable,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const { cards, piles, firstPlayer, active } = table;
   const { y } = start;
-  const markers = [
-    ...(firstPlayer ? [{ id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX }] : []),
-    ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
-  ];
-  const items = [...footprints(cards, piles, sizeOf), ...markers].filter(
+  const markers = MARKERS.flatMap((name) => {
+    const at = markerPoint(table, name);
+    return at ? [{ id: name, ...at, ...MARKER_BOXES[name] }] : [];
+  });
+  const items = [...footprints(table.cards, table.piles, sizeOf), ...markers].filter(
     (item) => item.y < y + SLOT_ROW_HEIGHT && visualBox(item).bottom > y,
   );
   const isFree = (x: number) =>

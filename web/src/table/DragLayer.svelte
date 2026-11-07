@@ -72,7 +72,7 @@
   import { HOLD_MS } from './gestures';
   import { FINE_GRID, type SnapGrid } from './grid';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
-  import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
+  import { cardBox, HAND_CARD, MARKER_BOXES, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
@@ -609,10 +609,7 @@
   /** The box of the dragged card or marker on the table, in table units, as its ghost is drawn. */
   function boxOf(from: DragSource): Box {
     if (from.kind === 'marker') {
-      return drawn({
-        ...(from.name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX),
-        rotated: false,
-      });
+      return drawn({ ...MARKER_BOXES[from.name], rotated: false });
     }
     return drawn(cardBoxOf(from));
   }
