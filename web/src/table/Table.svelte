@@ -735,6 +735,8 @@
 
   /** The preview DragLayer last fed, with the view it was made on: a newer view shows no preview. */
   let fedPreview = $state.raw<{ preview: DockPreview; view: View } | null>(null);
+  /** The view the shifts drawn last were made on: kept once the preview ends, until the next one. */
+  let shiftsView = $state.raw<View | null>(null);
   const dockPreview = $derived(fedPreview?.view === view ? fedPreview.preview : null);
   const previewView: DockLayout | null = $derived(
     dockView !== null && dockPreview !== null
@@ -762,11 +764,22 @@
       : NO_SHIFTS,
   );
   // The shifts glide (a CSS transition) from one preview to the next of the same view, and back
-  // when the drag ends. A new view draws every card at its new place at once, its own motions
+  // when the drag ends on it. A new view draws every card at its new place at once, its own motions
   // playing from where they showed (motion.svelte.ts): the shifts it drops jump with it, as the
-  // glide goes off in the same change. A change of style transitions by its new transition
-  // values, so the first preview made on the new view glides again.
-  const shiftsGlide = $derived(fedPreview === null || fedPreview.view === view);
+  // glide goes off in the same change. That holds for the view answering the viewer's own drop too,
+  // whose preview ends in the same change: so the glide follows the view the shifts were made on,
+  // not the preview still fed. A change of style transitions by its new transition values, so the
+  // first preview made on the new view glides again.
+  const shiftsGlide = $derived(shiftsView === null || shiftsView === view);
+
+  function feedPreview(preview: DockPreview | null): void {
+    if (preview === null) {
+      fedPreview = null;
+      return;
+    }
+    fedPreview = { preview, view };
+    shiftsView = view;
+  }
 
   // ---- The zoom ----
 
@@ -2827,7 +2840,7 @@
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
-    onpreview={(preview) => (fedPreview = preview === null ? null : { preview, view })}
+    onpreview={feedPreview}
     lastError={session.lastError}
   />
 

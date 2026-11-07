@@ -1422,6 +1422,31 @@ describe('the compact, wrapped table in dock mode', () => {
     expect(y).toBeCloseTo(350 - 47.1, 4);
   });
 
+  it('drops the shifts at once on the view that answers the drop, with no glide', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(busyView());
+    measureDrawn();
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    await fireEvent.pointerUp(window, { clientX: 345 * shownZoom(), clientY: 350 * shownZoom() });
+    await tick();
+    expectShift('c2', -364.8, 116.2);
+
+    // The answering view draws every card at its new place: a glide would play the old shift on top.
+    const answer = busyView();
+    answer.table!.cards = answer.table!.cards.map((c) =>
+      c.id === 'c7' ? { ...c, x: 540, y: 470 } : c,
+    );
+    await rerender({ session, view: answer });
+
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('');
+  });
+
   it('slides the dropped card from where it was let go into its slot once the server answers', async () => {
     const original = Element.prototype.animate;
     const animate = vi.fn(
