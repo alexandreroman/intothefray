@@ -98,10 +98,11 @@ are documented in `internal/packgen/`; the curated formats in
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on pull requests and pushes to `main`,
-with three check jobs: `go` (build, race tests, golangci-lint), `web`
+with three check jobs: `go` (race tests, golangci-lint), `web`
 (svelte-check, ESLint, Prettier, Vitest, build) and `docker` (image
-build, `compose.yaml` and Caddyfile validation). It does not regenerate
-`packs/dist/`.
+build, `compose.yaml` and Caddyfile validation). The tests, the linter
+and the image build compile the server, so no job runs `make build`. CI
+does not regenerate `packs/dist/`.
 
 ## Deployment
 
