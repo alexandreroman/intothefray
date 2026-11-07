@@ -2777,7 +2777,6 @@
       canUndo={view.canUndo ?? false}
       dropActive={dockDropActive}
       landscape={dockRail}
-      showHand={selected !== null}
       onhand={openHandSheet}
       onundo={undo}
       onhistory={openHistory}

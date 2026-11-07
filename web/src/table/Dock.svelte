@@ -39,14 +39,16 @@
     canUndo,
     dropActive,
     landscape,
-    showHand,
     onhand,
     onundo,
     onhistory,
   }: {
     /** The hand's cards, in order; the first four show as mini cards. */
     hand: DockCard[];
-    /** The seat whose hand the button shows, for a drawn card's copy to find it. */
+    /**
+     * The seat whose hand the button shows, for a drawn card's copy to find it: none for a spectator, whose dock
+     * has no hand button.
+     */
     seat?: number;
     /** The image URLs of the current deck's hero, or null before a hero is chosen. */
     avatar: string[] | null;
@@ -58,8 +60,6 @@
     dropActive: boolean;
     /** A small screen in landscape: a rail down the left edge rather than a bar at the bottom. */
     landscape: boolean;
-    /** Whether there is a hand to show: none for a spectator, whose dock has no hand button. */
-    showHand: boolean;
     onhand: () => void;
     onundo: () => void;
     onhistory: () => void;
@@ -68,6 +68,7 @@
   const MAX_MINIS = 4;
   const DROP_LABEL = 'Drop here: back to hand';
 
+  const showHand = $derived(seat !== undefined);
   // The cards landed: a card still flying in is counted once its copy lands.
   const handCount = $derived(hand.filter((card) => !card.arriving).length);
   // Read aloud and shown as a tooltip in the rail; the button itself shows the size in a capsule.

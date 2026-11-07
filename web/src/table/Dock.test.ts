@@ -20,7 +20,6 @@ function props(overrides: Record<string, unknown> = {}) {
     canUndo: true,
     dropActive: false,
     landscape: false,
-    showHand: true,
     onhand: vi.fn(),
     onundo: vi.fn(),
     onhistory: vi.fn(),
@@ -154,7 +153,7 @@ describe('Dock', () => {
   });
 
   it('has no hand button without a hand to show, as for a spectator (spectator_no_hand_button)', () => {
-    render(Dock, props({ showHand: false, hand: [], avatar: null, heroName: '' }));
+    render(Dock, props({ seat: undefined, hand: [], avatar: null, heroName: '' }));
     expect(screen.queryByRole('button', { name: /hand/i })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
     expect(screen.getByRole('button', { name: UNDO_TIP })).toBeTruthy();
