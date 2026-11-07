@@ -141,9 +141,9 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "pile",
-      "x": 600,
-      "y": 400,
-      "z": 9,
+      "x": 0,
+      "y": 0,
+      "z": 0,
       "pile": "disc:p1",
       "shapes": [
         {
@@ -428,9 +428,9 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "pile",
-      "x": 400,
-      "y": 400,
-      "z": 8,
+      "x": 0,
+      "y": 0,
+      "z": 0,
       "pile": "disc:p1",
       "shapes": [
         {
@@ -655,9 +655,9 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "hand",
-      "x": 1100,
-      "y": 700,
-      "z": 11,
+      "x": 0,
+      "y": 0,
+      "z": 0,
       "shapes": [
         {
           "size": "std"
@@ -787,9 +787,9 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "hand",
-      "x": 1300,
-      "y": 700,
-      "z": 12,
+      "x": 0,
+      "y": 0,
+      "z": 0,
       "shapes": [
         {
           "size": "std"

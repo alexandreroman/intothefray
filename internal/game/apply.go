@@ -525,8 +525,12 @@ func (t *Table) leave(c *Card) {
 	resetCard(c)
 }
 
-// resetCard clears everything a card carries while it is in play.
+// resetCard clears everything a card carries while it is in play, its place on
+// the table included: a card in a hand or a pile keeping its last spot would
+// let a viewer tie it to the card they saw there, under any new id. Every way
+// onto the table places it again (placeOnTable, layOutStack, applyChooseStage).
 func resetCard(c *Card) {
+	c.X, c.Y, c.Z = 0, 0, 0
 	c.Face = 0
 	c.FaceDown = false
 	c.Exhausted = false

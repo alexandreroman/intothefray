@@ -575,3 +575,37 @@ func TestApplyRefusesAFreshIDAlreadyInUse(t *testing.T) {
 		})
 	}
 }
+
+// checkOffTableCardsUnplaced fails when the view of the player holding token
+// gives a card in a hand or a pile a place: it would be the card's last spot
+// on the table, which ties it to the card seen there.
+func checkOffTableCardsUnplaced(t *testing.T, g *Game, token string) {
+	t.Helper()
+	for _, c := range g.ViewFor(token).Table.Cards {
+		if c.Zone != ZoneTable && (c.X != 0 || c.Y != 0 || c.Z != 0) {
+			t.Errorf("%s sees card %s in zone %s at (%d, %d, %d)", token, c.ID, c.Zone, c.X, c.Y, c.Z)
+		}
+	}
+}
+
+func TestCardShuffledIntoTheEncounterDeckLeavesItsSpotBehind(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDeal, Area: "p0", X: 900, Y: 470}, at(1))
+	dealt := f.lastDealt(t)
+
+	f.mustDo(t, "b", Action{Kind: ActToDeck, Card: dealt, Where: whereShuffle}, at(2))
+	f.mustDo(t, "b", Action{Kind: ActSearch, Pile: PileEncounter}, at(3))
+
+	checkOffTableCardsUnplaced(t, f.g, "b")
+}
+
+func TestCardTakenIntoHandLeavesItsSpotBehind(t *testing.T) {
+	f := newDoFixture(t)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	played := f.g.Table.Hands["p0"][0]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: played, X: 900, Y: 470}, at(2))
+
+	f.mustDo(t, "h", Action{Kind: ActToHand, Card: played}, at(3))
+
+	checkOffTableCardsUnplaced(t, f.g, "h")
+}
