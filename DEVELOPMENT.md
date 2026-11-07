@@ -7,7 +7,8 @@ see the [README](README.md).
 
 - Go 1.27 or later
 - Docker (or Podman) with Compose, to run Redis and Caddy locally
-- [Air](https://github.com/air-verse/air) for hot reload
+- [Air](https://github.com/air-verse/air) v1.63.2 or later (the first
+  release with `build.entrypoint`) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
 - Node.js and [pnpm](https://pnpm.io/) at the versions pinned in
   `mise.toml` (`mise install` with [mise](https://mise.jdx.dev/))
