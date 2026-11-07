@@ -20,12 +20,12 @@ func TestPackFileRoundTrip(t *testing.T) {
 					Type:           "main_scheme",
 					Stage:          "1A",
 					Size:           SizeLand,
-					Images:         []string{"https://marvelcdb.com/bundles/cards/01097.png"},
+					Images:         []string{"https://img.intothefray.xyz/cards/en/01097a.0123456789ab.avif"},
 					StartingThreat: &Threat{Value: 0, PerPlayer: false},
 					Localized: map[string]Localized{
 						"fr": {
 							Name:   "Le Rhino",
-							Images: []string{"https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"},
+							Images: []string{"https://img.intothefray.xyz/cards/fr/01097a.0123456789ab.avif"},
 						},
 					},
 				},
@@ -34,7 +34,7 @@ func TestPackFileRoundTrip(t *testing.T) {
 					Type:   "main_scheme",
 					Stage:  "1B",
 					Size:   SizeLand,
-					Images: []string{"https://marvelcdb.com/bundles/cards/01097b.png"},
+					Images: []string{"https://img.intothefray.xyz/cards/en/01097b.0123456789ab.avif"},
 				},
 			},
 			Set:      "rhino",
@@ -77,7 +77,7 @@ func TestPackFileRoundTrip(t *testing.T) {
 		`{"code":"rhino","name":"Rhino","kind":"villain","cards":["01097"]}`,
 		// Empty overrides, such as the subname here, are left out.
 		`"localized":{"fr":{"name":"Le Rhino",` +
-			`"images":["https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"]}}`,
+			`"images":["https://img.intothefray.xyz/cards/fr/01097a.0123456789ab.avif"]}}`,
 		`"side":{"label":"Weather"}`,
 		`"setAside":["25002"]`,
 		`"sideDecks":["doctor_strange_invocation_deck"]`,
