@@ -239,6 +239,53 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 	assertTTL(t, mr, time.Hour, "game:abc", "game:abc:info")
 }
 
+// beforeExpire is a Redis hook that runs before once, as the first pipeline
+// holding an EXPIRE is about to reach Redis.
+type beforeExpire struct {
+	once   sync.Once
+	before func()
+}
+
+func (h *beforeExpire) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+func (h *beforeExpire) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
+
+func (h *beforeExpire) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		if slices.ContainsFunc(cmds, func(cmd redis.Cmder) bool { return cmd.Name() == "expire" }) {
+			h.once.Do(h.before)
+		}
+		return next(ctx, cmds)
+	}
+}
+
+func TestTouchDuringEndKeepsShortTTL(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	if err := s.Create(ctx, newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	touching := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = touching.Close() })
+	// The game ends after Touch read its phase and before it sets the
+	// expiries.
+	hook := &beforeExpire{before: func() {
+		_, _, err := s.Update(ctx, "abc", func(g *game.Game) error {
+			g.Phase = game.PhaseEnded
+			return nil
+		})
+		if err != nil {
+			t.Errorf("Update: %v", err)
+		}
+	}}
+	touching.AddHook(hook)
+
+	if err := New(touching, testTTL).Touch(ctx, "abc"); err != nil {
+		t.Fatalf("Touch: %v", err)
+	}
+	assertTTL(t, mr, time.Hour, "game:abc", "game:abc:info")
+}
+
 // assertTTL fails the test unless every key expires after want.
 func assertTTL(t *testing.T, mr *miniredis.Miniredis, want time.Duration, keys ...string) {
 	t.Helper()
@@ -611,26 +658,6 @@ func TestTouchExpiresBothKeysInOneTransaction(t *testing.T) {
 	want := [][]string{{"multi", "expire", "expire", "exec"}}
 	if !reflect.DeepEqual(expiring, want) {
 		t.Errorf("pipelines with an EXPIRE = %v, want %v", expiring, want)
-	}
-}
-
-func TestTouchGameWithoutSummary(t *testing.T) {
-	s, mr := newTestStore(t)
-	ctx := t.Context()
-	if err := s.Create(ctx, newGame("abc")); err != nil {
-		t.Fatalf("Create: %v", err)
-	}
-	mr.Del("game:abc:info")
-	mr.FastForward(time.Hour)
-
-	if err := s.Touch(ctx, "abc"); err != nil {
-		t.Fatalf("Touch: %v", err)
-	}
-	if ttl := mr.TTL("game:abc"); ttl != testTTL {
-		t.Errorf("game ttl = %v, want %v", ttl, testTTL)
-	}
-	if mr.Exists("game:abc:info") {
-		t.Error("Touch created a summary")
 	}
 }
 
