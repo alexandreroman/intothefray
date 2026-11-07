@@ -60,8 +60,8 @@ export interface Rect {
 
 /**
  * What a drop onto a pile does: back on top of the deck, discarded, or put in
- * that pile. A deck's top card dropped back on its own deck returns there: the
- * drop is outlined as any other, and sends nothing.
+ * that pile. A deck's top card dropped right over its own deck returns there:
+ * the drop is outlined as any other, and sends nothing.
  */
 export type PileDrop = 'top' | 'discard' | 'pile' | 'return';
 
@@ -141,8 +141,9 @@ function distance(rect: Rect, point: Point): number {
  * What a drop at the point lands on: the hand, if it is a target, then the
  * nearest pile up to 20 px away, the topmost card under the point, or else
  * the table itself. Null outside the table. An exact pile (a deck that is not
- * the dragged card's home) counts only right under the point, and only when
- * no card lies there: a card revealed on that deck takes the tuck.
+ * the dragged card's home, or the own deck of a dragged top card) counts only
+ * right under the point, and only when no card lies there: a card revealed on
+ * that deck takes the tuck.
  */
 export function dropTarget(point: Point, targets: DropRect[]): DropRect | null {
   const hand = targets.find(
@@ -507,8 +508,9 @@ export interface PileTarget {
   drop: PileDrop;
   label: string;
   /**
-   * Set on a deck that is not the dragged card's home: a drop goes onto it only right over it, and
-   * a card lying there wins over it (dropTarget). Other piles take a drop up to 20 px away.
+   * Set on a deck that is not the dragged card's home, and on the own deck of a dragged top card: a
+   * drop goes onto it only right over it, and a card lying there wins over it (dropTarget). Other
+   * piles take a drop up to 20 px away.
    */
   exact?: boolean;
 }
@@ -522,7 +524,8 @@ export interface PileTarget {
  * card of a deck goes to the pile that deck discards to (deckDiscardOf): a
  * player's deck to its discard pile, the encounter deck's to the encounter
  * discard pile, a side or scenario deck's to the pile it names. A deck's top
- * card also takes its own deck, where a drop returns it and sends nothing.
+ * card also takes its own deck, an exact target, where a drop returns it and
+ * sends nothing.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -544,9 +547,10 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     if (discard !== null) {
       targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
     }
-    // A drop on the deck itself cancels the drag: without this target, it would deal or play the
-    // card at the deck's spot.
-    targets.push({ pile: deck.id, drop: 'return', label: `Top of ${deckName(deck)}` });
+    // A drop right over the deck cancels the drag: without this target, it would deal or play the
+    // card at the deck's spot. Exact, so a card dropped beside the deck, next to the villain for
+    // one, is placed on the table.
+    targets.push({ pile: deck.id, drop: 'return', label: `Top of ${deckName(deck)}`, exact: true });
     return targets;
   }
 

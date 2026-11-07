@@ -155,7 +155,7 @@ describe('encounter scenario deck', () => {
     }
     expect(pileTargets(source, view)).toEqual([
       { pile: 'encd:wrecker', drop: 'discard', label: 'Discard' },
-      { pile: 'enc:wrecker', drop: 'return', label: 'Top of Wrecker deck' },
+      { pile: 'enc:wrecker', drop: 'return', label: 'Top of Wrecker deck', exact: true },
     ]);
     expect(
       dropAction(

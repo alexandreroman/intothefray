@@ -48,8 +48,10 @@ type: project
   Shuffle; discard pile Search │ Shuffle into deck. Shuffle is always
   its own last group (`GROUP_SHUFFLE`). Dragging the top of
   an own deck (or the encounter deck) onto its discard pile discards it,
-  as Discard 1 does. A deck's top card dropped back on its own deck
+  as Discard 1 does. A deck's top card dropped right over its own deck
   cancels the drag: the deck is outlined as a target and nothing is sent.
+  Dropped beside the deck, it is placed on the table; a card lying over
+  the deck takes it instead.
   A card dropped anywhere on its home deck (player deck, side deck or
   encounter deck) goes on top of it, as Move to ▾ "Top of deck" does;
   Bottom of deck is a Move to ▾ entry (B) only, never a drop target.

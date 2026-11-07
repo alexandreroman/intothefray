@@ -136,6 +136,59 @@ describe('dropTarget', () => {
     });
   });
 
+  describe("a deck's own top card", () => {
+    const view = makeView({
+      piles: [
+        pile('enc', { kind: 'encounter' }),
+        pile('encd', { kind: 'encounterDiscard' }),
+        pile('deck:p0', { owner: 0 }),
+        pile('disc:p0', { kind: 'discard', owner: 0 }),
+      ],
+    });
+    const deckBox = rect(400, 350, 100, 140);
+    const discardBox = rect(100, 350, 100, 140);
+    // Where pileTargets puts each pile on the screen, as DragLayer measures it.
+    const boxes: Record<string, ReturnType<typeof rect>> = {
+      enc: deckBox,
+      encd: discardBox,
+      'deck:p0': deckBox,
+      'disc:p0': discardBox,
+    };
+    const targetsFor = (drag: DragSource, extra: DropRect[] = []): DropRect[] => [
+      TABLE,
+      ...pileTargets(drag, view).map((t): DropRect => ({
+        kind: 'pile',
+        ...t,
+        rect: boxes[t.pile]!,
+      })),
+      ...extra,
+    ];
+    const drags: [string, Extract<DragSource, { kind: 'encounter' | 'deck' }>][] = [
+      ['the encounter deck', { kind: 'encounter', pile: 'enc' }],
+      ["a player's own deck", { kind: 'deck', pile: 'deck:p0' }],
+    ];
+
+    describe.each(drags)('from %s', (_name, drag) => {
+      it('goes back on its deck when dropped right over it', () => {
+        expect(dropTarget({ x: 450, y: 400 }, targetsFor(drag))).toMatchObject({
+          kind: 'pile',
+          pile: drag.pile,
+          drop: 'return',
+        });
+      });
+
+      it('is placed on the table when dropped beside its deck', () => {
+        // 10 px right of the deck, far from the discard pile.
+        expect(dropTarget({ x: 510, y: 400 }, targetsFor(drag))).toBe(TABLE);
+      });
+
+      it('goes to a card lying over its deck, which takes the tuck', () => {
+        const revealed: DropRect = { kind: 'card', card: 'revealed', z: 3, rect: deckBox };
+        expect(dropTarget({ x: 450, y: 400 }, targetsFor(drag, [revealed]))).toBe(revealed);
+      });
+    });
+  });
+
   it('finds nothing outside the table, whatever lies there', () => {
     const scrolledOut: DropRect = { ...high, rect: rect(250, 0, 100, 140) };
     expect(dropTarget({ x: 300, y: 50 }, [TABLE, scrolledOut])).toBeNull();
@@ -886,7 +939,7 @@ describe("the top card of the viewer's deck", () => {
   it('is discarded on its own discard pile, and takes its own deck back', () => {
     expect(pileTargets(deck, view)).toEqual([
       { pile: 'disc:p0', drop: 'discard', label: 'Discard' },
-      { pile: 'deck:p0', drop: 'return', label: 'Top of deck' },
+      { pile: 'deck:p0', drop: 'return', label: 'Top of deck', exact: true },
     ]);
     const discard: DropRect = {
       kind: 'pile',
