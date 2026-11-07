@@ -320,6 +320,31 @@ describe('a card drawn into the hand in dock mode, the hand sheet shut', () => {
     expect(motion.drawing.size).toBe(0);
   });
 
+  it('leaves its pile out of sight while the hand button is a drop target, with no avatar', async () => {
+    const app = page();
+    const button = dockBar(app, 0, ['d']);
+    button.replaceChildren(box('drop-label', { left: 20, top: 710, width: 200, height: 20 }));
+
+    await draw(app, ['d']);
+
+    expect(motion.flights).toMatchObject([{ kind: 'drawAway', pile: 'deck:p0' }]);
+    expect(motion.drawing.size).toBe(0);
+  });
+
+  it('ends when an undo takes the card out of the hand before it lands', async () => {
+    const app = page();
+    dockBar(app, 0, ['d']);
+    const { anims, tables } = drawOf(['d']);
+    await motion.animate(app, anims, tables, ZOOM);
+    expect(motion.drawing.has('d')).toBe(true);
+
+    // The undo puts it back on its deck: the dock counts the hand as it was, at once.
+    await motion.animate(app, [], { before: tables.after, after: tables.before }, ZOOM);
+
+    expect(motion.flights).toEqual([]);
+    expect(motion.drawing.size).toBe(0);
+  });
+
   it('leaves one after the other, 70 ms apart', async () => {
     const app = page();
     dockBar(app, 0, ['d', 'e', 'f']);
@@ -695,8 +720,30 @@ describe('a table card taken back into the hand in dock mode', () => {
   it("does not fly for the viewer's own drop on the dock", async () => {
     const app = withCard();
     dockBar(app, 0, ['t']);
+    const prev = playingView({ table: BEFORE });
+    const next = playingView({ table: AFTER });
+    const drop = { element: { kind: 'card', id: 't' }, card: 't', lifted: ['t'] } as const;
 
-    await takeBack(app, [{ ...TAKEN[0], dropped: true } as Anim]);
+    // Taken back by an action instead, it would fly.
+    expect(diffViews(prev, next)).toContainEqual(
+      expect.objectContaining({ kind: 'move', id: 't' }),
+    );
+
+    await takeBack(app, diffViews(prev, next, drop));
+
+    expect(motion.flights).toEqual([]);
+    expect(motion.drawing.size).toBe(0);
+  });
+
+  it('shows the card at once when a newer view takes over while the view is drawn', async () => {
+    const app = withCard();
+    dockBar(app, 0, ['t']);
+
+    const animating = motion.animate(app, TAKEN, { before: BEFORE, after: AFTER }, ZOOM);
+    expect(motion.drawing.has('t')).toBe(true);
+    void motion.animate(app, [], { before: AFTER, after: AFTER }, ZOOM);
+    app.querySelector('.surface [data-id="t"]')?.remove();
+    await animating;
 
     expect(motion.flights).toEqual([]);
     expect(motion.drawing.size).toBe(0);
