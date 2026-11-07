@@ -10,8 +10,9 @@ import sheetSource from '../components/Sheet.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
 import { DOCK_SCALE } from './dockPiles';
 import { PORTRAIT_CARD } from './layout';
-import { LIFT_SCALE, motion } from './motion.svelte';
+import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
 import type { Anim } from './animate';
+import { unknownTopId } from './drag';
 import type { CardView, PileView, TableView } from '../lib/types';
 import { card } from './fixtures.testing';
 
@@ -408,6 +409,230 @@ describe('a card played from the hand in dock mode', () => {
 
     expect(motion.flights).toEqual([]);
     expect(animate.mock.contexts).toContain(placed);
+  });
+});
+
+// The viewer's own drop in dock mode (settles): its ghost stays where it was let go, the flow draws
+// the card in its slot, and the card slides there from its ghost and settles, as one motion.
+describe("the viewer's own drop slid into its slot in dock mode", () => {
+  /** The table before and after the viewer dropped table card a: the flow draws it elsewhere. */
+  const LAY = table([card('a', { zone: 'table', x: 0, y: 0 })], [DECK, DISCARD]);
+  const LAID = table([card('a', { zone: 'table', x: 10, y: 10 })], [DECK, DISCARD]);
+  const LANDS: Anim = {
+    kind: 'move',
+    id: 'a',
+    from: { zone: 'table', x: 0, y: 0 },
+    to: { zone: 'table', x: 10, y: 10 },
+    dropped: true,
+    settles: true,
+  };
+  // The slide (250 ms) and the settle (220 ms), which starts half way through the slide: 345 ms.
+  const DURATION = 345;
+  const SLID = 250 / DURATION;
+  const SETTLES = 125 / DURATION;
+  const DIPS = (125 + 0.55 * 220) / DURATION;
+
+  /** The viewer's ghost of a card, landed where it was let go, swayed to that angle. */
+  function landedGhost(app: HTMLElement, id: string, at: { left: number; top: number }, lean = 0) {
+    const layer = document.createElement('div');
+    layer.className = 'draglayer';
+    const ghost = box('card ghost landed', { ...at, width: 67, height: 94 });
+    ghost.dataset.id = id;
+    if (lean !== 0) {
+      ghost.style.rotate = `${lean}deg`;
+    }
+    layer.append(ghost);
+    app.append(layer);
+  }
+
+  /**
+   * Plays the view that lays card a in its slot: on the table before, it lies at (0, 200), and the
+   * new view draws it, with its shade, at (20, 20) once measured where it showed before. Returns
+   * that card.
+   */
+  async function lay(
+    app: HTMLElement,
+    anims: Anim[] = [LANDS],
+    tables = { before: LAY, after: LAID },
+  ): Promise<HTMLElement> {
+    const placed = box('card', { left: 0, top: 200, width: 67, height: 94 });
+    placed.dataset.id = 'a';
+    const shade = document.createElement('div');
+    shade.className = 'shade';
+    placed.append(shade);
+    const surface = app.querySelector('.surface')!;
+    const onTable = tables.before.cards.some((c) => c.id === 'a' && c.zone === 'table');
+    if (onTable) {
+      surface.append(placed);
+    }
+    const animating = motion.animate(app, anims, tables, ZOOM);
+    placed.style.left = '20px';
+    placed.style.top = '20px';
+    surface.append(placed);
+    await animating;
+    return placed;
+  }
+
+  /** The keyframes and options of each animation played on an element, in the order they started. */
+  function playedOn(element: Element): [Keyframe[], KeyframeAnimationOptions][] {
+    const calls = animate.mock.calls as unknown as [Keyframe[], KeyframeAnimationOptions][];
+    return calls.filter((_, i) => animate.mock.contexts[i] === element);
+  }
+
+  /** The animation played on an element on that property, if any. */
+  function onProperty(element: Element, property: string) {
+    return playedOn(element).find(([keyframes]) => property in keyframes[0]!);
+  }
+
+  // The ghost's middle (183.5, 347) from the slot's (53.5, 67), in table units at 80 %.
+  it('slides from its ghost to its slot over the first 250 ms', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 });
+
+    const placed = await lay(app);
+
+    expect(onProperty(placed, 'translate')).toEqual([
+      [
+        { translate: '162.5px 350px', easing: 'cubic-bezier(.2, .8, .2, 1)' },
+        { translate: '0px 0px', offset: expect.closeTo(SLID, 6) },
+        { translate: '0px 0px' },
+      ],
+      { duration: DURATION },
+    ]);
+  });
+
+  it('comes down from its lift half way through the slide, dipping before it rests', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 });
+
+    const placed = await lay(app);
+
+    expect(onProperty(placed, 'scale')).toEqual([
+      [
+        { scale: `${LIFT_SCALE}` },
+        { scale: `${LIFT_SCALE}`, offset: expect.closeTo(SETTLES, 6), easing: 'ease-in' },
+        { scale: '0.98', offset: expect.closeTo(DIPS, 6), easing: 'ease-out' },
+        { scale: '1' },
+      ],
+      { duration: DURATION },
+    ]);
+  });
+
+  it('brings its shadow back under it as it comes down', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 });
+
+    const placed = await lay(app);
+
+    expect(playedOn(placed.querySelector('.shade')!)).toEqual([
+      [
+        [
+          { translate: LIFT_SHADE },
+          { translate: LIFT_SHADE, offset: expect.closeTo(SETTLES, 6), easing: 'ease-in' },
+          { translate: '0px 0px', offset: expect.closeTo(DIPS, 6) },
+          { translate: '0px 0px' },
+        ],
+        { duration: DURATION },
+      ],
+    ]);
+  });
+
+  it('comes upright from the angle its ghost swayed to as it slides', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 }, 4);
+
+    const placed = await lay(app);
+
+    expect(onProperty(placed, 'rotate')).toEqual([
+      [
+        { rotate: '4deg', easing: 'ease-out' },
+        { rotate: '0deg', offset: expect.closeTo(SLID, 6) },
+        { rotate: '0deg' },
+      ],
+      { duration: DURATION },
+    ]);
+  });
+
+  it('turns nothing for a ghost held upright', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 });
+
+    const placed = await lay(app);
+
+    expect(onProperty(placed, 'rotate')).toBeUndefined();
+  });
+
+  it('leans from nothing when it tilts in the same view, the tilt alone turning it', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 }, 4);
+
+    const placed = await lay(app, [LANDS, { kind: 'tilt', id: 'a', exhausted: true }]);
+
+    const turns = playedOn(placed).filter(([keyframes]) => 'rotate' in keyframes[0]!);
+    expect(turns).toHaveLength(1);
+    expect(turns[0]![1]).toMatchObject({ duration: 180 });
+  });
+
+  it('still settles when its slot lies under its ghost', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 20, top: 20 });
+
+    const placed = await lay(app);
+
+    expect(onProperty(placed, 'translate')?.[0][0]).toMatchObject({ translate: '0px 0px' });
+    expect(onProperty(placed, 'scale')?.[0][0]).toEqual({ scale: `${LIFT_SCALE}` });
+  });
+
+  it("enters out of a deck from its unknown top card's ghost, the same way", async () => {
+    const app = page(true);
+    landedGhost(app, unknownTopId(DECK), { left: 150, top: 300 }, -3);
+    const before = table([], [DECK, DISCARD]);
+    const enters: Anim = {
+      kind: 'enter',
+      id: 'a',
+      fromPile: 'deck:p0',
+      dropped: true,
+      settles: true,
+    };
+
+    const placed = await lay(app, [enters], { before, after: LAID });
+
+    expect(onProperty(placed, 'translate')?.[0][0]).toEqual({
+      translate: '162.5px 350px',
+      easing: 'cubic-bezier(.2, .8, .2, 1)',
+    });
+    expect(onProperty(placed, 'scale')?.[1]).toEqual({ duration: DURATION });
+    expect(onProperty(placed, 'rotate')?.[0][0]).toEqual({ rotate: '-3deg', easing: 'ease-out' });
+  });
+
+  it('plays nothing under reduced motion', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 }, 4);
+    reducedMotion.on = true;
+    try {
+      await lay(app);
+    } finally {
+      reducedMotion.on = false;
+    }
+
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('slides an own drop that does not settle plainly, from its ghost', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 }, 4);
+
+    const placed = await lay(app, [{ ...LANDS, settles: undefined }]);
+
+    expect(playedOn(placed)).toEqual([
+      [
+        [
+          { translate: '162.5px 350px', scale: `${LIFT_SCALE}` },
+          { translate: '0px 0px', scale: '1' },
+        ],
+        { duration: 250, easing: 'cubic-bezier(.2, .8, .2, 1)' },
+      ],
+    ]);
   });
 });
 

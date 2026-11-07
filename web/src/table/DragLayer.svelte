@@ -87,7 +87,6 @@
     faceOf,
     sizeOf,
     tableMap = ALL_TABLE,
-    drawnMap,
     grid = FINE_GRID,
     selected,
     act,
@@ -104,11 +103,6 @@
     sizeOf: (card: TableCard) => Size;
     /** Where the view mode draws the points of the table (rows.ts, dockLayout.ts). */
     tableMap?: TableMap;
-    /**
-     * Where the table is drawn, the drag's preview included (dock mode): a drop lands
-     * where it shows the card. The tableMap unless given.
-     */
-    drawnMap?: TableMap;
     /** The grid a drop on the table snaps to (grid.ts): the fine one unless given. */
     grid?: SnapGrid;
     /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
@@ -645,13 +639,8 @@
    * Where a spot of the table shows on the screen, as the view mode draws it, or null when its row is
    * hidden; a spot of an item, named by its id, is drawn with that item.
    */
-  function onScreen(
-    point: Point,
-    surface: Rect,
-    itemId?: string,
-    map: TableMap = tableMap,
-  ): Point | null {
-    const drawn = map.toDisplay(point, itemId);
+  function onScreen(point: Point, surface: Rect, itemId?: string): Point | null {
+    const drawn = tableMap.toDisplay(point, itemId);
     return drawn === null ? null : toScreen(drawn, surface, zoom);
   }
 
@@ -668,23 +657,19 @@
 
   /**
    * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
-   * places it, in the slot the rows opened for it in dock mode, where it was let go when
-   * it tucks it into a stack, whose chain the server lays out: the next view slides it from there
-   * (animate.ts).
+   * places it; where it was let go when it tucks it into a stack, whose chain the server lays out,
+   * or when it places it in dock mode, whose flow draws it in the slot the rows opened: the next
+   * view slides it from there (animate.ts). A marker lands on its spot in every mode.
    */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
     const spot = spotOf(from, action);
-    if (!surface || !spot) {
+    const flows = tableMap.insertAt !== undefined && from.kind !== 'marker';
+    if (!surface || !spot || flows) {
       return cornerOf(from, at);
     }
     // A placed card always lands in a shown row; the spot under the pointer covers any other case.
-    const preview = fedPreview;
-    const landed =
-      preview === null
-        ? onScreen(spot, surface)
-        : onScreen(spot, surface, preview.unitId, drawnMap ?? tableMap);
-    return landed ?? cornerOf(from, at);
+    return onScreen(spot, surface) ?? cornerOf(from, at);
   }
 
   /**
@@ -1040,7 +1025,7 @@
     }
     const from = sourceOf(pressed.element, view, pressed.card ?? undefined);
     const at = { x: event.clientX, y: event.clientY };
-    // The drop lands where the rows show it: in the slot they open for its card.
+    // The drop goes where the rows show it: into the slot they open for its card.
     const found = isStillThere(pressed, from) ? settledAt(from, at) : null;
     pendingPreview = from && found ? previewOf(from, found) : null;
     flushPreview();

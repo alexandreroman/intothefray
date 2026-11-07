@@ -1349,7 +1349,7 @@ describe('the compact, wrapped table in dock mode', () => {
     }
   });
 
-  it('lands a card in the slot it opened, the others kept aside until the server answers', async () => {
+  it('lands a card where it was let go, the others kept aside in its slot until the server answers', async () => {
     mockScreen(PHONE);
     const { session } = await renderTable(busyView());
     measureDrawn();
@@ -1364,11 +1364,133 @@ describe('the compact, wrapped table in dock mode', () => {
       0,
     );
     expectShift('c2', -364.8, 116.2);
-    // Its ghost set down in the slot: c2's column on the first line.
+    // Its ghost set down under the finger, held by its middle (33.6, 47.1 into its 60 % box): the
+    // next view slides it into the slot from there.
     const ghost = document.querySelector<HTMLElement>('.draglayer .card.landed')!;
     const [x, y] = ghostCorner(ghost);
-    expect(x).toBeCloseTo(358.8, 4);
-    expect(y).toBeCloseTo(306.4, 4);
+    expect(x).toBeCloseTo(345 - 33.6, 4);
+    expect(y).toBeCloseTo(350 - 47.1, 4);
+  });
+
+  it('slides the dropped card from where it was let go into its slot once the server answers', async () => {
+    const original = Element.prototype.animate;
+    const animate = vi.fn(
+      () =>
+        ({
+          cancel: () => {},
+          finish: () => {},
+          finished: new Promise<void>(() => {}),
+          effect: { setKeyframes: () => {} },
+        }) as unknown as Animation,
+    );
+    Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
+    try {
+      mockScreen(PHONE);
+      const { session, rerender } = await renderTable(busyView());
+      measureDrawn();
+
+      await holdMiddleAt('c7', 345, 350);
+      await nextFrame();
+      await fireEvent.pointerUp(window, { clientX: 345 * shownZoom(), clientY: 350 * shownZoom() });
+      await tick();
+      // The answering view: the move the drop sent, applied.
+      const answer = busyView();
+      answer.table!.cards = answer.table!.cards.map((c) =>
+        c.id === 'c7' ? { ...c, x: 540, y: 470 } : c,
+      );
+      await rerender({ session, view: answer });
+      await tick();
+      await tick();
+
+      const keyframesOn = (selector: string) =>
+        animate.mock.calls.flatMap((call, i) => {
+          const element = animate.mock.contexts[i] as Element;
+          return element.matches(selector)
+            ? [call as unknown as [Keyframe[], KeyframeAnimationOptions]]
+            : [];
+        });
+      // It slides into its slot and settles there, as one motion: translate and scale on the card,
+      // the shade under it coming in, all as long.
+      const onCard = keyframesOn('.surface .card[data-id="c7"]');
+      const played = (property: 'translate' | 'scale', on = onCard) =>
+        on.filter(([keyframes]) => keyframes[0]?.[property] !== undefined);
+      expect(played('translate')).toHaveLength(1);
+      expect(played('scale')).toHaveLength(1);
+      const shade = played('translate', keyframesOn('.surface .card[data-id="c7"] > .shade'));
+      expect(shade).toHaveLength(1);
+      for (const [, options] of [...played('translate'), ...played('scale'), ...shade]) {
+        expect(options.duration).toBe(345);
+      }
+    } finally {
+      Element.prototype.animate = original;
+    }
+  });
+
+  it('lands a marker on its spot, not under the finger, where the next view draws it', async () => {
+    mockScreen(PHONE);
+    const withToken = (at: { x: number; y: number }) => {
+      const view = busyView();
+      view.table!.firstPlayer = at;
+      return view;
+    };
+    const { session, rerender } = await renderTable(withToken({ x: 1300, y: 470 }));
+    measureDrawn();
+    const z = shownZoom();
+    const token = drawnBox(document.querySelector<HTMLElement>('.surface .marker')!);
+
+    // Held by its middle (25.2, 21 into its 60 % box) and let go with it at 345, 350.
+    await fireEvent.pointerDown(document.querySelector<HTMLElement>('.surface .marker')!, {
+      clientX: (token.x + token.w / 2) * z,
+      clientY: (token.y + token.h / 2) * z,
+      pointerType: 'mouse',
+    });
+    await fireEvent.pointerMove(window, { clientX: 345 * z, clientY: 350 * z - 40, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: 345 * z, clientY: 350 * z, buttons: 1 });
+    await nextFrame();
+    await fireEvent.pointerUp(window, { clientX: 345 * z, clientY: 350 * z });
+    await tick();
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'marker', name: 'firstPlayer', x: 550, y: 500 },
+      0,
+    );
+    const ghost = drawnBox(document.querySelector<HTMLElement>('.draglayer .marker')!);
+    expect(ghost.x).not.toBeCloseTo(345 - 25.2, 4);
+    expect(ghost.y).not.toBeCloseTo(350 - 21, 4);
+
+    await rerender({ session, view: withToken({ x: 550, y: 500 }) });
+    await tick();
+    const shown = drawnBox(document.querySelector<HTMLElement>('.surface .marker')!);
+    expect(ghost.x).toBeCloseTo(shown.x, 4);
+    expect(ghost.y).toBeCloseTo(shown.y, 4);
+  });
+
+  it('lands a group where it was let go, each card at its drawn offset from the pressed one', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    measureDrawn();
+    interaction.setGroup(new Set(['c6', 'c7']));
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    await fireEvent.pointerUp(window, { clientX: 345 * shownZoom(), clientY: 350 * shownZoom() });
+    await tick();
+
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(vi.mocked(session.act).mock.calls[0]![0].kind).toBe('group');
+    // c7 under the finger; c6, a column left of it on the second line, as far left of it.
+    const corners = new Map(
+      [...document.querySelectorAll<HTMLElement>('.draglayer .card.landed')].map((g) => [
+        g.dataset.id,
+        ghostCorner(g),
+      ]),
+    );
+    const [x7, y7] = corners.get('c7')!;
+    expect(x7).toBeCloseTo(345 - 33.6, 4);
+    expect(y7).toBeCloseTo(350 - 47.1, 4);
+    const [x6, y6] = corners.get('c6')!;
+    expect(x6).toBeCloseTo(x7 - 91.2, 4);
+    expect(y6).toBeCloseTo(y7, 4);
   });
 
   it('pushes nothing aside for a card dropped back where it lies, nor over another row', async () => {

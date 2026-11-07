@@ -50,9 +50,10 @@ type: project
   verbs).
 - The viewer's own drop never travels twice (`OwnDrop`): on the table
   or in the hand it already lies where it went (on the table, it settles:
-  see below); onto a pile, each of its
-  cards flies there from where it was let go (its landed ghost). A drop
-  that tucks into a stack (`OwnDrop.tucks`) lands where it was let go,
+  see below; in dock mode, it slides into its slot: see below); onto a
+  pile, each of its cards flies there from where it was let go (its
+  landed ghost). A drop that tucks into a stack (`OwnDrop.tucks`) lands
+  where it was let go,
   and each of its cards, a carried chain included, slides from its ghost
   to the spot the server lays the chain out at (`move` or `enter` marked
   `dropped`). Another player's drop starts from their ghost. When a
@@ -88,6 +89,17 @@ type: project
   220 ms (`SETTLE_MS`), the shade back under it, upright from the ghost's
   lean. A tucked drop, a flight or a slide leaves from the ghost at its
   lifted size.
+- In dock mode the flow draws a drop on the table in its slot, not under
+  the finger: its ghost lands where it was let go (`landingCorner` in
+  `DragLayer.svelte`), and once the view shows it, each of its cards
+  (a stack's, a group's, a hand card, a deck's top) slides from its ghost
+  into its slot and settles there as one motion (`settles` on the `move`
+  or `enter` that `dockMotions` makes of a `settle`; `#slideAndSettle` in
+  `motion.svelte.ts`): 345 ms, the slide over `MOVE_MS` (250 ms,
+  `MOVE_EASING`), the settle (1.06 → 0.98 → 1, shade back under it) from
+  half way through it (`LAND_SETTLES_AT`), upright from the ghost's lean
+  over the slide. The slot follows the view, measured where it draws the
+  card. Markers, desktops and tablets land on their grid spot.
 - A table card turning over (`flip`, `turnIn`) rises to 1.06 at edge-on
   and comes back down; one that slides in the same view is not lifted, as
   both play on `scale`. Copies flying to a pile (not under it) or into the

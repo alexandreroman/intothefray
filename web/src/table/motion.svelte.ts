@@ -51,6 +51,11 @@ const FLIGHT_LIFT_AT = 0.45;
 const MOVE_MS = 250;
 const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
 /**
+ * The viewer's own drop in dock mode slides from its ghost to its slot (MOVE_MS) and settles
+ * (SETTLE_MS) as one motion: the settle starts this fraction of the way through the slide.
+ */
+const LAND_SETTLES_AT = 0.5;
+/**
  * A card tucked into a stack lies beneath it: drawn above the stack, it first shifts out to a
  * staging spot past its slot, easing out, then, drawn at its own z-index, slides in under the stack
  * to its slot. Each step stops at the staging spot, so the switch of z-index shows no jump.
@@ -1021,16 +1026,20 @@ class TableMotion {
         tilting.set(anim.id, playingTilt(element));
       }
     }
-    // The viewer's own drop settles upright from the angle its ghost swayed to (#settle).
+    // The viewer's own drop settles upright from the angle its ghost swayed to (#settle,
+    // #slideAndSettle).
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const swayed = new Map<string, number>();
     for (const anim of shown) {
-      if (anim.kind !== 'settle') {
+      const slidesIn = (anim.kind === 'move' || anim.kind === 'enter') && anim.settles;
+      if (anim.kind !== 'settle' && !slidesIn) {
         continue;
       }
+      // Out of a deck, its ghost may be the deck's unknown top card.
+      const fromPile = anim.kind === 'move' ? undefined : anim.fromPile;
       const ghost = root
         ? (root.querySelector<HTMLElement>(ownGhost(anim.id)) ??
-          unknownTopGhost(root, anim.fromPile, tables.before?.piles ?? []))
+          unknownTopGhost(root, fromPile, tables.before?.piles ?? []))
         : null;
       if (ghost) {
         swayed.set(anim.id, playingTilt(ghost));
@@ -1148,6 +1157,14 @@ class TableMotion {
       // start: a measure after a start would lay the page out again, once per card, in the view's
       // first frame. The copies' flights only measure.
       const starts: Start[] = [];
+      // A card tilting meanwhile (exhausted or readied by another player) tilts on the same rotate
+      // property: it comes upright from its sway at once.
+      const leanOf = (id: string) => (tilting.has(id) ? 0 : (swayed.get(id) ?? 0));
+      // The viewer's own drop in dock mode lands in its slot; any other card slides there.
+      const slideOf = (anim: Extract<Anim, { kind: 'move' | 'enter' }>) =>
+        anim.settles
+          ? this.#slideAndSettle(root, anim.id, before.get(anim.id), zoom, leanOf(anim.id))
+          : this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
       for (const anim of shown) {
         switch (anim.kind) {
           // A card played from the viewer's hand in dock mode also rises where the viewer saw it: the
@@ -1158,12 +1175,12 @@ class TableMotion {
             if (rise && inHand) {
               flights.push({ kind: 'rise', key: ++this.#nextKey, card: inHand, ...rise, delay: 0 });
             }
-            starts.push(this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck));
+            starts.push(slideOf(anim));
             break;
           }
           // A card come onto the table slides out of its pile as a moved card does.
           case 'enter': {
-            const slide = this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
+            const slide = slideOf(anim);
             starts.push(() => playsOn(anim.fromPile, slide()?.finished));
             break;
           }
@@ -1173,11 +1190,9 @@ class TableMotion {
           case 'tilt':
             starts.push(() => this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0));
             break;
-          // A card tilting meanwhile (exhausted or readied by another player) tilts on the same rotate
-          // property: it comes upright from its sway at once.
           case 'settle': {
-            const from = tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0);
-            starts.push(() => this.#settle(root, anim.id, from));
+            const lean = leanOf(anim.id);
+            starts.push(() => this.#settle(root, anim.id, lean));
             break;
           }
           case 'turnIn':
@@ -1906,6 +1921,90 @@ class TableMotion {
         subject,
       );
     }
+  }
+
+  /**
+   * Measures the viewer's own drop in dock mode in its slot, and returns what lands it there from
+   * its ghost, held up where it was let go (from): it slides to its slot (MOVE_MS), coming upright
+   * from the angle its ghost swayed to (lean, in degrees), and half way through the slide
+   * (LAND_SETTLES_AT) it starts to settle as #settle does. It plays even onto a slot under its
+   * ghost, where only the settle shows. The start returns the slide, which the arrows follow.
+   */
+  #slideAndSettle(
+    root: HTMLElement,
+    id: string,
+    from: Measured | undefined,
+    zoom: number,
+    lean: number,
+  ): Start<Animation | null> {
+    const element = root.querySelector<HTMLElement>(tableCard(id));
+    if (!element || !from) {
+      return () => null;
+    }
+    const { to, scale } = placedAt(element, zoom);
+    const shade = element.querySelector<HTMLElement>(':scope > .shade');
+    return () => {
+      // Translations are in the element's own units: table units on a zoomed surface.
+      const dx = (from.cx - to.cx) / scale;
+      const dy = (from.cy - to.cy) / scale;
+      const size = to.w ? from.w / to.w : 1;
+      const settleMs = MOVE_MS * LAND_SETTLES_AT;
+      const duration = settleMs + SETTLE_MS;
+      const slid = MOVE_MS / duration;
+      const settles = settleMs / duration;
+      const dips = settles + (SETTLE_DIPS_AT * SETTLE_MS) / duration;
+      const subject = cardSubject(id);
+      const options = { duration };
+      // One property per animation, each keyframe's easing playing from it to the next one.
+      const slide = this.#run(
+        element,
+        [
+          { translate: `${dx}px ${dy}px`, easing: MOVE_EASING },
+          { translate: '0px 0px', offset: slid },
+          { translate: '0px 0px' },
+        ],
+        options,
+        subject,
+        true,
+      );
+      this.#run(
+        element,
+        [
+          { scale: `${size}` },
+          { scale: `${size}`, offset: settles, easing: 'ease-in' },
+          { scale: `${SETTLE_DIP}`, offset: dips, easing: 'ease-out' },
+          { scale: '1' },
+        ],
+        options,
+        subject,
+      );
+      if (shade) {
+        this.#run(
+          shade,
+          [
+            { translate: LIFT_SHADE },
+            { translate: LIFT_SHADE, offset: settles, easing: 'ease-in' },
+            { translate: '0px 0px', offset: dips },
+            { translate: '0px 0px' },
+          ],
+          options,
+          subject,
+        );
+      }
+      if (Math.abs(lean) >= 0.1) {
+        this.#run(
+          element,
+          [
+            { rotate: `${lean}deg`, easing: 'ease-out' },
+            { rotate: '0deg', offset: slid },
+            { rotate: '0deg' },
+          ],
+          options,
+          subject,
+        );
+      }
+      return slide;
+    };
   }
 
   /**

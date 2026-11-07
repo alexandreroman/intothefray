@@ -183,7 +183,10 @@ type: project
     in its drop slot (the `preview` input of `dockLayout`): the
     cards after it glide aside (180 ms, none under reduced motion) and
     glide back on a cancel. Markers never travel with the dragged card:
-    they anchor, as after the drop, to the card nearest them.
+    they anchor, as after the drop, to the card nearest them. Let go, the
+    slot stays open and the ghost stays under the finger until the
+    server answers; the card then slides from there into its slot and
+    settles (see [[project_card_move_animations]]).
   - The dock zoom is fixed, never above 100 %: it fits in the width the
     widest indent of the rows' frames and piles plus three card slots
     (`dockFitWidth`). Owner lines do not count: a row whose owner line is
