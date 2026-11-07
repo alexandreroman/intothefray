@@ -13,7 +13,10 @@
   piles at, and what it shows is zoomed alike; a card discarded or played
   from the viewer's hand rises and fades out where it was seen: drawn as the
   hand sheet draws it (a landscape card turned a quarter), at the table's
-  zoom from the dock's hand button.
+  zoom from the dock's hand button. A card drawn into the viewer's hand, or
+  taken back into it off the table, flies to the dock's hand button or to its
+  deck's hero selector entry when no hand sheet shows its hand, and over the
+  hand sheet into its carousel slot when one does.
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
@@ -95,6 +98,7 @@
     class="fly"
     class:scaled={scaled(flight)}
     class:rise={flight.kind === 'rise'}
+    class:over={flight.kind === 'draw' && flight.overSheet}
     class:land={flight.from.w > flight.from.h}
     aria-hidden="true"
     style:--scale={scaled(flight) ? DOCK_SCALE : undefined}
@@ -168,6 +172,11 @@
     (Sheet.svelte, 5500): over it, under the dialogs (5600).
   */
   .fly.rise {
+    z-index: 5550;
+  }
+
+  /* A card drawn into the hand sheet's carousel, or its header's hero selector, lands over the sheet. */
+  .fly.over {
     z-index: 5550;
   }
 
