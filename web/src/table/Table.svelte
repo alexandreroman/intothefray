@@ -1924,13 +1924,13 @@
     });
   });
 
-  /** Play or Discard on a card of the hand sheet (handActions): sends what its key sends (keys.ts). */
   /** Why Discard is refused for a hand card, as handActions greys it; undefined when it is not. */
   function handDiscardRefusal(id: string): string | undefined {
     const discard = handActions(id, view, sizeOf).find((item) => item.id === 'discard');
     return discard?.disabled ? discard.reason : undefined;
   }
 
+  /** Play or Discard on a card of the hand sheet (handActions): sends what its key sends (keys.ts). */
   function runHandAction(id: string, action: 'play' | 'discard'): void {
     const item = handActions(id, view, sizeOf).find((candidate) => candidate.id === action);
     if (!item || item.disabled) {
