@@ -2237,7 +2237,7 @@ describe('dockMotions', () => {
     ).toEqual(['moved', 'tilted']);
   });
 
-  it("slides the viewer's own drop from its ghost to where the flow draws it, rather than settling", () => {
+  it("slides the viewer's own drop from its ghost to where the flow draws it, and settles it there", () => {
     const before = view({ cards: [card('a', { x: 452, y: 410 })] });
     const after = view({ cards: [card('a', { x: 680, y: 410 }), card('p', { x: 300, y: 410 })] });
     const anims = dockMotions(
@@ -2257,8 +2257,9 @@ describe('dockMotions', () => {
         from: { zone: 'table', x: 452, y: 410 },
         to: { zone: 'table', x: 680, y: 410 },
         dropped: true,
+        settles: true,
       },
-      { kind: 'enter', id: 'p', fromPile: 'deck:p0', dropped: true },
+      { kind: 'enter', id: 'p', fromPile: 'deck:p0', dropped: true, settles: true },
     ]);
   });
 

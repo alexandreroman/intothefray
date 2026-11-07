@@ -1139,8 +1139,9 @@
   // already lies where it went on the table or in the hand; onto a pile, it
   // flies there from its landed ghost, still drawn now, and into a stack, it
   // slides from that ghost to its spot in the chain. In dock mode the rows
-  // flow: a drop slides from its ghost to its slot, and the cards it pushes
-  // along slide too (dockMotions).
+  // flow: a drop on the table, its ghost landed where it was let go, slides
+  // from there to its slot and settles, as one motion, and the cards it
+  // pushes along slide too (dockMotions).
   $effect.pre(() => {
     const next = view;
     untrack(() => {

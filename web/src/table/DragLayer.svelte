@@ -668,14 +668,15 @@
 
   /**
    * Where a drop at the point leaves the dragged card's corner: on its grid spot when the action
-   * places it, in the slot the rows opened for it in dock mode, where it was let go when
-   * it tucks it into a stack, whose chain the server lays out: the next view slides it from there
-   * (animate.ts).
+   * places it; where it was let go when it tucks it into a stack, whose chain the server lays out,
+   * or when it places it in dock mode, whose flow draws it in the slot the rows opened: the next
+   * view slides it from there (animate.ts). A marker lands on its spot in every mode.
    */
   function landingCorner(from: DragSource, action: Action, at: Point): Point {
     const surface = surfaceRect(root);
     const spot = spotOf(from, action);
-    if (!surface || !spot) {
+    const flows = tableMap.insertAt !== undefined && from.kind !== 'marker';
+    if (!surface || !spot || flows) {
       return cornerOf(from, at);
     }
     // A placed card always lands in a shown row; the spot under the pointer covers any other case.

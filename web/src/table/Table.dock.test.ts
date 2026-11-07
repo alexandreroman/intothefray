@@ -1349,7 +1349,7 @@ describe('the compact, wrapped table in dock mode', () => {
     }
   });
 
-  it('lands a card in the slot it opened, the others kept aside until the server answers', async () => {
+  it('lands a card where it was let go, the others kept aside in its slot until the server answers', async () => {
     mockScreen(PHONE);
     const { session } = await renderTable(busyView());
     measureDrawn();
@@ -1364,11 +1364,40 @@ describe('the compact, wrapped table in dock mode', () => {
       0,
     );
     expectShift('c2', -364.8, 116.2);
-    // Its ghost set down in the slot: c2's column on the first line.
+    // Its ghost set down under the finger, held by its middle (33.6, 47.1 into its 60 % box): the
+    // next view slides it into the slot from there.
     const ghost = document.querySelector<HTMLElement>('.draglayer .card.landed')!;
     const [x, y] = ghostCorner(ghost);
-    expect(x).toBeCloseTo(358.8, 4);
-    expect(y).toBeCloseTo(306.4, 4);
+    expect(x).toBeCloseTo(345 - 33.6, 4);
+    expect(y).toBeCloseTo(350 - 47.1, 4);
+  });
+
+  it('lands a group where it was let go, each card at its drawn offset from the pressed one', async () => {
+    mockScreen(PHONE);
+    const { session } = await renderTable(busyView());
+    measureDrawn();
+    interaction.setGroup(new Set(['c6', 'c7']));
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    await fireEvent.pointerUp(window, { clientX: 345 * shownZoom(), clientY: 350 * shownZoom() });
+    await tick();
+
+    expect(session.act).toHaveBeenCalledOnce();
+    expect(vi.mocked(session.act).mock.calls[0]![0].kind).toBe('group');
+    // c7 under the finger; c6, a column left of it on the second line, as far left of it.
+    const corners = new Map(
+      [...document.querySelectorAll<HTMLElement>('.draglayer .card.landed')].map((g) => [
+        g.dataset.id,
+        ghostCorner(g),
+      ]),
+    );
+    const [x7, y7] = corners.get('c7')!;
+    expect(x7).toBeCloseTo(345 - 33.6, 4);
+    expect(y7).toBeCloseTo(350 - 47.1, 4);
+    const [x6, y6] = corners.get('c6')!;
+    expect(x6).toBeCloseTo(x7 - 91.2, 4);
+    expect(y6).toBeCloseTo(y7, 4);
   });
 
   it('pushes nothing aside for a card dropped back where it lies, nor over another row', async () => {

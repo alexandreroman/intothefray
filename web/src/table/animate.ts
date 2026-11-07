@@ -47,9 +47,20 @@ export type Anim =
   /**
    * Moved on the table or between it and a hand; was is the id it had before, when it got a new one
    * (freshIdOf). The viewer's own drop tucked into a stack (dropped) slides from where it was let go.
-   * A card tucked into a stack (tuck) slides in under it.
+   * A card tucked into a stack (tuck) slides in under it. The viewer's own drop in dock mode
+   * (settles), which the flow draws in its slot rather than under its ghost, slides there from its
+   * ghost and settles, as one motion.
    */
-  | { kind: 'move'; id: string; from: Spot; to: Spot; was?: string; dropped?: true; tuck?: Tuck }
+  | {
+      kind: 'move';
+      id: string;
+      from: Spot;
+      to: Spot;
+      was?: string;
+      dropped?: true;
+      tuck?: Tuck;
+      settles?: true;
+    }
   | { kind: 'glow'; id: string; color: number }
   /** Exhausted or readied on the table: it tilts to its new angle. */
   | { kind: 'tilt'; id: string; exhausted: boolean }
@@ -84,9 +95,11 @@ export type Anim =
     }
   /**
    * Come onto the table out of a pile. The viewer's own drop tucked into a stack (dropped) slides
-   * from where it was let go. A card tucked into a stack (tuck) slides in under it.
+   * from where it was let go. A card tucked into a stack (tuck) slides in under it. The viewer's own
+   * drop in dock mode (settles), which the flow draws in its slot rather than under its ghost,
+   * slides there from its ghost and settles, as one motion.
    */
-  | { kind: 'enter'; id: string; fromPile: string; dropped?: true; tuck?: Tuck }
+  | { kind: 'enter'; id: string; fromPile: string; dropped?: true; tuck?: Tuck; settles?: true }
   /** Taken from the table into a hand the viewer does not see. */
   | { kind: 'away'; id: string }
   /** Put on a pile out of a hand the viewer does not see: the card when the pile shows it. */
@@ -125,7 +138,9 @@ type Fly = Extract<Anim, { kind: 'fly' }>;
 /**
  * The viewer's own drop waiting for the view that shows it (interaction.landing):
  * the card it moved, every table or hand card that moved with it (a group's),
- * and whether it tucked them into a stack.
+ * and whether it tucked them into a stack. Its ghosts lie where the drag layer
+ * landed them (landingCorner): a card placed on the table outside dock mode on
+ * its grid spot, any other drop where it was let go.
  */
 export type OwnDrop = Pick<Landing, 'element' | 'card' | 'lifted' | 'tucks'>;
 
@@ -148,10 +163,12 @@ const UNDID = 'undid ';
 /**
  * The animations that take the table from prev to next. ownDrop is what the
  * viewer has just dropped, a card with its stack, and the other cards of a
- * group with it: on the table or in the hand, it already lies where it went;
- * onto a pile, each of its cards flies there from where it was let go. Tucked
- * into a stack, it was let go anywhere over it: each of its cards slides from
- * there to its spot in the chain, which the server lays out.
+ * group with it: on the table or in the hand, it already lies where it went,
+ * and settles there (in dock mode, the flow draws it in a slot away from its
+ * ghost, where dockMotions slides it); onto a pile, each of its cards flies
+ * there from where it was let go. Tucked into a stack, it was let go anywhere
+ * over it: each of its cards slides from there to its spot in the chain,
+ * which the server lays out.
  */
 export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   const after = next.table;
@@ -298,8 +315,9 @@ const BESIDE_A_SLIDE: ReadonlySet<Anim['kind']> = new Set(['tilt', 'glow']);
  * elsewhere, as cards come into its row or leave it, before it or beside it.
  * It slides there, as a moved card does, unless it already travels or turns
  * over; the motion measures where it shows (motion.svelte.ts). The viewer's
- * own drop on the table lies where the flow puts it, not under its ghost: it
- * slides there from its ghost rather than settle.
+ * own drop on the table lies where the flow puts it, not under its ghost,
+ * which stays where it was let go: it slides there from its ghost and
+ * settles, as one motion (settles).
  */
 export function dockMotions(
   anims: readonly Anim[],
@@ -313,14 +331,21 @@ export function dockMotions(
       return anim;
     }
     if (anim.fromPile !== undefined) {
-      return { kind: 'enter', id: anim.id, fromPile: anim.fromPile, dropped: true };
+      return { kind: 'enter', id: anim.id, fromPile: anim.fromPile, dropped: true, settles: true };
     }
     const now = after.cards.find((card) => card.id === anim.id);
     const was = previous.get(anim.id) ?? now;
     if (now === undefined || was === undefined) {
       return anim;
     }
-    return { kind: 'move', id: anim.id, from: spotOf(was), to: spotOf(now), dropped: true };
+    return {
+      kind: 'move',
+      id: anim.id,
+      from: spotOf(was),
+      to: spotOf(now),
+      dropped: true,
+      settles: true,
+    };
   });
 
   const busy = new Set<string>();
