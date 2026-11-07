@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"maps"
 	"net/http"
@@ -174,6 +175,32 @@ func TestStatsStoreFailure(t *testing.T) {
 	mr.SetError("")
 	if got := gamesIn(t, getStats(t, ts)); got != 1 {
 		t.Errorf("games after recovery = %d, want 1", got)
+	}
+}
+
+func TestStatsScanOutlivesItsRequest(t *testing.T) {
+	srv, mr := newServer(t)
+	g, err := game.NewGame(testGameID, "host-token", "Alex", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.Phase = game.PhasePlaying
+	if err := srv.deps.Store.Create(t.Context(), g); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	// The client that asked first went away: the other waiters still need
+	// the scan.
+	gone, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	stats, err := srv.readStats(gone)
+	if err != nil || stats.Games != 1 {
+		t.Fatalf("readStats = %+v, %v; want one game", stats, err)
+	}
+	// Cached: Redis is not asked again within the minute.
+	mr.Close()
+	if cached, err := srv.readStats(t.Context()); err != nil || cached.Games != 1 {
+		t.Errorf("readStats after the first = %+v, %v; want the cached game", cached, err)
 	}
 }
 

@@ -20,6 +20,10 @@ const (
 	// statsCacheControl lets browsers and proxies keep a reply as long as the
 	// instance keeps its statistics.
 	statsCacheControl = "public, max-age=60"
+	// statsScanTimeout bounds a scan of the game summaries. The scan runs
+	// apart from the request that started it, as every request waiting for
+	// the cache shares its result.
+	statsScanTimeout = 10 * time.Second
 )
 
 // statsCache is the reply of GET /api/stats, cached for statsCacheTTL.
@@ -47,8 +51,9 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 
 // readStats returns the cached statistics, or reads them again once the cache
 // has expired. The lock is held during the read, so that requests arriving
-// meanwhile wait for its result instead of each scanning Redis. A failed read
-// is not cached: the next request tries again.
+// meanwhile wait for its result instead of each scanning Redis. The client
+// that started the read may leave: the read goes on for the others. A failed
+// read is not cached: the next request tries again.
 func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 	s.stats.mu.Lock()
 	defer s.stats.mu.Unlock()
@@ -57,7 +62,9 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 	if now.Before(s.stats.expires) {
 		return s.stats.value, nil
 	}
-	summaries, err := s.deps.Store.GameSummaries(ctx)
+	scanCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), statsScanTimeout)
+	defer cancel()
+	summaries, err := s.deps.Store.GameSummaries(scanCtx)
 	if err != nil {
 		return statsResponse{}, err
 	}
