@@ -52,8 +52,8 @@ describe('Logo', () => {
   });
 
   it('gives each logo its own clip paths', () => {
-    render(Logo);
-    render(Logo);
+    render(Logo, { size: 28 });
+    render(Logo, { size: 28 });
 
     const logos = screen.getAllByRole('img', { name: 'Into the Fray' });
     const ids = logos.flatMap((logo) =>

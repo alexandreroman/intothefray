@@ -35,7 +35,7 @@
   let server = $state<string>();
   let serverFailed = $state(false);
   // The server commit, once it is known to differ from the app's.
-  let mismatchedServer = $derived(server !== undefined && server !== app ? server : undefined);
+  const mismatchedServer = $derived(server !== undefined && server !== app ? server : undefined);
 
   onMount(() => {
     fetchServerCommit().then(
