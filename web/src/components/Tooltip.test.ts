@@ -97,4 +97,23 @@ describe('Tooltip', () => {
     await fireEvent.pointerDown(exhaust);
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
+
+  it('hides when its element leaves the page, as when the screen changes, without a pointer move', async () => {
+    vi.useFakeTimers();
+    render(Tooltip);
+    const screenRoot = document.createElement('div');
+    document.body.append(screenRoot);
+    const start = document.createElement('button');
+    start.dataset.tip = 'Start the game';
+    screenRoot.append(start);
+
+    await fireEvent.pointerOver(start);
+    await vi.advanceTimersByTimeAsync(350);
+    expect(screen.getByRole('tooltip').textContent).toBe('Start the game');
+
+    // The lobby gives way to the table: the button goes with it, under a pointer that does not move.
+    screenRoot.remove();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
 });

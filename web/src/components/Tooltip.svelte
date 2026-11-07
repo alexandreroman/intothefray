@@ -1,7 +1,8 @@
 <!--
   The tooltips of the page: any element with data-tip gets a small speech
   bubble after a short hover, with its shortcut (data-kbd) in a kbd, and a
-  tail pointing at the element. Pressing anything hides it.
+  tail pointing at the element. Pressing anything hides it, and so does the
+  element leaving the page.
 -->
 <script lang="ts">
   const DELAY_MS = 350;
@@ -52,6 +53,22 @@
     hide();
     target = null;
   }
+
+  // A screen giving way to another under a still pointer (the lobby to the table, a new route) takes
+  // the element away without a pointer event: the tip goes with it.
+  $effect(() => {
+    if (!shown) {
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (!target?.isConnected) {
+        hide();
+        target = null;
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  });
 
   // Placed once drawn, as its size depends on its text: above the element when there is room.
   $effect(() => {
