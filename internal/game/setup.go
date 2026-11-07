@@ -43,8 +43,8 @@ import (
 // (firstPlayerSpot); a single seat has no token.
 // Things sit rowContentY below the top of their row, leaving room for the
 // client's owner label above the piles. Out-of-play piles (victory display, scenario areas,
-// set-aside cards) keep a position for the model, on the first villain pile, but the client never
-// draws them.
+// set-aside cards) keep a position for the model, on the first pile of their row (outOfPlayX), but
+// the client never draws them.
 //
 // The villain's row is taller so that it reads apart from the players' rows
 // and holds a row of cards laid under the villain's: about 1.6 portrait card
@@ -70,9 +70,9 @@ const (
 	pileZoneGap = 50
 	// inPlayGap is the room between two cards in play, the same for the
 	// cards the setup puts in play and the cards played from the hand or a
-	// pile box (freeSlot, web/src/table/keys.ts). Turned 15° when exhausted,
-	// a portrait card reaches about 18 further on each side: 40 lets two
-	// neighbours both be exhausted without overlapping.
+	// pile box (SLOT_GAP and freeSlot, web/src/table/layout.ts). Turned 15°
+	// when exhausted, a portrait card reaches about 18 further on each side:
+	// 40 lets two neighbours both be exhausted without overlapping.
 	inPlayGap = 40
 	// The first player token is 84 by 70 (FIRST_PLAYER_BOX,
 	// web/src/table/layout.ts): firstPlayerTokenHeight is its height.
