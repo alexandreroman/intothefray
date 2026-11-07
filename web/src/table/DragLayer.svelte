@@ -253,6 +253,18 @@
     }
   });
 
+  // The table drops a preview made on another view: a drag going on aims again on the new one, the
+  // pointer still, so that the rows open its slot again.
+  $effect(() => {
+    void view;
+    untrack(() => {
+      if (source && pointer) {
+        fedPreview = null;
+        aim();
+      }
+    });
+  });
+
   // The next view shows where the last drop went (or that it went nowhere):
   // its cards are drawn from the view again.
   $effect.pre(() => {

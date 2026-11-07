@@ -1380,6 +1380,25 @@ describe('the compact, wrapped table in dock mode', () => {
     expect(surface.style.getPropertyValue('--shift-glide')).toBe('180ms');
   });
 
+  it('opens the slot again on the next view, the pointer still', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(busyView());
+    measureDrawn();
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    expectShift('c2', -364.8, 116.2);
+
+    // Another player's action drops the preview made on the view before; the drag, over the same
+    // slot, feeds one made on the new view, which glides there.
+    await rerender({ session, view: busyView() });
+    await nextFrame();
+    expectShift('c2', -364.8, 116.2);
+    expectShift('c7', 0, -116.2);
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('180ms');
+  });
+
   it('lands a card where it was let go, the others kept aside in its slot until the server answers', async () => {
     mockScreen(PHONE);
     const { session } = await renderTable(busyView());
