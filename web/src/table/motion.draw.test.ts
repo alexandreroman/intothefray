@@ -211,6 +211,7 @@ afterEach(() => {
   motion.stop();
   motion.flights = [];
   document.body.replaceChildren();
+  vi.restoreAllMocks();
 });
 
 /** Draws the cards with the dock drawn as the new view draws it (dock, a callback on the page). */
@@ -344,6 +345,48 @@ describe('a card drawn into the hand in dock mode, the hand sheet shut', () => {
 
     expect(motion.flights).toMatchObject([{ kind: 'drawAway', pile: 'deck:p0' }]);
     expect(motion.drawing.size).toBe(0);
+  });
+});
+
+describe('a view that fails to be drawn in dock mode', () => {
+  it('shows at once the cards it hid for copies that never took off', async () => {
+    const app = page();
+    const button = dockBar(app, 0, ['d']);
+    // A table card discarded in the same view, flying to its pile: hidden there from the start.
+    const discard: PileView = { id: 'disc:p0', kind: 'discard', owner: 0, x: 0, y: 0, count: 0 };
+    const pileBox = box('card pile', { left: 200, top: 20, width: 67, height: 94 });
+    pileBox.dataset.id = 'disc:p0';
+    const placed = box('card', { left: 40, top: 40, width: 67, height: 94 });
+    placed.dataset.id = 'x';
+    app.querySelector('.surface')!.append(pileBox, placed);
+    const before = table([card('x')], { p0: [] });
+    before.piles.push(discard);
+    const after = table(
+      [card('x', { zone: 'pile' }), card('d', { zone: 'hand' })],
+      { p0: ['d'] },
+      29,
+    );
+    after.piles.push({ ...discard, count: 1, cards: ['x'] });
+    const anims: Anim[] = [
+      { kind: 'fly', id: 'x', toPile: 'disc:p0' },
+      { kind: 'draw', id: 'd', fromPile: 'deck:p0', faceUp: false },
+    ];
+    // Measuring the dock fails once the view is drawn.
+    vi.spyOn(
+      button.querySelector<HTMLElement>('.mini')!,
+      'getBoundingClientRect',
+    ).mockImplementation(() => {
+      throw new Error('gone');
+    });
+
+    const animating = motion.animate(app, anims, { before, after }, ZOOM);
+    expect(motion.drawing.has('d')).toBe(true);
+    expect(motion.flying.has('x')).toBe(true);
+    await expect(animating).rejects.toThrow('gone');
+
+    expect(motion.flights).toEqual([]);
+    expect(motion.drawing.size).toBe(0);
+    expect(motion.flying.size).toBe(0);
   });
 });
 

@@ -1478,6 +1478,36 @@ class TableMotion {
           this.#unhush(pile);
         }
       }
+      // So does a card hidden from the start whose copy never took off, should drawing the view
+      // throw. A newer view that took over has shown them already, and may hide them again.
+      if (generation === this.#generation) {
+        this.#showUnlaunched(drawn, flying);
+      }
+    }
+  }
+
+  /**
+   * Shows the cards hidden as a view was drawn (in the hand, or as their pile was) that no copy
+   * still flying carries: their copy never took off.
+   */
+  #showUnlaunched(drawn: readonly string[], flying: readonly string[]): void {
+    const carried = (waiting: SvelteSet<string>) =>
+      new Set(
+        this.flights.flatMap((flight) =>
+          this.#waitingFor(flight) === waiting && flight.card ? [flight.card.id] : [],
+        ),
+      );
+    const stillDrawing = carried(this.drawing);
+    for (const id of drawn) {
+      if (!stillDrawing.has(id)) {
+        this.drawing.delete(id);
+      }
+    }
+    const stillFlying = carried(this.flying);
+    for (const id of flying) {
+      if (!stillFlying.has(id)) {
+        this.flying.delete(id);
+      }
     }
   }
 
