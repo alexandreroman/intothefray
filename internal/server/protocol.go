@@ -45,8 +45,7 @@ type statsResponse struct {
 // seat and set order.
 type playedGame struct {
 	// Ref tells the game apart from one call to the next for its whole life:
-	// it is the random StatsRef of the game, which never leads to it. It is
-	// left out for a game created without one.
+	// it is the random StatsRef of the game, which never leads to it.
 	Ref        string          `json:"ref,omitempty"`
 	Heroes     []playedHero    `json:"heroes,omitempty"`     // by hero name, then alter-ego name
 	Scenario   string          `json:"scenario,omitempty"`   // left out when unknown to the catalog

@@ -413,7 +413,6 @@ func TestStatsOf(t *testing.T) {
 			Difficulty: pack.Expert, Standard: "standard_iii", Expert: "expert_ii",
 			Modulars: []string{"masters_of_evil", "bomb_scare"},
 		},
-		{Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a"}},
 		{Phase: game.PhaseEnded, Ref: "0000", Scenario: "rhino", Heroes: []string{"01001a"}},
 		{
 			Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Heroes: []string{"99999"},
@@ -424,7 +423,7 @@ func TestStatsOf(t *testing.T) {
 			Difficulty: pack.Expert, Standard: "standard_iii", Expert: "expert_ii",
 			Modulars: []string{"bomb_scare", "masters_of_evil"},
 		},
-		{Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"bomb_scare"}},
+		{Ref: "dddd", Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"bomb_scare"}},
 		{Phase: game.PhaseLobby, Ref: "0001"},
 	}
 
@@ -439,15 +438,14 @@ func TestStatsOf(t *testing.T) {
 		}
 	}
 	want := statsResponse{
-		Games: 5, // the games being played only
-		// Sorted by ref; the games without one come first, by scenario. Heroes
-		// and sets are sorted by name; unknown codes are left out.
+		Games: 4, // the games being played only
+		// Sorted by ref. Heroes and sets are sorted by name; unknown codes are
+		// left out.
 		Playing: []playedGame{
-			{Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
-			{Heroes: []playedHero{spiderMan}, Scenario: "Rhino"},
 			{Ref: "aaaa", Scenario: "Klaw", Sets: []string{"Masters of Evil"}},
 			sameContent("bbbb"),
 			sameContent("cccc"),
+			{Ref: "dddd", Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
 		},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -459,9 +457,9 @@ func TestStatsJSONLeavesOutEmptyFields(t *testing.T) {
 	s := &Server{deps: Deps{Catalog: packstest.Catalog(t)}}
 	summaries := []game.Summary{
 		{Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Difficulty: pack.Standard, Heroes: []string{"01001a"}},
-		// No ref, no difficulty, and a scenario, hero and set unknown to the
-		// catalog: every field of the entry is empty.
-		{Phase: game.PhasePlaying, Scenario: "nope", Heroes: []string{"99999"}, Modulars: []string{"unknown"}},
+		// No difficulty, and a scenario, hero and set unknown to the catalog:
+		// every field of the entry but its ref is empty.
+		{Ref: "bbbb", Phase: game.PhasePlaying, Scenario: "nope", Heroes: []string{"99999"}, Modulars: []string{"unknown"}},
 	}
 
 	data, err := json.Marshal(s.statsOf(summaries))
@@ -469,8 +467,9 @@ func TestStatsJSONLeavesOutEmptyFields(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := `{"games":2,"playing":[{},{"ref":"aaaa",` +
-		`"heroes":[{"hero":"Spider-Man","alterEgo":"Peter Parker"}],"scenario":"Klaw","difficulty":"standard"}]}`
+	want := `{"games":2,"playing":[{"ref":"aaaa",` +
+		`"heroes":[{"hero":"Spider-Man","alterEgo":"Peter Parker"}],"scenario":"Klaw","difficulty":"standard"},` +
+		`{"ref":"bbbb"}]}`
 	if string(data) != want {
 		t.Errorf("JSON = %s, want %s", data, want)
 	}

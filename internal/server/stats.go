@@ -74,8 +74,8 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 }
 
 // statsOf names what the games being played are played with, and counts
-// them. The list is sorted by random ref (see comparePlayedGames), so that its
-// order tells nothing of where the games are stored.
+// them. The list is sorted by random ref, so that its order tells nothing of
+// where the games are stored.
 func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 	var playing []playedGame
 	for _, summary := range summaries {
@@ -83,7 +83,7 @@ func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 			playing = append(playing, s.playedGameOf(summary))
 		}
 	}
-	slices.SortFunc(playing, comparePlayedGames)
+	slices.SortFunc(playing, func(a, b playedGame) int { return strings.Compare(a.Ref, b.Ref) })
 	return statsResponse{Games: len(playing), Playing: playing}
 }
 
@@ -123,19 +123,6 @@ func heroOf(card pack.Card) playedHero {
 		hero.AlterEgo = card.Faces[alterEgo].Name
 	}
 	return hero
-}
-
-// comparePlayedGames orders games by ref. Games without one, which come
-// first, are ordered by scenario, then heroes, then sets, then difficulty, so
-// the order is always the same.
-func comparePlayedGames(a, b playedGame) int {
-	return cmp.Or(
-		strings.Compare(a.Ref, b.Ref),
-		strings.Compare(a.Scenario, b.Scenario),
-		slices.CompareFunc(a.Heroes, b.Heroes, comparePlayedHeroes),
-		slices.Compare(a.Sets, b.Sets),
-		strings.Compare(string(a.Difficulty), string(b.Difficulty)),
-	)
 }
 
 func comparePlayedHeroes(a, b playedHero) int {
