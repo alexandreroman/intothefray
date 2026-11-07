@@ -7,6 +7,7 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { mainCardOf, stackOf } from './drag';
+import { SCHEME_TYPES } from './face';
 import { detachSlot, freeSlot, isOutOfPlay } from './layout';
 import {
   areaOf,
@@ -402,13 +403,10 @@ function drawRevealedItem(card: CardView): ActionItem {
   };
 }
 
-/** The card types that never exhaust in the game: the villain and the schemes. */
-const UNEXHAUSTED_TYPES: readonly string[] = [
-  'villain',
-  'main_scheme',
-  'side_scheme',
-  'player_side_scheme',
-];
+/** Whether a card of this type never exhausts in the game: the villain and the schemes. */
+function neverExhausts(type: string): boolean {
+  return type === 'villain' || SCHEME_TYPES.includes(type);
+}
 
 /**
  * Whether the card offers Exhaust (or Ready): a villain or a scheme does not, unless it is
@@ -420,7 +418,7 @@ function canExhaust(card: CardView): boolean {
     return true;
   }
   const face = knownCard(card.code)?.card.faces[card.face];
-  return !face || !UNEXHAUSTED_TYPES.includes(face.type);
+  return !face || !neverExhausts(face.type);
 }
 
 function exhaustItem(card: CardView): ActionItem {

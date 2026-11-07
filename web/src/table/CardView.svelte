@@ -11,7 +11,7 @@
   import { dockCounterLayout, measureChipText, moreText, type Box } from './dockCounters';
   import { dockMode } from './dockMode';
   import { DOCK_SCALE, dockCardBox } from './dockPiles';
-  import { isHidden } from './face';
+  import { isHidden, SCHEME_TYPES } from './face';
   import { interaction } from './interaction.svelte';
   import { cardBox, SLOT_GAP } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
@@ -45,7 +45,6 @@
   // The threat, then the acceleration to its left: in the top right corner of a scheme, between
   // damage and counters in the corner pile of any other card. The first one takes the threat's place.
   const THREAT_TOKENS: readonly TokenName[] = ['thr', 'acc'];
-  const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
 
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
