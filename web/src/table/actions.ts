@@ -96,10 +96,11 @@ export interface ActionItem {
 }
 
 /**
- * The key of each card and pile action, as its menu entry shows it and the
- * keys sheet lists it (KeysSheet.svelte); the arrow (keys.ts) has no menu
- * entry, nor do a hand card's actions (handActions), which have no menu.
- * Several actions share a key, each on its own kind of element: W draws a
+ * The key of each action, as its menu entry shows it and the keys sheet lists
+ * it (KeysSheet.svelte). The arrow is no item of actionsFor: its menu entry is
+ * added by contextItems and its key handled by keys.ts. A hand card's actions
+ * (handActions) have no context menu: keys.ts and the dock's hand sheet run
+ * them. Several actions share a key, each on its own kind of element: W draws a
  * revealed card or from a deck, X discards a card, a hand card or a deck's
  * top card, and with Shift, Draw X and Discard X.
  */
