@@ -191,7 +191,7 @@ describe('PileView in dock mode (small piles)', () => {
     const rule = (selector: string) =>
       new RegExp(`\\n {2}${selector} \\{([^}]*)\\}`).exec(pileSource)?.[1];
     const inner = /\n {2}(\.card\.scaled > \.shade,[^{]*)\{([^}]*)\}/.exec(pileSource);
-    expect(inner?.[1]).toContain('.card.scaled > .art');
+    expect(inner?.[1]).toContain('.card.scaled .art');
     expect(inner?.[1]).toContain('.card.scaled > .slot');
     expect(inner?.[2]).toContain('zoom: var(--scale);');
     expect(rule('\\.card\\.scaled \\.count')).toMatch(

@@ -1804,7 +1804,12 @@ describe('a riffle in dock mode', () => {
 
     expect(copies.length).toBeGreaterThan(0);
     for (const copy of copies) {
-      expect(copy.querySelector<HTMLElement>('.art')!.style.zoom).toBe('var(--scale)');
+      // The pile's dock rule (.card.scaled .art, PileView.svelte) reaches the copy's art as its own:
+      // the same scoped classes, inside the scaled pile.
+      const art = copy.querySelector<HTMLElement>('.art')!;
+      const own = copy.parentElement!.querySelector<HTMLElement>(':scope > .art')!;
+      expect(art.className).toBe(own.className);
+      expect(art.matches('.card.scaled .art')).toBe(true);
     }
   });
 

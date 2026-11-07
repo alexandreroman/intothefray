@@ -2304,13 +2304,7 @@ class TableMotion {
         pointerEvents: 'none',
         visibility: 'hidden',
       });
-      const copiedArt = art.cloneNode(true) as HTMLElement;
-      // In dock mode the pile zooms its own art (PileView.svelte, .card.scaled > .art), a rule the
-      // copy's art, one level deeper, falls out of: it takes the pile's scale itself.
-      if (pile.classList.contains('scaled')) {
-        copiedArt.style.zoom = 'var(--scale)';
-      }
-      copy.append(copiedArt);
+      copy.append(art.cloneNode(true));
       pile.append(copy);
       this.#copies.set(copy, pileSubject(id));
       const side = i % 2 ? 1 : -1;

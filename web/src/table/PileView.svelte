@@ -231,7 +231,6 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 9px;
-    padding: 0 6px;
     /* A quick fade out of the way of the cards an animation plays over the pile, and back once done. */
     transition: opacity 0.12s ease-out;
   }
@@ -244,10 +243,11 @@
     Dock mode: the element is the pile's drawn box. What it draws is zoomed by the same scale, so
     that the back's label and caption, the borders and the corners shrink with it; the percentages
     still fill the box. The count keeps 9 screen px of text however far the table zooms out (--z), as
-    the name lines do (Surface).
+    the name lines do (Surface). The art's rule also reaches a riffle's copies of it, one level deeper
+    (motion.svelte.ts).
   */
   .card.scaled > .shade,
-  .card.scaled > .art,
+  .card.scaled .art,
   .card.scaled > .slot {
     zoom: var(--scale);
   }
@@ -255,6 +255,5 @@
   .card.scaled .count {
     bottom: -0.8em;
     font-size: max(9px, 9px / var(--z, 1));
-    padding: 0 0.67em;
   }
 </style>
