@@ -24,27 +24,12 @@
   (global transitions); as it starts leaving, it lets the page go and the
   focus move on, and takes no more taps or keys.
 -->
-<script module lang="ts">
-  import { prefersReducedMotion } from 'svelte/motion';
-
-  /**
-   * How long a motion of the sheet or of what it holds lasts, in ms: no time
-   * under reduced motion, nor where the browser has no Web Animations, which
-   * Svelte's transitions play on (jsdom), so that every change is instant.
-   */
-  export function motionMs(ms: number): number {
-    if (prefersReducedMotion.current || typeof Element.prototype.animate !== 'function') {
-      return 0;
-    }
-    return ms;
-  }
-</script>
-
 <script lang="ts">
   import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
   import { on } from 'svelte/events';
   import { cubicOut } from 'svelte/easing';
   import { fade, fly } from 'svelte/transition';
+  import { motionMs } from '../lib/motion';
   import { lastPressByPointer, openModal, trapTab } from './modal.svelte';
 
   let {

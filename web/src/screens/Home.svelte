@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { cubicOut } from 'svelte/easing';
-  import { prefersReducedMotion } from 'svelte/motion';
   import { fade, slide, type TransitionConfig } from 'svelte/transition';
   import { createGame } from '../lib/api';
+  import { motionMs } from '../lib/motion';
   import { playerName } from '../lib/names';
   import { NewsState } from '../lib/newsState.svelte';
   import { setToken } from '../lib/prefs';
@@ -87,7 +87,7 @@
   /** The banner leaves by folding up as it fades out; at once under reduced motion. */
   function bannerLeave(node: Element): TransitionConfig {
     const folding = slide(node, {
-      duration: prefersReducedMotion.current ? 0 : BANNER_LEAVE_MS,
+      duration: motionMs(BANNER_LEAVE_MS),
       easing: cubicOut,
     });
     // The opacity follows the slide's styles, overriding the slide's own, which only fades at the
@@ -122,7 +122,7 @@
   <main>
     <!-- Out of the flow, in the page's top padding: the page stays put when the count arrives. -->
     {#if showsGamesInProgress}
-      <p class="games" in:fade={{ duration: prefersReducedMotion.current ? 0 : GAMES_FADE_MS }}>
+      <p class="games" in:fade={{ duration: motionMs(GAMES_FADE_MS) }}>
         <span class="live" aria-hidden="true"></span>{gamesInProgressText}
       </p>
     {/if}

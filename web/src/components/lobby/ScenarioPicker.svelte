@@ -5,6 +5,7 @@
   import { tick, untrack } from 'svelte';
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
+  import { motionMs } from '../../lib/motion';
   import { overflowTip } from '../../lib/overflowTip';
   import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
@@ -473,7 +474,7 @@
     <div
       class="sect settings"
       transition:slide={{
-        duration: prefersReducedMotion.current ? 0 : SETTINGS_SLIDE_MS,
+        duration: motionMs(SETTINGS_SLIDE_MS),
         easing: cubicOut,
       }}
       onintroend={revealChosen}

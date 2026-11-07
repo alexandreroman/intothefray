@@ -1,7 +1,8 @@
 import { createEvent, fireEvent, render, screen } from '@testing-library/svelte';
 import { createRawSnippet, flushSync, mount, tick, unmount } from 'svelte';
 import { modal } from './modal.svelte';
-import Sheet, { motionMs } from './Sheet.svelte';
+import { motionMs } from '../lib/motion';
+import Sheet from './Sheet.svelte';
 import sheetSource from './Sheet.svelte?raw';
 
 // Whether the viewer prefers reduced motion; the tests of the motion turn it on and off.

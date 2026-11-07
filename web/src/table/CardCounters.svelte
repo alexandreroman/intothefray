@@ -20,7 +20,7 @@
 -->
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { motionMs } from '../components/Sheet.svelte';
+  import { motionMs } from '../lib/motion';
   import { counterName, MAX_MODIFIER, MODIFIERS, STATUSES, withSign } from './actions';
   import type { SheetCounter } from './inspector';
   import { cardBox } from './layout';

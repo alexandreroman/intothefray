@@ -76,7 +76,8 @@
   import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
   import { fade, fly, slide } from 'svelte/transition';
-  import Sheet, { motionMs } from '../components/Sheet.svelte';
+  import Sheet from '../components/Sheet.svelte';
+  import { motionMs } from '../lib/motion';
   import { buttonGrid } from '../lib/buttonGrid';
   import { decodeImage, type Decode } from '../lib/decodeImage';
   import { overflowTip } from '../lib/overflowTip';
