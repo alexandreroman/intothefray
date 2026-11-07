@@ -186,8 +186,9 @@ done
 ```
 
 `web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`;
-the pages declare `favicon.svg` only. After a change to `favicon.svg`,
-render it again with headless Chrome and ImageMagick (`magick`):
+the pages declare it (`sizes="32x32"`) before `favicon.svg`, since Google
+Search takes no SVG favicon. After a change to `favicon.svg`, render it
+again with headless Chrome and ImageMagick (`magick`):
 
 ```bash
 cd web
