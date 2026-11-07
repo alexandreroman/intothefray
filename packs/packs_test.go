@@ -940,7 +940,7 @@ func placesOf(table *game.Table, code string) []string {
 	return places
 }
 
-// loadPackFiles decodes every embedded English pack file.
+// loadPackFiles decodes every embedded pack file.
 func loadPackFiles(t *testing.T) []pack.PackFile {
 	t.Helper()
 	catalog, err := packs.Catalog()
