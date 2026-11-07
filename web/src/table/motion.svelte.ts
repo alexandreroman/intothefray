@@ -30,7 +30,7 @@ import { playerColorToken } from '../lib/playerColor';
 import type { Anim, Tuck, Turn } from './animate';
 import { DOCK_SCALE } from './dockPiles';
 import { unknownTopId } from './drag';
-import { pileBack, pileCaption } from './face';
+import { isHidden, pileBack, pileCaption } from './face';
 import { EXHAUST_DEGREES, isDiscardPile, PORTRAIT_CARD } from './layout';
 import { tableCard, tablePile } from './screen';
 import { seatOf } from './seats';
@@ -1302,17 +1302,20 @@ class TableMotion {
             if (rise && inHand) {
               flights.push({ kind: 'rise', key: ++this.#nextKey, card: inHand, ...rise, delay: 0 });
             }
-            // A table card taken back into a hand no sheet shows flies to the dock, face up as the
-            // table showed it; into the hand the sheet shows, it slides into its slot.
+            // A table card taken back into a hand no sheet shows flies to the dock, leaving as the
+            // table showed it: on its back when it lay face down (under the id it had there), turning
+            // face up on its way. Into the hand the sheet shows, it slides into its slot.
             if (takenBack.has(anim.id)) {
               const from = before.get(anim.id);
               const card = cardsAfter.get(anim.id);
+              const onTable = cardsBefore.get(anim.was ?? anim.id);
+              const faceUp = onTable === undefined || !isHidden(onTable);
               const shownInSheet = root.querySelector(handCard(anim.id)) !== null;
               const flight =
                 from && card && !shownInSheet
                   ? this.#dockFlight(
                       root,
-                      { card, pile: undefined, from: asPortrait(from), faceUp: true },
+                      { card, pile: undefined, from: asPortrait(from), faceUp },
                       tables.after,
                       zoom,
                     )

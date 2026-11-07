@@ -12,9 +12,9 @@ import sheetSource from '../components/Sheet.svelte?raw';
 import { DOCK_MODE_KEY } from './dockMode';
 import { PORTRAIT_CARD } from './layout';
 import { motion } from './motion.svelte';
-import type { Anim } from './animate';
+import { diffViews, type Anim } from './animate';
 import type { CardView, PileView, TableView } from '../lib/types';
-import { card } from './fixtures.testing';
+import { card, playingView } from './fixtures.testing';
 
 const reducedMotion = vi.hoisted(() => ({ on: false }));
 
@@ -526,6 +526,29 @@ describe('a table card taken back into the hand in dock mode', () => {
       },
     ]);
     expect(motion.drawing.has('t')).toBe(true);
+  });
+
+  it('leaves on its back when it lay face down, turning face up on its way', async () => {
+    // Face down on the table, it has an id of its own there: it gets a new one in the hand.
+    const before = table([card('old', { code: undefined, faceDown: true, x: 10, y: 10 })], {
+      p0: [],
+    });
+    const after = table([card('t', { zone: 'hand' })], { p0: ['t'] });
+    const anims = diffViews(playingView({ table: before }), playingView({ table: after }));
+    expect(anims).toContainEqual(expect.objectContaining({ kind: 'move', id: 't', was: 'old' }));
+    const app = page();
+    const placed = box('card', { left: 40, top: 40, width: 67, height: 94 });
+    placed.dataset.id = 'old';
+    app.querySelector('.surface')!.append(placed);
+    dockBar(app, 0, ['t']);
+
+    const animating = motion.animate(app, anims, { before, after }, ZOOM);
+    placed.remove();
+    await animating;
+
+    expect(motion.flights).toMatchObject([
+      { kind: 'draw', card: { id: 't' }, faceUp: false, from: { cx: 73.5, cy: 87 } },
+    ]);
   });
 
   it('slides into its carousel slot as before when the open hand sheet shows its hand', async () => {
