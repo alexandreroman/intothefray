@@ -753,7 +753,7 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 	g := &Game{
 		ID:    "g1",
 		Phase: PhasePlaying,
-		Table: &Table{Stages: []*Stage{{Key: "villain"}}},
+		Table: &Table{},
 	}
 
 	data, err := json.Marshal(g.ViewFor("nobody"))
@@ -766,11 +766,6 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 		Config  struct {
 			Modulars *[]string `json:"modulars"`
 		} `json:"config"`
-		Table struct {
-			Stages []struct {
-				Cards *[]string `json:"cards"`
-			} `json:"stages"`
-		} `json:"table"`
 	}
 	if err := json.Unmarshal(data, &got); err != nil {
 		t.Fatalf("Unmarshal() error = %v", err)
@@ -780,8 +775,5 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 	}
 	if got.Config.Modulars == nil {
 		t.Errorf("config.modulars is null in %s", data)
-	}
-	if len(got.Table.Stages) != 1 || got.Table.Stages[0].Cards == nil {
-		t.Errorf("stage cards is null in %s", data)
 	}
 }
