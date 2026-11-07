@@ -174,12 +174,6 @@ func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 		a.Actions = subs
 		return a, nil
 	}
-	// replayEvent resolves a shuffle again instead, and a group holds none:
-	// this keeps a shuffle's renames, which give its pile a new order, out of
-	// the renaming below should another caller ever pass one.
-	if producesShuffle(a) {
-		return a, nil
-	}
 	covered, hidden, err := t.coveredFor(a, a.Area)
 	if err != nil {
 		return a, err
