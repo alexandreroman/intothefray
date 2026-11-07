@@ -1,12 +1,12 @@
 ---
 name: "Scrolling lists fade at their edges"
-description: "Card box lists and the lobby villain list fade out where more lies beyond an edge (scrollFade)"
+description: "Card box lists, the lobby villain list, the Add a set menu and What's new fade out where more lies beyond an edge (scrollFade)"
 type: project
 ---
 
 # Scrolling lists fade at their edges
 
-- Two scrolling lists fade to transparent over 32px at an edge only while
+- Four scrolling lists fade to transparent over 32px at an edge only while
   more of the list lies beyond it (no fade at the top when scrolled to the
   top, none at the bottom when scrolled to the bottom, none when the list
   fits):
@@ -14,7 +14,10 @@ type: project
     `web/src/table/CardBox.svelte`);
   - the lobby's villain scenario list (`.villains` in
     `web/src/components/lobby/ScenarioPicker.svelte`), whose scenarios sit
-    in pack groups (`.pack > .vgrid > .vil`).
+    in pack groups (`.pack > .vgrid > .vil`);
+  - the Add a set menu's list (`.mlist` in `ScenarioPicker.svelte`);
+  - the What's new dialog's entries (`.entries` in
+    `web/src/components/WhatsNewDialog.svelte`).
 - The `{@attach scrollFade}` attachment (`web/src/lib/scrollFade.ts`) sets
   `data-scroll-fade` to the faded edges ("top", "bottom", both or none) on
   scroll, resize and any DOM insertion or removal inside the list (its
@@ -23,8 +26,9 @@ type: project
   `mask-image` driven by `@property` lengths that transition (none under
   `prefers-reduced-motion`).
 - The mask covers everything inside the list, sticky headers included (the
-  villain list's sticky pack names); the dragged tile and the tile context
-  menu of a card box sit outside the list, out of the mask.
+  sticky pack names of the villain list and of the Add a set menu,
+  `.mpk`); the dragged tile and the tile context menu of a card box sit
+  outside the list, out of the mask.
 
 **Why:** user decision, so items come and go with a fade as a
 list scrolls.
