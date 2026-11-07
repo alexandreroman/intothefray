@@ -1,4 +1,4 @@
-// Seats at the table (spec 5): a seat is one deck, and a player owns one or
+// Seats at the table: a seat is one deck, and a player owns one or
 // more of them. Areas name seats ("p1" is seat 1); card and pile owners are
 // seats. These helpers tell which seats are the viewer's, which seat an
 // action is credited to, and how a seat reads and shows.

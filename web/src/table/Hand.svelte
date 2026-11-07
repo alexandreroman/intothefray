@@ -852,10 +852,7 @@
     align-self: end;
     position: relative;
     z-index: 20;
-    /*
-      Border box: the padding around one card. The prototype's min-heights (218 px, 180 px on a
-      narrow screen) are below this, so its hand grows to the same height around its card row.
-    */
+    /* Border box: the padding around one card, the hand's height around its card row. */
     min-height: calc(var(--pad-top) + var(--card-h) + var(--pad-bottom));
     margin: 0;
     padding: var(--pad-top) var(--pad-side) var(--pad-bottom);

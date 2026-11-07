@@ -195,7 +195,7 @@
   // Card names and images in the language chosen in Options, a separate route: read once.
   const lang = storedLang();
 
-  // P5a-R2: the cards of the game are loaded once, then card sizes are looked up synchronously.
+  // The cards of the game are loaded once, then card sizes are looked up synchronously.
   // The table belongs to one game: its id never changes while it is shown.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
   loadGameCards(untrack(() => view.id)).then(
@@ -295,7 +295,7 @@
 
   // ---- The viewer's decks ----
 
-  // The viewer's own seats, one per deck (spec 5); none for a spectator.
+  // The viewer's own seats, one per deck; none for a spectator.
   const own = $derived(ownSeats(view));
   // The deck picked in the hero selector, with Q or by dragging a card to its hand, kept while it is
   // still one of the viewer's.
@@ -1181,10 +1181,10 @@
   }
 
   /**
-   * Hovers what a new view put under a pointer at rest, whoever acted (spec
-   * 5.8): the card or hand card there, or nothing once the hovered card went
-   * from under it. The ring, the preview and the keys follow. A hovered card
-   * turning over or in stays hovered: the pointer still rests on it, edge-on.
+   * Hovers what a new view put under a pointer at rest, whoever acted: the
+   * card or hand card there, or nothing once the hovered card went from under
+   * it. The ring, the preview and the keys follow. A hovered card turning over
+   * or in stays hovered: the pointer still rests on it, edge-on.
    */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
@@ -1236,7 +1236,7 @@
   }
 
   /**
-   * Sends an action, credited (spec 5) to the deck owning the card or pile it
+   * Sends an action, credited to the deck owning the card or pile it
    * touches when that deck is the viewer's, else to the selected deck.
    */
   function act(action: Action, target: TableElement | null = null): number | null {
@@ -2025,7 +2025,7 @@
   // ---- The card boxes ----
 
   // Browse and the stage choice are the client's own; Look at top and Search
-  // are the server's private view (ruling P5c-R1), closed with closeView.
+  // are the server's private view, closed with closeView.
   let localBox = $state<LocalBox | null>(null);
   // The private view was closed here: its box is gone before the server's answer.
   let closingView = $state(false);
@@ -2191,7 +2191,7 @@
         return;
       }
     }
-    // Alt + click pings the spot (spec 5.8); spectators cannot ping.
+    // Alt + click pings the spot; spectators cannot ping.
     if (event.altKey && event.button === 0 && presenceLayer?.ping(event)) {
       event.preventDefault();
       event.stopPropagation();
@@ -2207,7 +2207,8 @@
     }
     if (isEmptySpot(target)) {
       interaction.release();
-      // Ruling P5c-R7: not with another button, nor while scrolling the table with its scrollbars.
+      // Not with another button, nor while scrolling the table with its scrollbars: the arrows a
+      // click clears cannot be brought back.
       if (event.button === 0 && !onScrollbar(event, target)) {
         emptyPress = {
           pointerId: event.pointerId,
@@ -2301,7 +2302,7 @@
   /**
    * A press on an empty spot let go: a band selects the cards it touches,
    * none when it touches nothing, and one Esc took away selects nothing; a
-   * plain click clears the group and, ruling P5c-R7, the viewer's own arrows.
+   * plain click clears the group and the viewer's own arrows.
    */
   function endEmptyPress(event: PointerEvent): void {
     const press = emptyPress;
@@ -3068,7 +3069,7 @@
     z-index: 1;
   }
 
-  /* The hovered card or pile, or the one whose context menu is open, has the prototype's white ring. */
+  /* The hovered card or pile, or the one whose context menu is open, has a white ring. */
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before {
     box-shadow:
@@ -3093,7 +3094,7 @@
       0 0 0 7px color-mix(in srgb, var(--you) 22%, transparent);
   }
 
-  /* Where a drop would go: under a card (the prototype's threat orange), or onto a pile. */
+  /* Where a drop would go: under a card (the threat orange), or onto a pile. */
   .table :global(.card.drop-target)::before {
     outline: 3px dashed var(--warn);
     outline-offset: 2px;

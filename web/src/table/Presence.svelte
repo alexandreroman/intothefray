@@ -72,13 +72,13 @@
   /** A cursor silent for this long is hidden: its player left their screen. */
   const CURSOR_STALE_MS = 10_000;
   /**
-   * A preview or a drag stays until its player clears it (ruling P5c-R8),
-   * or for this long without a message: their connection is lost.
+   * A preview or a drag stays until its player clears it, or for this long
+   * without a message: their connection is lost.
    */
   const LOST_MS = 60_000;
   /** How long a ping's rings expand. */
   const PING_MS = 1200;
-  // The prototype's room at the table's edges for a cursor scrolled out of view. At the right and
+  // The room at the table's edges for a cursor scrolled out of view. At the right and
   // bottom edges, the room keeps the pointer and its name label in view.
   const EDGE_IN = 8;
   const RIGHT_EDGE_ROOM = 70;
@@ -379,7 +379,7 @@
     return Number.isFinite(spot.x) && Number.isFinite(spot.y);
   }
 
-  /** Where a spot of the table shows, held within the visible table as in the prototype. */
+  /** Where a spot of the table shows, held within the visible table. */
   function place(spot: PresencePoint, origin: DOMRect): Placed | null {
     const surface = surfaceRect(root);
     const scroller = scrollerRect(root);
@@ -550,7 +550,7 @@
     for (const { key, color, spot, until } of pings) {
       nextChange = Math.min(nextChange, until);
       const at = place(spot, origin);
-      // A ping scrolled out of view is not drawn, as in the prototype.
+      // A ping scrolled out of view is not drawn.
       if (at && at.side === '') {
         next.pings.push({ ...at, key, color });
       }
@@ -702,7 +702,7 @@
 </div>
 
 <style>
-  /* Over the table, the arrows and the resting hand; under the veil and the open hand, as in the prototype. */
+  /* Over the table, the arrows and the resting hand; under the veil and the open hand. */
   .presence {
     grid-area: table;
     position: relative;

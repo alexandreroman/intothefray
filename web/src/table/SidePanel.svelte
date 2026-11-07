@@ -76,7 +76,7 @@
     seen = log.length;
   });
 
-  // A line that a later change merged into (counters, flips) bumps, as in the prototype.
+  // A line that a later change merged into (counters, flips) bumps.
   // From the empty end keyframe, the line goes back to its own background.
   const BUMP = [{ backgroundColor: '#2a3a66' }, {}];
   const BUMP_MS = 500;

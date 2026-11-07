@@ -1,5 +1,5 @@
 <!--
-  A marker of the table (spec 5.8): the first player token (FirstPlayerArt.svelte)
+  A marker of the table: the first player token (FirstPlayerArt.svelte)
   or the active counter (ActiveCounterArt.svelte), placed in table units. It lies
   on the table, or in the drag layer while it is dragged or waits for the server
   after a drop, or in the presence layer while another player drags it. In dock

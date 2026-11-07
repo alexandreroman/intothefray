@@ -283,7 +283,7 @@ interface Context {
  * actions are handActions'), empty piles and elements no longer on the
  * table get nothing, nor does a viewer of an unknown token. Spectators only
  * look: see spectatorActions. On a card of the selected group, Discard and
- * Move to take the whole group (spec 2). With `touch`, for a touch screen's
+ * Move to take the whole group. With `touch`, for a touch screen's
  * inspector, a tucked card offers Detach too.
  */
 export function actionsFor(

@@ -1054,7 +1054,7 @@ describe('actionsFor', () => {
     for (const id of ['disc:p0', 'encd']) {
       const items = itemsFor({ kind: 'pile', id }, view);
       expect(items[0]?.run?.()).toEqual({ local: 'browseBox', pile: id });
-      // Spectators have no game keys (P5b-R6): the menu shows none.
+      // Spectators have no game keys: the menu shows none.
       expect(items[0]?.key).toBeUndefined();
     }
   });

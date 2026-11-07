@@ -1,5 +1,5 @@
 <!--
-  Drag and drop (spec 5.4). A press on a table card, a pile, a hand card or
+  Drag and drop. A press on a table card, a pile, a hand card or
   a marker (first player token, active counter) becomes a drag after 4 px (a
   finger pushing a hand card down swipes the hand away instead): what is dragged is drawn here,
   over the whole page at the table's zoom, outside the table's surface, so
@@ -106,13 +106,13 @@
     tableMap?: TableMap;
     /** The grid a drop on the table snaps to (grid.ts): the fine one unless given. */
     grid?: SnapGrid;
-    /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
+    /** The viewer's selected deck: an encounter card dealt above every row goes to it. */
     selected: number | null;
     /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
     act: (action: Action, element: Pressable) => number | null;
     /** A card went to the hand of one of the viewer's decks: that seat's hand is the one to show. */
     onhand: (seat: number) => void;
-    /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
+    /** Tells the other players where the drag is, and null once it is over. */
     ondrag: (drag: PresenceDrag | null) => void;
     /**
      * Dock mode only: the drop on the table the rows show before it is let go, null once
@@ -196,11 +196,11 @@
 
   // The server relays no more cards in one drag: it mirrors maxDragCards in internal/server/presence.go.
   const MAX_DRAG_CARDS = 50;
-  // What the other players are told of a card hidden from them (ruling P5c-R9): its real id
-  // would let them follow it once it is played.
+  // What the other players are told of a card hidden from them: its real id would let them follow
+  // it once it is played.
   const HIDDEN_CARD = 'hidden-0';
 
-  // The prototype's arrows in front of the labels.
+  // The arrows in front of the labels.
   const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→', return: '↑' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
@@ -573,7 +573,7 @@
       }
       handSize = { w: HAND_CARD.w, h: HAND_CARD.h };
     }
-    // A pile's card is held by its middle, as in the prototype.
+    // A pile's card is held by its middle.
     return { x: 0.5, y: 0.5 };
   }
 
@@ -1051,7 +1051,7 @@
       return;
     }
     land(sent, pressed, from, action, at);
-    // The card went to the hand of one of the viewer's decks: that hand shows (spec 5).
+    // The card went to the hand of one of the viewer's decks: that hand shows.
     const handArea = found.target.kind === 'toHand' ? handAreaOf(from, view) : null;
     if (handArea) {
       onhand(seatOf(handArea));
@@ -1380,7 +1380,7 @@
     white-space: nowrap;
   }
 
-  /* Tucking under a card: the prototype's threat orange. */
+  /* Tucking under a card: the threat orange. */
   .drop-hint.tuck {
     background: var(--warn);
     color: #2b1700;

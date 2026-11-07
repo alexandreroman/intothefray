@@ -1,5 +1,5 @@
-// Several table cards selected with a rubber band and moved as a group (spec
-// 5.2): what the band selects, which cards a drag lifts, and the action a drop
+// Several table cards selected with a rubber band and moved as a group: what
+// the band selects, which cards a drag lifts, and the action a drop
 // sends. Pure helpers; Table.svelte draws the band and DragLayer.svelte drags
 // the group.
 

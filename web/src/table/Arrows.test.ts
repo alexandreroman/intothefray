@@ -417,7 +417,7 @@ describe('a click on an empty spot', () => {
 
     await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
     expect(interaction.contextMenu).toBeNull();
-    // Ruling P5c-R7: once let go, as the press did not become a rubber band.
+    // Once let go, as the press did not become a rubber band.
     expect(session.act).not.toHaveBeenCalled();
     await fireEvent.pointerUp(window, { pointerType: 'touch' });
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);

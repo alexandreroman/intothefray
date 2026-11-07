@@ -1,8 +1,7 @@
 <!--
-  The card box (spec 5.7): Search, Look at top, Browse and the stage choice
-  share one fixed-size box, two rows of 5:7 tiles with the rest scrolling, a
-  name filter and a footer (the prototype's renderDeckView and
-  renderStageView). Its tiles are as wide as the raised hand's cards, at most
+  The card box: Search, Look at top, Browse and the stage choice share one
+  fixed-size box, two rows of 5:7 tiles with the rest scrolling, a name filter
+  and a footer. Its tiles are as wide as the raised hand's cards, at most
   220 px (`tileWidth`, boxGrid), in as many columns as the window holds, and
   the box is as wide as those columns. A click, a tap or a right click on a pile tile opens
   its context menu at the pointer, over the box; in Look at top, tiles are
@@ -86,7 +85,7 @@
     tileWidth: number;
   } = $props();
 
-  // The prototype's values: the grid scrolls by this step when a dragged tile nears its edge.
+  // A dragged tile within EDGE_SCROLL px of the grid's top or bottom scrolls it by SCROLL_STEP px a move.
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
   // A card is 1.4 times as high as wide.
@@ -446,7 +445,7 @@
 
   // When other players' actions move the tiles, the browser reports the tile
   // that lands under a pointer at rest as entered, at the very spot the
-  // pointer rests: that is not the viewer hovering it (spec 5.8), and its ring
+  // pointer rests: that is not the viewer hovering it, and its ring
   // would mark a card they did not point at.
   let pointer = { x: NaN, y: NaN };
   let drawnAt = { x: NaN, y: NaN };

@@ -1,8 +1,8 @@
 <!--
   The copies of cards flying to and out of piles, above everything, the
   pointer passing through them: a card flying from where it was, from where
-  the viewer let it go, or from the pile it left, to the pile it went to
-  (spec 5.5: discards animate to the owner's pile), turning over on the way
+  the viewer let it go, or from the pile it left, to the pile it went to,
+  turning over on the way
   when it lands on another side: face up out of a face-down pile, face down
   into a deck. A landscape card going to a portrait pile turns a quarter on
   its way, as the pile draws it, and turns over once there. Then a card

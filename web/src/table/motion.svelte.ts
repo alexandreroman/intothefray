@@ -1,8 +1,7 @@
 // Plays the animations of animate.ts on the table, with the Web Animations
-// API, as the prototype's animateFrom and playShuffles do: cards sliding to
-// their new place or out of a pile onto the table, copies of cards flying to
-// a pile, out of one into the hand, or between two piles, and copies going
-// into or out of a hand the viewer does not see. An out-of-play pile is not
+// API: cards sliding to their new place or out of a pile onto the table,
+// copies of cards flying to a pile, out of one into the hand, or between two
+// piles, and copies going into or out of a hand the viewer does not see. An out-of-play pile is not
 // drawn: the chip on its owner's frame stands for it, a card flying to it
 // fades out into it (CHIP_FADE_FROM), turning over first where it starts when
 // it turns (flipsFirst), and a card leaves it at a card's size
@@ -2273,7 +2272,7 @@ class TableMotion {
   }
 
   /**
-   * The prototype's riffle: copies of the pile split left and right, then
+   * A riffle: copies of the pile split left and right, then
    * riffle back into it, after delay (ms): once the cards flying into it land.
    * Returns the animations it plays.
    */
