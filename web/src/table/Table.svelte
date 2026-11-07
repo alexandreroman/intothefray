@@ -3061,13 +3061,21 @@
   /*
     Rings drawn around the rounded card, for cards and piles alike, on the card's box rather than on its
     image: the white ring of the hovered element and of the cards of the hovered history line,
-    and the drop outlines.
+    and the drop outlines, then the rings the card draws itself. All lie on one box.
   */
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
   .table :global(.card.drop-pile)::before {
     content: '';
+  }
+
+  .table :global(.card.hovered)::before,
+  .table :global(.card.highlighted)::before,
+  .table :global(.card.drop-target)::before,
+  .table :global(.card.drop-pile)::before,
+  .table :global(.card > .rring),
+  .table :global(.card > .sring) {
     position: absolute;
     inset: 1%;
     border-radius: 6px;
@@ -3088,11 +3096,6 @@
     itself (CardView, PileView), it moves, turns and tilts with it.
   */
   .table :global(.card > .rring) {
-    position: absolute;
-    inset: 1%;
-    border-radius: 6px;
-    pointer-events: none;
-    z-index: 1;
     box-shadow:
       0 0 0 2px var(--c),
       0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
@@ -3100,11 +3103,6 @@
 
   /* A card the rubber band selected: a ring and a halo, in the viewer's colour. */
   .table :global(.card > .sring) {
-    position: absolute;
-    inset: 1%;
-    border-radius: 6px;
-    pointer-events: none;
-    z-index: 1;
     box-shadow:
       0 0 0 2px var(--you),
       0 0 0 7px color-mix(in srgb, var(--you) 22%, transparent);

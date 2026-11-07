@@ -57,7 +57,7 @@ describe('PileView', () => {
   it('draws its count over its card and every ring the table draws on it', () => {
     const zOf = (rule: string | undefined) => Number(/z-index: (\d+);/.exec(rule ?? '')?.[1]);
     const count = zOf(/\n {2}\.count \{([^}]*)\}/.exec(pileSource)?.[1]);
-    const rings = zOf(/drop-pile\)::before \{([^}]*)\}/.exec(tableSource)?.[1]);
+    const rings = zOf(/drop-pile\)::before,[^{]*\{([^}]*)\}/.exec(tableSource)?.[1]);
     expect(rings).toBeGreaterThan(0);
     expect(count).toBeGreaterThan(rings);
   });
