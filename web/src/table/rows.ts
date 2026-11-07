@@ -233,7 +233,7 @@ export function spreadRows(
   const bands: Band[] = rows.map((row, i) => ({
     row,
     tableTop: rowTop(row),
-    tableHeight: row === 0 ? VILLAIN_ROW_HEIGHT : ROW_HEIGHT,
+    tableHeight: rowHeight(row),
     top: i === 0 ? 0 : villain + pitch * (i - 1),
     height: i === 0 ? villain : pitch,
     content: row === 0 ? VILLAIN_CONTENT : ROW_CONTENT,
