@@ -83,7 +83,7 @@
 - [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
-- [Revealed card is its deck's top card](references/project_deck_reveal.md) — encounter, scenario, own hidden decks reveal; top card; lies landscape
+- [Revealed card is its deck's top card](references/project_deck_reveal.md) — encounter, scenario, own hidden decks reveal; top card; drags landscape
 - [No compatibility for games in progress](references/feedback_no_live_game_compat.md) — action changes ignore stored histories; simplest design
 - [Memory notes carry no dates](references/feedback_timeless_memory.md) — timeless notes: decisions and reasons, no dates
 - [Immutable views](references/project_view_immutable.md) — raw view, reused card objects, byId; one CardView redraw per moved card
