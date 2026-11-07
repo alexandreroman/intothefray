@@ -240,8 +240,8 @@ function playAction(
 
 // ---- The box's size outside dock mode ----
 
-/** The box's widest, in px: BOX_WIDTH in CardBox.svelte. */
-export const BOX_MAX_WIDTH = 1200;
+/** The box's widest, in px. */
+const BOX_MAX_WIDTH = 1200;
 
 // The room around the box and inside it, in px. Keep in step with .backdrop's padding and .box's
 // border (Dialog.svelte), and with .mgrid's padding and gap (CardBox.svelte).

@@ -1,6 +1,8 @@
 import { boxGrid, canShuffleIn, pileLabel, tileActions, type TileContext } from './boxes';
 import type { CardView, PileView, View } from '../lib/types';
 import { card, pile, playingView, seated } from './fixtures.testing';
+import boxSource from './CardBox.svelte?raw';
+import dialogSource from '../components/Dialog.svelte?raw';
 
 /** A card of that seat's, in one of the piles. */
 function pileCard(id: string, owner: number): CardView {
@@ -299,7 +301,23 @@ describe('boxGrid', () => {
     expect(boxGrid(500, 400, 10)).toEqual({ columns: 1, tile: 324, width: 368 });
   });
 
+  it('mirrors the sizes of the stylesheets it computes with', () => {
+    // BACKDROP_PADDING and BOX_BORDER (Dialog.svelte), GRID_PADDING_X and GRID_GAP (CardBox.svelte).
+    expect(ruleOf(dialogSource, '.backdrop')).toContain('padding: 16px;');
+    expect(ruleOf(dialogSource, '.box')).toContain('border: 1px solid');
+    const grid = ruleOf(boxSource, '.mgrid');
+    expect(grid).toContain('gap: 14px;');
+    expect(grid).toContain('padding: 14px 16px;');
+  });
+
   it('never gives a tile a negative width', () => {
     expect(boxGrid(185, 20, 0)).toEqual({ columns: 1, tile: 0, width: FRAME });
   });
 });
+
+/** The declarations of a top-level rule of a component's stylesheet. */
+function ruleOf(source: string, selector: string): string {
+  const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
+  const pattern = new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`);
+  return pattern.exec(source)?.[1] ?? '';
+}

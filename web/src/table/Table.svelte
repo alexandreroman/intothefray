@@ -2919,7 +2919,7 @@
         act={actInBox}
         lastError={session.lastError}
         onclose={closeBox}
-        tileWidth={dockMode ? undefined : raisedCard.w}
+        tileWidth={raisedCard.w}
       />
     {/key}
   {/if}

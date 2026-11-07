@@ -31,7 +31,6 @@
     View,
   } from '../lib/types';
   import {
-    BOX_MAX_WIDTH,
     boxGrid,
     canShuffleIn,
     compareCardNumbers,
@@ -80,10 +79,10 @@
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
     /**
-     * The tiles' width, in px: the raised hand fan's card. None in dock mode, where the hand is
+     * The tiles' width, in px: the raised hand fan's card. Unused in dock mode, where the hand is
      * no fan: the tiles then fill the screen's width.
      */
-    tileWidth?: number;
+    tileWidth: number;
   } = $props();
 
   // The prototype's values: the grid scrolls by this step when a dragged tile nears its edge.
@@ -91,8 +90,6 @@
   const SCROLL_STEP = 12;
   // A card is 1.4 times as high as wide.
   const CARD_RATIO = 1.4;
-  // Never wider than the window: the box keeps inside it, its grid scrolls.
-  const BOX_WIDTH = `min(${BOX_MAX_WIDTH}px, 100%)`;
   const SLIDE_MS = 180;
 
   const dock = dockMode();
@@ -360,26 +357,28 @@
   let gutter = $state(0);
 
   /** The grid's tiles at the raised hand fan's width, in as many columns as fit; none in dock mode. */
-  const fitted = $derived(tileWidth === undefined ? null : boxGrid(tileWidth, windowWidth, gutter));
+  const fitted = $derived(dock.current ? null : boxGrid(tileWidth, windowWidth, gutter));
 
-  // The gutter is reserved whether the grid scrolls or not: measured once, it holds.
+  /**
+   * The gutter is kept whether the grid scrolls or not; measured again as the window resizes: a
+   * page zoom changes a classic scrollbar's width.
+   */
   function measureGutter(element: HTMLElement): void {
+    void windowWidth;
     gutter = element.offsetWidth - element.clientWidth;
   }
 
   /**
-   * Two rows of 5:7 tiles, from their width only (never from what the grid
-   * shows), so that every box opens at the same size; the rest scrolls. The
-   * tiles are the fitted ones, or without them the columns of --min-tile
-   * that fill the grid's width. In dock mode the box fills the screen, and the
-   * grid all the room left in it.
+   * Two rows of 5:7 tiles, from the fitted tiles' width only (never from what
+   * the grid shows), so that every box opens at the same size; the rest
+   * scrolls. In dock mode the box fills the screen, and the grid all the room
+   * left in it.
    */
   let gridHeight = $state<number | null>(null);
 
+  // Reruns as `fitted` changes, on every change of the window's width or of dock mode.
   function sizeGrid(element: HTMLElement): void {
-    // Read first: the grid is sized again as the fitted tiles change.
-    const fittedTile = fitted?.tile;
-    if (dock.current) {
+    if (fitted === null) {
       gridHeight = null;
       return;
     }
@@ -387,23 +386,14 @@
     const gap = parseFloat(style.columnGap);
     const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
     const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-    const inner = element.clientWidth - padX;
     // Not laid out (tests): the stylesheet's height stays.
-    if (inner <= 0) {
+    if (element.clientWidth - padX <= 0) {
       return;
     }
-    const columnWidth = fittedTile ?? fillingColumnWidth(inner, gap, style);
     gridHeight = Math.min(
-      2 * columnWidth * CARD_RATIO + gap + padY,
+      2 * fitted.tile * CARD_RATIO + gap + padY,
       window.innerHeight * 0.88 - 160,
     );
-  }
-
-  /** The width of the columns of --min-tile at least that fill the grid's `inner` width. */
-  function fillingColumnWidth(inner: number, gap: number, style: CSSStyleDeclaration): number {
-    const minTile = parseFloat(style.getPropertyValue('--min-tile'));
-    const columns = Math.max(1, Math.floor((inner + gap) / (minTile + gap)));
-    return (inner - gap * (columns - 1)) / columns;
   }
 
   // ---- Reordering the top cards ----
@@ -666,7 +656,7 @@
   title={fullTitle}
   wide
   fill={dock.current}
-  width={dock.current ? undefined : fitted ? `${fitted.width}px` : BOX_WIDTH}
+  width={fitted ? `min(${fitted.width}px, 100%)` : undefined}
   oncancel={() => onclose(false)}
 >
   {#snippet heading(id: string)}
@@ -880,11 +870,8 @@
   }
 
   .mgrid {
-    /* Without fitted tiles, a tile's least width: the columns fill the row. */
-    --min-tile: 220px;
     position: relative;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--min-tile), 1fr));
     align-content: start;
     gap: 14px;
     margin: 0;
@@ -896,11 +883,13 @@
   /*
     Outside dock mode, the tiles are the raised hand fan's cards (--tile), in the columns that fit
     (--columns, boxGrid): the box is as wide as they are. The scrollbar's room is kept, so that a
-    classic one showing never drops a column.
+    classic one showing never drops a column; a gutter of a fraction of a px (a page zoom), which
+    its measure rounds, never scrolls the grid across.
   */
   .mgrid.fixed {
     grid-template-columns: repeat(var(--columns), var(--tile));
     scrollbar-gutter: stable;
+    overflow-x: hidden;
   }
 
   /* An empty box shows its message in the middle. */
@@ -1096,6 +1085,7 @@
 
   .mgrid.dock {
     --min-tile: 104px;
+    grid-template-columns: repeat(auto-fill, minmax(var(--min-tile), 1fr));
     flex: 1;
     min-height: 0;
     gap: 8px;
