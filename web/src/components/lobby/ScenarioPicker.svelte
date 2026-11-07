@@ -36,7 +36,7 @@
     room: () => Box;
   } = $props();
 
-  // Version I of each set, the default (spec 4.3).
+  // Version I of the Standard and Expert sets is the default.
   const DEFAULT_STANDARD = 'standard';
   const DEFAULT_EXPERT = 'expert';
   const LEVELS: { value: Difficulty; label: string }[] = [
