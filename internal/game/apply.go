@@ -459,12 +459,7 @@ func (t *Table) checkStaysOnTable(c *Card) error {
 	if c.Identity {
 		return invalid("the identity card stays on the table")
 	}
-	return t.checkNotStageCurrent(c)
-}
-
-// checkNotStageCurrent refuses to take away the card a stage shows: the stage
-// would be left with nothing on the table.
-func (t *Table) checkNotStageCurrent(c *Card) error {
+	// The stage would be left with nothing on the table.
 	if stage := t.stageShowing(c.ID); stage != nil {
 		return invalid("the %s card stays on the table; choose another card to show", strings.ToLower(stage.Label))
 	}
@@ -1070,17 +1065,13 @@ func applyChooseStage(t *Table, a Action) error {
 	chosen.Zone = ZoneTable
 	chosen.X, chosen.Y, chosen.Z = previous.X, previous.Y, previous.Z
 	chosen.Parent = previous.Parent
-	chosen.OnPile = previous.OnPile
 	chosen.Face = a.Face
-	chosen.FaceDown = false
-	chosen.Exhausted = false
 	carryStageCounters(stage, previous, chosen)
 
 	t.removeArrows(previous.ID)
 	previous.Zone = ZoneStage
 	previous.X, previous.Y, previous.Z = 0, 0, 0
 	previous.Parent = ""
-	previous.OnPile = ""
 	previous.Exhausted = false
 	stage.Current = chosen.ID
 	// The chosen card may not have the box of the previous one, or not be a
