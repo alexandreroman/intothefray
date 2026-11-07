@@ -20,7 +20,7 @@ Recipe:
    a blank page):
 
    ```bash
-   chrome --headless=new --disable-gpu --hide-scrollbars \
+   chrome --headless --disable-gpu --hide-scrollbars \
      --window-size=1440,900 --force-device-scale-factor=2 \
      --virtual-time-budget=5000 --screenshot=home.png http://127.0.0.1:8765/
    ```
