@@ -372,8 +372,9 @@
   /**
    * Two rows of 5:7 tiles, from the fitted tiles' width only (never from what
    * the grid shows), so that every box opens at the same size; the rest
-   * scrolls. In dock mode the box fills the screen, and the grid all the room
-   * left in it.
+   * scrolls. On a short window the dialog's column, 88vh at most, shrinks the
+   * scrolling grid to the room its header and footer leave. In dock mode the
+   * box fills the screen, and the grid all the room left in it.
    */
   let gridHeight = $state<number | null>(null);
 
@@ -391,10 +392,7 @@
     if (element.clientWidth - padX <= 0) {
       return;
     }
-    gridHeight = Math.min(
-      2 * fitted.tile * CARD_RATIO + gap + padY,
-      window.innerHeight * 0.88 - 160,
-    );
+    gridHeight = 2 * fitted.tile * CARD_RATIO + gap + padY;
   }
 
   // ---- Reordering the top cards ----

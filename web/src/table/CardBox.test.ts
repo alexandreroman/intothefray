@@ -1117,6 +1117,45 @@ describe('CardBox in dock mode', () => {
     expect(dialog.style.width).toBe(`min(${816 + 16}px, 100%)`);
   });
 
+  it('opens its grid two rows high on a short window, which the box shrinks to the room left', async () => {
+    vi.stubGlobal('innerHeight', 300);
+    // Laid out as the stylesheet says: the grid has room for its tiles inside its padding.
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('mgrid') ? 800 : 0;
+    });
+    const laidOut: Record<string | symbol, string> = {
+      columnGap: '14px',
+      paddingTop: '14px',
+      paddingBottom: '14px',
+      paddingLeft: '16px',
+      paddingRight: '16px',
+    };
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+      const style = getComputedStyle(element, pseudo);
+      if (!element.classList.contains('mgrid')) {
+        return style;
+      }
+      return new Proxy(style, {
+        get(target, name) {
+          const value: unknown = laidOut[name] ?? Reflect.get(target, name, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      });
+    });
+    const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
+    await tick();
+
+    // Four 185 px columns in jsdom's 1024 px window: two rows of 5:7 tiles, their gap and padding,
+    // whatever the window's height.
+    const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
+    expect(grid.style.height).toBe(`${2 * 185 * 1.4 + 14 + 2 * 14}px`);
+    // The box's column, 88vh at most, shrinks the scrolling grid to the room its header and footer leave.
+    expect(boxRule('.mgrid')).toMatch(/overflow-y: auto;/);
+  });
+
   it('heads the box with one line: the title cut short, then the filter', () => {
     const dialog = renderBox('deck:p0', 'search', true, makeView({ private: SEARCH }));
 
