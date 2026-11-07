@@ -265,8 +265,8 @@ interface BoxGrid {
 }
 
 /**
- * The grid of a box whose tiles are `tile` px wide (the raised hand's card), at most 220 px, in a
- * window `windowWidth` px wide: as many columns as fit in the widest box the window allows, and
+ * The grid of a box whose tiles are as wide as `raisedCard` (the raised hand's card, px), at most
+ * BOX_TILE_MAX, in a window `windowWidth` px wide: as many columns as fit in the widest box the window allows, and
  * the box's width that holds just them, so that the grid's edges line up with its header.
  * `gutter` is the room the grid keeps for its scrollbar, 0 with overlay scrollbars. A window too
  * narrow for one tile shrinks it to fit.
