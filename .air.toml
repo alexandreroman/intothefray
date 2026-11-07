@@ -1,6 +1,6 @@
 [build]
   cmd = "go build -o ./tmp/intothefray ./cmd/intothefray"
-  bin = "./tmp/intothefray"
+  entrypoint = ["./tmp/intothefray"]
   # The binary embeds packs/dist, so regenerated packs (make packs) rebuild it too. The other JSON
   # files are packgen inputs (packs/curated, packs/images) and test data, kept out of the watch.
   include_ext = ["go", "json"]
