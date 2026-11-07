@@ -114,8 +114,8 @@ dev() {
 }
 
 # Remove this workspace's Redis and Caddy containers, which make dev starts
-# detached (infra-up) and leaves up when it stops. Failure is ignored: the
-# container engine may not be running, and teardown must not block deletion.
+# detached (infra-up) and leaves up when it stops. A failure (container
+# engine not running) is ignored: Casper prunes the workspace anyway.
 teardown() {
 	# The environment carries COMPOSE_PROJECT_NAME and the ports to compose.
 	load_env
