@@ -25,7 +25,12 @@ function faceOf(card: TableCard): PackFace | null {
 const CARDS = [handCard('h1', '01003'), handCard('h2', '01005'), handCard('h3', '01088')];
 
 function renderSheet(
-  props: { cards?: TableCard[]; withPicker?: boolean; landscape?: boolean } = {},
+  props: {
+    cards?: TableCard[];
+    withPicker?: boolean;
+    landscape?: boolean;
+    discardRefusal?: (id: string) => string | undefined;
+  } = {},
 ) {
   const handlers = {
     onplay: vi.fn(),
@@ -41,6 +46,7 @@ function renderSheet(
       faceOf,
       seat: 1,
       landscape: props.landscape ?? false,
+      discardRefusal: props.discardRefusal ?? (() => undefined),
       picker: props.withPicker ? picker : undefined,
       ...handlers,
     },
@@ -164,6 +170,24 @@ describe('HandSheet', () => {
 
     expect(onplay).toHaveBeenCalledWith('h2');
     expect(ondiscard).toHaveBeenCalledWith('h2');
+  });
+
+  it('shows Discard refused, with its reason, for a centred card that has no discard pile', async () => {
+    const reason = 'This card has no discard pile';
+    const { ondiscard } = renderSheet({
+      discardRefusal: (id) => (id === 'h2' ? reason : undefined),
+    });
+
+    const discard = screen.getByRole('button', { name: 'Discard' });
+    expect(discard.getAttribute('aria-disabled')).toBe('false');
+    expect(discard.dataset.tip).toBeUndefined();
+
+    layOut(212);
+    await fireEvent.scroll(carousel());
+    expect(discard.getAttribute('aria-disabled')).toBe('true');
+    expect(discard.dataset.tip).toBe(reason);
+    await fireEvent.click(discard);
+    expect(ondiscard).not.toHaveBeenCalled();
   });
 
   it('marks the centred card and its dot', async () => {

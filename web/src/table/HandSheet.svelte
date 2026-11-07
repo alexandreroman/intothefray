@@ -39,6 +39,7 @@
     seat,
     landscape,
     picker,
+    discardRefusal,
     onplay,
     ondiscard,
     onclose,
@@ -53,6 +54,8 @@
     landscape: boolean;
     /** The hero selector, shown in the header with 2+ own decks. */
     picker?: Snippet;
+    /** Why a card may not be discarded (a side deck's card without a discard pile); undefined when it may. */
+    discardRefusal: (id: string) => string | undefined;
     onplay: (id: string) => void;
     ondiscard: (id: string) => void;
     onclose: () => void;
@@ -64,6 +67,7 @@
   // after a Play, the next card slides into the middle, and that index names it.
   let centred = $state(0);
   const current = $derived(cards[Math.min(centred, cards.length - 1)]);
+  const discardRefused = $derived(current ? discardRefusal(current.id) : undefined);
   // The cards landed: one still flying in is counted once its copy lands.
   const landed = $derived(cards.filter((card) => !motion.drawing.has(card.id)).length);
 
@@ -98,6 +102,12 @@
   function act(action: (id: string) => void): void {
     if (current) {
       action(current.id);
+    }
+  }
+
+  function discard(): void {
+    if (discardRefused === undefined) {
+      act(ondiscard);
     }
   }
 </script>
@@ -154,7 +164,13 @@
 
       <div class="actions">
         <button type="button" class="play" onclick={() => act(onplay)}>Play</button>
-        <button type="button" onclick={() => act(ondiscard)}>Discard</button>
+        <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
+        <button
+          type="button"
+          aria-disabled={discardRefused !== undefined}
+          data-tip={discardRefused}
+          onclick={discard}>Discard</button
+        >
       </div>
       <p class="hint">or drag a card up onto the table · swipe down to close</p>
     {/if}
