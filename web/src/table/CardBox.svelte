@@ -2,11 +2,13 @@
   The card box (spec 5.7): Search, Look at top, Browse and the stage choice
   share one fixed-size box, two rows of 5:7 tiles with the rest scrolling, a
   name filter and a footer (the prototype's renderDeckView and
-  renderStageView). A click, a tap or a right click on a pile tile opens its
-  context menu at the pointer, over the box; in Look at top, tiles are
-  reordered by dragging, with a live preview. The stage choice
-  and the out-of-play piles list their cards by card number, the other piles
-  top first. The box follows the view: cards that leave the pile leave the box.
+  renderStageView). Its tiles are as wide as the raised hand fan's cards
+  (`tileWidth`), in as many columns as the window holds, and the box is as
+  wide as those columns. A click, a tap or a right click on a pile tile opens
+  its context menu at the pointer, over the box; in Look at top, tiles are
+  reordered by dragging, with a live preview. The stage choice and the
+  out-of-play piles list their cards by card number, the other piles top
+  first. The box follows the view: cards that leave the pile leave the box.
   In dock mode (a phone) the box fills the screen: a one-line header, as many
   columns of tiles as fit, and the footer buttons side by side.
 -->
@@ -29,6 +31,8 @@
     View,
   } from '../lib/types';
   import {
+    BOX_MAX_WIDTH,
+    boxGrid,
     canShuffleIn,
     compareCardNumbers,
     isDeck,
@@ -59,6 +63,7 @@
     act,
     lastError,
     onclose,
+    tileWidth,
   }: {
     box: ShownBox;
     view: View;
@@ -74,6 +79,11 @@
     lastError: SessionError | null;
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
+    /**
+     * The tiles' width, in px: the raised hand fan's card. None in dock mode, where the hand is
+     * no fan: the tiles then fill the screen's width.
+     */
+    tileWidth?: number;
   } = $props();
 
   // The prototype's values: the grid scrolls by this step when a dragged tile nears its edge.
@@ -82,7 +92,7 @@
   // A card is 1.4 times as high as wide.
   const CARD_RATIO = 1.4;
   // Never wider than the window: the box keeps inside it, its grid scrolls.
-  const BOX_WIDTH = 'min(1200px, 100%)';
+  const BOX_WIDTH = `min(${BOX_MAX_WIDTH}px, 100%)`;
   const SLIDE_MS = 180;
 
   const dock = dockMode();
@@ -343,14 +353,32 @@
 
   // ---- The fixed size ----
 
+  let windowWidth = $state(window.innerWidth);
+
+  // The room the grid keeps for a classic scrollbar (scrollbar-gutter), in px; 0 with overlay
+  // scrollbars, and in jsdom.
+  let gutter = $state(0);
+
+  /** The grid's tiles at the raised hand fan's width, in as many columns as fit; none in dock mode. */
+  const fitted = $derived(tileWidth === undefined ? null : boxGrid(tileWidth, windowWidth, gutter));
+
+  // The gutter is reserved whether the grid scrolls or not: measured once, it holds.
+  function measureGutter(element: HTMLElement): void {
+    gutter = element.offsetWidth - element.clientWidth;
+  }
+
   /**
-   * Two rows of 5:7 tiles, from the grid's width only (never from what it
-   * shows), so that every box opens at the same size; the rest scrolls. In
-   * dock mode the box fills the screen, and the grid all the room left in it.
+   * Two rows of 5:7 tiles, from their width only (never from what the grid
+   * shows), so that every box opens at the same size; the rest scrolls. The
+   * tiles are the fitted ones, or without them the columns of --min-tile
+   * that fill the grid's width. In dock mode the box fills the screen, and the
+   * grid all the room left in it.
    */
   let gridHeight = $state<number | null>(null);
 
   function sizeGrid(element: HTMLElement): void {
+    // Read first: the grid is sized again as the fitted tiles change.
+    const fittedTile = fitted?.tile;
     if (dock.current) {
       gridHeight = null;
       return;
@@ -364,13 +392,18 @@
     if (inner <= 0) {
       return;
     }
-    const minTile = parseFloat(style.getPropertyValue('--min-tile'));
-    const columns = Math.max(1, Math.floor((inner + gap) / (minTile + gap)));
-    const columnWidth = (inner - gap * (columns - 1)) / columns;
+    const columnWidth = fittedTile ?? fillingColumnWidth(inner, gap, style);
     gridHeight = Math.min(
       2 * columnWidth * CARD_RATIO + gap + padY,
       window.innerHeight * 0.88 - 160,
     );
+  }
+
+  /** The width of the columns of --min-tile at least that fill the grid's `inner` width. */
+  function fillingColumnWidth(inner: number, gap: number, style: CSSStyleDeclaration): number {
+    const minTile = parseFloat(style.getPropertyValue('--min-tile'));
+    const columns = Math.max(1, Math.floor((inner + gap) / (minTile + gap)));
+    return (inner - gap * (columns - 1)) / columns;
   }
 
   // ---- Reordering the top cards ----
@@ -621,18 +654,19 @@
 </script>
 
 <svelte:window
+  bind:innerWidth={windowWidth}
   onpointerdowncapture={onWindowPointerDown}
   onpointermove={onPointerMove}
   onpointerup={onPointerUp}
   onpointercancel={() => (drag = null)}
 />
 
-<!-- Five columns of tiles about 220 px wide on a large screen, fewer on a smaller one. -->
+<!-- As wide as its columns of tiles, which the window and 1200 px at most hold; the screen in dock mode. -->
 <Dialog
   title={fullTitle}
   wide
   fill={dock.current}
-  width={dock.current ? undefined : BOX_WIDTH}
+  width={dock.current ? undefined : fitted ? `${fitted.width}px` : BOX_WIDTH}
   oncancel={() => onclose(false)}
 >
   {#snippet heading(id: string)}
@@ -663,10 +697,14 @@
   <ul
     class="mgrid"
     class:dock={dock.current}
+    class:fixed={fitted !== null}
     aria-label="Cards"
     bind:this={grid}
     class:dragging={drag?.lifted}
     style:height={gridHeight === null ? undefined : `${gridHeight}px`}
+    style:--tile={fitted ? `${fitted.tile}px` : undefined}
+    style:--columns={fitted?.columns}
+    {@attach measureGutter}
     {@attach sizeGrid}
     {@attach scrollFade}
     onscroll={() => (hovered = null)}
@@ -842,12 +880,10 @@
   }
 
   .mgrid {
-    /* A tile's least width, about the preview's card, which does not show while a box is open:
-       the cards are read in the box. */
+    /* Without fitted tiles, a tile's least width: the columns fill the row. */
     --min-tile: 220px;
     position: relative;
     display: grid;
-    /* As wide as --min-tile at least; the columns fill the row. */
     grid-template-columns: repeat(auto-fill, minmax(var(--min-tile), 1fr));
     align-content: start;
     gap: 14px;
@@ -857,11 +893,14 @@
     list-style: none;
   }
 
-  /* On a phone, two columns of tiles rather than one card per row. */
-  @media (max-width: 600px) {
-    .mgrid {
-      --min-tile: 130px;
-    }
+  /*
+    Outside dock mode, the tiles are the raised hand fan's cards (--tile), in the columns that fit
+    (--columns, boxGrid): the box is as wide as they are. The scrollbar's room is kept, so that a
+    classic one showing never drops a column.
+  */
+  .mgrid.fixed {
+    grid-template-columns: repeat(var(--columns), var(--tile));
+    scrollbar-gutter: stable;
   }
 
   /* An empty box shows its message in the middle. */

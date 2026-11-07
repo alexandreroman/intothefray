@@ -8,6 +8,7 @@ import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './b
 import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
+import { mockScreen, PHONE } from '../lib/screen.testing';
 import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
 import {
   card,
@@ -222,6 +223,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.mocked(loadGameCards).mockReset();
   vi.mocked(knownCard).mockReset();
   interaction.reset();
@@ -265,23 +267,40 @@ describe('CardBox', () => {
     expect(filter.hasAttribute('autosave')).toBe(false);
   });
 
-  it('shows its cards about as large as the preview, which a box keeps hidden', async () => {
+  it('shows its cards as large as the raised hand fan, which a box keeps hidden', async () => {
     await renderTable(makeView({ private: SEARCH }));
 
-    // Wide enough for five 220 px columns, never wider than the window.
-    expect(box().style.width).toBe('min(1200px, 100%)');
-    const grid = /\n {2}\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1] ?? '';
-    expect(grid).toMatch(/--min-tile: 220px;/);
-    expect(grid).toMatch(
-      /grid-template-columns: repeat\(auto-fill, minmax\(var\(--min-tile\), 1fr\)\);/,
-    );
-    expect(grid).toMatch(/overflow-y: auto;/);
+    // jsdom's 1024 px window, less the backdrop's 16 px padding on each side: 992 px for the box,
+    // 958 inside its grid's padding and its border, room for four 185 px tiles (the raised card,
+    // the base card while the table is not laid out) and their 14 px gaps.
+    expect(box().style.width).toBe(`${4 * 185 + 3 * 14 + 2 * 16 + 2}px`);
+    const grid = box().querySelector<HTMLElement>('.mgrid')!;
+    expect(grid.classList).toContain('fixed');
+    expect(grid.style.getPropertyValue('--tile')).toBe('185px');
+    expect(grid.style.getPropertyValue('--columns')).toBe('4');
+    // Fixed columns, which a classic scrollbar showing never drops one of.
+    const fixed = boxRule('.mgrid.fixed');
+    expect(fixed).toMatch(/grid-template-columns: repeat\(var\(--columns\), var\(--tile\)\);/);
+    expect(fixed).toMatch(/scrollbar-gutter: stable;/);
+    expect(boxRule('.mgrid')).toMatch(/overflow-y: auto;/);
   });
 
-  it('shows two columns of tiles on a phone', () => {
-    const phone = /@media \(max-width: 600px\) \{\s*\.mgrid \{([^}]*)\}/.exec(boxSource)?.[1];
-    // 2 × 130 px and the 14 px gap fit in a 390 px window's box, its grid's padding taken off.
-    expect(phone).toMatch(/--min-tile: 130px;/);
+  it('fills a phone with tiles in dock mode, sized by the screen and not by the hand', async () => {
+    mockScreen(PHONE);
+    await renderTable(makeView({ private: SEARCH }));
+
+    const dialog = box();
+    expect(dialog.classList).toContain('fill');
+    expect(dialog.style.width).toBe('');
+    const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
+    expect(grid.classList).toContain('dock');
+    expect(grid.classList).not.toContain('fixed');
+    expect(grid.style.getPropertyValue('--tile')).toBe('');
+    // Columns of 104 px at least, stretched to fill the row.
+    expect(boxRule('.mgrid')).toMatch(
+      /grid-template-columns: repeat\(auto-fill, minmax\(var\(--min-tile\), 1fr\)\);/,
+    );
+    expect(boxRule('.mgrid.dock')).toContain('--min-tile: 104px;');
   });
 
   it("names the deck's hero in the title of a player with two decks", async () => {
