@@ -258,7 +258,7 @@ const GRID_PADDING_X = 16;
 const GRID_GAP = 14;
 
 /** The columns of a box's grid, the width of their tiles and the box's width, in px. */
-export interface BoxGrid {
+interface BoxGrid {
   columns: number;
   tile: number;
   width: number;

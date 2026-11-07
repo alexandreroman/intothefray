@@ -802,7 +802,7 @@ function mayPutInDeck(card: CardView, seats: readonly number[]): boolean {
  * The home deck (homeDeckOf) the viewer may return the card to (mayPutInDeck).
  * Undefined when the card is another player's, or the table lacks that deck.
  */
-export function homeDeckFor(
+function homeDeckFor(
   card: CardView,
   seats: readonly number[],
   piles: readonly PileView[],
