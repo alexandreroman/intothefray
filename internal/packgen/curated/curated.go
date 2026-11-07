@@ -208,10 +208,12 @@ func checkScenarioDef(def ScenarioDef) error {
 	}
 	// An encounter deck of the scenario replaces the classic one and its
 	// discard pile: the owner's discard pile a deck defaults to is missing.
-	for _, deck := range def.Decks {
-		if encounter && deck.Discard == pack.DiscardOwner {
-			return fmt.Errorf("deck %q needs a discard rule (%q or %q): the scenario has no encounter discard pile",
-				deck.Key, pack.DiscardOwn, pack.DiscardNone)
+	if encounter {
+		for _, deck := range def.Decks {
+			if deck.Discard == pack.DiscardOwner {
+				return fmt.Errorf("deck %q needs a discard rule (%q or %q): the scenario has no encounter discard pile",
+					deck.Key, pack.DiscardOwn, pack.DiscardNone)
+			}
 		}
 	}
 	if err := checkSets(def, encounter); err != nil {
@@ -370,14 +372,15 @@ func checkSetDefs(defs map[string]SetDef) error {
 				return fmt.Errorf("set %q: unknown difficulty %q", code, difficulty)
 			}
 		}
-		if def.Side != nil && def.Side.Label == "" {
-			return fmt.Errorf("set %q: side deck has no label", code)
-		}
-		if def.Side != nil && !validSideBack(def.Side.Back) {
-			return fmt.Errorf("set %q: side deck has an unknown back %q", code, def.Side.Back)
-		}
-		if def.Side != nil && !def.Side.Discard.Valid() {
-			return fmt.Errorf("set %q: side deck has an unknown discard rule %q", code, def.Side.Discard)
+		if side := def.Side; side != nil {
+			switch {
+			case side.Label == "":
+				return fmt.Errorf("set %q: side deck has no label", code)
+			case !validSideBack(side.Back):
+				return fmt.Errorf("set %q: side deck has an unknown back %q", code, side.Back)
+			case !side.Discard.Valid():
+				return fmt.Errorf("set %q: side deck has an unknown discard rule %q", code, side.Discard)
+			}
 		}
 	}
 	return nil
