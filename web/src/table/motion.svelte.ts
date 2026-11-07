@@ -306,7 +306,7 @@ const DOCK_HAND_BUTTON = '.dock .handbtn';
 /** The dock's hand button while it shows that seat's hand. */
 const dockHandButton = (seat: number) => `${DOCK_HAND_BUTTON}[data-seat="${seat}"]`;
 /** A seat's entry in a hero selector (HeroPicker.svelte). */
-const heroEntry = (seat: number) => `.item[data-seat="${seat}"]`;
+const heroEntry = (seat: number) => `.picker .item[data-seat="${seat}"]`;
 const tableMarker = (name: MarkerName) => `.surface .marker[data-marker="${name}"]`;
 /** The marker another player drags, or has just let go of (Presence.svelte). */
 const remoteMarker = (name: MarkerName) => `.presence .marker.ghost[data-marker="${name}"]`;
@@ -628,7 +628,8 @@ function sheetCountLanding(card: HTMLElement): { to: Measured; dock: DockLanding
 
 /**
  * A card taken back into the hand flies as the hand draws it, portrait: off a landscape spot on the
- * table, it leaves from a portrait box about the same middle, a landscape card turned a quarter.
+ * table, it leaves from a portrait box about the same middle, its long side upright. The box
+ * changes at once, with no quarter turn: the copy shows the card as the hand does from the start.
  */
 function asPortrait(from: Measured): Measured {
   return from.w > from.h ? { ...from, w: from.h, h: from.w } : from;
@@ -1049,7 +1050,10 @@ class TableMotion {
   flights = $state.raw<Flight[]>([]);
   /** The cards flying to a pile: their pile is drawn as it was until they land. */
   readonly flying = new SvelteSet<string>();
-  /** The cards drawn into the hand, flying in from their pile: hidden in the hand until they land. */
+  /**
+   * The cards drawn into the hand, flying in from their pile, and in dock mode the table cards taken
+   * back into it, flying to the dock: hidden in the hand, and left out of its counts, until they land.
+   */
   readonly drawing = new SvelteSet<string>();
   /**
    * Counts the frames while cards move: what is drawn from the cards' places
@@ -2458,8 +2462,11 @@ class TableMotion {
     after: TableView | undefined,
     zoom: number,
   ): DrawFlight | null {
+    if (!root.matches('.dock-mode')) {
+      return null;
+    }
     const seat = handSeatOf(after, copy.card.id);
-    if (!root.matches('.dock-mode') || seat === null) {
+    if (seat === null) {
       return null;
     }
     const landing = dockLanding(root, copy.card.id, seat, zoom);

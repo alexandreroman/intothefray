@@ -170,13 +170,10 @@
 
   /*
     A card discarded or played from the hand in dock mode rises out of the sheet that showed it
-    (Sheet.svelte, 5500): over it, under the dialogs (5600).
+    (Sheet.svelte, 5500), and one drawn into the hand lands in that sheet (its carousel, its hand
+    size or its hero selector): over it, under the dialogs (5600).
   */
-  .fly.rise {
-    z-index: 5550;
-  }
-
-  /* A card drawn into the hand sheet's carousel, or its header's hero selector, lands over the sheet. */
+  .fly.rise,
   .fly.over {
     z-index: 5550;
   }
