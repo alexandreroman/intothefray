@@ -45,7 +45,7 @@
   import { on } from 'svelte/events';
   import { cubicOut } from 'svelte/easing';
   import { fade, fly } from 'svelte/transition';
-  import { lastPressByPointer, openModal } from './modal.svelte';
+  import { lastPressByPointer, openModal, trapTab } from './modal.svelte';
 
   let {
     label,
@@ -147,37 +147,9 @@
     }
   });
 
-  function focusables(): HTMLElement[] {
-    const selector = 'button:not(:disabled), input:not(:disabled), select, textarea, [tabindex]';
-    return [...(panel?.querySelectorAll<HTMLElement>(selector) ?? [])].filter(
-      (element) => element.tabIndex >= 0,
-    );
-  }
-
-  /** Tab and Shift + Tab cycle through the sheet only. */
-  function trapTab(event: KeyboardEvent): void {
-    const all = focusables();
-    const first = all[0];
-    const last = all.at(-1);
-    if (!first || !last) {
-      event.preventDefault();
-      return;
-    }
-    if (!all.some((element) => element === document.activeElement)) {
-      event.preventDefault();
-      (event.shiftKey ? last : first).focus();
-    } else if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
   function onPanelKeydown(event: KeyboardEvent): void {
     if (event.key === 'Tab') {
-      trapTab(event);
+      trapTab(event, panel);
     }
   }
 

@@ -77,3 +77,33 @@ window.addEventListener(
 export function lastPressByPointer(): boolean {
   return pointerPressedLast;
 }
+
+/** The elements inside `root` that Tab reaches, in document order. */
+export function focusables(root: HTMLElement | undefined): HTMLElement[] {
+  const selector = 'button:not(:disabled), input:not(:disabled), select, textarea, [tabindex]';
+  return [...(root?.querySelectorAll<HTMLElement>(selector) ?? [])].filter(
+    (element) => element.tabIndex >= 0,
+  );
+}
+
+/** Tab and Shift + Tab cycle through the elements of `root` only: a dialog's box, a sheet's panel. */
+export function trapTab(event: KeyboardEvent, root: HTMLElement | undefined): void {
+  const all = focusables(root);
+  const first = all[0];
+  const last = all.at(-1);
+  if (!first || !last) {
+    event.preventDefault();
+    return;
+  }
+  // The root itself has the focus after a click on its text: Tab would leave from there.
+  if (!all.some((element) => element === document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}

@@ -10,7 +10,7 @@
 -->
 <script lang="ts">
   import { onDestroy, onMount, type Snippet } from 'svelte';
-  import { lastPressByPointer, openModal } from './modal.svelte';
+  import { focusables, lastPressByPointer, openModal, trapTab } from './modal.svelte';
 
   let {
     title,
@@ -76,42 +76,13 @@
   onMount(() => {
     // The content may have focused one of its own elements already (autofocus).
     if (!box?.contains(document.activeElement)) {
-      focusables()[0]?.focus();
+      focusables(box)[0]?.focus();
     }
   });
 
-  function focusables(): HTMLElement[] {
-    const selector = 'button:not(:disabled), input:not(:disabled), select, textarea, [tabindex]';
-    return [...(box?.querySelectorAll<HTMLElement>(selector) ?? [])].filter(
-      (element) => element.tabIndex >= 0,
-    );
-  }
-
-  /** Tab and Shift + Tab cycle through the dialog only. */
-  function trapTab(event: KeyboardEvent): void {
-    const all = focusables();
-    const first = all[0];
-    const last = all.at(-1);
-    if (!first || !last) {
-      event.preventDefault();
-      return;
-    }
-    // The box itself has the focus after a click on its text: Tab would leave from there.
-    if (!all.some((element) => element === document.activeElement)) {
-      event.preventDefault();
-      (event.shiftKey ? last : first).focus();
-    } else if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
   function onBoxKeydown(event: KeyboardEvent): void {
     if (event.key === 'Tab') {
-      trapTab(event);
+      trapTab(event, box);
       return;
     }
     onkeydown?.(event);
