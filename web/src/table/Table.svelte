@@ -2820,7 +2820,6 @@
     {faceOf}
     {sizeOf}
     {tableMap}
-    drawnMap={shownDockView ?? tableMap}
     grid={snapGrid}
     {selected}
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}

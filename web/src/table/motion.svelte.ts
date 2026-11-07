@@ -479,14 +479,6 @@ function riseOrigin(
   return null;
 }
 
-/**
- * Whether the viewer's own drop in dock mode slides into the slot the flow draws it in and settles
- * there, as one motion (#slideAndSettle); one tucked into a stack slides in under it instead.
- */
-function settlesIntoSlot(anim: Extract<Anim, { kind: 'move' | 'enter' }>): boolean {
-  return anim.settles === true && !anim.tuck;
-}
-
 /** A deck's hidden top card the viewer dragged landed as an unknown card, not under its id. */
 function unknownTopGhost(
   root: HTMLElement,
@@ -1039,8 +1031,8 @@ class TableMotion {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const swayed = new Map<string, number>();
     for (const anim of shown) {
-      const slides = anim.kind === 'move' || anim.kind === 'enter';
-      if (anim.kind !== 'settle' && !(slides && settlesIntoSlot(anim))) {
+      const slidesIn = (anim.kind === 'move' || anim.kind === 'enter') && anim.settles;
+      if (anim.kind !== 'settle' && !slidesIn) {
         continue;
       }
       // Out of a deck, its ghost may be the deck's unknown top card.
@@ -1170,7 +1162,7 @@ class TableMotion {
       const leanOf = (id: string) => (tilting.has(id) ? 0 : (swayed.get(id) ?? 0));
       // The viewer's own drop in dock mode lands in its slot; any other card slides there.
       const slideOf = (anim: Extract<Anim, { kind: 'move' | 'enter' }>) =>
-        settlesIntoSlot(anim)
+        anim.settles
           ? this.#slideAndSettle(root, anim.id, before.get(anim.id), zoom, leanOf(anim.id))
           : this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
       for (const anim of shown) {
