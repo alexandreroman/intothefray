@@ -249,7 +249,8 @@ type Stage struct {
 	Label   string   `json:"label"`
 	Current string   `json:"current"`
 	Cards   []string `json:"cards"`
-	// Villain marks the stage of a villain, whose cards are villains. Set at
+	// Villain marks the stage of a villain, whose cards are villains or
+	// leaders (see pack.Card.IsVillain). Set at
 	// setup, it decides what carries over on a stage change (see
 	// carryStageCounters).
 	Villain bool `json:"villain,omitempty"`

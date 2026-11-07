@@ -234,7 +234,7 @@ func (v villainSet) sortKey() string {
 func firstVillainCard(set pack.Set, cardsByCode map[string]pack.Card) *pack.Card {
 	for _, code := range slices.Sorted(slices.Values(set.Cards)) {
 		card, found := cardsByCode[code]
-		if found && (card.Faces[0].Type == pack.FaceTypeVillain || card.Faces[0].Type == pack.FaceTypeLeader) {
+		if found && card.IsVillain() {
 			return &card
 		}
 	}

@@ -136,6 +136,16 @@ func (c Card) HeroFace() Face {
 	return c.Faces[i]
 }
 
+// IsVillain reports whether the card is a villain the players face: its first
+// face is a villain, or a leader, as Civil War's Iron Man is.
+func (c Card) IsVillain() bool {
+	if len(c.Faces) == 0 {
+		return false
+	}
+	faceType := c.Faces[0].Type
+	return faceType == FaceTypeVillain || faceType == FaceTypeLeader
+}
+
 // Set kinds the code reads (Set.Kind, SetRef.Kind): marvelcdb
 // card_set_type_name_code values.
 const (

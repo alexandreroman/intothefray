@@ -31,6 +31,25 @@ func TestCardFaceOfTypeAndHeroFace(t *testing.T) {
 	}
 }
 
+func TestCardIsVillain(t *testing.T) {
+	tests := []struct {
+		name  string
+		faces []Face
+		want  bool
+	}{
+		{"villain", []Face{{Type: FaceTypeVillain}}, true},
+		{"leader", []Face{{Type: FaceTypeLeader}}, true},
+		{"main scheme", []Face{{Type: FaceTypeMainScheme}}, false},
+		{"villain on the second face only", []Face{{Type: "minion"}, {Type: FaceTypeVillain}}, false},
+		{"no face", nil, false},
+	}
+	for _, tt := range tests {
+		if got := (Card{Faces: tt.faces}).IsVillain(); got != tt.want {
+			t.Errorf("%s: IsVillain = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
 func TestPackFileRoundTrip(t *testing.T) {
 	want := PackFile{
 		Code:     "core",

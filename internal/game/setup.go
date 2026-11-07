@@ -783,7 +783,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 		}
 		b.placeOnTable(c, top.Face, x, rowY(villainRow))
 		stage.Current = c.ID
-		stage.Villain = len(def.Faces) > 0 && def.Faces[0].Type == pack.FaceTypeVillain
+		stage.Villain = def.IsVillain()
 		current = c
 	}
 	if current == nil {
