@@ -51,9 +51,9 @@ type: project
 - The viewer's own drop never travels twice (`OwnDrop`): on the table
   or in the hand it already lies where it went (on the table, it settles:
   see below; in dock mode, it slides into its slot: see below); onto a
-  pile, each of its
-  cards flies there from where it was let go (its landed ghost). A drop
-  that tucks into a stack (`OwnDrop.tucks`) lands where it was let go,
+  pile, each of its cards flies there from where it was let go (its
+  landed ghost). A drop that tucks into a stack (`OwnDrop.tucks`) lands
+  where it was let go,
   and each of its cards, a carried chain included, slides from its ghost
   to the spot the server lays the chain out at (`move` or `enter` marked
   `dropped`). Another player's drop starts from their ghost. When a
