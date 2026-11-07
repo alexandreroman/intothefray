@@ -508,6 +508,7 @@ func withJunk(a Action) Action {
 	a.Renames = map[string]string{"junk": "cjunk"}
 	a.Exhausted = new(true)
 	a.FaceDown = new(true)
+	a.FaceUp = true
 	a.Name = "junk"
 	return a
 }
@@ -540,6 +541,7 @@ func TestResolveDropsFieldsItsKindDoesNotRead(t *testing.T) {
 		{"hand order", read(Action{Kind: ActHandOrder, Area: "p0"}, ordered), []string{"Cards"}},
 		{"arrow clear", read(Action{Kind: ActArrowClear}, none), nil},
 		{"draw", read(Action{Kind: ActDraw, N: 1}, none), []string{"Cards"}},
+		{"play", read(Action{Kind: ActPlay, Card: f.hand, X: 100, Y: 100}, none), []string{"FaceUp"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -579,7 +581,7 @@ func TestResolveDropsFieldsItsKindDoesNotRead(t *testing.T) {
 func checkOnlyReads(t *testing.T, a Action, reads []string) {
 	t.Helper()
 	value := reflect.ValueOf(a)
-	for _, field := range []string{"Cards", "Actions", "Seats", "Renames", "Exhausted", "FaceDown", "Name"} {
+	for _, field := range []string{"Cards", "Actions", "Seats", "Renames", "Exhausted", "FaceDown", "FaceUp", "Name"} {
 		if !slices.Contains(reads, field) && !value.FieldByName(field).IsZero() {
 			t.Errorf("%s action keeps the client's %s: %v", a.Kind, field, value.FieldByName(field))
 		}
