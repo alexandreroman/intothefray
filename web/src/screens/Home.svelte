@@ -808,7 +808,7 @@
     }
 
     main {
-      padding-block: 92px 24px;
+      padding-bottom: 24px;
     }
 
     footer {
