@@ -237,3 +237,48 @@ function playAction(
   // An explicit Play shows the card, even out of a deck that hides its cards; a drag lands it face down.
   return { kind: 'play', card: card.id, x, y, faceUp: true };
 }
+
+// ---- The box's size outside dock mode ----
+
+/** The box's widest, in px. */
+const BOX_MAX_WIDTH = 1200;
+
+/**
+ * A tile's widest, in px: about five columns in the widest box. The tiles follow the raised hand's
+ * card where it matters, on a small window; a large screen's raised card would make a box of few
+ * oversized cards.
+ */
+const BOX_TILE_MAX = 220;
+
+// The room around the box and inside it, in px. Keep in step with .backdrop's padding and .box's
+// border (Dialog.svelte), and with .mgrid's padding and gap (CardBox.svelte).
+const BACKDROP_PADDING = 16;
+const BOX_BORDER = 1;
+const GRID_PADDING_X = 16;
+const GRID_GAP = 14;
+
+/** The columns of a box's grid, the width of their tiles and the box's width, in px. */
+export interface BoxGrid {
+  columns: number;
+  tile: number;
+  width: number;
+}
+
+/**
+ * The grid of a box whose tiles are `tile` px wide (the raised hand's card), at most 220 px, in a
+ * window `windowWidth` px wide: as many columns as fit in the widest box the window allows, and
+ * the box's width that holds just them, so that the grid's edges line up with its header.
+ * `gutter` is the room the grid keeps for its scrollbar, 0 with overlay scrollbars. A window too
+ * narrow for one tile shrinks it to fit.
+ */
+export function boxGrid(raisedCard: number, windowWidth: number, gutter: number): BoxGrid {
+  const tile = Math.min(raisedCard, BOX_TILE_MAX);
+  const room = Math.min(BOX_MAX_WIDTH, windowWidth - 2 * BACKDROP_PADDING);
+  // The box is border-box sized (tokens.css): its border is part of its width.
+  const frame = 2 * BOX_BORDER + 2 * GRID_PADDING_X + gutter;
+  const inner = room - frame;
+  const columns = Math.max(1, Math.floor((inner + GRID_GAP) / (tile + GRID_GAP)));
+  const fitted = Math.max(0, Math.min(tile, inner));
+  const width = columns * fitted + (columns - 1) * GRID_GAP + frame;
+  return { columns, tile: fitted, width };
+}

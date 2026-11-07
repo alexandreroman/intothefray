@@ -129,6 +129,7 @@ describe('a card box', () => {
       act: () => null,
       lastError: null,
       onclose: () => {},
+      tileWidth: 185,
     });
     return within(screen.getByRole('dialog')).getByRole('textbox', { name: 'Filter by name' });
   }

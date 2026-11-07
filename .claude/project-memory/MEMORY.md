@@ -77,7 +77,7 @@
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC/HP per card; menu + pill, no keys; ±99
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
 - [Acceleration token](references/project_acceleration_token.md) — token "acc": menu and pill only; Fray red, upward double chevron, by the threat
-- [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview (tablet 65 %), touch pop 1.15; resting: base at 82 %
+- [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview (tablet 65 %); card boxes alike, ≤ 220 px; resting 82 %
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
 - [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
