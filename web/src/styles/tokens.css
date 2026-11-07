@@ -654,11 +654,16 @@ a.btn-primary {
   border-radius: 2px;
 }
 
-/* Screens enter by rising into place. */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+/*
+  Screens enter by rising into place (Home, About, Options). Under reduced motion the keyframes do not
+  exist, so every animation naming them does nothing and the content shows at once.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
   }
 }
 

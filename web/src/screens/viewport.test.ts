@@ -82,3 +82,17 @@ describe('safe areas', () => {
     },
   );
 });
+
+describe('screen entrance', () => {
+  it('rises into place only without a reduced-motion preference: under one, the content shows at once', () => {
+    // The keyframes exist only without the preference, so every screen naming them (Home, About,
+    // Options) stays still under it.
+    expect(tokensCss).toMatch(
+      /@media \(prefers-reduced-motion: no-preference\) \{\s*@keyframes rise \{/,
+    );
+    expect(tokensCss.match(/@keyframes rise\b/g)).toHaveLength(1);
+    for (const source of Object.values(sources)) {
+      expect(source).not.toMatch(/@keyframes rise\b/);
+    }
+  });
+});
