@@ -341,6 +341,26 @@ describe('CardBox', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('moves the lifted card on translate and casts its shadow from a shade, never a filter', async () => {
+    await renderTable(makeView({ private: LOOK }));
+    layOutTiles();
+
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    await fireEvent.pointerDown(image, { clientX: 60, clientY: 150, button: 0 });
+    await fireEvent.pointerMove(window, { clientX: 400, clientY: 150, buttons: 1 });
+
+    // Grabbed 60 px right of and 50 px under the card's corner, at (0, 100).
+    const ghost = document.querySelector<HTMLElement>('.tile-ghost')!;
+    expect(ghost.style.translate).toBe('340px 100px');
+    expect(ghost.style.left).toBe('');
+    expect(ghost.style.top).toBe('');
+    // The shade wraps the card's art, contained in the tile, not the tile's box.
+    expect(ghost.querySelector('.face > .shade')).not.toBeNull();
+    const rule = boxRule('.tile-ghost');
+    expect(rule).not.toMatch(/filter/);
+    expect(rule).toContain('--shade-shadow: var(--held-card-shadow);');
+  });
+
   it('look box reorder sends reorderTop', async () => {
     const { session } = await renderTable(makeView({ private: LOOK }));
     layOutTiles();

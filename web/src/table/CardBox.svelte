@@ -801,21 +801,23 @@
   {#if drag?.lifted}
     <div
       class="tile-ghost"
-      style:left="{drag.ghost.x}px"
-      style:top="{drag.ghost.y}px"
+      style:translate="{drag.ghost.x}px {drag.ghost.y}px"
       style:width="{drag.ghost.width}px"
       style:height="{drag.ghost.height}px"
     >
-      {@render art(drag.tile, false)}
+      <span class="face" class:land={drag.tile.landscape}>
+        <span class="shade"></span>
+        <CardFace images={drag.tile.images} name={drag.tile.name} landscape={drag.tile.landscape} />
+      </span>
     </div>
   {/if}
 </Dialog>
 
-{#snippet art(tile: Tile, withBadge = true)}
+{#snippet art(tile: Tile)}
   <span class="face" class:land={tile.landscape}>
     <CardFace images={tile.images} name={tile.name} landscape={tile.landscape} />
   </span>
-  {#if withBadge && tile.badge}
+  {#if tile.badge}
     <span class="pos">{tile.badge}</span>
   {/if}
 {/snippet}
@@ -1107,14 +1109,25 @@
     white-space: nowrap;
   }
 
-  /* The dragged card, the tile's size, its card contained as in the tile. */
+  /*
+    The dragged card, the tile's size, its card contained as in the tile. It follows the pointer on
+    translate, from the window's corner: a pointer move lays nothing out again. It casts a held
+    card's shadow (.shade, tokens.css) from its card's own box, under its face.
+  */
   .tile-ghost {
+    --shade-shadow: var(--held-card-shadow);
     position: fixed;
+    left: 0;
+    top: 0;
     z-index: 6;
     display: grid;
     place-items: center;
     pointer-events: none;
-    transform: rotate(-3deg) scale(1.04);
-    filter: drop-shadow(6px 8px 12px #000c);
+    rotate: -3deg;
+    scale: 1.04;
+  }
+
+  .tile-ghost .face.land .shade {
+    border-radius: var(--card-radius-land);
   }
 </style>
