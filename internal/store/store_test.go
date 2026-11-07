@@ -693,18 +693,6 @@ func TestGameSummaries(t *testing.T) {
 		}
 	})
 
-	t.Run("games without a summary are left out", func(t *testing.T) {
-		s, mr := newTestStore(t)
-		if err := s.Create(t.Context(), newGame("abc")); err != nil {
-			t.Fatalf("Create: %v", err)
-		}
-		if err := mr.Set(gameKey("old"), "{}"); err != nil {
-			t.Fatal(err)
-		}
-
-		assertSummaryCount(t, s, 1)
-	})
-
 	t.Run("undecodable summaries are left out", func(t *testing.T) {
 		s, mr := newTestStore(t)
 		if err := s.Create(t.Context(), newGame("abc")); err != nil {

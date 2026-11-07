@@ -255,9 +255,9 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 // deduplicated. It walks those keys with SCAN, which never blocks Redis the
 // way KEYS would, and reads their small values with one MGET per round: it
 // reads no game value. SCAN may return a key twice while Redis resizes its
-// table; such a key is read once, so each game appears once. A game stored before summaries existed has none and is
-// left out, and so is a summary that expires during the walk or that cannot
-// be decoded: one bad value must not fail the whole statistics.
+// table; such a key is read once, so each game appears once. A summary that
+// expires during the walk, or that cannot be decoded, is left out: one bad
+// value must not fail the whole statistics.
 func (s *Store) GameSummaries(ctx context.Context) ([]game.Summary, error) {
 	var (
 		summaries []game.Summary
