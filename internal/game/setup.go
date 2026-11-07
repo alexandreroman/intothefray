@@ -37,7 +37,7 @@ import (
 // hero with side decks lays them out after its discard pile, each followed by
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
-// last pile, taken up to the grid: without side piles, it sits at identityX.
+// last pile, taken up to the grid: without side piles, it sits at 300.
 // In a game of two seats or more, the first player token lies right of the
 // first player's identity, inPlayGap past it, centred on its height
 // (firstPlayerSpot); a single seat has no token.
@@ -90,14 +90,6 @@ const (
 	deckX      = 0
 	discardX   = 130
 	outOfPlayX = 0
-	// The identity lies past the discard pile, taken up to the grid as ceilToGrid does: 300.
-	identityX = (discardX + portraitWidth + pileZoneGap + gridSize - 1) / gridSize * gridSize
-	// classicSchemeX is the x of a classic main scheme, past the villain (at identityX, where the villain lies as the
-	// identity does), taken up to the grid: 460.
-	classicSchemeX = (identityX + portraitWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
-	// The first card in play of a villain's row with no stage before it: past a classic main scheme, landscape,
-	// taken up to the grid, where the first card in play of a classic villain's row lies: 660.
-	inPlayStartX = (classicSchemeX + landscapeWidth + inPlayGap + gridSize - 1) / gridSize * gridSize
 
 	// A compact scenario deck is compactWidth wide, and its discard pile lies compactDiscardStepX right of it.
 	compactWidth        = 80
@@ -664,7 +656,7 @@ func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 		width, discardStepX = compactWidth, compactDiscardStepX
 	}
 	y := rowY(villainRow)
-	x := b.slot(width, pileZoneGap, deckX)
+	x := b.slot(width, pileZoneGap)
 	pile := b.table.addPile(deckID, deckKind, NoOwner, x, y)
 	pile.Label, pile.Compact = deck.Label, deck.Compact
 	switch deck.Discard {
@@ -682,9 +674,10 @@ func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 }
 
 // slot returns the x of the next thing of width w in the villain's row: gap
-// past the last one, taken up to the grid, or first when it is the first.
-func (b *tableBuilder) slot(w, gap, first int) int {
-	x := first
+// past the last one, taken up to the grid, or the row's left edge when it is
+// the first.
+func (b *tableBuilder) slot(w, gap int) int {
+	x := 0
 	if b.inPlayRight > 0 {
 		x = ceilToGrid(b.inPlayRight + gap)
 	}
@@ -784,7 +777,7 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 		if b.lastPile {
 			gap = pileZoneGap
 		}
-		x, err := b.slotFor(def, top.Face, gap, deckX)
+		x, err := b.slotFor(def, top.Face, gap)
 		if err != nil {
 			return nil, err
 		}
@@ -801,22 +794,22 @@ func (b *tableBuilder) setupStage(pile pack.Pile, home string, top pack.FaceRef,
 }
 
 // slotFor is slot for the given face of a card.
-func (b *tableBuilder) slotFor(def pack.Card, face, gap, first int) (int, error) {
+func (b *tableBuilder) slotFor(def pack.Card, face, gap int) (int, error) {
 	if face < 0 || face >= len(def.Faces) {
 		return 0, invalid("card %s has no face %d", def.Code, face)
 	}
-	return b.slot(cardWidth(def.Faces[face].Size), gap, first), nil
+	return b.slot(cardWidth(def.Faces[face].Size), gap), nil
 }
 
 // putInPlay creates a starting card and puts it in the villain's row, inPlayGap
-// past the right edge of the previous thing, taken up to the grid (the first
-// thing of the row, at inPlayStartX). The card has home as its home.
+// past the right edge of the previous thing, taken up to the grid. The card has
+// home as its home.
 func (b *tableBuilder) putInPlay(ref pack.FaceRef, home string) (*Card, error) {
 	c, def, err := b.newCard(ref.Card, NoOwner, home)
 	if err != nil {
 		return nil, err
 	}
-	x, err := b.slotFor(def, ref.Face, inPlayGap, inPlayStartX)
+	x, err := b.slotFor(def, ref.Face, inPlayGap)
 	if err != nil {
 		return nil, err
 	}

@@ -220,8 +220,8 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 				t.Errorf("%s is in the deck", tt.code)
 			}
 			// No side piles: the identity keeps its place.
-			if identity := f.g.Table.Cards[identityOf(t, f.g, 0)]; identity.X != identityX {
-				t.Errorf("identity at x %d, want %d", identity.X, identityX)
+			if identity := f.g.Table.Cards[identityOf(t, f.g, 0)]; identity.X != 300 {
+				t.Errorf("identity at x %d, want 300", identity.X)
 			}
 			checkIntegrity(t, table)
 		})

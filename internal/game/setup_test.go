@@ -497,7 +497,8 @@ func TestNewCardRecordsTheShapeOfEachFace(t *testing.T) {
 }
 
 func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
-	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
+	// The row ends with a classic main scheme at 460, 157 wide.
+	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1), inPlayRight: 617}
 
 	// 01125 is landscape, 157 wide, and 24049 portrait, 112 wide: each card
 	// lies 40 past the previous one, up to the grid.
