@@ -156,14 +156,8 @@
     display: grid;
     place-items: center;
     padding: 16px;
-    background: #07090fa6;
+    background: var(--scrim);
     animation: fadein 0.12s ease-out;
-  }
-
-  @keyframes fadein {
-    from {
-      opacity: 0;
-    }
   }
 
   .box {

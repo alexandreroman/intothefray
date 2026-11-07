@@ -26,6 +26,8 @@
   --warn: #f2b51d;
   /* The text of an error message, a pale red that reads on the ink. */
   --error-text: #ffb3c0;
+  /* The dim under every dialog and sheet, and over the resting hand. */
+  --scrim: #07090fa6;
 
   /* One colour per seat, indexed by the player colour 0..3: the four aspects of the game
      (Leadership, Aggression, Protection, Justice), tuned for the ink grounds. The red leans
@@ -546,6 +548,13 @@ a.btn-primary {
   from {
     opacity: 0;
     transform: translateY(8px);
+  }
+}
+
+/* Dialogs, sheets and tooltips fade in. */
+@keyframes fadein {
+  from {
+    opacity: 0;
   }
 }
 

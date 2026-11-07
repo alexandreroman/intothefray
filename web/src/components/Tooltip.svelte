@@ -120,12 +120,6 @@
     border-color: transparent transparent transparent var(--text);
   }
 
-  @keyframes fadein {
-    from {
-      opacity: 0;
-    }
-  }
-
   kbd {
     margin-left: 8px;
     font: inherit;

@@ -409,7 +409,7 @@
     position: fixed;
     inset: 0;
     z-index: 5500;
-    background: #07090fa6;
+    background: var(--scrim);
     animation: fadein 0.26s ease-out;
   }
 
@@ -507,12 +507,6 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-  }
-
-  @keyframes fadein {
-    from {
-      opacity: 0;
-    }
   }
 
   @keyframes slideup {

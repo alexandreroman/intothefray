@@ -1106,7 +1106,7 @@
     position: absolute;
     inset: 0;
     border-radius: 8px;
-    background: #07090fa6;
+    background: var(--scrim);
     clip-path: var(--card-cut);
     pointer-events: none;
     opacity: 1;
