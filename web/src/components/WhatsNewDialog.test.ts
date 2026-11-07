@@ -5,12 +5,16 @@ import type { NewsEntry } from '../lib/news';
 const ENTRIES: NewsEntry[] = [
   {
     id: '2026-11-01-villains',
-    date: '2026-11-01',
     title: 'New villains',
     text: 'Five more villains to beat.',
     image: { src: 'https://img.example/villains.webp', alt: 'The five villains' },
   },
-  { id: '2026-10-29-decks', date: '2026-10-29', title: 'More decks', text: 'Play several decks.' },
+  {
+    id: '2026-10-29-decks',
+    title: 'More decks',
+    text: 'Play several decks.',
+    image: { src: 'https://img.example/decks.webp', alt: 'The hero selector' },
+  },
 ];
 
 function renderDialog(unread: string[] = []) {
@@ -44,11 +48,7 @@ describe('WhatsNewDialog', () => {
     expect(image.getAttribute('loading')).toBe('lazy');
     expect(image.getAttribute('width')).toBe('112');
     expect(image.getAttribute('height')).toBe('84');
-    // Beside the text: the illustrated entry lays the two out, the other has its text alone.
-    const [first, second] = screen.getAllByRole('listitem') as [HTMLElement, HTMLElement];
-    expect(first.classList.contains('illustrated')).toBe(true);
-    expect(second.classList.contains('illustrated')).toBe(false);
-    expect(screen.getAllByRole('img')).toHaveLength(1);
+    expect(screen.getAllByRole('img')).toHaveLength(2);
   });
 
   it('tags the unread entries as new', () => {
@@ -84,9 +84,9 @@ describe('WhatsNewDialog', () => {
         const day = String(20 - i).padStart(2, '0');
         return {
           id: `2026-10-${day}-n${i}`,
-          date: `2026-10-${day}`,
           title: `News ${i}`,
           text: 'Text.',
+          image: { src: `https://img.example/n${i}.webp`, alt: `Thumbnail ${i}` },
         };
       });
     }

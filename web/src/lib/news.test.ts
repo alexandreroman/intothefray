@@ -3,9 +3,7 @@ import { formatNewsDate, NEWS } from './news';
 describe('NEWS', () => {
   it('gives each entry an id made of its date and a slug', () => {
     for (const entry of NEWS) {
-      expect(entry.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(entry.id).toMatch(/^\d{4}-\d{2}-\d{2}-[a-z0-9]+(-[a-z0-9]+)*$/);
-      expect(entry.id.startsWith(`${entry.date}-`)).toBe(true);
     }
   });
 
@@ -19,15 +17,13 @@ describe('NEWS', () => {
     expect(ids).toEqual([...ids].sort().reverse());
   });
 
-  it('writes a title and a text for every entry', () => {
+  it('writes a title, a text and a thumbnail for every entry', () => {
     expect(NEWS.length).toBeGreaterThan(0);
     for (const entry of NEWS) {
       expect(entry.title.trim()).not.toBe('');
       expect(entry.text.trim()).not.toBe('');
-      if (entry.image) {
-        expect(entry.image.src).not.toBe('');
-        expect(entry.image.alt.trim()).not.toBe('');
-      }
+      expect(entry.image.src).not.toBe('');
+      expect(entry.image.alt.trim()).not.toBe('');
     }
   });
 });

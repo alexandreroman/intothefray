@@ -3,7 +3,12 @@ import { NewsState } from './newsState.svelte';
 import { getPref, setPref } from './prefs';
 
 function entry(id: string): NewsEntry {
-  return { id, date: id.slice(0, 10), title: `Title ${id}`, text: `Text ${id}` };
+  return {
+    id,
+    title: `Title ${id}`,
+    text: `Text ${id}`,
+    image: { src: `${id}.webp`, alt: `Image ${id}` },
+  };
 }
 
 const NEWEST = entry('2026-11-01-newest');
