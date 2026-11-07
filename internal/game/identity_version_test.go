@@ -1,11 +1,12 @@
 package game
 
 import (
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // ironheartIdentity is the first version of Ironheart, whose set puts her

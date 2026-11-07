@@ -2,8 +2,9 @@ package game
 
 import (
 	"errors"
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 func TestMarkerUnknownName(t *testing.T) {

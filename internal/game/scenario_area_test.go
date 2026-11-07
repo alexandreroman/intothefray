@@ -1,11 +1,12 @@
 package game
 
 import (
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // collectionID is the pile of The Collection, the scenario area of Infiltrate

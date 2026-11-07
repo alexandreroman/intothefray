@@ -2,9 +2,10 @@ package game
 
 import (
 	"fmt"
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"slices"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // specializedTraining is a player card whose deck sets the Specialist

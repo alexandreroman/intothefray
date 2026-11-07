@@ -2,9 +2,10 @@ package game
 
 import (
 	"errors"
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"slices"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // revealTop reveals the top card of pile for token and returns its id.

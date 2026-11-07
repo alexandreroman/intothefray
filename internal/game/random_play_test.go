@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 var (

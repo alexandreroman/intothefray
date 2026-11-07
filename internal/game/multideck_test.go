@@ -2,11 +2,12 @@ package game
 
 import (
 	"errors"
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"maps"
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // The tests in this file play twoDeckGame: Alex ("a") holds seats 0 and 1,

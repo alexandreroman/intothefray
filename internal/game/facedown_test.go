@@ -1,10 +1,11 @@
 package game
 
 import (
-	"github.com/alexandreroman/intothefray/packs/packstest"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // checkHiddenEverywhere fails when a view of the game, its owner's included,
