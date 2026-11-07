@@ -447,26 +447,16 @@
   /** Picks the previous or next hero (Shift + ← / →): in the hero selector, else among own decks. */
   function stepHero(step: -1 | 1): void {
     if (focused && shownSeat !== null) {
-      stepSeat(shownSeat, step);
-    } else {
-      stepOwnDeck(step);
+      stepAmong(seats, shownSeat, step);
+    } else if (selected !== null) {
+      stepAmong(own, selected, step);
     }
   }
 
-  /** Picks the seat `step` seats after the current one, round the table. */
-  function stepSeat(current: number, step: number): void {
-    const choices = seatedDecks.map((deck) => deck.seat);
+  /** Selects the seat `step` choices after the current one, round the choices. */
+  function stepAmong(choices: readonly number[], current: number, step: number): void {
     const index = choices.indexOf(current);
     selectSeat(choices[(index + step + choices.length) % choices.length] ?? current);
-  }
-
-  /** Selects the viewer's deck `step` decks after the selected one, round their decks. */
-  function stepOwnDeck(step: number): void {
-    if (selected === null) {
-      return;
-    }
-    const index = own.indexOf(selected);
-    selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
   // Out-of-play piles are not drawn: the chips on their owner's frame open them.
@@ -2361,7 +2351,11 @@
       run: runItem,
       act: (action) => send(action, targetOfKey(action)),
       showKeys: showKeySheet,
-      selectNextDeck: () => stepOwnDeck(1),
+      selectNextDeck: () => {
+        if (selected !== null) {
+          stepAmong(own, selected, 1);
+        }
+      },
       canStepHero,
       stepHero,
       canReadyAll,
