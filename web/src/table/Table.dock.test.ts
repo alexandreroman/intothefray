@@ -549,6 +549,22 @@ describe('the hand sheet', () => {
     expect(within(handSheet()!).getByRole('button', { name: 'Discard' })).toBeTruthy();
   });
 
+  it("shows Discard refused, with handActions' reason, for a card whose deck has no discard pile", async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    const table = view.table!;
+    table.cards = table.cards.map((c) => (c.id === 'h1' ? { ...c, home: 'side:p0:0' } : c));
+    table.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 1000, label: 'Sense' }));
+    const { session } = await renderTable(view);
+    await fireEvent.click(handButton());
+
+    const discard = within(handSheet()!).getByRole('button', { name: 'Discard' });
+    expect(discard.getAttribute('aria-disabled')).toBe('true');
+    expect(discard.dataset.tip).toBe('This card has no discard pile');
+    await fireEvent.click(discard);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
   it('switches deck with the hero selector in its header, with two own decks', async () => {
     mockScreen(PHONE);
     await renderTable(makeView({ twoDecks: true }));
