@@ -12,19 +12,16 @@ pinned to the local version), `web` (svelte-check, lint, vitest, build)
 and `docker` (`linux/amd64` image build without push, `compose.yaml` and
 Caddyfile validation).
 
-- On `main` (a push or a manual `workflow_dispatch` run), after the
-  three checks pass, three jobs run in order: `publish` pushes
-  `ghcr.io/alexandreroman/intothefray` (`linux/amd64`, tags = full
-  commit SHA and `main`) with `GITHUB_TOKEN`, sharing the gha cache with
-  `docker`; `pages` deploys the Pages artifact; `deploy-backend` sends
-  the `deploy-app` dispatch to `intothefray-infra` (see
-  [[project_deployment]]). Pull requests build the image without
-  pushing it.
+- On `main` (a push or a manual run), after the three checks pass,
+  `publish` pushes `ghcr.io/alexandreroman/intothefray` (`linux/amd64`,
+  tags = full commit SHA and `main`) with `GITHUB_TOKEN`, reading the
+  layers the `docker` job wrote to the gha cache; `pages` and
+  `deploy-backend` follow (see [[project_deployment]]). Pull requests
+  build the image without pushing it.
 - The Pages build lives in the `web` job: on `main` it runs
   `configure-pages`, the production build and `upload-pages-artifact`
   after the web checks, so the frontend is verified once per commit.
-  `ci.yml` is the only workflow; a manual run of it on `main`
-  republishes everything.
+  `ci.yml` is the only workflow.
 - CI does not compare `packs/dist` with `packs/curated`: packgen fetches
   its card sources over the network (`packs/.cache` is gitignored).
 - The Caddyfile is validated through the compose `web` service, so the
