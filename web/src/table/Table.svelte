@@ -253,6 +253,14 @@
     return faces.map((face) => localizedFace(face, lang));
   }
 
+  /** The English name of a card's face, which a card box's filter matches too; none while the catalog loads. */
+  function englishName(card: TableCard, face: number): string | undefined {
+    if (catalog !== 'ready' || !card.code) {
+      return undefined;
+    }
+    return knownCard(card.code)?.card.faces[face]?.name;
+  }
+
   /** The name of the face a history line names, in the viewer's language; none while unknown. */
   function historyName(ref: FaceRef): string | undefined {
     if (catalog !== 'ready') {
@@ -2911,6 +2919,7 @@
         box={shownBox}
         {view}
         {facesOf}
+        {englishName}
         {sizeOf}
         readOnly={view.you.role !== 'player'}
         {selected}

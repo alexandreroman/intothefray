@@ -20,6 +20,7 @@
   import { releaseFocus } from '../lib/releaseFocus';
   import { TOUCH_MODE_QUERY } from '../lib/screen';
   import { scrollFade } from '../lib/scrollFade';
+  import { matchesQuery } from '../lib/textFilter';
   import type {
     Action,
     CardView,
@@ -56,6 +57,7 @@
     box,
     view,
     facesOf,
+    englishName,
     sizeOf,
     readOnly,
     selected,
@@ -68,6 +70,8 @@
     view: View;
     /** Every face of a card, from the catalog; none while it loads. */
     facesOf: (card: CardView) => PackFace[];
+    /** The English name of a card's face, which the filter matches too; undefined while unknown. */
+    englishName: (card: CardView, face: number) => string | undefined;
     sizeOf: (card: CardView) => Size;
     /** A spectator's box: it shows the cards and offers nothing. */
     readOnly: boolean;
@@ -100,6 +104,8 @@
     card: CardView;
     face: number;
     name: string;
+    /** The face's English name, else its shown one. */
+    englishName: string;
     images: string[];
     landscape: boolean;
     /** "#3" (place in the pile, for a pile listed top first) or "On the table". */
@@ -125,11 +131,13 @@
       return cards.sort(compareCardNumbers).flatMap((card) =>
         facesOf(card).map((face, index) => {
           const onTable = card.id === stage.current && card.face === index;
+          const name = stageFaceName(face, index);
           return {
             key: `${card.id}:${index}`,
             card,
             face: index,
-            name: stageFaceName(face, index),
+            name,
+            englishName: englishName(card, index) ?? name,
             images: face.images,
             landscape: isLandscape(face.size),
             badge: onTable ? 'On the table' : undefined,
@@ -146,12 +154,14 @@
         return [];
       }
       const face = facesOf(card)[card.face];
+      const name = face?.name ?? '';
       return [
         {
           key: id,
           card,
           face: card.face,
-          name: face?.name ?? '',
+          name,
+          englishName: englishName(card, card.face) ?? name,
           images: face?.images ?? [],
           landscape: face ? isLandscape(face.size) : false,
           badge: byNumber ? undefined : `#${index + 1}`,
@@ -165,10 +175,7 @@
   const tiles = $derived(tilesOf(box));
 
   let query = $state('');
-  const matching = $derived.by(() => {
-    const wanted = query.trim().toLowerCase();
-    return wanted === '' ? tiles : tiles.filter((t) => t.name.toLowerCase().includes(wanted));
-  });
+  const matching = $derived(tiles.filter((t) => matchesQuery(query, [t.name, t.englishName])));
 
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
 

@@ -5,6 +5,7 @@
   import { tick, untrack } from 'svelte';
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
+  import { fold, matchesQuery } from '../../lib/textFilter';
   import { motionMs } from '../../lib/motion';
   import { overflowTip } from '../../lib/overflowTip';
   import { scrollFade } from '../../lib/scrollFade';
@@ -123,16 +124,11 @@
   // Each group of the menu is labelled by its pack's name.
   const uid = $props.id();
 
-  /** Text as a filter compares it: without accents, case or surrounding spaces. */
-  function fold(text: string): string {
-    return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-  }
-
   const setQuery = $derived(fold(setFilter));
 
   /** Whether the pack's or the set's name, shown or English, holds the Add a set menu's filter. */
   function matchesSetQuery(ref: PackRef | SetRef): boolean {
-    return fold(localizedName(ref, lang)).includes(setQuery) || fold(ref.name).includes(setQuery);
+    return matchesQuery(setQuery, [localizedName(ref, lang), ref.name]);
   }
 
   // A pack whose name matches keeps all its sets; another keeps those whose name matches.
@@ -155,15 +151,15 @@
     return setNames.get(code) ?? code;
   }
 
+  /** Whether the scenario's or its pack's name, shown or English, holds the filter. */
   function matchesFilter(scenario: ScenarioRef): boolean {
-    const query = filter.trim().toLowerCase();
-    if (query === '') {
-      return true;
-    }
-    return (
-      localizedName(scenario, lang).toLowerCase().includes(query) ||
-      packName(scenario.pack).toLowerCase().includes(query)
-    );
+    const englishPack = index.packs.find((p) => p.code === scenario.pack)?.name ?? scenario.pack;
+    return matchesQuery(filter, [
+      localizedName(scenario, lang),
+      scenario.name,
+      packName(scenario.pack),
+      englishPack,
+    ]);
   }
 
   // Guests only see the chosen scenario.

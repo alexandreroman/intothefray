@@ -253,6 +253,50 @@ describe('ScenarioPicker in French', () => {
     expect(screen.queryByText('Klaw')).toBeNull();
   });
 
+  async function filterScenarios(query: string) {
+    await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
+      target: { value: query },
+    });
+  }
+
+  it('finds a scenario whatever the case and accents', async () => {
+    renderFrench(rhino);
+
+    await filterScenarios('LE RHINOCEROS');
+
+    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
+    expect(screen.queryByText('Klaw')).toBeNull();
+  });
+
+  it('finds a scenario by its English name, and by its pack name, shown or English', async () => {
+    cardLang.current = 'fr';
+    render(ScenarioPicker, {
+      view: viewOf(rhino),
+      index: {
+        ...french,
+        scenarios: french.scenarios.map((s) =>
+          s.id === 'wrecking_crew' ? { ...s, localized: { fr: { name: 'Écraseurs' } } } : s,
+        ),
+      },
+      onconfigure: vi.fn(),
+      room: windowRoom,
+    });
+
+    await filterScenarios('ecraseurs');
+    expect(screen.getByText('Écraseurs')).toBeTruthy();
+    expect(screen.queryByText('Le Rhinocéros')).toBeNull();
+
+    await filterScenarios('wrecking');
+    expect(screen.getByText('Écraseurs')).toBeTruthy();
+    expect(screen.queryByText('Le Rhinocéros')).toBeNull();
+
+    for (const pack of ['core set', 'boite de base']) {
+      await filterScenarios(pack);
+      expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
+      expect(screen.getByText('Klaw')).toBeTruthy();
+    }
+  });
+
   describe('Add a set menu filter', () => {
     async function filterSets(query: string) {
       renderFrench({ ...rhino, modulars: [] });

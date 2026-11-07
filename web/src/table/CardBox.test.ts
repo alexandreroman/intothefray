@@ -8,6 +8,7 @@ import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './b
 import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
+import type { Lang } from '../lib/lang';
 import { mockScreen, PHONE } from '../lib/screen.testing';
 import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
 import {
@@ -21,6 +22,14 @@ import {
   spectatorYou,
 } from './fixtures.testing';
 
+// The card language, as each test chooses: the table reads it once, as it opens.
+const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
+
+vi.mock('../lib/lang', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/lang')>()),
+  storedLang: () => cardLang.current,
+}));
+
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
   knownCard: vi.fn(),
@@ -30,9 +39,9 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 // The catalog of the fixture: code -> faces.
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
-  '01020': [{ name: 'Web-Shooter' }],
-  '01021': [{ name: 'Swinging Web Kick' }],
-  '01022': [{ name: 'Backflip' }],
+  '01020': [{ name: 'Web-Shooter', localized: { fr: { name: 'Lance-Toile' } } }],
+  '01021': [{ name: 'Swinging Web Kick', localized: { fr: { name: 'Écraser au vol' } } }],
+  '01022': [{ name: 'Backflip', localized: { fr: { name: 'Salto arrière' } } }],
   '01094': [{ name: 'Rhino', stage: 'I', type: 'villain' }],
   '01095': [{ name: 'Rhino', stage: 'II', type: 'villain' }],
   '01097': [
@@ -257,6 +266,29 @@ describe('CardBox', () => {
 
     expect(within(dialog).getByRole('button', { name: 'Close without shuffling' })).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: 'Shuffle & close' })).toBeTruthy();
+  });
+
+  describe('in French', () => {
+    afterEach(() => {
+      cardLang.current = 'en';
+    });
+
+    async function filterBy(query: string): Promise<void> {
+      cardLang.current = 'fr';
+      await renderTable(makeView({ private: SEARCH }));
+      const filter = within(box()).getByRole('textbox', { name: 'Filter by name' });
+      await fireEvent.input(filter, { target: { value: query } });
+    }
+
+    it('finds a card whatever the case and accents of its shown name', async () => {
+      await filterBy('ECRASER');
+      expect(tileNames()).toEqual(['Écraser au vol']);
+    });
+
+    it('finds a card by its English name', async () => {
+      await filterBy('backflip');
+      expect(tileNames()).toEqual(['Salto arrière']);
+    });
   });
 
   it('its filter field offers no autocomplete, spell check or saved searches', async () => {
@@ -1088,6 +1120,7 @@ describe('CardBox in dock mode', () => {
         box: { kind: 'pile', pile: shown, mode, cards: shown.cards ?? DECK_TOP },
         view,
         facesOf: (shownCard: TableCard) => faces(shownCard.code),
+        englishName: () => undefined,
         sizeOf: () => 'std',
         readOnly: false,
         selected: 0,

@@ -99,6 +99,7 @@ describe('a card box', () => {
       box: { kind: 'pile', pile: deck, mode: 'search', cards: ['c1', 'c2'] },
       view,
       facesOf: () => [],
+      englishName: () => undefined,
       sizeOf: () => 'std',
       readOnly: false,
       selected: null,
