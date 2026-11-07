@@ -36,7 +36,7 @@ function textOf(piece: LogPart, nameOf: NameOf | undefined): string {
 }
 
 /** A line of the history, as both lists draw it. */
-export interface HistoryLine {
+interface HistoryLine {
   /** The line's position from the oldest, which does not move when lines are added. */
   key: number;
   entry: LogView;

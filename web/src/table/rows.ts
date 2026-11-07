@@ -42,7 +42,7 @@ export function saveViewMode(mode: ViewMode): void {
 }
 
 /** Where heights of the table are drawn, in table units. */
-export interface RowMap {
+interface RowMap {
   /** Where a height of the table is drawn, or null when its row is not shown. */
   toDisplay(y: number): number | null;
   /** The height of the table drawn at a height of the surface. */

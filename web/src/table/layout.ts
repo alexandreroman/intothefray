@@ -330,7 +330,7 @@ export interface FanSlot {
 export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
 
 /** The active counter, in table units. */
-export const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
+const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
 
 /** Each marker's box, in table units. */
 export const MARKER_BOXES: Record<MarkerName, { w: number; h: number }> = {

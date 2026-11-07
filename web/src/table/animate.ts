@@ -307,7 +307,7 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
 }
 
 /** Where the dock layout draws an item of the table (dockLayout.ts itemBox): a card by its id, a marker by markerItemId. */
-export type DrawnAt = (id: string) => Point | null;
+type DrawnAt = (id: string) => Point | null;
 
 // What a card may also play while the flow slides it: neither moves it.
 const BESIDE_A_SLIDE: ReadonlySet<Anim['kind']> = new Set(['tilt', 'glow']);
