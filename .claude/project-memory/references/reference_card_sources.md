@@ -8,10 +8,12 @@ type: reference
 
 - marvelcdb public API: `https://marvelcdb.com/api/public/packs/`,
   `/api/public/cards/?encounter=1`, decks at `/api/public/decklist/{id}`
-  and `/api/public/deck/{id}`; images at `https://marvelcdb.com{imagesrc}`.
+  and `/api/public/deck/{id}`, and `/api/public/card/{code}` (name and
+  pack of a deck card the catalog lacks, for the import error); images
+  at `https://marvelcdb.com{imagesrc}`.
   Card records carry `octgn_id`, the name of the card's images in the
   OCTGN image packs.
-- Cerebro API: `https://cerebro-beta-bot.herokuapp.com/{cards,packs,sets}`;
+- Cerebro API: `https://cerebro-beta-bot.herokuapp.com/{cards,sets}`;
   images at
   `https://pub-d27e6715f4ba4529bc9d8fd13938a5a1.r2.dev/cerebro-cards/official/{Id}.jpg`.
 - French names: `https://fr.marvelcdb.com/api/public/cards/?encounter=1`
