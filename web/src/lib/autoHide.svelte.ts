@@ -13,7 +13,7 @@ export const TOP_BAR_HEIGHT = 56;
 export const SCROLL_THRESHOLD = 10;
 
 /** Where a scroller is, as its scroll events report it. */
-export interface ScrollMetrics {
+interface ScrollMetrics {
   /** The vertical scroll offset, in px: negative or past the end during an overscroll bounce. */
   offset: number;
   /** The height of the whole content, in px. */
@@ -112,7 +112,7 @@ function clampedOffset(metrics: ScrollMetrics): number {
 }
 
 /** What scrolls under the bar: the window, or an element of its own. */
-export type ScrollSource = Window | HTMLElement;
+type ScrollSource = Window | HTMLElement;
 
 function metricsOf(source: ScrollSource): ScrollMetrics {
   if (source instanceof HTMLElement) {
@@ -130,7 +130,7 @@ function metricsOf(source: ScrollSource): ScrollMetrics {
   };
 }
 
-export interface ScrollAutoHideOptions {
+interface ScrollAutoHideOptions {
   /** What scrolls under the bar. */
   source: () => ScrollSource;
   /** Whether the bar may hide at all (a small screen): when not, nothing is listened to. */

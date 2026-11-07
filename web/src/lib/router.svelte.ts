@@ -1,8 +1,8 @@
-export type Route =
+type Route =
   { name: 'home' } | { name: 'options' } | { name: 'about' } | { name: 'game'; id: string };
 
 /** An app path, relative to the base: '/', '/options', '/about', '/g/?id=<id>'. */
-export type AppPath = `/${string}`;
+type AppPath = `/${string}`;
 
 // Where the app is served, always ending with a slash: '/' by default, the
 // repository sub-path on GitHub Pages.

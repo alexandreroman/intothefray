@@ -7,7 +7,7 @@
  * - lead: the first one the whole width on a line of its own, then the others
  *   two by two (three without room for a row, five or more).
  */
-export type ButtonLayout = 'single' | 'pairs' | 'row' | 'lead';
+type ButtonLayout = 'single' | 'pairs' | 'row' | 'lead';
 
 /** The narrowest a button may be in a row of three, in CSS px: narrower, it reads as cramped. */
 export const MIN_BUTTON_WIDTH = 96;

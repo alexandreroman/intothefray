@@ -13,4 +13,4 @@ applyTheme(storedTheme());
 // For the page's whole life: fullscreen may be entered from any screen.
 installEscapeLock();
 
-export default mount(App, { target });
+mount(App, { target });

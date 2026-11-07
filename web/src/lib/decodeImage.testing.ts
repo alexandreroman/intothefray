@@ -2,7 +2,7 @@
 // each decode asked for and settles it when the test says.
 
 /** A decode asked for: the image's URL and fetch priority, and how the test settles it. */
-export interface StubbedDecode {
+interface StubbedDecode {
   url: string | null;
   priority: string;
   resolve: () => void;
