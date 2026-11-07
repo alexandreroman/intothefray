@@ -1037,7 +1037,13 @@
     pointer-events: auto;
   }
 
+  /*
+    The card's shadow (.shade, tokens.css) is a hand card's (--held-card-shadow): it turns and pops with the card,
+    drawn once. The fan's transform gives it its own stacking, which keeps the shade under its face. The slot is
+    portrait, a landscape card turned a quarter in it: portrait corners.
+  */
   .fan {
+    --shade-shadow: var(--held-card-shadow);
     position: relative;
     width: 100%;
     height: 100%;
@@ -1045,20 +1051,6 @@
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  /*
-    The card's shadow, cast from 2px inside its edge, under its face (see --held-card-shadow): it turns and pops with
-    the card, drawn once. The fan's transform gives it its own stacking, which keeps the shade under its face. The slot
-    is portrait, a landscape card turned a quarter in it: portrait corners.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--held-card-shadow);
-    pointer-events: none;
   }
 
   /*

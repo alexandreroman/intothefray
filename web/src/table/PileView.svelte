@@ -173,21 +173,12 @@
       translate var(--shift-glide, 0s) ease-out;
   }
 
+  /*
+    Its shadow (.shade, tokens.css) keeps a card's portrait corners: a pile's slot is always portrait, a landscape
+    top card turned to fit it.
+  */
   :global(.app.touch) .card .shade {
     transition: translate 0.14s ease-out;
-  }
-
-  /*
-    The same 45° shadow as a card on the table, cast from 2px inside its edge, under its face (see --card-shadow). A
-    pile's slot is always portrait: a landscape top card is turned to fit it, and rounded with the portrait corners.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    pointer-events: none;
   }
 
   .card.grab {

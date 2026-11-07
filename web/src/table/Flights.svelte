@@ -143,25 +143,17 @@
 {/each}
 
 <style>
+  /*
+    Its shadow (.shade, tokens.css) is a hand card's (--held-card-shadow), under what it shows: it turns, shrinks and
+    fades with the copy, drawn once. Its corners are those of the copy's box, which is the card's as it was measured,
+    landscape for a landscape card lying on the table; a quarter turn on the way turns it along.
+  */
   .fly {
+    --shade-shadow: var(--held-card-shadow);
     position: fixed;
     z-index: 2900;
     pointer-events: none;
     transform-origin: center;
-  }
-
-  /*
-    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge, under what it shows: it
-    turns, shrinks and fades with the copy, drawn once. Its corners are those of the copy's box, which is the card's
-    as it was measured, landscape for a landscape card lying on the table; a quarter turn on the way turns it along.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--held-card-shadow);
-    pointer-events: none;
   }
 
   .fly.land .shade {

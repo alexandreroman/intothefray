@@ -709,6 +709,20 @@ a.btn-primary {
 }
 
 /*
+  A card's shadow, cast from a shade 2px inside its edge, under its face, with the card's corners (see
+  --card-shadow). A card held up, in the hand, dragged from it or flying, casts the shorter one: its component
+  sets --shade-shadow to --held-card-shadow. A component's own rules, scoped, outrank this one.
+*/
+.shade {
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shade-shadow, var(--card-shadow));
+  pointer-events: none;
+}
+
+/*
   Touch mode (TOUCH_MODE_QUERY in lib/screen.ts, which this query must match): the table page, fixed to the screen
   (Table.svelte), pans but never pinch-zooms, as the table zooms itself.
 */

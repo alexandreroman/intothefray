@@ -333,19 +333,9 @@
   }
 
   /*
-    The card's shadow, cast from 2px inside its edge, under its face (see --card-shadow). Its corners are the card's
-    radius (CardFace), so it falls from the rounded card. The tabs and tokens that stick out of the card's edge cast
-    their own.
+    The card's shadow (.shade, tokens.css) has the card's corners (CardFace), so it falls from the rounded card. The
+    tabs and tokens that stick out of the card's edge cast their own.
   */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    pointer-events: none;
-  }
-
   .card.land .shade {
     border-radius: var(--card-radius-land);
   }

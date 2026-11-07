@@ -1,4 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { tick } from 'svelte';
 import Hand from './Hand.svelte';
 import handSource from './Hand.svelte?raw';
@@ -475,8 +477,12 @@ describe('Hand', () => {
       expect(card.querySelector('.fan')?.firstElementChild?.classList).toContain('shade');
     }
     expect(container.querySelector('.hcard.gap .shade')).toBeNull();
-    expect(rule('.shade')).toMatch(/box-shadow: var\(--held-card-shadow\);/);
-    expect(rule('.shade')).toMatch(/pointer-events: none;/);
+    // The app's shade (tokens.css), which a hand card's fan gives the held card's shadow.
+    expect(rule('.fan')).toMatch(/--shade-shadow: var\(--held-card-shadow\);/);
+    const tokens = readFileSync(path.join(import.meta.dirname, '../styles/tokens.css'), 'utf8');
+    const shade = /\n\.shade \{([^}]*)\}/.exec(tokens)?.[1] ?? '';
+    expect(shade).toMatch(/box-shadow: var\(--shade-shadow, var\(--card-shadow\)\);/);
+    expect(shade).toMatch(/pointer-events: none;/);
     expect(handSource).not.toMatch(/filter:/);
   });
 

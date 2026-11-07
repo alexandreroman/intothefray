@@ -1321,30 +1321,19 @@
   /*
     A hand card brought back over the hand, at its size in the hand; off the hand, a table card's
     ghost takes its place. Held up and swaying about its middle as a table card's ghost is
-    (CardView.svelte); out of the table, it keeps the hand's shadow. It follows the pointer on
-    translate, from the layer's corner: a pointer move lays nothing out again.
+    (CardView.svelte); out of the table, it keeps the hand's shadow (.shade, tokens.css). It follows
+    the pointer on translate, from the layer's corner: a pointer move lays nothing out again. Its
+    scale and rotate give it its own stacking, which keeps the shade under its face. The ghost is
+    portrait, a landscape card turned a quarter in it.
   */
   .hghost {
+    --shade-shadow: var(--held-card-shadow);
     position: absolute;
     left: 0;
     top: 0;
     scale: var(--lift-scale);
     rotate: var(--sway, 0deg);
     transition: scale 0.14s ease-out;
-  }
-
-  /*
-    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge. Its scale and rotate give
-    it its own stacking, which keeps the shade under its face. The ghost is portrait, a landscape card turned a
-    quarter in it.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--held-card-shadow);
-    pointer-events: none;
   }
 
   /* Picked up, it rises off the hand, as the drag's first ghost only. */
