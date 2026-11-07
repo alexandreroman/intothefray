@@ -18,6 +18,7 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { prefersReducedMotion } from 'svelte/motion';
+  import { byId } from '../lib/byId';
   import type {
     Action,
     Area,
@@ -206,7 +207,7 @@
 
   const cards = $derived(view.table?.cards ?? []);
   const tablePiles = $derived(view.table?.piles ?? []);
-  const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
+  const cardsById = $derived(byId(cards));
   /**
    * The ghosts of the last drop, set down where it landed (the cards, or the
    * marker's corner, in table units of the layer), the action

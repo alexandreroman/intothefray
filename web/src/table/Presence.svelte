@@ -18,6 +18,7 @@
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { byId } from '../lib/byId';
   import { playerColorVar } from '../lib/playerColor';
   import { PRESENCE_INTERVAL_MS } from '../lib/session.svelte';
   import type {
@@ -441,7 +442,7 @@
       return [];
     }
     const { x, y } = corner;
-    const cards = new Map((view.table?.cards ?? []).map((card) => [card.id, card]));
+    const cards = byId(view.table?.cards ?? []);
     const first = cards.get(drag.cards[0] ?? '');
     const ids = drag.cards.filter((id, i) => drag.cards.indexOf(id) === i);
     return ids.map((id) => {
@@ -498,9 +499,7 @@
    * up on, or its player lost.
    */
   function tableCardsOf(ghosts: Drawn['ghosts']): Set<string> {
-    const onTable = new Set(
-      (view.table?.cards ?? []).filter((card) => card.zone === 'table').map((card) => card.id),
-    );
+    const onTable = tableCardIds();
     const dragged = ghosts.flatMap((ghost) => ghost.cards.map((card) => card.id));
     return new Set(dragged.filter((id) => onTable.has(id)));
   }

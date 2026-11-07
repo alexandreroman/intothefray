@@ -16,6 +16,7 @@
   import { tick, untrack } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import Dialog from '../components/Dialog.svelte';
+  import { byId } from '../lib/byId';
   import { overflowTip } from '../lib/overflowTip';
   import { releaseFocus } from '../lib/releaseFocus';
   import { TOUCH_MODE_QUERY } from '../lib/screen';
@@ -108,7 +109,7 @@
     shown: boolean;
   }
 
-  const cardsById = $derived(new Map((view.table?.cards ?? []).map((card) => [card.id, card])));
+  const cardsById = $derived(byId(view.table?.cards ?? []));
 
   // Cards put at the bottom of their deck from this box leave it, though they stay in the pile.
   let sentDown = $state<string[]>([]);
