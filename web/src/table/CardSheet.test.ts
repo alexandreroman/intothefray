@@ -14,6 +14,7 @@ import {
 import { MAX_MODIFIER, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
+import { stubImageDecode } from '../lib/decodeImage.testing';
 
 // Whether the viewer prefers reduced motion; the tests of the motion turn it on and off.
 const motion = vi.hoisted(() => ({ reduced: false }));
@@ -116,6 +117,7 @@ function renderSheet(
     cardId?: string;
     header?: ContextHeader;
     images?: string[];
+    nextImages?: string[];
     landscape?: boolean;
   } = {},
 ) {
@@ -129,6 +131,7 @@ function renderSheet(
       entries: props.entries ?? ENTRIES,
       note: props.note,
       images: props.images ?? ['rhino.png'],
+      nextImages: props.nextImages,
       landscape: props.landscape,
       counters: props.counters ?? [],
       stack: props.stack,
@@ -1321,6 +1324,42 @@ describe('CardSheet', () => {
     });
   });
 
+  describe('decoding ahead the face a Flip turns the card to', () => {
+    let decodes: ReturnType<typeof stubImageDecode>;
+
+    beforeEach(() => {
+      decodes = stubImageDecode();
+    });
+
+    afterEach(() => decodes.restore());
+
+    function decoded(): { url: string | null; priority: string }[] {
+      return decodes.calls.map(({ url, priority }) => ({ url, priority }));
+    }
+
+    it('decodes its first image as the sheet opens, at low priority', () => {
+      renderSheet({ nextImages: ['rhino-2.png', 'cdb-rhino-2.png'] });
+
+      expect(decoded()).toEqual([{ url: 'rhino-2.png', priority: 'low' }]);
+    });
+
+    it('decodes nothing for a card whose other face the viewer does not know', () => {
+      renderSheet();
+
+      expect(decoded()).toEqual([]);
+    });
+
+    it('decodes the next face of each card the sheet shows, once', async () => {
+      const { rerender } = renderSheet({ nextImages: ['rhino-2.png'] });
+
+      // A new array of the same images, as each redraw gives.
+      await rerender({ nextImages: ['rhino-2.png'] });
+      await rerender({ cardId: 'armor', header: ARMOR_HEADER, nextImages: ['armor-2.png'] });
+
+      expect(decoded().map(({ url }) => url)).toEqual(['rhino-2.png', 'armor-2.png']);
+    });
+  });
+
   describe('motion', () => {
     // jsdom has no Web Animations: animations that run until a test finishes them, as Svelte's
     // transitions play them.
@@ -1872,6 +1911,117 @@ describe('CardSheet', () => {
 
         await finishAnimations();
         expect(document.querySelector('.inspector .face')?.classList).toContain('land');
+      });
+
+      describe("waiting edge-on for the new side's image", () => {
+        let decodes: ReturnType<typeof stubImageDecode>;
+
+        beforeEach(() => {
+          decodes = stubImageDecode();
+          vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        });
+
+        afterEach(() => {
+          vi.useRealTimers();
+          decodes.restore();
+        });
+
+        /** Lets the promises of a decode settle, and the sheet draw what follows. */
+        async function settleDecode(): Promise<void> {
+          for (let i = 0; i < 5; i++) {
+            await Promise.resolve();
+          }
+          await tick();
+        }
+
+        /** Opens the sheet, then turns the card to Rhino II: its face turns away, still Rhino. */
+        async function turnToRhinoII(): Promise<void> {
+          const { rerender } = renderSheet();
+          await finishAnimations();
+          animate.mockClear();
+          await rerender({ images: ['rhino-2.png', 'cdb-rhino-2.png'], header: TURNED });
+        }
+
+        /** The turn reaches edge-on. */
+        async function reachEdgeOn(): Promise<void> {
+          expect(turns()).toHaveLength(1);
+          running.shift()?.onfinish?.();
+          await tick();
+        }
+
+        it('decodes the first image of the new side as the update brings it', async () => {
+          await turnToRhinoII();
+
+          expect(decodes.calls.map(({ url, priority }) => ({ url, priority }))).toEqual([
+            { url: 'rhino-2.png', priority: 'auto' },
+          ]);
+        });
+
+        it('shows the new side at once edge-on when its image is decoded by then', async () => {
+          await turnToRhinoII();
+          decodes.calls[0]!.resolve();
+          await settleDecode();
+
+          await reachEdgeOn();
+
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(turns()).toHaveLength(2);
+          expect(vi.getTimerCount()).toBe(0);
+        });
+
+        it('holds the card edge-on until the image is decoded', async () => {
+          await turnToRhinoII();
+          await reachEdgeOn();
+          expect(faceImage().getAttribute('src')).toBe('rhino.png');
+          expect(turns()).toHaveLength(1);
+
+          decodes.calls[0]!.resolve();
+          await settleDecode();
+
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(turns()).toHaveLength(2);
+          expect(vi.getTimerCount()).toBe(0);
+        });
+
+        it('waits no more than 150 ms for an image that is slow to decode', async () => {
+          await turnToRhinoII();
+          await reachEdgeOn();
+
+          vi.advanceTimersByTime(149);
+          await tick();
+          expect(faceImage().getAttribute('src')).toBe('rhino.png');
+
+          vi.advanceTimersByTime(1);
+          await tick();
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(turns()).toHaveLength(2);
+
+          // The decode that settles later changes nothing more.
+          decodes.calls[0]!.resolve();
+          await settleDecode();
+          expect(turns()).toHaveLength(2);
+        });
+
+        it('turns on as soon as the image fails to decode', async () => {
+          await turnToRhinoII();
+          await reachEdgeOn();
+
+          decodes.calls[0]!.reject();
+          await settleDecode();
+
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(turns()).toHaveLength(2);
+        });
+
+        it('neither decodes nor waits under reduced motion', async () => {
+          motion.reduced = true;
+          const { rerender } = renderSheet();
+
+          await rerender({ images: ['rhino-2.png'], header: TURNED });
+
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(decodes.calls).toEqual([]);
+        });
       });
 
       it('changes the face at once under reduced motion', async () => {

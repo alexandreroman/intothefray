@@ -17,6 +17,7 @@ import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
 import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
 import { storedZoom } from './zoom';
+import { stubImageDecode } from '../lib/decodeImage.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -27,7 +28,10 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 // The catalog of the fixture: code -> faces.
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
-  '01002': [{ name: 'Peter Parker' }, { name: 'Spider-Man' }],
+  '01002': [
+    { name: 'Peter Parker', images: ['peter-parker.png'] },
+    { name: 'Spider-Man', images: ['spider-man.png'] },
+  ],
   '01094': [{ name: 'Rhino', stage: 'I' }],
   '01003': [{ name: 'Web-Shooter' }],
 };
@@ -523,6 +527,50 @@ describe('the inspector, revealing a card from a deck', () => {
     expect(session.act.mock.calls[0]![0]).toEqual({ kind: 'reveal' });
     expect(contextMenu()).toBeNull();
     expect(sheet()).toBeNull();
+  });
+});
+
+describe('the inspector, decoding ahead the face a Flip turns the card to', () => {
+  let decodes: ReturnType<typeof stubImageDecode>;
+
+  beforeEach(() => {
+    mockScreen({ ...DESKTOP, touch: true });
+    decodes = stubImageDecode();
+  });
+
+  afterEach(() => decodes.restore());
+
+  function decoded(): (string | null)[] {
+    return decodes.calls.map(({ url }) => url);
+  }
+
+  it("decodes a double-sided card's other face as its inspector opens", async () => {
+    await renderTable();
+
+    await tap(placed('two'));
+
+    expect(decoded()).toEqual(['spider-man.png']);
+  });
+
+  it('decodes the face after the one shown, back to the first after the last', async () => {
+    await renderTable(
+      makeView([card('mine'), card('two', { code: '01002', x: 200, face: 1 }), ...OTHERS.slice(1)]),
+    );
+
+    await tap(placed('two'));
+
+    expect(decoded()).toEqual(['peter-parker.png']);
+  });
+
+  it('decodes nothing for a face-down card, nor for a card with a single face', async () => {
+    const down = card('down', { code: '01002', faceDown: true, x: 400 });
+    await renderTable(makeView([card('mine'), down, ...OTHERS]));
+
+    await tap(placed('down'));
+    await fireEvent.keyDown(window, { key: 'Escape' });
+    await tap(placed('mine'));
+
+    expect(decoded()).toEqual([]);
   });
 });
 

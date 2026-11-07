@@ -1663,6 +1663,23 @@
     return isHidden(card) ? backImages(card.back) : (faceOf(card)?.images ?? []);
   }
 
+  /**
+   * The face a Flip turns the inspected card to, for the inspector to decode ahead: a face-up card's
+   * next face, back to the first after the last (resolveFlip, internal/game). None for a pile, a
+   * card the viewer may not see, or a card with a single face, which turns face down to its back.
+   */
+  function inspectorNextImages(element: TableElement): string[] {
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    if (!card || isHidden(card)) {
+      return [];
+    }
+    const faces = facesOf(card);
+    if (faces.length < 2) {
+      return [];
+    }
+    return faces[(card.face + 1) % faces.length]!.images;
+  }
+
   /** Whether the inspected card lies landscape: a face-down card or a pile shows a portrait back or top. */
   function inspectorLandscape(element: TableElement): boolean {
     const card = element.kind === 'pile' ? undefined : cardsById.get(element.id);
@@ -2840,6 +2857,7 @@
         entries={inspectorContent.entries}
         note={inspectorContent.note}
         images={inspectorImages(sheetElement)}
+        nextImages={inspectorNextImages(sheetElement)}
         landscape={inspectorLandscape(sheetElement)}
         counters={inspectorCounters(sheetElement)}
         stack={inspectorStack(sheetElement)}

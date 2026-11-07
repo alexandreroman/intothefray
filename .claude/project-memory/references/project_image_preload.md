@@ -19,6 +19,13 @@ type: project
   revalidation. `web/index.html` preconnects to
   `https://img.intothefray.xyz`. English and French images are both
   cached this way.
+- The inspector (`CardSheet.svelte`) has images decoded ahead with
+  `Image.decode()` (`web/src/lib/decodeImage.ts`): the first URL of the
+  face a Flip turns the shown card to, at low priority, as it opens or
+  shows another card; and the new side's first URL as soon as the view
+  brings it, the turn holding the card edge-on for that decode, 150 ms at
+  most. Only faces the view gives the viewer are decoded, never a hidden
+  card's.
 
 **Why:** a card whose image is not cached shows empty until it downloads.
 The simplest, browser-native solution is preferred over
