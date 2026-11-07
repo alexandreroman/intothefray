@@ -118,6 +118,28 @@ type Card struct {
 	SetAside []string `json:"setAside,omitempty"` // player card: cards a deck with it sets aside at setup
 }
 
+// HeroFace returns the hero face of an identity card, or its first face when
+// no face is a hero face. The card must have a face.
+func (c Card) HeroFace() Face {
+	for _, face := range c.Faces {
+		if face.Type == FaceTypeHero {
+			return face
+		}
+	}
+	return c.Faces[0]
+}
+
+// AlterEgo returns the first alter-ego face of the card, and false when it
+// has none.
+func (c Card) AlterEgo() (Face, bool) {
+	for _, face := range c.Faces {
+		if face.Type == FaceTypeAlterEgo {
+			return face, true
+		}
+	}
+	return Face{}, false
+}
+
 // Set kinds the code reads (Set.Kind, SetRef.Kind): marvelcdb
 // card_set_type_name_code values.
 const (

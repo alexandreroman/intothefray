@@ -7,6 +7,27 @@ import (
 	"testing"
 )
 
+func TestCardHeroFaceAndAlterEgo(t *testing.T) {
+	identity := Card{Faces: []Face{
+		{Name: "Peter Parker", Type: FaceTypeAlterEgo},
+		{Name: "Spider-Man", Type: FaceTypeHero},
+	}}
+	if got := identity.HeroFace().Name; got != "Spider-Man" {
+		t.Errorf("HeroFace = %q, want Spider-Man", got)
+	}
+	if got, ok := identity.AlterEgo(); !ok || got.Name != "Peter Parker" {
+		t.Errorf("AlterEgo = %q, %v; want Peter Parker", got.Name, ok)
+	}
+
+	plain := Card{Faces: []Face{{Name: "Plain Side", Type: "upgrade"}}}
+	if got := plain.HeroFace().Name; got != "Plain Side" {
+		t.Errorf("HeroFace without a hero face = %q, want the first face", got)
+	}
+	if _, ok := plain.AlterEgo(); ok {
+		t.Error("AlterEgo without an alter-ego face reports one")
+	}
+}
+
 func TestPackFileRoundTrip(t *testing.T) {
 	want := PackFile{
 		Code:     "core",

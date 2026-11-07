@@ -424,14 +424,11 @@ func heroTitleOf(cat *pack.Catalog, identity string) (heroTitle, bool) {
 	if err != nil || len(card.Faces) == 0 {
 		return heroTitle{}, false
 	}
-	face := heroFace(card)
+	face := card.HeroFace()
 	title := heroTitle{name: face.Name, subtitle: face.Subname}
 	if title.subtitle == "" {
-		for _, f := range card.Faces {
-			if f.Type == pack.FaceTypeAlterEgo {
-				title.subtitle = f.Name
-				break
-			}
+		if alterEgo, ok := card.AlterEgo(); ok {
+			title.subtitle = alterEgo.Name
 		}
 	}
 	return title, true
@@ -468,22 +465,11 @@ func heroImage(cat *pack.Catalog, identity string) string {
 	if err != nil || len(card.Faces) == 0 {
 		return ""
 	}
-	face := heroFace(card)
+	face := card.HeroFace()
 	if len(face.Images) == 0 {
 		return ""
 	}
 	return face.Images[0]
-}
-
-// heroFace returns the hero face of an identity card, or its first face when
-// no face is a hero face. The card must have a face.
-func heroFace(card pack.Card) pack.Face {
-	for _, f := range card.Faces {
-		if f.Type == pack.FaceTypeHero {
-			return f
-		}
-	}
-	return card.Faces[0]
 }
 
 // cleanName strips emojis from a display name, trims it and cuts it to maxNameRunes runes,

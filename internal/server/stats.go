@@ -118,24 +118,11 @@ func (s *Server) playedGameOf(summary game.Summary) playedGame {
 // face is a hero face, and its alter-ego face, or none when it has no such
 // face. The card must have a face.
 func heroOf(card pack.Card) playedHero {
-	hero := playedHero{Hero: card.Faces[0].Name}
-	if face, ok := faceOfType(card, pack.FaceTypeHero); ok {
-		hero.Hero = face.Name
-	}
-	if face, ok := faceOfType(card, pack.FaceTypeAlterEgo); ok {
-		hero.AlterEgo = face.Name
+	hero := playedHero{Hero: card.HeroFace().Name}
+	if alterEgo, ok := card.AlterEgo(); ok {
+		hero.AlterEgo = alterEgo.Name
 	}
 	return hero
-}
-
-// faceOfType returns the first face of the card with the given type.
-func faceOfType(card pack.Card, faceType string) (pack.Face, bool) {
-	for _, face := range card.Faces {
-		if face.Type == faceType {
-			return face, true
-		}
-	}
-	return pack.Face{}, false
 }
 
 // comparePlayedGames orders games by ref. Games without one, which come
