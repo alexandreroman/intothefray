@@ -43,7 +43,9 @@
     fontSize === undefined ? `${MARK_RATIO[variant]}em` : fontSize * MARK_RATIO[variant],
   );
   // A mark of unknown size is taken as a large one, with its spark.
-  const spark = $derived(sparkWanted ?? (typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE));
+  const spark = $derived(
+    sparkWanted ?? (typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE),
+  );
   // A small mark needs a wider fracture to show it.
   const offset = $derived(spark ? 1.6 : 1.8);
 </script>
