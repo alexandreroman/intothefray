@@ -8,6 +8,7 @@ import {
   card,
   domRect,
   fakeSession,
+  ghostCorner,
   infoFrom,
   pile,
   placed,
@@ -307,8 +308,7 @@ describe('dragging a table card', () => {
     ];
     const { session } = await renderTable(makeView({ cards: stack }));
     const ids = ['mine', 't1', 'a1', 'a2'];
-    const corners = () =>
-      ghosts().map((g) => [g.dataset.id, parseFloat(g.style.left), parseFloat(g.style.top)]);
+    const corners = () => ghosts().map((g) => [g.dataset.id, ...ghostCorner(g)]);
     const expected = [
       ['mine', 224, 392],
       ['t1', 224, 412],
@@ -476,8 +476,7 @@ describe('dragging a table card', () => {
     expect(screen.getByText('Under Spider-Man')).toBeTruthy();
   });
 
-  const corners = () =>
-    ghosts().map((g) => [g.dataset.id, parseFloat(g.style.left), parseFloat(g.style.top)]);
+  const corners = () => ghosts().map((g) => [g.dataset.id, ...ghostCorner(g)]);
 
   it('lands where it was let go over the stack, until the server answers', async () => {
     const { session } = await renderTable(chainView());
@@ -979,6 +978,38 @@ describe('the sway of the dragged card', () => {
     expect(frames.size).toBe(0);
   });
 
+  it('starts the next drag upright, writing nothing on the layer when the last sway is at rest', async () => {
+    const { rerender } = await renderTable();
+    const x = await dragBy(8, 12);
+    await release(x, 452);
+    for (let i = 0; i < 120 && frames.size > 0; i++) {
+      nextFrame();
+    }
+    await rerender(makeView());
+    const layer = document.querySelector<HTMLElement>('.draglayer')!;
+    const removed = vi.spyOn(layer.style, 'removeProperty');
+    const written = vi.spyOn(layer.style, 'setProperty');
+
+    // The drag's first move measures the drop targets: no style written before it is laid out again.
+    await press(placed('mine'), 50, 400);
+    await moveTo(58, 452);
+    expect(removed).not.toHaveBeenCalled();
+    expect(written).not.toHaveBeenCalled();
+    expect(swayOf()).toBe(0);
+  });
+
+  it('sets the ghosts upright at once when a drag starts while the last ones still sway', async () => {
+    const { rerender } = await renderTable();
+    const x = await dragBy(8, 12);
+    await release(x, 452);
+    expect(swayOf()).toBeGreaterThan(2);
+    await rerender(makeView());
+
+    await press(placed('mine'), 50, 400);
+    await moveTo(58, 452);
+    expect(swayOf()).toBeNaN();
+  });
+
   it('asks for no frame while nothing is dragged', async () => {
     await renderTable();
     // The frames the table asks for as it is first drawn.
@@ -1083,11 +1114,15 @@ describe('dragging a side scheme revealed on its deck', () => {
     return table;
   }
 
-  /** A ghost's left, top, width and height, in px, to the thousandth. */
+  /** A ghost's corner, width and height, in px, to the thousandth. */
   function boxOf(ghost: HTMLElement | undefined): number[] {
-    const style = ghost?.style;
-    const sides = [style?.left, style?.top, style?.width, style?.height];
-    return sides.map((side) => Math.round(Number.parseFloat(side ?? '') * 1000) / 1000);
+    const corner = ghost ? ghostCorner(ghost) : [NaN, NaN];
+    const sides = [
+      ...corner,
+      Number.parseFloat(ghost?.style.width ?? ''),
+      Number.parseFloat(ghost?.style.height ?? ''),
+    ];
+    return sides.map((side) => Math.round(side * 1000) / 1000);
   }
 
   it('lies landscape under the pointer, the same spot of its art held', async () => {
@@ -1252,8 +1287,7 @@ describe('dragging from a pile', () => {
     // Held by its middle, it lies where it was let go, its corner at 414, 341.5 on the screen: the
     // next view slides it to the end of the chain.
     const [ghost] = ghosts();
-    expect(ghost?.style.left).toBe('414px');
-    expect(ghost?.style.top).toBe('341.5px');
+    expect(ghostCorner(ghost!)).toEqual([414, 341.5]);
     expect(interaction.landing).toMatchObject({ tucks: true });
   });
 
@@ -1378,8 +1412,7 @@ describe("dragging the top card of the viewer's deck", () => {
       0,
     );
     const [ghost] = ghosts();
-    expect(ghost?.style.left).toBe('414px');
-    expect(ghost?.style.top).toBe('341.5px');
+    expect(ghostCorner(ghost!)).toEqual([414, 341.5]);
     expect(interaction.landing).toMatchObject({ tucks: true });
   });
 
@@ -1972,8 +2005,7 @@ describe('a drop waiting for the server', () => {
     // Where the move puts it: 200, 350 on the table, 220, 390 on the screen.
     const [ghost] = ghosts();
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['mine']);
-    expect(ghost?.style.left).toBe('220px');
-    expect(ghost?.style.top).toBe('390px');
+    expect(ghostCorner(ghost!)).toEqual([220, 390]);
     // Set down: no longer held up under the pointer.
     expect(ghost?.classList).toContain('landed');
     expect(placed('mine').classList).toContain('lifted');
@@ -2024,8 +2056,7 @@ describe('a drop waiting for the server', () => {
     // Played at 230, 340 on the table: 250, 380 on the screen.
     const [ghost] = ghosts();
     expect(ghosts().map((g) => g.dataset.id)).toEqual(['h2']);
-    expect(ghost?.style.left).toBe('250px');
-    expect(ghost?.style.top).toBe('380px');
+    expect(ghostCorner(ghost!)).toEqual([250, 380]);
     expect(handOrder()).toEqual(['h1', 'h3']);
 
     const played = makeView({
@@ -2084,8 +2115,7 @@ describe('a drop waiting for the server', () => {
     expect(ghosts()).toHaveLength(1);
     const [ghost] = ghosts();
     expect(ghost?.querySelector('[alt="Encounter card back"]')).not.toBeNull();
-    expect(ghost?.style.left).toBe('240px');
-    expect(ghost?.style.top).toBe('370px');
+    expect(ghostCorner(ghost!)).toEqual([240, 370]);
     expect(placed('enc').querySelector('.count')?.textContent).toBe('19');
   });
 });

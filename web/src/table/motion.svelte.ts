@@ -144,6 +144,19 @@ interface Measured {
   h: number;
 }
 
+/** An element where the new view draws it, measured before any motion starts (TableMotion.animate). */
+interface Placed {
+  element: HTMLElement;
+  to: Measured;
+  /** How much it is scaled on the screen (scaleOf): its translations are in its own units. */
+  scale: number;
+}
+
+/** What starts a motion measured beforehand: it writes to the page, and measures nothing. */
+type Start<T = void> = () => T;
+
+const START_NOTHING: Start = () => {};
+
 /** A copy of a card flying to or out of a pile, drawn by Flights.svelte. */
 interface FlightBase {
   key: number;
@@ -359,6 +372,11 @@ function playingTilt(element: HTMLElement): number {
 function ownTransform(element: HTMLElement): string {
   const transform = getComputedStyle(element).transform;
   return transform === 'none' ? '' : transform;
+}
+
+/** Measures an element where it is drawn, for a motion to start there (#slide, #tuck). */
+function placedAt(element: HTMLElement, zoom: number): Placed {
+  return { element, to: measure(element, zoom), scale: scaleOf(element, zoom) };
 }
 
 function measure(element: HTMLElement, zoom: number): Measured {
@@ -1106,6 +1124,10 @@ class TableMotion {
           playsOn(pile, ended);
         }
       };
+      // Everything the motions start from is measured first, on the view just drawn, then they all
+      // start: a measure after a start would lay the page out again, once per card, in the view's
+      // first frame. The copies' flights only measure.
+      const starts: Start[] = [];
       for (const anim of shown) {
         switch (anim.kind) {
           // A card played from the viewer's hand in dock mode also rises where the viewer saw it: the
@@ -1116,41 +1138,43 @@ class TableMotion {
             if (rise && inHand) {
               flights.push({ kind: 'rise', key: ++this.#nextKey, card: inHand, ...rise, delay: 0 });
             }
-            this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
+            starts.push(this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck));
             break;
           }
           // A card come onto the table slides out of its pile as a moved card does.
           case 'enter': {
             const slide = this.#move(root, anim.id, before.get(anim.id), zoom, anim.tuck);
-            playsOn(anim.fromPile, slide?.finished);
+            starts.push(() => playsOn(anim.fromPile, slide()?.finished));
             break;
           }
           case 'marker':
-            this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom);
+            starts.push(this.#moveMarker(root, anim.name, markersBefore.get(anim.name), zoom));
             break;
           case 'tilt':
-            this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0);
+            starts.push(() => this.#tilt(root, anim.id, anim.exhausted, tilting.get(anim.id) ?? 0));
             break;
           // A card tilting meanwhile (exhausted or readied by another player) tilts on the same rotate
           // property: it comes upright from its sway at once.
-          case 'settle':
-            this.#settle(root, anim.id, tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0));
+          case 'settle': {
+            const from = tilting.has(anim.id) ? 0 : (swayed.get(anim.id) ?? 0);
+            starts.push(() => this.#settle(root, anim.id, from));
             break;
+          }
           case 'turnIn':
-            this.#turnIn(root, anim.id, !onScale.has(anim.id));
+            starts.push(this.#turnIn(root, anim.id, !onScale.has(anim.id)));
             break;
           case 'flip':
-            this.#flip(root, anim.id, oldSides.get(anim.id), !onScale.has(anim.id));
+            starts.push(this.#flip(root, anim.id, oldSides.get(anim.id), !onScale.has(anim.id)));
             break;
           case 'glow':
-            this.#glow(root, anim.id, anim.color);
+            starts.push(this.#glow(root, anim.id, anim.color));
             break;
           // Riffled below, once the copies flying into the pile are known.
           case 'shuffle':
             shuffled.push(anim.pile);
             break;
           case 'reveal':
-            playsOn(anim.pile, this.#reveal(root, anim.pile)?.finished);
+            starts.push(() => playsOn(anim.pile, this.#reveal(root, anim.pile)?.finished));
             break;
           case 'under': {
             const flight = this.#flight(
@@ -1240,6 +1264,9 @@ class TableMotion {
             break;
           }
         }
+      }
+      for (const start of starts) {
+        start();
       }
       const launched = staggered(flights);
       for (const pile of shuffled) {
@@ -1555,8 +1582,8 @@ class TableMotion {
   }
 
   /**
-   * Slides a card to its new place; tucked into a stack (tuck), it slides in under the stack. Returns
-   * the animation that takes it there, if one plays.
+   * Measures a card at its new place, and returns what slides it there; tucked into a stack (tuck),
+   * it slides in under the stack. The start returns the animation that takes it there, if one plays.
    */
   #move(
     root: HTMLElement,
@@ -1564,16 +1591,17 @@ class TableMotion {
     from: Measured | undefined,
     zoom: number,
     tuck: Tuck | undefined,
-  ): Animation | null {
+  ): Start<Animation | null> {
     const element = root.querySelector<HTMLElement>(`${tableCard(id)}, ${handCard(id)}`);
     if (!element || !from) {
-      return null;
+      return () => null;
     }
+    const placed = placedAt(element, zoom);
     if (tuck) {
-      return this.#tuck(element, from, zoom, cardSubject(id), tuck);
+      return () => this.#tuck(placed, from, cardSubject(id), tuck);
     }
     // Moving cards are followed frame by frame, for the arrows drawn between them.
-    return this.#slide(element, from, zoom, cardSubject(id), true);
+    return () => this.#slide(placed, from, cardSubject(id), true);
   }
 
   /**
@@ -1584,15 +1612,12 @@ class TableMotion {
    * shifts out and back in.
    */
   #tuck(
-    element: HTMLElement,
+    { element, to, scale }: Placed,
     from: Measured,
-    zoom: number,
     subject: Subject,
     tuck: Tuck,
   ): Animation | null {
-    const to = measure(element, zoom);
     // Translations are in the element's own units: table units on a zoomed surface.
-    const scale = scaleOf(element, zoom);
     const dx = (from.cx - to.cx) / scale;
     const dy = (from.cy - to.cy) / scale;
     const size = to.w ? from.w / to.w : 1;
@@ -1625,25 +1650,34 @@ class TableMotion {
     return slide;
   }
 
-  /** Slides a marker from where it lay; no arrow follows it. */
-  #moveMarker(root: HTMLElement, name: MarkerName, from: Measured | undefined, zoom: number): void {
+  /**
+   * Measures a marker at its new place, and returns what slides it there from where it lay; no arrow
+   * follows it.
+   */
+  #moveMarker(
+    root: HTMLElement,
+    name: MarkerName,
+    from: Measured | undefined,
+    zoom: number,
+  ): Start {
     const element = root.querySelector<HTMLElement>(tableMarker(name));
-    if (element && from) {
-      this.#slide(element, from, zoom, markerSubject(name), false);
+    if (!element || !from) {
+      return START_NOTHING;
     }
+    const placed = placedAt(element, zoom);
+    return () => {
+      this.#slide(placed, from, markerSubject(name), false);
+    };
   }
 
-  /** Slides an element from where it showed to its new place (FLIP). */
+  /** Slides an element from where it showed to its new place, measured there (FLIP). */
   #slide(
-    element: HTMLElement,
+    { element, to, scale }: Placed,
     from: Measured,
-    zoom: number,
     subject: Subject,
     moves: boolean,
   ): Animation | null {
-    const to = measure(element, zoom);
     // Translations are in the element's own units: table units on a zoomed surface.
-    const scale = scaleOf(element, zoom);
     const dx = (from.cx - to.cx) / scale;
     const dy = (from.cy - to.cy) / scale;
     const size = to.w ? from.w / to.w : 1;
@@ -1686,30 +1720,33 @@ class TableMotion {
   }
 
   /**
-   * Turns a stage card just chosen in from edge-on, as if put down: lifted, it settles flat (lifts),
-   * unless it slides or settles meanwhile, which plays on the same scale property.
+   * Returns what turns a stage card just chosen in from edge-on, as if put down, its own transform
+   * measured now: lifted, it settles flat (lifts), unless it slides or settles meanwhile, which
+   * plays on the same scale property.
    */
-  #turnIn(root: HTMLElement, id: string, lifts: boolean): void {
+  #turnIn(root: HTMLElement, id: string, lifts: boolean): Start {
     const element = root.querySelector<HTMLElement>(tableCard(id));
     if (!element) {
-      return;
+      return START_NOTHING;
     }
     // An exhausted card's tilt turns with it.
     const own = ownTransform(element);
-    const turned = `${FLIP_PERSPECTIVE} rotateY(90deg) scale(1.05) ${own}`.trimEnd();
-    const turn = this.#run(
-      element,
-      [{ transform: turned }, { transform: own || 'none' }],
-      { duration: TURN_IN_MS, easing: MOVE_EASING },
-      cardSubject(id),
-      true,
-    );
-    if (turn) {
-      this.#turning.set(turn, id);
-    }
-    if (lifts) {
-      this.#lift(element, 'down', { duration: TURN_IN_MS }, cardSubject(id));
-    }
+    return () => {
+      const turned = `${FLIP_PERSPECTIVE} rotateY(90deg) scale(1.05) ${own}`.trimEnd();
+      const turn = this.#run(
+        element,
+        [{ transform: turned }, { transform: own || 'none' }],
+        { duration: TURN_IN_MS, easing: MOVE_EASING },
+        cardSubject(id),
+        true,
+      );
+      if (turn) {
+        this.#turning.set(turn, id);
+      }
+      if (lifts) {
+        this.#lift(element, 'down', { duration: TURN_IN_MS }, cardSubject(id));
+      }
+    };
   }
 
   /**
@@ -1719,72 +1756,75 @@ class TableMotion {
    * down into the hand), only the second half plays. An exhausted card keeps
    * its tilt; a hand card keeps its place. A table card is lifted as it turns,
    * highest edge-on (lifts), unless it slides or settles meanwhile, which
-   * plays on the same scale property.
+   * plays on the same scale property. Its own transform is measured now;
+   * the start returned turns it.
    */
-  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined, lifts: boolean): void {
+  #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined, lifts: boolean): Start {
     const onTable = root.querySelector<HTMLElement>(tableCard(id));
     const element = onTable ?? root.querySelector<HTMLElement>(handCard(id));
     if (!element || typeof element.animate !== 'function') {
-      return;
+      return START_NOTHING;
     }
     const own = ownTransform(element);
-    const turned = (angle: string) => {
-      const turn = `${FLIP_PERSPECTIVE} rotateY(${angle})`;
-      if (!own) {
-        return turn;
-      }
-      // A table card's tilt turns with it. A hand card's place on its fan (translateX) comes
-      // first: after the turn, it would shift the axis to the card's edge.
-      return onTable ? `${turn} ${own}` : `${own} ${turn}`;
-    };
-    const flat = turned('0deg');
-    const edgeOn = turned('90deg');
-    const half = FLIP_MS / 2;
+    return () => {
+      const turned = (angle: string) => {
+        const turn = `${FLIP_PERSPECTIVE} rotateY(${angle})`;
+        if (!own) {
+          return turn;
+        }
+        // A table card's tilt turns with it. A hand card's place on its fan (translateX) comes
+        // first: after the turn, it would shift the axis to the card's edge.
+        return onTable ? `${turn} ${own}` : `${own} ${turn}`;
+      };
+      const flat = turned('0deg');
+      const edgeOn = turned('90deg');
+      const half = FLIP_MS / 2;
 
-    if (oldSide && element.parentElement) {
-      // A picture only: it neither takes the pointer nor answers to the card's id.
-      oldSide.removeAttribute('data-id');
-      oldSide.setAttribute('aria-hidden', 'true');
-      oldSide.style.pointerEvents = 'none';
-      // At the end of the surface, clear of the cards Svelte lays out; its own z-index stacks it.
-      element.parentElement.append(oldSide);
-      this.#copies.set(oldSide, cardSubject(id));
-      const away = this.#run(
-        oldSide,
-        [{ transform: flat }, { transform: edgeOn }],
-        { duration: half, easing: 'ease-in', fill: 'forwards' },
+      if (oldSide && element.parentElement) {
+        // A picture only: it neither takes the pointer nor answers to the card's id.
+        oldSide.removeAttribute('data-id');
+        oldSide.setAttribute('aria-hidden', 'true');
+        oldSide.style.pointerEvents = 'none';
+        // At the end of the surface, clear of the cards Svelte lays out; its own z-index stacks it.
+        element.parentElement.append(oldSide);
+        this.#copies.set(oldSide, cardSubject(id));
+        const away = this.#run(
+          oldSide,
+          [{ transform: flat }, { transform: edgeOn }],
+          { duration: half, easing: 'ease-in', fill: 'forwards' },
+          cardSubject(id),
+        );
+        if (onTable && lifts) {
+          this.#lift(oldSide, 'up', { duration: half, fill: 'forwards' }, cardSubject(id));
+        }
+        const remove = () => {
+          oldSide.remove();
+          this.#copies.delete(oldSide);
+        };
+        void away?.finished.then(remove, remove);
+      }
+      // Edge-on, the card is not seen while its old side turns away.
+      const keyframes: Keyframe[] = oldSide
+        ? [
+            { transform: edgeOn, offset: 0 },
+            { transform: edgeOn, offset: 0.5, easing: 'ease-out' },
+            { transform: flat, offset: 1 },
+          ]
+        : [{ transform: edgeOn }, { transform: flat }];
+      const turn = this.#run(
+        element,
+        keyframes,
+        { duration: oldSide ? FLIP_MS : half },
         cardSubject(id),
       );
-      if (onTable && lifts) {
-        this.#lift(oldSide, 'up', { duration: half, fill: 'forwards' }, cardSubject(id));
+      if (turn && onTable) {
+        this.#turning.set(turn, id);
       }
-      const remove = () => {
-        oldSide.remove();
-        this.#copies.delete(oldSide);
-      };
-      void away?.finished.then(remove, remove);
-    }
-    // Edge-on, the card is not seen while its old side turns away.
-    const keyframes: Keyframe[] = oldSide
-      ? [
-          { transform: edgeOn, offset: 0 },
-          { transform: edgeOn, offset: 0.5, easing: 'ease-out' },
-          { transform: flat, offset: 1 },
-        ]
-      : [{ transform: edgeOn }, { transform: flat }];
-    const turn = this.#run(
-      element,
-      keyframes,
-      { duration: oldSide ? FLIP_MS : half },
-      cardSubject(id),
-    );
-    if (turn && onTable) {
-      this.#turning.set(turn, id);
-    }
-    if (onTable && lifts) {
-      const lift = oldSide ? 'upAndDown' : 'down';
-      this.#lift(element, lift, { duration: oldSide ? FLIP_MS : half }, cardSubject(id));
-    }
+      if (onTable && lifts) {
+        const lift = oldSide ? 'upAndDown' : 'down';
+        this.#lift(element, lift, { duration: oldSide ? FLIP_MS : half }, cardSubject(id));
+      }
+    };
   }
 
   /**
@@ -1871,24 +1911,27 @@ class TableMotion {
     );
   }
 
-  #glow(root: HTMLElement, id: string, color: number): void {
+  /** Reads the player's colour, and returns what flashes it around the card. */
+  #glow(root: HTMLElement, id: string, color: number): Start {
     const element = root.querySelector<HTMLElement>(tableCard(id));
     if (!element) {
-      return;
+      return START_NOTHING;
     }
     const glow = playerColor(color);
-    this.#run(
-      element,
-      [
-        {
-          boxShadow: `0 0 0 1.5px ${glow}, 0 0 10px 1px color-mix(in srgb, ${glow} 55%, transparent)`,
-        },
-        { boxShadow: '0 0 0 0 transparent' },
-      ],
-      // CardView draws an empty ::after around the card for it.
-      { duration: GLOW_MS, easing: 'ease-out', pseudoElement: '::after' },
-      cardSubject(id),
-    );
+    return () => {
+      this.#run(
+        element,
+        [
+          {
+            boxShadow: `0 0 0 1.5px ${glow}, 0 0 10px 1px color-mix(in srgb, ${glow} 55%, transparent)`,
+          },
+          { boxShadow: '0 0 0 0 transparent' },
+        ],
+        // CardView draws an empty ::after around the card for it.
+        { duration: GLOW_MS, easing: 'ease-out', pseudoElement: '::after' },
+        cardSubject(id),
+      );
+    };
   }
 
   /**

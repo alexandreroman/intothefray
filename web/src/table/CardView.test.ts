@@ -76,6 +76,23 @@ describe('CardView', () => {
     expect(el.dataset.id).toBe('c1');
   });
 
+  it('places a ghost on translate from its layer corner, so that following the pointer lays nothing out', () => {
+    for (const landed of [false, true]) {
+      const { container, unmount } = render(CardView, {
+        card: tableCard(),
+        face: face(),
+        ghost: true,
+        landed,
+      });
+      const el = cardElement(container);
+      expect(el.style.translate).toBe('120px 40px');
+      expect(el.style.left).toBe('');
+      expect(el.style.top).toBe('');
+      expect(el.style.zIndex).toBe('7');
+      unmount();
+    }
+  });
+
   it('an unknown face is a std placeholder', () => {
     const { container } = render(CardView, { card: tableCard(), face: null });
     const el = cardElement(container);

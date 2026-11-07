@@ -26,8 +26,17 @@ type: project
   properties, never on a layout one: a hand card takes its place on the fan
   by `transform: translateX(var(--x))` from a box in the hand's middle
   (its `translate` and `scale` stay free for a card sliding into the hand),
-  the hand card's drag ghost follows the pointer on `translate`, and the
-  notices and the preview follow the sliding top bar on `translate`.
+  every card's drag ghost follows the pointer on `translate` from its layer's
+  corner (the hand card's, the viewer's own table ghosts, landed ones
+  included, and other players' ghosts, which glide on a `translate`
+  transition), and the notices and the preview follow the sliding top bar on
+  `translate`. A ghost's `scale` (lift) and `rotate` (sway) play about
+  its own middle; an exhausted ghost keeps its `transform` tilt.
+- Reads of the page come before writes, so that a frame lays out once: a
+  view's motions measure everything they start from (origins, new places,
+  own transforms, pile boxes, player colours) before any of them starts
+  (`TableMotion.animate`), and a drag measures its grab before it writes to
+  the drag layer, whose sway is written only while it moves.
 - Card images (CardFace, CardBack) round their corners with `border-radius`
   (`--card-radius`), never a `clip-path`.
 - The surface zooms with CSS `zoom` (`--z`): layout is a few percent of a

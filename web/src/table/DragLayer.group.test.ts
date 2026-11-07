@@ -10,6 +10,7 @@ import {
   card,
   domRect,
   fakeSession,
+  ghostCorner,
   infoFrom,
   pile,
   placed,
@@ -96,8 +97,7 @@ function layOut(view: () => View): void {
 function ghosts(): [string | undefined, number, number][] {
   return [...document.querySelectorAll<HTMLElement>('.draglayer .card')].map((g) => [
     g.dataset.id,
-    parseFloat(g.style.left),
-    parseFloat(g.style.top),
+    ...ghostCorner(g),
   ]);
 }
 

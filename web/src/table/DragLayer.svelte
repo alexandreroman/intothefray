@@ -407,10 +407,14 @@
     return from.y - to.y > Math.abs(to.x - from.x);
   }
 
+  /**
+   * Picks up what was pressed, measured before anything is written: the move that starts the drag
+   * goes on to measure the drop targets (aim) on the page as it is laid out already.
+   */
   function start(from: DragSource, pressedAt: Point): void {
+    grab = grabOf(from, pressedAt);
     stopSway();
     rise();
-    grab = grabOf(from, pressedAt);
     units = from.kind === 'card' ? dragUnits(from.card, interaction.group, cards) : [];
     let lifted: string[] = [];
     if (from.kind === 'card') {
@@ -451,12 +455,18 @@
     swayFrame = sway.resting ? 0 : requestAnimationFrame(stepSway);
   }
 
-  /** Stops the sway, the ghosts upright: a new drag starts from there. */
+  /**
+   * Stops the sway, the ghosts upright: a new drag starts from there. At rest, the last frame left
+   * them upright, and the layer is not written: the drag's first measures (start) would restyle the
+   * page for it.
+   */
   function stopSway(): void {
+    if (swayFrame !== 0) {
+      layer?.style.removeProperty('--sway');
+    }
     cancelAnimationFrame(swayFrame);
     swayFrame = 0;
     sway.reset();
-    layer?.style.removeProperty('--sway');
   }
 
   /**

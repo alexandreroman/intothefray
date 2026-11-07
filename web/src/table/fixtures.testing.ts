@@ -126,6 +126,18 @@ export function placed(id: string, selector = ''): HTMLElement {
 }
 
 /**
+ * Where a drag ghost's top-left corner lies in its layer, as its translate places it (CardView): a
+ * ghost stays at the layer's corner and moves on translate alone. A translate of one length moves
+ * along x only, as the browser writes one with no y.
+ */
+export function ghostCorner(ghost: HTMLElement): [number, number] {
+  expect(ghost.style.left).toBe('');
+  expect(ghost.style.top).toBe('');
+  const [x = '0', y = '0'] = ghost.style.translate.split(' ');
+  return [Number.parseFloat(x), Number.parseFloat(y)];
+}
+
+/**
  * A measured box, as getBoundingClientRect gives: a real DOMRect, whose sides are getters on its
  * prototype, which a spread of the rect loses.
  */

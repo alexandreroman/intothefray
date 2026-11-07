@@ -145,11 +145,14 @@ function runningOn(element: Element): FakeAnimation[] {
 }
 
 /**
- * jsdom lays nothing out: elements are placed from their own left and top.
- * A card moving (FLIP) shows half-way.
+ * jsdom lays nothing out: elements are placed from their own left and top, then their translate,
+ * as a drag ghost is (CardView). A card moving (FLIP) shows half-way.
  */
 function fakeRect(this: HTMLElement): DOMRect {
-  const offset = { x: 0, y: 0 };
+  const [placedX = 0, placedY = 0] = this.style.translate
+    .split(' ')
+    .map((v) => Number.parseFloat(v) || 0);
+  const offset = { x: placedX, y: placedY };
   for (const animation of runningOn(this)) {
     const translate = animation.keyframes[0]?.translate;
     if (typeof translate === 'string') {
