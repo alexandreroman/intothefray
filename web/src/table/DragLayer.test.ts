@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
+import dragLayerSource from './DragLayer.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards, type CardInfo } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
@@ -427,6 +428,30 @@ describe('dragging a table card', () => {
       },
       0,
     );
+  });
+
+  it('keeps the drop hint as it is while the pointer moves over the same target', async () => {
+    await renderTable();
+    await press(placed('mine'), 50, 400);
+    // Over "other", at 420, 340 on the screen.
+    await moveTo(470, 420);
+    const hint = document.querySelector<HTMLElement>('.drop-hint');
+    expect(hint?.textContent).toContain('Under Spider-Man');
+    const before = hint?.outerHTML;
+    const changes = new MutationObserver(() => {});
+    changes.observe(hint!, {
+      attributes: true,
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+
+    // Still over "other": the same label, neither drawn again nor rewritten.
+    await moveTo(490, 440);
+    expect(document.querySelector('.drop-hint')).toBe(hint);
+    expect(hint?.outerHTML).toBe(before);
+    expect(changes.takeRecords()).toEqual([]);
+    changes.disconnect();
   });
 
   /**
@@ -1640,6 +1665,17 @@ describe('dragging a hand card', () => {
 
     await moveTo(540, 750);
     expect(ghost?.style.translate).toBe('480px 670px');
+  });
+
+  it('lifts the ghost over the hand at its size there, its scale the only property it transitions', () => {
+    const ghost = /\n {2}\.hghost \{([^}]*)\}/.exec(dragLayerSource)?.[1] ?? '';
+    expect(ghost).toMatch(/scale: var\(--lift-scale\);/);
+    expect(ghost).toMatch(/transition: scale 0\.14s ease-out;/);
+    expect(ghost).not.toMatch(/width|height/);
+    // Without motion, it shows held up at once.
+    expect(dragLayerSource).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{\s*\.hghost \{\s*transition: none;\s*\}\s*\}/,
+    );
   });
 
   it('plays it under the card it is dropped on', async () => {

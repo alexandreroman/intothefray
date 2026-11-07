@@ -2380,7 +2380,8 @@ describe('Table animations', () => {
   }
 
   it('a card taken face down into the hand turns face up about its middle, with no old side', async () => {
-    // The hand card's place on its fan (translateX), as computed: it comes before the turn.
+    // The hand card's place on its fan (translateX), as computed: about the card's own middle
+    // (its transform-origin, Hand.svelte), it comes after the turn, as a table card's tilt does.
     const shift = 'matrix(1, 0, 0, 1, -70, 0)';
     const spy = stubTransform('.hand .hcard', shift);
     try {
@@ -2404,8 +2405,8 @@ describe('Table animations', () => {
         animationsOf('.hand .hcard[data-id="d"]').map(([keyframes]) => keyframes);
       await waitFor(() =>
         expect(frames()).toContainEqual([
-          { transform: `${shift} perspective(700px) rotateY(90deg)` },
-          { transform: `${shift} perspective(700px) rotateY(0deg)` },
+          { transform: `perspective(700px) rotateY(90deg) ${shift}` },
+          { transform: `perspective(700px) rotateY(0deg) ${shift}` },
         ]),
       );
       // The table card's old side is not copied into the hand.

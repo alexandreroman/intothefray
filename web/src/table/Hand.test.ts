@@ -350,6 +350,15 @@ describe('Hand', () => {
     expect(card).not.toMatch(/translate:|scale:/);
   });
 
+  it('plays every transform of a card about its own middle on the fan, not the hand middle', () => {
+    const card = rule('.hcard');
+    // A slide's scale and a turn play about the card where it shows: the box's middle moved by --x.
+    expect(card).toMatch(/transform-origin: calc\(50% \+ var\(--x\)\) 50%;/);
+    // Its hit area and its face keep their own origin, below the card's bottom middle.
+    expect(rule('.hit')).toMatch(/transform-origin: 50% 110%;/);
+    expect(rule('.fan')).toMatch(/transform-origin: 50% 110%;/);
+  });
+
   it('picks the hovered card from its place at rest, which the pop never moves', () => {
     render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
     for (const card of handCards()) {

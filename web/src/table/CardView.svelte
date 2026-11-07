@@ -411,7 +411,7 @@
     Let go (landed), the viewer's own ghost stays held up where it landed: the view that shows
     the card settles it on the table from there (motion.svelte.ts).
     A ghost lies at its layer's corner and takes its place on translate (inline): a pointer move
-    lays nothing out again. Its scale and rotate still play about its own middle: the translate
+    lays nothing out again. Its scale and rotate play about its own middle: the translate
     carries the ghost, lifted and leaning, to its place.
   */
   .card.ghost {

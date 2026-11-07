@@ -16,6 +16,8 @@ const DISCARD: PileView = {
   cards: [],
 };
 
+const DECK: PileView = { ...DISCARD, id: 'deck', kind: 'deck', count: 5 };
+
 function table(cards: CardView[], piles: PileView[]): TableView {
   return { cards, piles, stages: [] } as unknown as TableView;
 }
@@ -109,17 +111,37 @@ describe('a view landing', () => {
     const e = placedBox('card', 'e', 0, 300);
     const discard = placedBox('card pile', 'disc', 800, 0);
     discard.append(Object.assign(document.createElement('div'), { className: 'art' }));
-    surface.append(a, b, c, d, e, discard);
-    app.append(surface);
+    const deck = placedBox('card pile', 'deck', 800, 300);
+    // The active counter, a marker moved to another spot of the table.
+    const marker = placedBox('marker', 'active', 0, 600);
+    marker.dataset.marker = 'active';
+    surface.append(a, b, c, d, e, discard, deck, marker);
+    // A card drawn into the viewer's hand, its slot measured at rest (its hit area).
+    const hand = document.createElement('ul');
+    hand.className = 'hand';
+    const drawn = placedBox('hcard', 'h', 400, 600);
+    drawn.append(Object.assign(document.createElement('div'), { className: 'hit' }));
+    hand.append(drawn);
+    app.append(surface, hand);
     document.body.append(app);
 
     const before = table(
       ['a', 'b', 'c', 'd', 'e'].map((id) => card(id)),
-      [DISCARD],
+      [DISCARD, DECK],
     );
     const after = table(
-      [card('a'), card('b'), card('c'), card('d'), card('e', { zone: 'pile' })],
-      [{ ...DISCARD, count: 1, cards: ['e'] }],
+      [
+        card('a'),
+        card('b'),
+        card('c'),
+        card('d'),
+        card('e', { zone: 'pile' }),
+        card('h', { zone: 'hand' }),
+      ],
+      [
+        { ...DISCARD, count: 1, cards: ['e'] },
+        { ...DECK, count: 4 },
+      ],
     );
     const anims: Anim[] = [
       {
@@ -140,6 +162,8 @@ describe('a view landing', () => {
       { kind: 'glow', id: 'a', color: 1 },
       { kind: 'fly', id: 'e', toPile: 'disc' },
       { kind: 'shuffle', pile: 'disc' },
+      { kind: 'draw', id: 'h', fromPile: 'deck', faceUp: true },
+      { kind: 'marker', name: 'active', from: { x: 0, y: 600 }, to: { x: 100, y: 600 } },
     ];
     const playing = motion.animate(app, anims, { before, after }, 1);
     // The new view draws the moved cards in their new places.
@@ -147,6 +171,7 @@ describe('a view landing', () => {
     a.style.top = '50px';
     b.style.left = '250px';
     b.style.top = '50px';
+    marker.style.left = '100px';
     log = [];
     await playing;
 
@@ -154,10 +179,13 @@ describe('a view landing', () => {
     expect(firstWrite).toBeGreaterThan(0);
     expect(log.slice(firstWrite).filter((entry) => entry.startsWith('read'))).toEqual([]);
     // Everything started all the same.
-    for (const id of ['a', 'b', 'c', 'd']) {
+    for (const id of ['a', 'b', 'c', 'd', 'active']) {
       expect(log).toContain(`write: animate ${id}`);
     }
     expect(log).toContain('write: append');
-    expect(motion.flights.map((flight) => flight.card?.id)).toEqual(['e']);
+    expect(motion.flights.map((flight) => [flight.kind, flight.card?.id])).toEqual([
+      ['toPile', 'e'],
+      ['draw', 'h'],
+    ]);
   });
 });

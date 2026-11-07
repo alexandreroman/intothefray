@@ -1741,8 +1741,8 @@ class TableMotion {
 
   /**
    * Returns what turns a stage card just chosen in from edge-on, as if put down, its own transform
-   * measured now: lifted, it settles flat (lifts), unless it slides or settles meanwhile, which
-   * plays on the same scale property.
+   * measured when called, before the start runs: lifted, it settles flat (lifts), unless it slides
+   * or settles meanwhile, which plays on the same scale property.
    */
   #turnIn(root: HTMLElement, id: string, lifts: boolean): Start {
     const element = root.querySelector<HTMLElement>(tableCard(id));
@@ -1776,8 +1776,12 @@ class TableMotion {
    * down into the hand), only the second half plays. An exhausted card keeps
    * its tilt; a hand card keeps its place. A table card is lifted as it turns,
    * highest edge-on (lifts), unless it slides or settles meanwhile, which
-   * plays on the same scale property. Its own transform is measured now;
-   * the start returned turns it.
+   * plays on the same scale property. Its own transform is measured when
+   * called, before the start runs; the start returned turns it. A hand
+   * card's turn and its slot on the fan (its --x transition) share the
+   * transform property: should its --x change while it turns, the turn
+   * holds its old place until it ends. A card taken face down into the
+   * hand is a new element there: this does not happen in the usual case.
    */
   #flip(root: HTMLElement, id: string, oldSide: HTMLElement | undefined, lifts: boolean): Start {
     const onTable = root.querySelector<HTMLElement>(tableCard(id));
@@ -1787,15 +1791,8 @@ class TableMotion {
     }
     const own = ownTransform(element);
     return () => {
-      const turned = (angle: string) => {
-        const turn = `${FLIP_PERSPECTIVE} rotateY(${angle})`;
-        if (!own) {
-          return turn;
-        }
-        // A table card's tilt turns with it. A hand card's place on its fan (translateX) comes
-        // first: after the turn, it would shift the axis to the card's edge.
-        return onTable ? `${turn} ${own}` : `${own} ${turn}`;
-      };
+      // A table card's tilt turns with it; a hand card turns about its middle (its transform-origin).
+      const turned = (angle: string) => `${FLIP_PERSPECTIVE} rotateY(${angle}) ${own}`.trimEnd();
       const flat = turned('0deg');
       const edgeOn = turned('90deg');
       const half = FLIP_MS / 2;

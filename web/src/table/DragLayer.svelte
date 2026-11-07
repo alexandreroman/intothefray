@@ -1337,10 +1337,10 @@
   }
 
   /*
-    A hand card brought back over the hand: hand size, growing to table size as it leaves. Held up
-    and swaying about its middle as a table card's ghost is (CardView.svelte); out of the table, it
-    keeps the hand's shadow. It follows the pointer on translate, from the layer's corner: a pointer
-    move lays nothing out again.
+    A hand card brought back over the hand, at its size in the hand; off the hand, a table card's
+    ghost takes its place. Held up and swaying about its middle as a table card's ghost is
+    (CardView.svelte); out of the table, it keeps the hand's shadow. It follows the pointer on
+    translate, from the layer's corner: a pointer move lays nothing out again.
   */
   .hghost {
     position: absolute;
@@ -1348,16 +1348,13 @@
     top: 0;
     scale: var(--lift-scale);
     rotate: var(--sway, 0deg);
-    transition:
-      width 0.14s ease-out,
-      height 0.14s ease-out,
-      scale 0.14s ease-out;
+    transition: scale 0.14s ease-out;
   }
 
   /*
-    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge as it grows. Its scale and
-    rotate give it its own stacking, which keeps the shade under its face. The ghost is portrait, a landscape card
-    turned a quarter in it.
+    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge. Its scale and rotate give
+    it its own stacking, which keeps the shade under its face. The ghost is portrait, a landscape card turned a
+    quarter in it.
   */
   .shade {
     position: absolute;
@@ -1378,9 +1375,7 @@
   /* Without motion, it shows held up at once. */
   @media (prefers-reduced-motion: reduce) {
     .hghost {
-      transition:
-        width 0.14s ease-out,
-        height 0.14s ease-out;
+      transition: none;
     }
   }
 

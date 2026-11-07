@@ -1,10 +1,10 @@
 ---
-name: "Table cards are cheap to paint"
-description: "Card shadows are inset box-shadows, image corners a border radius; the surface zooms with CSS zoom"
+name: "Cards are cheap to paint"
+description: "Shades not filters, moves on transforms, reads before writes, lazy frame counter, CSS zoom"
 type: project
 ---
 
-# Table cards are cheap to paint
+# Cards are cheap to paint
 
 - A table card or pile casts its shadow from a `.shade` box 2px inside its
   edge, at z-index -1 under its face: a box-shadow (`--card-shadow`, each
@@ -17,15 +17,17 @@ type: project
   (`--held-card-shadow`, fitted to two stacked drop-shadows, landscape
   corners for a landscape flying box), and the hand sheet's carousel cards.
   A filter on a moving element is blurred again on every frame, per card.
-  A filter stays on an element that does not itself move (the preview art,
+  An element that does not itself move may carry a filter (the preview art,
   the remote cursors): it is drawn once into its moving parent's layer.
 - The shade sits inside the card's edge because a box-shadow is cut away
   inside its own box: cast from the card's box, it lets the card underneath
   show through the anti-aliased edge, a light seam where cards overlap.
 - What moves under the hand fan or a drag moves on transform-family
   properties, never on a layout one: a hand card takes its place on the fan
-  by `transform: translateX(var(--x))` from a box in the hand's middle
-  (its `translate` and `scale` stay free for a card sliding into the hand),
+  by `transform: translateX(var(--x))` from a box in the hand's middle,
+  turning and scaling about its own middle (`transform-origin:
+  calc(50% + var(--x)) 50%`; its `translate` and `scale` are free for a
+  card sliding into the hand),
   every card's drag ghost follows the pointer on `translate` from its layer's
   corner (the hand card's, the viewer's own table ghosts, landed ones
   included, and other players' ghosts, which glide on a `translate`
@@ -37,7 +39,8 @@ type: project
   own transforms, pile boxes, player colours) before any of them starts
   (`TableMotion.animate`), and a drag measures its grab before it writes to
   the drag layer, whose sway is written only while it moves.
-- Nothing measures the page at every frame for nobody. The arrows' frame
+- The page is measured at every frame only while something is drawn from
+  it. The arrows' frame
   counter (`motion.frame`) ticks only while an effect reads it
   (`createSubscriber`), and the table reads it only while arrows can be
   drawn: some lie on the table, or the viewer picks one. With nothing to
@@ -55,10 +58,15 @@ type: project
 **Why:** on a busy table (133 cards), the drop-shadow filters drew every
 card offscreen: the GPU work of hovering or dragging was about 9× higher,
 of scrolling about 20× (with the clip-path corners), all with the same look
-on both table themes and at every zoom.
+on both table themes and at every zoom. On a low-end Android tablet, the
+hand fan and drag and drop stutter when a moving card carries a filter (the
+GPU blurs it again on every frame, per card), when a move plays on a layout
+property (`left`, `top`: every frame or pointer move lays the page out
+again), or when a read follows a write within a frame (a forced layout).
 
-**How to apply:** give a new table element a box-shadow or a shade, not a
-filter; round card art with a border radius. Measure paint changes in the
-real app (Chrome tracing: main-thread style, layout, paint, layerize, and
-GPU-process work), not with `pnpm bench`, which times script only. See
-[[project_view_immutable]].
+**How to apply:** give a new table element, or a card that moves, a
+box-shadow or a shade, not a filter; move it on transform-family
+properties; read the page before writing to it; round card art with a
+border radius. Measure paint changes in the real app (Chrome tracing:
+main-thread style, layout, paint, layerize, and GPU-process work), not with
+`pnpm bench`, which times script only. See [[project_view_immutable]].

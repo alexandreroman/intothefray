@@ -962,6 +962,8 @@
     Placed around the middle of the hand, below its top padding: --x is the card's middle. The box
     lies in the middle; its transform takes it to its place on the fan, a move the compositor draws
     alone. A card sliding into the hand plays on its translate and scale (motion.svelte.ts), apart.
+    Every transform plays about the card's own middle, where --x takes it: a slide's scale and a turn
+    leave the card on its spot. The origin leaves a pure translation, as along the fan, alone.
   */
   .hcard {
     position: absolute;
@@ -970,6 +972,7 @@
     width: var(--card-w);
     height: var(--card-h);
     transform: translateX(var(--x));
+    transform-origin: calc(50% + var(--x)) 50%;
     /* Only its hit area and the foot below it take the pointer (see .hit and .foot). */
     pointer-events: none;
     cursor: grab;
