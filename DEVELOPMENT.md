@@ -91,12 +91,13 @@ its image URLs on the CDN. `make packs` fails without the manifest and
 drops a card that has a face without an English image. Its report lists
 the French coverage and the records taken from mc4db. The merging rules
 are documented in `internal/packgen/`; the curated formats in
-`internal/packgen/curated/`.
+`internal/packgen/curated/` and the pack types it reuses
+(`internal/pack/types.go`).
 
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on pull requests and pushes to `main`,
-with three jobs: `go` (build, race tests, golangci-lint), `web`
+with three check jobs: `go` (build, race tests, golangci-lint), `web`
 (svelte-check, ESLint, Prettier, Vitest, build) and `docker` (image
 build, `compose.yaml` and Caddyfile validation). It does not regenerate
 `packs/dist/`.
@@ -158,7 +159,7 @@ image:
 
 ```bash
 cd web
-chrome --headless=new --disable-gpu --hide-scrollbars \
+chrome --headless --disable-gpu --hide-scrollbars \
   --window-size=1200,630 --virtual-time-budget=5000 \
   --screenshot=public/og/home.png "file://$PWD/images/home.html"
 ```
@@ -175,7 +176,7 @@ scaled by the device pixel ratio:
 ```bash
 cd web
 for size in 192 512; do
-  chrome --headless=new --disable-gpu --hide-scrollbars \
+  chrome --headless --disable-gpu --hide-scrollbars \
     --window-size=180,180 \
     --force-device-scale-factor="$(echo "scale=6; $size/180" | bc)" \
     --screenshot="public/icon-$size.png" "file://$PWD/images/touch-icon.html"
@@ -189,7 +190,7 @@ headless Chrome and ImageMagick (`magick`):
 
 ```bash
 cd web
-chrome --headless=new --disable-gpu --hide-scrollbars \
+chrome --headless --disable-gpu --hide-scrollbars \
   --window-size=512,512 --screenshot=/tmp/favicon.png \
   "file://$PWD/public/favicon.svg"
 magick /tmp/favicon.png -alpha off \
