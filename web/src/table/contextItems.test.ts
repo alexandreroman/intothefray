@@ -9,7 +9,7 @@ import {
 } from './contextItems';
 import { knownCard } from '../lib/catalog';
 import type { CardView, PackFace, View, YouView } from '../lib/types';
-import { card, infoFrom, pile, playingView } from './fixtures.testing';
+import { card, infoFrom, pile, playingView, VILLAIN_STAGE, spectatorYou } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -78,15 +78,12 @@ function makeView(): View {
         pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
       ],
       hands: {},
-      stages: [
-        { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
-        { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
-      ],
+      stages: [VILLAIN_STAGE, { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] }],
     },
   });
 }
 
-const SPECTATOR: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
+const SPECTATOR: YouView = spectatorYou();
 
 /** The entries of the element, for Alex, the viewer of makeView, or for `you` when given. */
 function entriesFor(element: TableElement, you?: YouView): ContextEntry[] {

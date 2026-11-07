@@ -28,6 +28,8 @@ import {
   placed,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -118,7 +120,7 @@ function makeView({
         pile('discard:p0', { kind: 'discard', owner: 0, x: 800 }),
       ],
       hands: twoDecks ? { p0: ['h1', 'h2'], p1: ['a1'] } : { p0: ['h1', 'h2'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
     log,
   });
@@ -210,7 +212,7 @@ describe('dock mode', () => {
   it('has no hand button for a spectator, who has no hand (spectator_no_hand_button)', async () => {
     mockScreen(PHONE);
     const view = makeView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     await renderTable(view);
 
     expect(dock()!.querySelector('.handbtn')).toBeNull();
@@ -1072,9 +1074,7 @@ describe('the compact, wrapped table in dock mode', () => {
   it("shows each owner line's avatar in place of its name, the full name kept to read", async () => {
     mockScreen(PHONE);
     const view = busyView();
-    view.table!.stages = [
-      { key: 'villain', label: 'Villain', current: 'v', cards: ['v'], villain: true },
-    ];
+    view.table!.stages = [{ ...VILLAIN_STAGE, villain: true }];
     await renderTable(view);
 
     const villain = document.querySelector<HTMLElement>('.ownerbox[data-owner="-1"]')!;

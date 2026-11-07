@@ -8,7 +8,16 @@ import Table from './Table.svelte';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { Action, PackFace, View } from '../lib/types';
-import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -37,7 +46,7 @@ function makeView(): View {
         pile('deck:p0', { owner: 0, x: 600 }),
         pile('disc:p0', { kind: 'discard', owner: 0, x: 720, count: 1, cards: ['gone'] }),
       ],
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
   });
 }

@@ -10,7 +10,15 @@ import {
 } from './actions';
 import { knownCard } from '../lib/catalog';
 import type { Action, CardView, PackFace, PileView, View, YouView } from '../lib/types';
-import { card, infoFrom, pile, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  infoFrom,
+  pile,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+  spectatorYou,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -76,10 +84,7 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
       cards,
       piles,
       hands: { p0: ['h'] },
-      stages: [
-        { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
-        { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
-      ],
+      stages: [VILLAIN_STAGE, { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] }],
     },
   });
 }
@@ -102,7 +107,7 @@ function villainStages(current: string): View {
 }
 
 /** Kim, watching the game. */
-const KIM: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
+const KIM: YouView = spectatorYou();
 
 /** The items of el, for the viewer of the view, or for `you` when given. */
 function itemsFor(el: TableElement, view = makeView(), you?: YouView): ActionItem[] {

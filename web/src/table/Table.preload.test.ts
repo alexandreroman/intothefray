@@ -7,7 +7,7 @@ import Table from './Table.svelte';
 import { gameCards, loadGameCards, loadIndex } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import type { PackCard, PackFace, View } from '../lib/types';
-import { fakeSession, playingView } from './fixtures.testing';
+import { fakeSession, playingView, spectatorYou } from './fixtures.testing';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -59,7 +59,7 @@ const POOL: PackCard[] = [
 
 function makeView(): View {
   return playingView({
-    you: { role: 'spectator', color: -1, host: false },
+    you: spectatorYou(),
     players: [],
     spectators: 1,
     table: { firstPlayer: { x: 0, y: 0 } },

@@ -1,6 +1,6 @@
 import { actionsFor, handActions } from './actions';
 import type { CardView, Size, View } from '../lib/types';
-import { card, pile, playingView, seated } from './fixtures.testing';
+import { card, pile, playingView, seated, spectatorYou } from './fixtures.testing';
 
 const sizeOf = (_card: CardView): Size => 'std';
 
@@ -68,7 +68,7 @@ describe('handActions', () => {
 
   it('offers nothing to a spectator, nor without a table', () => {
     const spectating = handView();
-    spectating.you = { role: 'spectator', name: 'Kim', color: 2, host: false };
+    spectating.you = spectatorYou();
 
     expect(handActions('h', spectating, sizeOf)).toEqual([]);
     const withoutTable = handView();

@@ -14,6 +14,7 @@ import {
   playingView,
   seated,
   tallTable,
+  VILLAIN_STAGE,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -45,7 +46,7 @@ function makeView(): View {
       ],
       piles: [pile('enc', { kind: 'encounter', x: 0, count: 20 })],
       hands: { p0: ['h1', 'h2', 'h3'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 860, y: 340 },
     },
   });

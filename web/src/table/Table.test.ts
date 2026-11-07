@@ -17,6 +17,8 @@ import {
   pile,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
@@ -118,7 +120,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     table: {
       cards,
       piles,
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
   });
 }
@@ -408,7 +410,7 @@ describe('Table', () => {
 
   it('a spectator opens the out-of-play piles from their chips too', async () => {
     const view = withOutOfPlay(makeView());
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -879,7 +881,7 @@ describe('Table', () => {
 
     render(Table, {
       session: fakeSession(),
-      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+      view: { ...view, you: spectatorYou() },
     });
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
   });
@@ -1056,7 +1058,7 @@ describe('Table', () => {
 
     render(Table, {
       session: fakeSession(),
-      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+      view: { ...view, you: spectatorYou() },
     });
     expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
   });
@@ -1077,7 +1079,7 @@ describe('Table', () => {
 
     render(Table, {
       session: fakeSession(),
-      view: { ...makeView(), you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+      view: { ...makeView(), you: spectatorYou() },
     });
     expect(surface().querySelectorAll('.card.grab')).toHaveLength(0);
   });
@@ -1704,7 +1706,7 @@ describe('several decks', () => {
 
   it('leaves Shift + ← / → to the browser for a spectator in the All view', async () => {
     const view = makeTwoDeckView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1774,7 +1776,7 @@ describe('several decks', () => {
 
   it('leaves the hero stepping keys out of the shortcuts sheet for a spectator in the All view', async () => {
     const view = makeTwoDeckView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1991,7 +1993,7 @@ describe('several decks', () => {
 
   it('shows a spectator no hand and no selector in the All view', async () => {
     const view = makeTwoDeckView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 

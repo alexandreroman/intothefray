@@ -5,7 +5,17 @@ import { handleKey, type KeyTable } from './keys';
 import { openModal } from '../components/modal.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+  spectatorYou,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -45,7 +55,7 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
       ],
       hands: { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 700, y: 40 },
     },
     ...rest,
@@ -632,7 +642,7 @@ describe('keys on the table', () => {
 
   it('a spectator zooms with the keys, and nothing else', async () => {
     const view = makeView({
-      you: { role: 'spectator', name: 'Kim', color: -1, host: false },
+      you: spectatorYou(),
       canUndo: true,
     });
     const { session } = await renderTable(view);
@@ -950,7 +960,7 @@ describe('a player with two decks', () => {
     expect(single.selectNextDeck).not.toHaveBeenCalled();
 
     const spectating = twoDeckView();
-    spectating.you = { role: 'spectator', color: -1, host: false };
+    spectating.you = spectatorYou();
     const watcher = keyTable(spectating);
     handleKey(keyDown('q'), watcher);
     expect(watcher.selectNextDeck).not.toHaveBeenCalled();
@@ -974,7 +984,7 @@ describe('a player with two decks', () => {
 
   it('Shift + ← / → steps a spectator through the players too', () => {
     const spectating = twoDeckView();
-    spectating.you = { role: 'spectator', color: -1, host: false };
+    spectating.you = spectatorYou();
     const table = { ...keyTable(spectating), canStepHero: true };
     handleKey(keyDown('ArrowRight', { shiftKey: true }), table);
     expect(table.stepHero).toHaveBeenCalledExactlyOnceWith(1);

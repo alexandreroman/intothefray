@@ -6,7 +6,17 @@ import { interaction, LINGER_MS } from './interaction.svelte';
 import { DESKTOP, mockScreen } from '../lib/screen.testing';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
-import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+  spectatorYou,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -47,7 +57,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
       cards,
       piles,
       hands: { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
   });
 }
@@ -439,7 +449,7 @@ describe('tokens and statuses', () => {
 
   it('a spectator gets no pill', async () => {
     const view = viewWithCounters();
-    view.you = { role: 'spectator', name: 'Eve', color: 0, host: false };
+    view.you = spectatorYou('Eve');
     await renderTable(view);
 
     await fireEvent.pointerEnter(counter('mine', 'token:dmg'));

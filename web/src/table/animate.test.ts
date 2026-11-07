@@ -1,6 +1,6 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
 import { type Anim, diffViews, dockMotions, mergedLines, type OwnDrop } from './animate';
-import { card, pile, playingView, seated } from './fixtures.testing';
+import { card, pile, playingView, seated, spectatorYou } from './fixtures.testing';
 
 /** A pile of seat 0's, 10 cards, right of the table's origin. */
 function seatPile(id: string, extra: Partial<PileView> = {}): PileView {
@@ -1384,7 +1384,7 @@ describe('diffViews', () => {
           piles: [deck(decks[0]), seatPile('deck:p1', { owner: 1, count: decks[1] })],
           handCounts: counts,
         });
-        base.you = { role: 'spectator', color: -1, host: false };
+        base.you = spectatorYou();
         return base;
       };
 

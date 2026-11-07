@@ -15,6 +15,8 @@ import {
   placed,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -58,7 +60,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
       cards,
       piles,
       hands: { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
   });
 }
@@ -734,7 +736,7 @@ describe('opening the context menu with a click', () => {
       ],
     });
     view.table!.cards.push(card('gone', { zone: 'pile' }));
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     await renderTable(view);
 
     await click(placed('mine'));

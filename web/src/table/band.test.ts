@@ -11,6 +11,8 @@ import {
   placed,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -41,7 +43,7 @@ function makeView(
 ): View {
   return playingView({
     you: extra.spectator
-      ? { role: 'spectator', color: -1, host: false }
+      ? spectatorYou()
       : { role: 'player', name: 'Alex', color: 2, host: true, areas: ['p0'] },
     players: [
       seated('Alex', 2, [{ area: 'p0', handCount: 1 }], true),
@@ -51,7 +53,7 @@ function makeView(
       cards: extra.cards ?? CARDS,
       piles: extra.piles ?? [],
       hands: extra.spectator ? undefined : { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       arrows: extra.arrows,
     },
   });

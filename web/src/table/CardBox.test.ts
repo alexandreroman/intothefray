@@ -18,6 +18,7 @@ import {
   pile,
   placed,
   playingView,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -86,7 +87,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
 }
 
 function asSpectator(view: View): View {
-  return { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } };
+  return { ...view, you: spectatorYou() };
 }
 
 async function renderTable(view = makeView()) {

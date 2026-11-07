@@ -15,6 +15,8 @@ import {
   playingView,
   seated,
   tallTable,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -47,7 +49,7 @@ const CARDS = [
 function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
   return playingView({
     you: extra.spectator
-      ? { role: 'spectator', color: -1, host: false }
+      ? spectatorYou()
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
       seated('Alex', 0, [{ area: 'p0', handCount: 1 }], true),
@@ -56,7 +58,7 @@ function makeView(extra: { spectator?: boolean; arrows?: Arrow[] } = {}): View {
     table: {
       cards: CARDS,
       hands: extra.spectator ? undefined : { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       arrows: extra.arrows,
     },
   });
