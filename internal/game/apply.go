@@ -811,9 +811,10 @@ func landsFaceDown(pile *Pile) bool {
 // with a target, at the end of that table card's stack as attach does. It
 // lands face up, but when dropped out of a pile that hides its cards (see
 // landsFaceDown): an explicit Play (a.FaceUp) lands it face up there too. A
-// card revealed on a deck is played as that deck's top card, face up, as
-// everybody saw it, with the tokens it carries there (see inPlayCard). A
-// version of its owner's identity takes the identity over, and stays face up.
+// card revealed on a deck is played as that deck's top card, as it lies: it is
+// on the table already, and keeps its face, tokens and stack, as a moved or
+// attached card does. A version of its owner's identity takes the identity
+// over, and stays face up.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -834,23 +835,39 @@ func applyPlay(t *Table, a Action) error {
 			return err
 		}
 	}
+	if revealed {
+		playRevealed(t, c, target, a)
+		return nil
+	}
 	if err := t.checkLeave(c); err != nil {
 		return err
 	}
 
 	faceDown := !a.FaceUp && c.Zone == ZonePile && landsFaceDown(t.Piles[c.Pile])
-	// A revealed card stays on the table: like a moved card, it keeps its tokens.
-	tokens := c.Tokens
 	t.leave(c)
-	if revealed {
-		c.Tokens = tokens
-	}
 	if c.IdentityVersion {
 		t.takeOverIdentity(c)
 	}
 	c.FaceDown = faceDown && !c.Identity
 	t.enterTable(c, target, snap(a.X), snap(a.Y))
 	return nil
+}
+
+// playRevealed plays c, a card revealed on a deck, off that deck: at the
+// point of a, as a move does (see applyMove), or at the end of the stack of
+// target, as an attach does (see tuckUnder). It never leaves the table, so it
+// carries everything it carried there.
+func playRevealed(t *Table, c, target *Card, a Action) {
+	if c.IdentityVersion {
+		t.takeOverIdentity(c)
+	}
+	if target != nil {
+		t.tuckUnder(c, target)
+		return
+	}
+	c.X, c.Y = snap(a.X), snap(a.Y)
+	c.OnPile = ""
+	t.layOutStack(c)
 }
 
 // enterTable puts c, which has just left its hand or its pile, on the table:
