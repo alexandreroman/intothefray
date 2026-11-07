@@ -31,8 +31,10 @@ or `.env.local` wins over `.env.casper`, as `make dev` loads both.
 ## Instance name in the tab title
 
 `APP_INSTANCE` is a generic, optional build-time variable holding only an
-instance name (`dev`, a branch name). Set, the tab title reads
-`Into the Fray (<name>)`; unset or blank, it reads `Into the Fray`
+instance name (`dev`, a branch name). Set, every tab title gains it in
+parentheses after "Into the Fray" (`Options · Into the Fray (<name>)`);
+unset or blank, the titles are those of `web/src/lib/pages.ts`
 (production and GitHub Pages builds). Vite exposes it through
-`envPrefix: ['VITE_', 'APP_INSTANCE']`; `web/src/lib/title.ts` builds the
-title, set in `main.ts`.
+`envPrefix: ['VITE_', 'APP_INSTANCE']`; `appTitle` in
+`web/src/lib/title.ts` builds the title, which `App.svelte` sets on every
+route.
