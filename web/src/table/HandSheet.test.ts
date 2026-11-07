@@ -29,7 +29,7 @@ function renderSheet(
     cards?: TableCard[];
     withPicker?: boolean;
     landscape?: boolean;
-    discardRefusal?: (id: string) => string | undefined;
+    canDiscard?: (id: string) => boolean;
   } = {},
 ) {
   const handlers = {
@@ -46,7 +46,7 @@ function renderSheet(
       faceOf,
       seat: 1,
       landscape: props.landscape ?? false,
-      discardRefusal: props.discardRefusal ?? (() => undefined),
+      canDiscard: props.canDiscard ?? (() => true),
       picker: props.withPicker ? picker : undefined,
       ...handlers,
     },
@@ -172,22 +172,17 @@ describe('HandSheet', () => {
     expect(ondiscard).toHaveBeenCalledWith('h2');
   });
 
-  it('shows Discard refused, with its reason, for a centred card that has no discard pile', async () => {
-    const reason = 'This card has no discard pile';
-    const { ondiscard } = renderSheet({
-      discardRefusal: (id) => (id === 'h2' ? reason : undefined),
-    });
+  it('leaves Discard out for a centred card that has no discard pile, Play then alone on its line', async () => {
+    renderSheet({ canDiscard: (id) => id !== 'h2' });
 
-    const discard = screen.getByRole('button', { name: 'Discard' });
-    expect(discard.getAttribute('aria-disabled')).toBe('false');
-    expect(discard.dataset.tip).toBeUndefined();
+    expect(screen.getByRole('button', { name: 'Discard' })).toBeTruthy();
 
     layOut(212);
     await fireEvent.scroll(carousel());
-    expect(discard.getAttribute('aria-disabled')).toBe('true');
-    expect(discard.dataset.tip).toBe(reason);
-    await fireEvent.click(discard);
-    expect(ondiscard).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Play' })).toBeTruthy();
+    // A lone button takes the whole width, as buttonGrid lays one out.
+    expect(rule('.actions button:only-child')).toContain('grid-column: 1 / -1;');
   });
 
   it('marks the centred card and its dot', async () => {

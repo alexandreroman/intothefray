@@ -1924,10 +1924,10 @@
     });
   });
 
-  /** Why Discard is refused for a hand card, as handActions greys it; undefined when it is not. */
-  function handDiscardRefusal(id: string): string | undefined {
+  /** Whether a hand card may be discarded: handActions offers its Discard and does not refuse it. */
+  function handCanDiscard(id: string): boolean {
     const discard = handActions(id, view, sizeOf).find((item) => item.id === 'discard');
-    return discard?.disabled ? discard.reason : undefined;
+    return discard !== undefined && !discard.disabled;
   }
 
   /** Play or Discard on a card of the hand sheet (handActions): sends what its key sends (keys.ts). */
@@ -2809,7 +2809,7 @@
       seat={selected}
       landscape={dockRail}
       picker={deckPicker}
-      discardRefusal={handDiscardRefusal}
+      canDiscard={handCanDiscard}
       onplay={(id) => runHandAction(id, 'play')}
       ondiscard={(id) => runHandAction(id, 'discard')}
       onclose={closeHandSheet}

@@ -1,7 +1,9 @@
 <!--
   The viewer's hand in dock mode: a bottom sheet with the cards in a
   carousel that snaps each card to the middle. The centred card shows at full
-  size, the others smaller and dimmed; Play and Discard act on it.
+  size, the others smaller and dimmed; Play and Discard act on it. As in the
+  inspector, a refused Discard is left out rather than greyed, since a finger
+  never sees a tooltip saying why: Play then takes the whole line.
 
   The carousel scrolls sideways only (touch-action: pan-x), so a finger moving
   up on a card is a press the drag layer turns into a drag of that card, as on
@@ -39,7 +41,7 @@
     seat,
     landscape,
     picker,
-    discardRefusal,
+    canDiscard,
     onplay,
     ondiscard,
     onclose,
@@ -54,8 +56,8 @@
     landscape: boolean;
     /** The hero selector, shown in the header with 2+ own decks. */
     picker?: Snippet;
-    /** Why a card may not be discarded (a side deck's card without a discard pile); undefined when it may. */
-    discardRefusal: (id: string) => string | undefined;
+    /** Whether a card may be discarded: a side deck's card without a discard pile may not. */
+    canDiscard: (id: string) => boolean;
     onplay: (id: string) => void;
     ondiscard: (id: string) => void;
     onclose: () => void;
@@ -67,7 +69,7 @@
   // after a Play, the next card slides into the middle, and that index names it.
   let centred = $state(0);
   const current = $derived(cards[Math.min(centred, cards.length - 1)]);
-  const discardRefused = $derived(current ? discardRefusal(current.id) : undefined);
+  const discardable = $derived(current ? canDiscard(current.id) : false);
   // The cards landed: one still flying in is counted once its copy lands.
   const landed = $derived(cards.filter((card) => !motion.drawing.has(card.id)).length);
 
@@ -102,12 +104,6 @@
   function act(action: (id: string) => void): void {
     if (current) {
       action(current.id);
-    }
-  }
-
-  function discard(): void {
-    if (discardRefused === undefined) {
-      act(ondiscard);
     }
   }
 </script>
@@ -164,13 +160,9 @@
 
       <div class="actions">
         <button type="button" class="play" onclick={() => act(onplay)}>Play</button>
-        <!-- aria-disabled rather than disabled, so that the tooltip saying why still shows. -->
-        <button
-          type="button"
-          aria-disabled={discardRefused !== undefined}
-          data-tip={discardRefused}
-          onclick={discard}>Discard</button
-        >
+        {#if discardable}
+          <button type="button" onclick={() => act(ondiscard)}>Discard</button>
+        {/if}
       </div>
       <p class="hint">or drag a card up onto the table · swipe down to close</p>
     {/if}
@@ -353,6 +345,11 @@
     grid-template-columns: 2fr 1fr;
     gap: 8px;
     margin-top: 8px;
+  }
+
+  /* Play alone, Discard left out: the whole width, as a lone button (buttonGrid.ts). */
+  .actions button:only-child {
+    grid-column: 1 / -1;
   }
 
   .body.landscape .actions {
