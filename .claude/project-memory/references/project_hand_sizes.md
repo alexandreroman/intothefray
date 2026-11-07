@@ -1,6 +1,6 @@
 ---
 name: "Hand card sizes"
-description: "Raised hand cards are 80 % of the preview's card (65 % on a tablet); the resting hand shows the base card at 82 %"
+description: "Raised hand cards are 80 % of the preview's card (65 % on a tablet), card box cards too; the resting hand shows the base card at 82 %"
 type: project
 ---
 
@@ -46,9 +46,18 @@ type: project
   table has, so a table narrowed by the history panel counts as narrow.
   The resting hand keeps to the hands' room and looks the same at every
   width.
+- A card box (search, look at the top, browse, stage choice) shows its
+  cards exactly as wide as the raised hand's card (`raisedHandCard`, the
+  tablet share included), in fixed columns, as many as fit in its
+  1200 px; the box is as wide as its columns, so the grid lines up with
+  its header (`tileWidth` of `CardBox.svelte`, `boxGrid` in
+  `web/src/table/boxes.ts`). A landscape card lies across its 5:7 tile.
+  The box takes that card before a crowded fan shrinks it
+  (`filledHandCard`), so its size never follows the hand's count.
 - In dock mode the hand is not drawn as a fan: it opens from the dock as
-  a carousel sheet (see [[project_touch_phone_table]]). These sizes apply
-  to the fan.
+  a carousel sheet (see [[project_touch_phone_table]]), and card boxes
+  fill the screen with tiles 104 px wide at least, filling the row. These
+  sizes apply to the fan.
 
 **Why:** decided with the user: the raised hand is for
 reading cards, so it follows the preview's size, while the resting hand
@@ -58,7 +67,8 @@ whole, hence its smaller pop placed inside the window. The preview keeps
 its own size (at most a 358 px wide card) rather than growing with large
 screens. On a narrow screen, room matters more than size: the user wants
 the raised hand to use the screen's width and accepts smaller cards to keep
-each one readable.
+each one readable. Card boxes are read like the raised hand, so wherever
+the hand is a fan their cards take its size (user decision).
 
 **How to apply:** `previewCardWidth` mirrors `.peek`'s CSS; change both
 together, and size hand changes through the base and raised cards.
