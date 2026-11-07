@@ -157,8 +157,9 @@ const SHUFFLED = 'shuffled ';
 // "put Web-Shooter at the bottom of their deck", "put 2 cards at the bottom of the encounter deck (Rhino, a card)".
 const PUT = 'put ';
 const AT_THE_BOTTOM = ' at the bottom of ';
-// The card list a group's line ends with, after the pile it names: " (Rhino, a card)".
-const GROUP_CARD_LIST = / \([^()]*\)$/;
+// The card list a group's line ends with, after the pile it names: " (Rhino, a card)". A card name
+// may hold brackets of its own: "(A.I.M. Interference ([energy]), Kang (Immortus))".
+const GROUP_CARD_LIST = / \((?:[^()]|\([^()]*\))*\)$/;
 // The line of an undo: 'undid “shuffled their deck”'.
 const UNDID = 'undid ';
 

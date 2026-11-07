@@ -662,6 +662,26 @@ describe('diffViews', () => {
       ]);
     });
 
+    it('slips a group under a deck when a card it lists has brackets in its name', () => {
+      const mine = card('m', { code: '01001', x: 300 });
+      const held = card('h', { code: '01002', zone: 'hand' });
+      const before = view({ cards: [mine, held], piles: [seatPile('deck:p0', { count: 10 })] });
+      for (const text of [
+        'put 2 cards at the bottom of their deck (A.I.M. Interference ([energy]), a card)',
+        'put 2 cards at the bottom of their deck (a card, Kang (Immortus))',
+      ]) {
+        const after = view({
+          piles: [seatPile('deck:p0', { count: 12 })],
+          log: [OLD_LINE, line(text, alex)],
+        });
+
+        expect(diffViews(before, after)).toEqual([
+          { kind: 'under', id: 'm', toPile: 'deck:p0' },
+          { kind: 'under', id: 'h', toPile: 'deck:p0' },
+        ]);
+      }
+    });
+
     it('does not slip under for a card put on top, nor for an undone line', () => {
       // Put on top, it flies there instead, turning face down.
       expect(diffViews(prev, bottomOf(5, 'put Radar Sense on top of their Sense deck'))).toEqual([
