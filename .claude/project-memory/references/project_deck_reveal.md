@@ -83,8 +83,8 @@ renames them before resolving the kind, `apply` gives them before
 performing it (`splitRenames`), the open views first for the revealed
 cards (`revealedRenames`, `renameInViews`), and a rebuild renames them
 again on the table it meets (`renamedAgain`). Views and a deck-top play use
-`deckCards`; `applyPlay` hands a revealed card to `playRevealed`
-(apply.go), which plays it as it lies.
+`deckCards`; `applyPlay` (apply.go) plays a revealed card as it lies:
+it moves it as `applyMove` does, or attaches it as `tuckUnder` does.
 `resolveReorderTop` records the renames of a reorder that takes a
 revealed card back. On the web, `deckCount` (actions.ts) counts the
 revealed card in count limits and in the pile menu header. See also

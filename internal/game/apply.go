@@ -831,8 +831,16 @@ func applyPlay(t *Table, a Action) error {
 		}
 	}
 	if revealed {
-		playRevealed(t, c, target, a)
-		return nil
+		// It never leaves the table, so it carries everything it carried there:
+		// it is attached as tuckUnder does, or moved as applyMove does.
+		if c.IdentityVersion {
+			t.takeOverIdentity(c)
+		}
+		if target != nil {
+			t.tuckUnder(c, target)
+			return nil
+		}
+		return applyMove(t, a)
 	}
 	if err := t.checkLeave(c); err != nil {
 		return err
@@ -846,23 +854,6 @@ func applyPlay(t *Table, a Action) error {
 	c.FaceDown = faceDown && !c.Identity
 	t.enterTable(c, target, snap(a.X), snap(a.Y))
 	return nil
-}
-
-// playRevealed plays c, a card revealed on a deck, off that deck: at the
-// point of a, as a move does (see applyMove), or at the end of the stack of
-// target, as an attach does (see tuckUnder). It never leaves the table, so it
-// carries everything it carried there.
-func playRevealed(t *Table, c, target *Card, a Action) {
-	if c.IdentityVersion {
-		t.takeOverIdentity(c)
-	}
-	if target != nil {
-		t.tuckUnder(c, target)
-		return
-	}
-	c.X, c.Y = snap(a.X), snap(a.Y)
-	c.OnPile = ""
-	t.layOutStack(c)
 }
 
 // enterTable puts c, which has just left its hand or its pile, on the table:
