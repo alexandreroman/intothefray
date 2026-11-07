@@ -32,7 +32,7 @@ type: project
     `games` is always there.
   - `playing` holds one anonymous entry per game in the playing phase:
     first its `ref`, which tells games apart from one call to the next
-    and never leads to the game (absent for a game without one); then
+    and never leads to the game; then
     English names from the embedded catalog: `heroes`, the identity
     card's hero face and alter-ego face (absent when it has none), sorted by
     hero then alter-ego; the scenario name; the difficulty as stored
@@ -41,9 +41,9 @@ type: project
     II) and the modular sets, sorted alphabetically. A set the game plays
     without, and any unknown code, is left out. A Fear No Evil game names
     its Underling as the scenario and its main scheme set among the sets.
-    Entries are sorted by `ref` (ref-less ones first, by their other
-    fields), so the reply is stable from one call to the next. Entries
-    carry no game id, player name, deck name, deck URL or token.
+    Entries are sorted by `ref`, so the reply is stable from one call to
+    the next. Entries carry no game id, player name, deck name, deck URL
+    or token.
   - `Cache-Control: public, max-age=60`. Each server instance caches the
     whole reply for 60 s under a mutex held during the scan, so an
     instance scans at most once a minute whatever the traffic. A failed

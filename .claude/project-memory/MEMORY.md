@@ -92,7 +92,7 @@
 - [Documentation layout](references/project_docs_layout.md) — short README, DEVELOPMENT.md for contributors, CLAUDE.md essentials; details in notes
 - [Notes cite no local specs or plans](references/feedback_no_docs_references.md) — never point to docs/ specs or plans; state the decision
 - [README home page screenshot](references/project_readme_screenshot.md) — refresh .github/images/home.webp when the home page changes; recipe
-- [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; tested
+- [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; one matcher
 - [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
 - [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap: home
 - [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome; (hover: hover)

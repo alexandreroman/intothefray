@@ -140,8 +140,9 @@ type: project
   - The hand opens as a carousel sheet (`HandSheet.svelte`, non-modal):
     one card as large as the sheet's room allows (upright at most 80 % of
     its width, on its side as high as the sheet), with Play and Discard
-    only; Discard shows refused, with its reason as its tooltip, for a
-    card whose deck has no discard pile. A card dragged up out of it goes
+    only. Discard is left out for a card whose deck has no discard pile,
+    as the inspector leaves refused entries out, and Play then takes the
+    whole line. A card dragged up out of it goes
     onto the table. It closes when the viewer's own Play or Discard
     empties the hand.
   - A card played or discarded from the hand rises and fades out where it

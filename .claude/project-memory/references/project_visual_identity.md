@@ -21,6 +21,9 @@ type: project
   (`TopBar.svelte`, `--logo-words-display` in `Logo.svelte`).
 - Comic cues stay sparse: slanted primary button, yellow narration
   captions, speech-bubble tooltips, halftone dots.
+- Every tooltip is a speech bubble: an element's `data-tip` text, shown by
+  the one `Tooltip.svelte` that `App.svelte` mounts, never a native
+  `title` attribute.
 - The primary button is a slanted red panel with 5px rounded corners.
   Under a mouse hover it gets a 4px spark yellow ring lined with ink,
   with a pale yellow to white light running round it. The light follows
@@ -34,8 +37,9 @@ type: project
   the press only darkens the panel.
 
 **Why:** chosen with the user from mockups on a claude.ai design canvas:
-themed but modern and clean, original mark with no Marvel branding.
+themed but modern and clean, original mark with no Marvel branding. A
+native tooltip would break the look with the system's own.
 
 **How to apply:** reuse the tokens and shared classes (`.btn-primary`,
-`.caption`, `.display`) for new UI; keep the full wordmark in bars
-wherever it fits.
+`.caption`, `.display`) for new UI, and `data-tip` for its tooltips;
+keep the full wordmark in bars wherever it fits.

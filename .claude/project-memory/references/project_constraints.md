@@ -27,7 +27,10 @@ type: project
 - Card packs are additive data files and hold every pack's player cards;
   a scenario needs a hand-curated file, and the lobby lists the others as
   "Not supported yet".
-- A lost token loses its seat, and the host role never transfers.
+- A lost token loses its seat, and the host role never transfers. The
+  browser keeps the tokens (`itf-tokens`) of the 50 games stored last
+  (`MAX_TOKENS` in `web/src/lib/prefs.ts`), a game stored again counting
+  as the newest: a game expires, so older tokens only pile up.
 - The backend runs on an OVH VPS at `api.intothefray.xyz` (see
   [[project_deployment]]); it stays portable.
 

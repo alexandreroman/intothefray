@@ -18,9 +18,10 @@ type: project
 - A "Filter sets" field tops the menu, outside its scrolling list
   (`.mlist`, which fades its edges with `scrollFade`); it is empty and
   focused each time the menu opens. Matching ignores case and accents
-  (NFD, marks stripped) and looks in a set's shown name and its English
-  name; a query found in a pack's name, shown or English, keeps all that
-  pack's addable sets. Packs left with no set disappear; "No matching set"
+  and looks in a set's shown name and its English name, through the
+  app's one filter helper (see [[project_search_fields]]); a query found
+  in a pack's name, shown or English, keeps all that pack's addable
+  sets. Packs left with no set disappear; "No matching set"
   shows when the query leaves none, "No set to add" when nothing is
   addable at all.
 - In the field, ArrowDown goes to the first set shown, Enter adds the set
