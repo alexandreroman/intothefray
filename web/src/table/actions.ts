@@ -157,6 +157,15 @@ export type TokenName = (typeof TOKEN_LIST)[number]['name'];
 /** The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in internal/game/apply.go. */
 export const TOKENS: readonly Counter[] = TOKEN_LIST;
 
+/** The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top. */
+export const CORNER_TOKENS: readonly TokenName[] = ['dmg', 'gen'];
+
+/**
+ * The threat, then the acceleration to its left: in the top right corner of a scheme, between
+ * damage and counters in the corner pile of any other card. The first one takes the threat's place.
+ */
+export const THREAT_TOKENS: readonly TokenName[] = ['thr', 'acc'];
+
 /**
  * The statuses a card carries, in menu and tab order, with the key that adds one. Mirrors statusNames in
  * internal/game/apply.go.

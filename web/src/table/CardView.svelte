@@ -5,9 +5,19 @@
 <script lang="ts">
   import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard } from '../lib/types';
-  import { MODIFIERS, statusCount, STATUSES, withSign, type TokenName } from './actions';
+  import {
+    CORNER_TOKENS,
+    MODIFIERS,
+    statusCount,
+    STATUSES,
+    THREAT_TOKENS,
+    withSign,
+    type TokenName,
+  } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
+  import CounterGlyph from './CounterGlyph.svelte';
+  import './counters.css';
   import { dockCounterLayout, measureChipText, moreText, type Box } from './dockCounters';
   import { dockMode } from './dockMode';
   import { DOCK_SCALE, dockCardBox } from './dockPiles';
@@ -39,12 +49,6 @@
     /** Dock mode, during a drag: how far it is drawn pushed aside, as a translate. Never a ghost's. */
     shift?: string;
   } = $props();
-
-  // The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top.
-  const CORNER_TOKENS: readonly TokenName[] = ['dmg', 'gen'];
-  // The threat, then the acceleration to its left: in the top right corner of a scheme, between
-  // damage and counters in the corner pile of any other card. The first one takes the threat's place.
-  const THREAT_TOKENS: readonly TokenName[] = ['thr', 'acc'];
 
   const hidden = $derived(isHidden(card));
   const box = $derived(cardBox(face?.size ?? 'std', { faceDown: hidden, onPile: !!card.onPile }));
@@ -104,18 +108,18 @@
   const selected = $derived(!ghost && interaction.group.has(card.id));
 </script>
 
-{#snippet token(k: TokenName)}
+<!-- A token chip; in dock mode, at the box its layer gives it (style). -->
+{#snippet token(k: TokenName, count: number, style?: string)}
   {@const target = { card: card.id, kind: 'token', name: k } as const}
   <span
     class="tok {k}"
     class:hot={interaction.isCounter(target)}
+    {style}
     data-counter="token:{k}"
     role="presentation"
     onpointerenter={(event) => interaction.enterCounter(target, event)}
     onpointerleave={() => interaction.leaveCounter(target)}
-    >{#if k === 'acc'}<svg class="chevrons" viewBox="0 0 8 8" aria-hidden="true"
-        ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
-      >{/if}{card.tokens?.[k]}</span
+    >{#if k === 'acc'}<CounterGlyph kind="acc" />{/if}{count}</span
   >
 {/snippet}
 
@@ -125,7 +129,7 @@
   to announce.
 -->
 <div
-  class="card"
+  class="card counters"
   role="presentation"
   data-id={card.id}
   class:exhausted={card.exhausted}
@@ -174,19 +178,7 @@
   {#if dockCounters}
     <div class="dock-counters" style:zoom={1 / zoom}>
       {#each dockCounters.tokens.items as { name: k, count, box } (k)}
-        {@const target = { card: card.id, kind: 'token', name: k } as const}
-        <span
-          class="tok {k}"
-          class:hot={interaction.isCounter(target)}
-          style={boxStyle(box)}
-          data-counter="token:{k}"
-          role="presentation"
-          onpointerenter={(event) => interaction.enterCounter(target, event)}
-          onpointerleave={() => interaction.leaveCounter(target)}
-          >{#if k === 'acc'}<svg class="chevrons" viewBox="0 0 8 8" aria-hidden="true"
-              ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
-            >{/if}{count}</span
-        >
+        {@render token(k, count, boxStyle(box))}
       {/each}
       {#if dockCounters.tokens.more}
         <span class="tok more" style={boxStyle(dockCounters.tokens.more.box)}
@@ -236,7 +228,7 @@
     {#if threatInCorner}
       <div class="tokens top-right">
         {#each threatTokens as k (k)}
-          {@render token(k)}
+          {@render token(k, card.tokens?.[k] ?? 0)}
         {/each}
       </div>
     {/if}
@@ -245,17 +237,17 @@
     {#if cornerTokens.length > 0 || threatInPile}
       <div class="tokens bottom-right">
         {#if hasToken('dmg')}
-          {@render token('dmg')}
+          {@render token('dmg', card.tokens?.dmg ?? 0)}
         {/if}
         {#if threatInPile}
           <div class="threat-row">
             {#each threatTokens as k (k)}
-              {@render token(k)}
+              {@render token(k, card.tokens?.[k] ?? 0)}
             {/each}
           </div>
         {/if}
         {#if hasToken('gen')}
-          {@render token('gen')}
+          {@render token('gen', card.tokens?.gen ?? 0)}
         {/if}
       </div>
     {/if}
@@ -272,11 +264,9 @@
             role="presentation"
             onpointerenter={(event) => interaction.enterCounter(target, event)}
             onpointerleave={() => interaction.leaveCounter(target)}
-            >{#if k === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
-                ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
-                  d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
-                /></svg
-              >{/if}{#if count === null}{label}{:else}{label}
+            >{#if k === 'locked'}<CounterGlyph
+                kind="locked"
+              />{/if}{#if count === null}{label}{:else}{label}
               <span class="n">{count}</span>{/if}</span
           >
         {/each}
@@ -438,71 +428,6 @@
     }
   }
 
-  /*
-    Tokens sit inside the card. Damage, threat and counters pile up from the bottom right
-    corner, damage in the corner, the threat above it and counters on top. The acceleration
-    sits beside the threat, on the same row, to its left; without threat, it takes the threat's
-    place in the pile. On a scheme, the threat sits in the top right corner instead, clear of
-    its printed threat values, with the acceleration to its left along the top edge, above the
-    modifiers on the right edge and clear of the status tabs on the left edge. The corner pile
-    is at most three tokens high (67px) and two wide (44px) on any other card, and two tokens
-    high (44px) on a scheme: the status tabs end above it, or lie along the top of a landscape
-    card, clear of it.
-  */
-  .tokens {
-    position: absolute;
-    z-index: 4;
-    display: flex;
-    gap: 2px;
-  }
-
-  .tokens.bottom-right {
-    right: 5px;
-    bottom: 5px;
-    flex-direction: column-reverse;
-    align-items: flex-end;
-  }
-
-  /* The first token, the threat, stays in the pile's column: the acceleration goes to its left. */
-  .threat-row {
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 2px;
-  }
-
-  /* The first token, the threat, is in the corner: the acceleration goes to its left. */
-  .tokens.top-right {
-    right: 5px;
-    top: 5px;
-    flex-direction: row-reverse;
-  }
-
-  /* Tokens look like small cardboard chips: lit from the top left, a thin inner ring, a rim and a shadow. */
-  .tok {
-    --hi: #fff;
-    --base: #999;
-    --lo: #333;
-    --rim: #222;
-    --ink: #fff;
-    position: relative;
-    width: 21px;
-    height: 21px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font:
-      800 10.5px/1 system-ui,
-      sans-serif;
-    color: var(--ink);
-    text-shadow: 0 1px 1px #0008;
-    background: radial-gradient(circle at 34% 28%, var(--hi) 0%, var(--base) 48%, var(--lo) 100%);
-    border: 1.5px solid var(--rim);
-    box-shadow:
-      inset 0 1px 1px #ffffff80,
-      inset 0 -2px 3px #0000004d,
-      0 2px 4px #000000a0;
-  }
-
   /* Pointed at: the chip is ringed. */
   .tok.hot {
     box-shadow:
@@ -532,246 +457,6 @@
         0 0 0 2px #fff,
         0 2px 4px #0009;
     }
-  }
-
-  .tok::before {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    border-radius: 50%;
-    border: 1px solid #ffffff40;
-    pointer-events: none;
-  }
-
-  .tok.dmg {
-    --hi: #ff9b8c;
-    --base: #d8352b;
-    --lo: #7a1210;
-    --rim: #4e0b09;
-  }
-
-  /* Same orange as Tough. */
-  .tok.thr {
-    --hi: #ffd59a;
-    --base: #e08a1e;
-    --lo: #8a4a07;
-    --rim: #5a2f02;
-  }
-
-  /* Counters are green, as Stunned. */
-  .tok.gen {
-    --hi: #9fe0b2;
-    --base: #1b8a4a;
-    --lo: #0a4723;
-    --rim: #052e16;
-  }
-
-  /*
-    Acceleration is in the Fray red, brighter than damage, and marked with a double chevron
-    pointing up before its count. The two chevrons stand 4 units apart, so their strokes keep a
-    gap at 6px; their round ends may reach past the 8 × 8 box.
-  */
-  .tok.acc {
-    --hi: #ffab9f;
-    --base: #ff4438;
-    --lo: #901812;
-    --rim: #5c0e0b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-  }
-
-  .tok.acc .chevrons {
-    width: 6px;
-    height: 6px;
-    overflow: visible;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 1px 1px #0008);
-  }
-
-  /*
-    Status cards: small tabs sticking out of the right edge, like real cards tucked under. They
-    end just above the corner pile at its highest, so its tokens never cover them: 5px in, three
-    tokens (67px) and a 2px gap. Above that, a portrait card has room for all five tabs (14px
-    high, 2px apart) in one column, which reads top to bottom.
-  */
-  .statuses {
-    position: absolute;
-    right: -6px;
-    bottom: 74px;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    gap: 2px;
-  }
-
-  /*
-    A landscape card is too low for a column above the corner pile: the tabs lie side by side
-    along its top instead, the last one sticking out of the right edge. A row too long for the
-    card wraps downwards, its first tabs on the top row: the two rows end 35px from the top,
-    clear of the corner pile, which starts 40px from it.
-  */
-  .card.land .statuses {
-    top: 5px;
-    bottom: auto;
-    max-width: calc(100% + 1px);
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  /*
-    On a scheme, the right corners hold the tokens: the tabs stick out of the left edge, from
-    the top, where a portrait scheme has room for all five. The acceleration beside the threat
-    ends 49px from the right edge, past the widest tab.
-  */
-  .card.scheme .statuses {
-    top: 5px;
-    right: auto;
-    bottom: auto;
-    left: -6px;
-    max-width: none;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  /*
-    A landscape scheme has room for four tabs above the modifiers along its bottom: a fifth
-    starts a second column inside the card, beside the bottom tab.
-  */
-  .card.land.scheme .statuses {
-    max-height: 62px;
-    flex-wrap: wrap;
-  }
-
-  .card.scheme .st {
-    border-radius: 5px 3px 3px 5px;
-  }
-
-  .st {
-    font-stretch: 75%;
-    font-weight: 800;
-    font-size: 8px;
-    line-height: 1;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #fff;
-    padding: 2px 4px 2px 5px;
-    border-radius: 3px 5px 5px 3px;
-    border: 1px solid #0008;
-    box-shadow:
-      0 2px 4px #0009,
-      inset 0 1px 0 #ffffff40;
-    text-shadow: 0 1px 1px #0008;
-  }
-
-  .st.stunned {
-    background: linear-gradient(#25a058, #11683a);
-  }
-
-  .st.confused {
-    background: linear-gradient(#a274e6, #5c33a3);
-  }
-
-  .st.tough {
-    background: linear-gradient(#f0a53a, #a8600f);
-  }
-
-  .st.retaliate {
-    background: linear-gradient(#2bb0b5, #13696f);
-  }
-
-  .st.locked {
-    background: linear-gradient(#7d8aa8, #46506b);
-  }
-
-  /*
-    Stat modifiers: tabs like the statuses, on the edge the statuses leave free. On a portrait
-    card, they stick out of the left edge from the bottom, clear of the stats printed along the
-    top left and of the corner pile on the right, at most two tokens wide.
-    Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
-    On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
-    between the threat in the top corner (the acceleration lies to its left, along the top) and
-    the corner pile, at most two tokens high (44px).
-    That room holds five tabs (14px high, 2px apart): a column holds no more, which also keeps
-    it clear of the stats on a portrait card. With all six stats, HP starts a second column
-    inside the card, beside the bottom tab: higher up, it would cover the stats of a portrait
-    card or the statuses of a scheme.
-  */
-  .mods {
-    position: absolute;
-    bottom: 5px;
-    left: -6px;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: flex-start;
-    gap: 2px;
-    max-height: 78px;
-  }
-
-  .card.scheme .mods {
-    top: 30px;
-    bottom: auto;
-    left: auto;
-    right: -6px;
-    /* The second column goes to the left; wrap-reverse swaps the cross axis: flex-start is right. */
-    flex-wrap: wrap-reverse;
-    align-items: flex-start;
-  }
-
-  /*
-    A landscape card, scheme or not, is too low for a column: they lie in a row along the bottom
-    from the left corner, wrapping upwards, and stop 5px short of the corner pile, which sits
-    5px in. On a landscape card other than a scheme it is up to two tokens wide (44px), where the
-    acceleration sits beside the threat. On a landscape scheme the threat and the acceleration
-    sit top right, so it is one token wide (21px): the wider row there stays two rows high, under
-    the four status tabs of the scheme's left column.
-  */
-  .card.land .mods {
-    top: auto;
-    right: auto;
-    bottom: 5px;
-    left: 5px;
-    max-width: calc(100% - 59px);
-    max-height: none;
-    justify-content: flex-start;
-    flex-direction: row;
-    flex-wrap: wrap-reverse;
-    align-items: flex-end;
-  }
-
-  .card.land.scheme .mods {
-    max-width: calc(100% - 36px);
-  }
-
-  .mod {
-    /* "+1 ATK" never breaks between its number and its stat. */
-    white-space: nowrap;
-    border-radius: 5px 3px 3px 5px;
-    background: linear-gradient(var(--line-strong), var(--panel-2));
-  }
-
-  .card.scheme .mod {
-    border-radius: 3px 5px 5px 3px;
-  }
-
-  .card.land .mod {
-    border-radius: 3px;
-  }
-
-  /* A penalty is in the Fray red. */
-  .mod.neg {
-    background: linear-gradient(var(--accent), var(--accent-deep));
   }
 
   /*
@@ -821,16 +506,5 @@
   /* What does not fit: "+N", in grey. */
   .dock-counters .st.more {
     background: linear-gradient(#8a8f99, #50555f);
-  }
-
-  /* The small lock before the Locked label. */
-  .st .lock {
-    width: 6px;
-    height: 6px;
-    margin-right: 2px;
-    vertical-align: -1px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.4;
   }
 </style>
