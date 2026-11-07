@@ -21,7 +21,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { motionMs } from '../lib/motion';
-  import { counterName, MAX_MODIFIER, MODIFIERS, STATUSES, withSign } from './actions';
+  import { counterName, MAX_COUNT, MODIFIERS, STATUSES, withSign } from './actions';
   import type { SheetCounter } from './inspector';
   import { cardBox } from './layout';
 
@@ -286,7 +286,7 @@
         type="button"
         class="btn-ghost"
         aria-label={stepLabel(counter, -1)}
-        disabled={counter.signed && counter.value <= -MAX_MODIFIER}
+        disabled={counter.signed && counter.value <= -MAX_COUNT}
         onclick={() => onstep(counter, -1)}>−</button
       >
       <span class="value">{counter.signed ? withSign(counter.value) : counter.value}</span>
@@ -294,7 +294,7 @@
         type="button"
         class="btn-ghost"
         aria-label={stepLabel(counter, 1)}
-        disabled={counter.signed && counter.value >= MAX_MODIFIER}
+        disabled={counter.signed && counter.value >= MAX_COUNT}
         onclick={() => onstep(counter, 1)}>+</button
       >
     </div>

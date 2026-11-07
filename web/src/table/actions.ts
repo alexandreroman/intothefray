@@ -23,7 +23,7 @@ import {
   PILE_VICTORY,
   seatPlayer,
 } from './seats';
-import { groupUnits, MAX_COUNT } from './selection';
+import { groupUnits } from './selection';
 import type {
   Action,
   CardView,
@@ -176,10 +176,11 @@ export const STATUSES: readonly Counter[] = [
 export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec', 'hp'] as const;
 
 /**
- * The largest modifier, either way: the server clamps a modifier to ±99 (maxCount, in
- * applyCounter), so a step past it changes nothing.
+ * Mirrors maxCount in internal/game/action.go: the most cards one action takes, the most
+ * sub-actions a group holds (resolveGroup), and the largest modifier either way, where the
+ * server clamps it (applyCounter), so that a step past it changes nothing.
  */
-export const MAX_MODIFIER = 99;
+export const MAX_COUNT = 99;
 
 /** The kinds of counters a card carries: tokens and statuses count up from 0, modifiers are signed. */
 export type CounterKind = 'token' | 'status' | 'modifier';
@@ -543,12 +544,12 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
 /**
  * "Add a modifier": a submenu that gives the card +1 to a stat, then, past a
  * separator, −1. Unlike most token and status items, these have no keys. A
- * step past ±MAX_MODIFIER is greyed: the server would change nothing.
+ * step past ±MAX_COUNT is greyed: the server would change nothing.
  */
 function modifierMenu(card: CardView): ActionItem {
   const step = (delta: 1 | -1) =>
     MODIFIERS.map((name): ActionItem => {
-      const limit = delta * MAX_MODIFIER;
+      const limit = delta * MAX_COUNT;
       const atLimit = delta > 0 ? modifierOf(card, name) >= limit : modifierOf(card, name) <= limit;
       return {
         id: `${name}${delta > 0 ? '+1' : '-1'}`,

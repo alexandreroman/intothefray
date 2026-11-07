@@ -3,7 +3,7 @@ import {
   actionsFor,
   counterName,
   keyLabel,
-  MAX_MODIFIER,
+  MAX_COUNT,
   withSign,
   type ActionItem,
   type TableElement,
@@ -308,11 +308,11 @@ describe('actionsFor', () => {
       return modifiers.filter((it) => it.disabled).map((it) => ({ id: it.id, reason: it.reason }));
     };
 
-    expect(disabled({ atk: MAX_MODIFIER - 1, def: -(MAX_MODIFIER - 1) })).toEqual([]);
-    expect(disabled({ atk: MAX_MODIFIER })).toEqual([
+    expect(disabled({ atk: MAX_COUNT - 1, def: -(MAX_COUNT - 1) })).toEqual([]);
+    expect(disabled({ atk: MAX_COUNT })).toEqual([
       { id: 'atk+1', reason: 'The ATK modifier is already +99' },
     ]);
-    expect(disabled({ atk: -MAX_MODIFIER })).toEqual([
+    expect(disabled({ atk: -MAX_COUNT })).toEqual([
       { id: 'atk-1', reason: 'The ATK modifier is already \u221299' },
     ]);
   });

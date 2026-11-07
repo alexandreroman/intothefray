@@ -11,7 +11,7 @@ import {
   resizeScreen,
   type TestScreen,
 } from '../lib/screen.testing';
-import { MAX_MODIFIER, type ActionItem } from './actions';
+import { MAX_COUNT, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
 import { stubImageDecode } from '../lib/decodeImage.testing';
@@ -563,7 +563,7 @@ describe('CardSheet', () => {
     });
 
     it('shows a modifier with its sign, and stops it at its largest and smallest', async () => {
-      const { rerender } = renderSheet({ counters: [modifier(MAX_MODIFIER)] });
+      const { rerender } = renderSheet({ counters: [modifier(MAX_COUNT)] });
 
       await fireEvent.click(screen.getByRole('button', { name: 'DEF, +99' }));
       const add = () =>
@@ -575,7 +575,7 @@ describe('CardSheet', () => {
       expect(add().disabled).toBe(true);
       expect(remove().disabled).toBe(false);
 
-      await rerender({ counters: [modifier(-MAX_MODIFIER)] });
+      await rerender({ counters: [modifier(-MAX_COUNT)] });
       expect(screen.getByRole('button', { name: 'DEF, −99' })).toBeTruthy();
       expect(add().disabled).toBe(false);
       expect(remove().disabled).toBe(true);

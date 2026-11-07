@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { MAX_MODIFIER, withSign } from './actions';
+  import { MAX_COUNT, withSign } from './actions';
   import { interaction } from './interaction.svelte';
 
   let {
@@ -31,9 +31,9 @@
     onstep: (delta: -1 | 1) => void;
   } = $props();
 
-  // A modifier stops at ±MAX_MODIFIER, where the server clamps it; a token or status has no top.
-  const atTop = $derived(signed && value >= MAX_MODIFIER);
-  const atBottom = $derived(signed && value <= -MAX_MODIFIER);
+  // A modifier stops at ±MAX_COUNT, where the server clamps it; a token or status has no top.
+  const atTop = $derived(signed && value >= MAX_COUNT);
+  const atBottom = $derived(signed && value <= -MAX_COUNT);
 
   // Room between the pill and its token, and from the window edge.
   const GAP = 2;
