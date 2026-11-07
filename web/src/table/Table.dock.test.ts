@@ -209,7 +209,7 @@ describe('dock mode', () => {
     expect(screen.queryByRole('radiogroup')).toBeNull();
   });
 
-  it('has no hand button for a spectator, who has no hand (spectator_no_hand_button)', async () => {
+  it('has no hand button for a spectator, who has no hand', async () => {
     mockScreen(PHONE);
     const view = makeView();
     view.you = spectatorYou();

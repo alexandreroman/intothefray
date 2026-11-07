@@ -152,7 +152,7 @@ describe('Dock', () => {
     expect(hand.getAttribute('aria-label')).toBe('Hand · 5, Rocket Raccoon');
   });
 
-  it('has no hand button without a hand to show, as for a spectator (spectator_no_hand_button)', () => {
+  it('has no hand button without a hand to show, as for a spectator', () => {
     render(Dock, props({ seat: undefined, hand: [], avatar: null, heroName: '' }));
     expect(screen.queryByRole('button', { name: /hand/i })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
