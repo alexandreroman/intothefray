@@ -155,7 +155,10 @@ const TOKEN_LIST = [
 
 export type TokenName = (typeof TOKEN_LIST)[number]['name'];
 
-/** The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in internal/game/apply.go. */
+/**
+ * The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in
+ * internal/game/apply.go.
+ */
 export const TOKENS: readonly Counter[] = TOKEN_LIST;
 
 /** The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top. */

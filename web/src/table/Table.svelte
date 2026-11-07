@@ -3436,9 +3436,9 @@
   /*
     The preview, in a corner of the play area that focus.ts chooses (chooseCorner): the bottom
     right, above the zoom control, unless it would hide the whole hovered element there, and
-    never the hero selector's corner. Still while the table scrolls under it. As the zoom control: over the table, under the other players' presence
-    (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
-    pointer goes through it.
+    never the hero selector's corner. Still while the table scrolls under it. As the zoom
+    control: over the table, under the other players' presence (2500), the veil and the raised
+    hand (2600). Never so tall that it leaves the table; the pointer goes through it.
   */
   .peek {
     grid-area: table;

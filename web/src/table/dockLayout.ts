@@ -371,7 +371,10 @@ interface Split {
   fixedRight: number | null;
 }
 
-/** A group of a row's frames and piles: its left edge on the table, and how far right of its scaled place it is drawn. */
+/**
+ * A group of a row's frames and piles: its left edge on the table, and how far right of its scaled
+ * place it is drawn.
+ */
 interface FixedPlace {
   left: number;
   dx: number;

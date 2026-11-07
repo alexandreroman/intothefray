@@ -306,7 +306,10 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   return inPileOrder(anims, after);
 }
 
-/** Where the dock layout draws an item of the table (dockLayout.ts itemBox): a card by its id, a marker by markerItemId. */
+/**
+ * Where the dock layout draws an item of the table (dockLayout.ts itemBox): a card by its id, a
+ * marker by markerItemId.
+ */
 type DrawnAt = (id: string) => Point | null;
 
 // What a card may also play while the flow slides it: neither moves it.

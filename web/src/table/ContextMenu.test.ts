@@ -491,10 +491,10 @@ describe('the context menu', () => {
     const hidden = /\n {2}\.reason \{([^}]*)\}/.exec(menuSource)?.[1];
     expect(hidden).toMatch(/position: absolute;/);
     expect(hidden).toMatch(/clip-path: inset\(50%\);/);
-    const coarse =
-      /@media \(pointer: coarse\) \{\s*\.table-menu button\.has-reason \{[^}]*\}\s*\.table-menu button > \.reason \{([^}]*)\}/.exec(
-        menuSource,
-      )?.[1];
+    const coarse = new RegExp(
+      String.raw`@media \(pointer: coarse\) \{\s*\.table-menu button\.has-reason \{[^}]*\}` +
+        String.raw`\s*\.table-menu button > \.reason \{([^}]*)\}`,
+    ).exec(menuSource)?.[1];
     expect(coarse).toMatch(/position: static;/);
     expect(coarse).toMatch(/flex: 1 0 100%;/);
     expect(coarse).toMatch(/white-space: normal;/);

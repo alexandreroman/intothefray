@@ -478,26 +478,30 @@ describe('keys on the table', () => {
     );
   });
 
-  it('B sends a side card to the bottom of its side deck; X and Backspace leave it without a discard pile', async () => {
-    const cards = [
-      card('v', { code: '01094', owner: -1, back: 'villain' }),
-      card('sense', { x: 200, home: 'side:p0:0' }),
-    ];
-    const view = makeView({ cards });
-    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
-    const { session } = await renderTable(view);
-    await fireEvent.pointerEnter(placed('sense'));
+  it(
+    'B sends a side card to the bottom of its side deck; ' +
+      'X and Backspace leave it without a discard pile',
+    async () => {
+      const cards = [
+        card('v', { code: '01094', owner: -1, back: 'villain' }),
+        card('sense', { x: 200, home: 'side:p0:0' }),
+      ];
+      const view = makeView({ cards });
+      view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
+      const { session } = await renderTable(view);
+      await fireEvent.pointerEnter(placed('sense'));
 
-    await press('x');
-    await press('Backspace');
-    expect(session.act).not.toHaveBeenCalled();
-    await press('b');
-    // The server follows the card's home: the action names no pile.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'toDeck', card: 'sense', where: 'bottom' },
-      0,
-    );
-  });
+      await press('x');
+      await press('Backspace');
+      expect(session.act).not.toHaveBeenCalled();
+      await press('b');
+      // The server follows the card's home: the action names no pile.
+      expect(session.act).toHaveBeenCalledExactlyOnceWith(
+        { kind: 'toDeck', card: 'sense', where: 'bottom' },
+        0,
+      );
+    },
+  );
 
   it('B does nothing on an encounter card without an encounter deck to go back to', async () => {
     const cards = [

@@ -388,16 +388,19 @@ describe('Hand', () => {
   });
 
   it('pops the hovered card up, 1.3 times as large, keeping its tilt, but in touch mode', () => {
-    const pop =
-      /\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
-        handSource,
-      )?.[1];
+    const pop = new RegExp(
+      String.raw`\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\)` +
+        String.raw` \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}`,
+    ).exec(handSource)?.[1];
     expect(pop).toMatch(
       /transform: translateY\(calc\(var\(--ty\) - 31px\)\) rotate\(var\(--rot\)\) scale\(1\.3\);/,
     );
     // A finger hovers nothing: no hovered card comes forward in touch mode either.
     expect(handSource).toMatch(
-      /\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover,\n {2}\.hcard\.kept,\n {2}\.hcard\.locked \{\s*z-index: 60;/,
+      new RegExp(
+        String.raw`\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover,` +
+          String.raw`\n {2}\.hcard\.kept,\n {2}\.hcard\.locked \{\s*z-index: 60;`,
+      ),
     );
   });
 
@@ -406,7 +409,10 @@ describe('Hand', () => {
       handSource,
     )?.[1];
     expect(pop).toMatch(
-      /transform: translate\(var\(--touch-pop-x\), var\(--touch-pop-y\)\) rotate\(var\(--rot\)\)\s+scale\(var\(--touch-pop-scale\)\);/,
+      new RegExp(
+        String.raw`transform: translate\(var\(--touch-pop-x\), var\(--touch-pop-y\)\) rotate\(var\(--rot\)\)` +
+          String.raw`\s+scale\(var\(--touch-pop-scale\)\);`,
+      ),
     );
 
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(860);

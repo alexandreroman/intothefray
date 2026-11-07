@@ -203,31 +203,35 @@ describe('hovering the table', () => {
     expect(interaction.hovered).toEqual({ kind: 'card', id: 'two' });
   });
 
-  it('keeps the hover of a card revealed on a deck under a resting pointer, past the late leave of the deck', async () => {
-    const { rerender } = await renderTable();
-    const resting = { clientX: 500, clientY: 60 };
-    await fireEvent.pointerMove(window, resting);
-    await fireEvent.pointerEnter(placed('enc'), resting);
-    expect(interaction.hovered).toEqual({ kind: 'pile', id: 'enc' });
+  it(
+    'keeps the hover of a card revealed on a deck under a resting pointer, ' +
+      'past the late leave of the deck',
+    async () => {
+      const { rerender } = await renderTable();
+      const resting = { clientX: 500, clientY: 60 };
+      await fireEvent.pointerMove(window, resting);
+      await fireEvent.pointerEnter(placed('enc'), resting);
+      expect(interaction.hovered).toEqual({ kind: 'pile', id: 'enc' });
 
-    // The revealed card lies on the deck, under the pointer: the redraw hovers it.
-    vi.spyOn(document, 'elementFromPoint').mockImplementation(() => placed('revealed'));
-    const view = makeView();
-    view.table!.cards.push(
-      card('revealed', { code: '01002', owner: -1, back: 'encounter', x: 500 }),
-    );
-    await rerender({ view });
-    await vi.waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'revealed' }));
-    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+      // The revealed card lies on the deck, under the pointer: the redraw hovers it.
+      vi.spyOn(document, 'elementFromPoint').mockImplementation(() => placed('revealed'));
+      const view = makeView();
+      view.table!.cards.push(
+        card('revealed', { code: '01002', owner: -1, back: 'encounter', x: 500 }),
+      );
+      await rerender({ view });
+      await vi.waitFor(() => expect(interaction.hovered).toEqual({ kind: 'card', id: 'revealed' }));
+      expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
 
-    // The browser catches up with the redraw later: it leaves the deck and enters the card, at rest.
-    vi.useFakeTimers();
-    await fireEvent.pointerLeave(placed('enc'), resting);
-    await fireEvent.pointerEnter(placed('revealed'), resting);
-    await vi.advanceTimersByTimeAsync(LINGER_MS);
-    expect(interaction.hovered).toEqual({ kind: 'card', id: 'revealed' });
-    expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
-  });
+      // The browser catches up with the redraw later: it leaves the deck and enters the card, at rest.
+      vi.useFakeTimers();
+      await fireEvent.pointerLeave(placed('enc'), resting);
+      await fireEvent.pointerEnter(placed('revealed'), resting);
+      await vi.advanceTimersByTimeAsync(LINGER_MS);
+      expect(interaction.hovered).toEqual({ kind: 'card', id: 'revealed' });
+      expect(within(preview()).getByRole('img', { name: 'Peter Parker' })).toBeTruthy();
+    },
+  );
 
   it('ignores the pointerenter a zoom fires under a resting pointer', async () => {
     await renderTable();
