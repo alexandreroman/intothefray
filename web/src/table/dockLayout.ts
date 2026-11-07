@@ -22,6 +22,7 @@
 // card where the drop would put it, as if it lay there already, the units after it pushed along
 // and the slot it left closed up.
 
+import type { Point } from '../lib/types';
 import { DOCK_SCALE, type Placement } from './dockPiles';
 import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
 import { ROW_LABEL_ROOM, rowHeight, rowOf, rowTop } from './rows';
@@ -85,11 +86,6 @@ export interface DockLayoutInput {
    * without one has a line no wider than itself.
    */
   lineWidths?: ReadonlyMap<string, number>;
-}
-
-export interface Point {
-  x: number;
-  y: number;
 }
 
 /** Where the table is drawn, in drawn units. */
