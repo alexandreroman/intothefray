@@ -22,7 +22,7 @@ Cards with a `setAside` list:
 - Show of Empathy (51017): Redemption (51036)
 - Captain America upgrade (53023): Captain America's Shield (53034)
 
-The last three are the Linked player cards. Under the Linked keyword, a
+All four lists are the Linked player cards: under the Linked keyword, a
 Linked card never goes in a deck and is set aside at the start of the game
 when the card named in its parentheses is in a player's deck. The Trickster
 Takeover allies (55063-55066) are linked to encounter minions, not to a
