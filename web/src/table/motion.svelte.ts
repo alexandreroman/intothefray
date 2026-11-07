@@ -12,7 +12,7 @@
 
 import { tick } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
-import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { createSubscriber, SvelteMap, SvelteSet } from 'svelte/reactivity';
 import {
   MARKERS,
   markerPoint,
@@ -890,9 +890,29 @@ class TableMotion {
   readonly drawing = new SvelteSet<string>();
   /**
    * Counts the frames while cards move: what is drawn from the cards' places
-   * on the screen (the arrows) measures again at each one.
+   * on the screen (the arrows) measures again at each one. It counts only
+   * while an effect reads it: with nothing drawn from the cards' places, no
+   * frame is counted.
    */
-  frame = $state(0);
+  get frame(): number {
+    this.#followFrames();
+    return this.#frame;
+  }
+
+  #frame = $state(0);
+  // Whether an effect reads the frame counter (#followFrames).
+  #framesFollowed = false;
+  // Starts counting the frames once an effect reads them, cards moving or as soon as they move, and
+  // stops once the last effect reading them is gone.
+  #followFrames = createSubscriber(() => {
+    this.#framesFollowed = true;
+    this.#countFrames();
+    return () => {
+      this.#framesFollowed = false;
+      cancelAnimationFrame(this.#raf);
+      this.#raf = 0;
+    };
+  });
 
   /**
    * Whether a pile's count hides (PileView): something leaves or lands on it, or it riffles or turns
@@ -2146,13 +2166,16 @@ class TableMotion {
     return animation;
   }
 
-  /** Counts frames until the last moving card has stopped, one frame past it. */
+  /**
+   * Counts frames until the last moving card has stopped, one frame past it, while an effect reads
+   * them (#followFrames).
+   */
   #countFrames(): void {
-    if (this.#raf !== 0) {
+    if (this.#raf !== 0 || !this.#framesFollowed || this.#moving.size === 0) {
       return;
     }
     const step = () => {
-      this.frame += 1;
+      this.#frame += 1;
       this.#raf = this.#moving.size > 0 ? requestAnimationFrame(step) : 0;
     };
     this.#raf = requestAnimationFrame(step);

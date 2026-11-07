@@ -7,6 +7,7 @@
   the card under it.
 -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { playerColorVar } from '../lib/playerColor';
   import type { View } from '../lib/types';
   import { interaction } from './interaction.svelte';
@@ -139,16 +140,24 @@
     if (!svg) {
       return;
     }
-    const layer = svg.getBoundingClientRect();
     const table = view.table;
     // An arrow whose card left the table is not drawn (the server drops it on the next action).
     const onTable = new Set(
       (table?.cards ?? []).filter((card) => card.zone === 'table').map((card) => card.id),
     );
+    const shown = (table?.arrows ?? []).filter(
+      (arrow) => onTable.has(arrow.from) && onTable.has(arrow.to),
+    );
+    // Nothing to draw: the page is not read, which would lay it out at every frame of a drag.
+    if (shown.length === 0 && interaction.arrowFrom === null) {
+      draw([]);
+      return;
+    }
+    const layer = svg.getBoundingClientRect();
     const drawn: Drawn[] = [];
-    for (const arrow of table?.arrows ?? []) {
-      const from = onTable.has(arrow.from) ? cardElement(arrow.from) : null;
-      const to = onTable.has(arrow.to) ? cardElement(arrow.to) : null;
+    for (const arrow of shown) {
+      const from = cardElement(arrow.from);
+      const to = cardElement(arrow.to);
       if (!from || !to) {
         continue;
       }
@@ -160,7 +169,40 @@
     if (rubber) {
       drawn.push(rubber);
     }
-    paths = drawn;
+    draw(drawn);
+  }
+
+  /**
+   * Draws the paths, unless the same ones are drawn already: a drag or a scroll that moves none of
+   * the arrows' cards draws nothing again. The paths drawn are read untracked: the effect that
+   * measures does not follow its own paths.
+   */
+  function draw(next: Drawn[]): void {
+    if (
+      !samePaths(
+        next,
+        untrack(() => paths),
+      )
+    ) {
+      paths = next;
+    }
+  }
+
+  function samePaths(a: readonly Drawn[], b: readonly Drawn[]): boolean {
+    return (
+      a.length === b.length &&
+      a.every((path, i) => {
+        const other = b[i];
+        return (
+          other !== undefined &&
+          path.d === other.d &&
+          path.start.x === other.start.x &&
+          path.start.y === other.start.y &&
+          path.color === other.color &&
+          path.rubber === other.rubber
+        );
+      })
+    );
   }
 
   /** Measures again at the next frame, once for every scroll or pointer move of that frame. */

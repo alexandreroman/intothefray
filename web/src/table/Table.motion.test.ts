@@ -405,17 +405,82 @@ describe('Table animations', () => {
     expect(document.querySelector('.surface .marker')?.classList).not.toContain('lifted');
   });
 
-  it('counts frames while a card moves, for the arrows to follow it', async () => {
-    const session = fakeSession();
-    const { rerender } = render(Table, {
-      session,
-      view: makeView([card('a', { x: 0 })]),
-    });
-    await settle();
-    const before = motion.frame;
+  describe('the frame counter', () => {
+    /** Cards a and b, a at that x, with an arrow from a to b when asked. */
+    function arrowView(x: number, arrow: boolean): View {
+      const view = makeView([card('a', { x }), card('b', { x: 400 })]);
+      view.table!.arrows = arrow ? [{ from: 'a', to: 'b', seat: 0 }] : [];
+      return view;
+    }
 
-    await rerender({ session, view: makeView([card('a', { x: 200 })]) });
-    await waitFor(() => expect(motion.frame).toBeGreaterThan(before + 1));
+    /** Lets the browser draw a few frames. */
+    async function frames(count: number): Promise<void> {
+      for (let i = 0; i < count; i++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+    }
+
+    it('counts frames while a card moves, for the arrows to follow it', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, { session, view: arrowView(0, true) });
+      await settle();
+      const before = motion.frame;
+
+      await rerender({ session, view: arrowView(200, true) });
+      await waitFor(() => expect(motion.frame).toBeGreaterThan(before + 1));
+    });
+
+    it('counts none while a card moves with no arrow to follow it', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, { session, view: arrowView(0, false) });
+      await settle();
+      const before = motion.frame;
+
+      await rerender({ session, view: arrowView(200, false) });
+      await waitFor(() => expect(animationsOf('.surface .card[data-id="a"]')).not.toHaveLength(0));
+      await frames(3);
+      expect(motion.frame).toBe(before);
+    });
+
+    it('starts counting once an arrow shows while a card moves', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, { session, view: arrowView(0, false) });
+      await settle();
+      await rerender({ session, view: arrowView(200, false) });
+      await waitFor(() => expect(animationsOf('.surface .card[data-id="a"]')).not.toHaveLength(0));
+      const before = motion.frame;
+
+      // The same places: the card goes on moving.
+      await rerender({ session, view: arrowView(200, true) });
+      await waitFor(() => expect(motion.frame).toBeGreaterThan(before + 1));
+    });
+
+    it('stops counting once the last arrow goes while a card moves', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, { session, view: arrowView(0, true) });
+      await settle();
+      const start = motion.frame;
+      await rerender({ session, view: arrowView(200, true) });
+      await waitFor(() => expect(motion.frame).toBeGreaterThan(start + 1));
+
+      await rerender({ session, view: arrowView(200, false) });
+      await frames(2);
+      const before = motion.frame;
+      await frames(3);
+      expect(motion.frame).toBe(before);
+    });
+
+    it('counts frames while the viewer picks an arrow', async () => {
+      const session = fakeSession();
+      const { rerender } = render(Table, { session, view: arrowView(0, false) });
+      await settle();
+      await rerender({ session, view: arrowView(200, false) });
+      await waitFor(() => expect(animationsOf('.surface .card[data-id="a"]')).not.toHaveLength(0));
+      const before = motion.frame;
+
+      interaction.startArrow('b');
+      await waitFor(() => expect(motion.frame).toBeGreaterThan(before + 1));
+    });
   });
 
   it('with reduced motion, cards jump to their place and only the glow plays', async () => {

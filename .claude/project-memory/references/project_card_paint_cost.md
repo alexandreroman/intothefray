@@ -37,6 +37,13 @@ type: project
   own transforms, pile boxes, player colours) before any of them starts
   (`TableMotion.animate`), and a drag measures its grab before it writes to
   the drag layer, whose sway is written only while it moves.
+- Nothing measures the page at every frame for nobody. The arrows' frame
+  counter (`motion.frame`) ticks only while an effect reads it
+  (`createSubscriber`), and the table reads it only while arrows can be
+  drawn: some lie on the table, or the viewer picks one. With nothing to
+  draw, the arrows read nothing of the page. What a pointer move or a frame
+  writes is skipped when it equals what shows: the drop hint, the outlined
+  drop target (`interaction.dropOn`), the arrow paths.
 - Card images (CardFace, CardBack) round their corners with `border-radius`
   (`--card-radius`), never a `clip-path`.
 - The surface zooms with CSS `zoom` (`--z`): layout is a few percent of a

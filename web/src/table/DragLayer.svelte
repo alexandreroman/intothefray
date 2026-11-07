@@ -181,10 +181,17 @@
   );
   /** The timer that shows the drop under a still pointer once it has stayed there, 0 when none. */
   let dwellTimer = 0;
+  /** A label above a drop target, its middle and its bottom on the screen. */
+  interface Hint {
+    glyph: string;
+    text: string;
+    tuck: boolean;
+    x: number;
+    y: number;
+  }
+
   /** The label above the drop target. */
-  let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
-    null,
-  );
+  let hint = $state.raw<Hint | null>(null);
 
   /** What a drop lands on, and the action it sends, null when nothing would change. */
   interface Located {
@@ -999,7 +1006,22 @@
     if (interaction.dropOn?.kind !== on.kind || interaction.dropOn.id !== on.id) {
       interaction.dropOn = on;
     }
-    hint = { ...label, x: (rect.left + rect.right) / 2, y: rect.top - 8 };
+    // Every move over the same target makes the same label: it is not drawn again.
+    const next = { ...label, x: (rect.left + rect.right) / 2, y: rect.top - 8 };
+    if (!sameHint(hint, next)) {
+      hint = next;
+    }
+  }
+
+  function sameHint(a: Hint | null, b: Hint): boolean {
+    return (
+      a !== null &&
+      a.glyph === b.glyph &&
+      a.text === b.text &&
+      a.tuck === b.tuck &&
+      a.x === b.x &&
+      a.y === b.y
+    );
   }
 
   function onUp(event: PointerEvent): void {

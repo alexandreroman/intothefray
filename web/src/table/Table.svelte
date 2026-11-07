@@ -1305,6 +1305,13 @@
     return actionsFor(hovered, view, lang, interaction.group);
   });
 
+  // Arrows may be drawn: some lie on the table, or the viewer picks one (a mouse's or a pen's only:
+  // in touch mode, only those another player drew). Only then do the arrows follow the moving cards
+  // frame by frame: the frame counter runs only while read (motion.frame).
+  const arrowsShown = $derived(
+    (view.table?.arrows ?? []).length > 0 || interaction.arrowFrom !== null,
+  );
+
   // ---- The arrow mode's hint ----
 
   // Arrows are drawn with a mouse: touch mode offers none.
@@ -2583,7 +2590,7 @@
       <Arrows
         {view}
         root={app}
-        layout={[zoom, surface, tableMap, motion.frame]}
+        layout={[zoom, surface, tableMap, arrowsShown ? motion.frame : 0]}
         raised={interaction.dragging !== null || interaction.landing !== null || motion.moving}
       />
     </div>

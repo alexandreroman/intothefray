@@ -244,6 +244,28 @@ describe('arrows', () => {
     await waitFor(() => expect(startOf(shafts()[0]!)).toEqual([40, 300]));
   });
 
+  it('measures nothing on the page while there is nothing to draw', async () => {
+    /** How many times the arrows' layer was measured on the screen. */
+    function layerMeasures(): number {
+      const measure = vi.mocked(Element.prototype.getBoundingClientRect);
+      const measured = measure.mock.contexts as Element[];
+      return measured.filter((element) => element.classList.contains('arrows')).length;
+    }
+    // An arrow whose card left the table draws nothing either.
+    const cards = CARDS.map((c) => (c.id === 'v' ? { ...c, zone: 'pile' as const } : c));
+    await renderTable(makeView({ cards, arrows: [{ from: 'mine', to: 'v', seat: 0 }] }));
+
+    await fireEvent.pointerDown(placed('mine', '.card'), { clientX: 50, clientY: 400 });
+    await fireEvent.pointerMove(window, { clientX: 300, clientY: 450, buttons: 1 });
+    await fireEvent.pointerMove(window, { clientX: 310, clientY: 460, buttons: 1 });
+    await fireEvent.scroll(scroller());
+    await fireEvent.pointerUp(window, { clientX: 500, clientY: 950 });
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(layerMeasures()).toBe(0);
+    expect(document.querySelectorAll('.arrows path.shaft')).toHaveLength(0);
+  });
+
   it('goes back to its card when a drag of that card ends without a new view', async () => {
     await renderTable(makeView({ arrows: [{ from: 'mine', to: 'v', seat: 0 }] }));
     expect(startOf(shafts()[0]!)).toEqual([70, 400]);
