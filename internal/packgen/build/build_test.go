@@ -575,7 +575,7 @@ func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
 func TestBuildGivesSideDeckCardsTheirSharedBack(t *testing.T) {
 	in := heroSetsInputs(t, map[string]curated.SetDef{
 		"spider_man_web_deck":  {Side: &pack.SideDeck{Label: "Web", Back: pack.BackPlayer}},
-		"spider_man_tech_deck": {Side: &pack.SideDeck{Label: "Tech"}},
+		"spider_man_tech_deck": {Side: &pack.SideDeck{Label: "Tech", Back: pack.BackEncounter}},
 	})
 	// One card of the deck comes with another back, as Hercules' Protect
 	// Humanity does: the deck's shared back wins.
@@ -597,7 +597,7 @@ func TestBuildGivesSideDeckCardsTheirSharedBack(t *testing.T) {
 	want := map[string]pack.Back{
 		"09010": pack.BackPlayer,
 		"09011": pack.BackPlayer,
-		"09012": pack.BackPlayer,
+		"09012": pack.BackEncounter,
 		"09013": pack.BackPlayer,
 	}
 	for code, back := range want {

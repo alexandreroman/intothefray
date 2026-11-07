@@ -46,9 +46,9 @@ func TestLoad(t *testing.T) {
 		}},
 		"standard_pvp": {Unlisted: true},
 		"doctor_strange_invocation_deck": {
-			Side: &pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: pack.DiscardOwn},
+			Side: &pack.SideDeck{Label: "Invocation", TopFaceUp: true, Discard: pack.DiscardOwn, Back: pack.BackPlayer},
 		},
-		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather"}},
+		"storm_weather_deck": {Side: &pack.SideDeck{Label: "Weather", Back: pack.BackPlayer}},
 		"valk":               {SetAside: []string{"25002"}},
 		"taskmaster":         {Exclude: []string{"10098"}},
 		"morlock_siege":      {Villains: []string{"marauders"}},
@@ -154,13 +154,18 @@ func TestLoadRejectsInvalidSets(t *testing.T) {
 		},
 		{"unknown side field", `{"storm_weather_deck":{"side":{"label":"Weather","faceUp":true}}}`, `unknown field "faceUp"`},
 		{
+			"side deck without back",
+			`{"hercules_labor_deck":{"side":{"label":"Labor"}}}`,
+			`set "hercules_labor_deck": side deck has no back`,
+		},
+		{
 			"side deck with an unknown back",
 			`{"hercules_labor_deck":{"side":{"label":"Labor","back":"side"}}}`,
 			`set "hercules_labor_deck": side deck has an unknown back "side"`,
 		},
 		{
 			"side deck with an unknown discard rule",
-			`{"hercules_labor_deck":{"side":{"label":"Labor","discard":"victory"}}}`,
+			`{"hercules_labor_deck":{"side":{"label":"Labor","back":"player","discard":"victory"}}}`,
 			`set "hercules_labor_deck": side deck has an unknown discard rule "victory"`,
 		},
 		{"side deck with a boolean discard", `{"hercules_labor_deck":{"side":{"label":"Labor","discard":true}}}`, "discard"},

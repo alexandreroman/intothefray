@@ -178,8 +178,7 @@ type SideDeck struct {
 	TopFaceUp bool        `json:"topFaceUp,omitempty"` // top card faceup for everyone
 	Discard   DiscardRule `json:"discard,omitempty"`   // where its cards are discarded
 	// Back is the printed back all the set's cards share, captioned with the
-	// deck's label, as Hercules' Labor deck has; empty for a side deck whose
-	// cards keep their own backs.
+	// deck's label, as Hercules' Labor deck has.
 	Back Back `json:"back,omitempty"`
 }
 

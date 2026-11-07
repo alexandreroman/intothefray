@@ -362,8 +362,9 @@ func checkStarts(starts map[pack.Difficulty]pack.Start, piles []pack.Pile, stage
 
 // checkSetDefs rejects the in-play cards listed under an unknown difficulty,
 // which setup would silently ignore, the side decks without a label, which
-// the table could not name, and the side decks with an unknown back or
-// discard rule.
+// the table could not name, the side decks without a back, whose cards would
+// keep backs of their own that give away the face-down top card, and the side
+// decks with an unknown back or discard rule.
 func checkSetDefs(defs map[string]SetDef) error {
 	for _, code := range slices.Sorted(maps.Keys(defs)) {
 		def := defs[code]
@@ -376,6 +377,8 @@ func checkSetDefs(defs map[string]SetDef) error {
 			switch {
 			case side.Label == "":
 				return fmt.Errorf("set %q: side deck has no label", code)
+			case side.Back == "":
+				return fmt.Errorf("set %q: side deck has no back", code)
 			case !validSideBack(side.Back):
 				return fmt.Errorf("set %q: side deck has an unknown back %q", code, side.Back)
 			case !side.Discard.Valid():
@@ -409,11 +412,11 @@ func checkNames(names map[string]Names) error {
 	return nil
 }
 
-// validSideBack reports whether back may be the shared back of a side deck:
-// none, or one of the printed backs.
+// validSideBack reports whether back is one of the printed backs a side deck
+// may share.
 func validSideBack(back pack.Back) bool {
 	switch back {
-	case "", pack.BackPlayer, pack.BackEncounter, pack.BackVillain:
+	case pack.BackPlayer, pack.BackEncounter, pack.BackVillain:
 		return true
 	default:
 		return false

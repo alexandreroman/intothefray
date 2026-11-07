@@ -264,14 +264,14 @@ func applySetDefs(
 	return nil
 }
 
-// applySideBacks gives every card of a side deck with a shared back that
-// back, whatever back its source tells: one card with another back would show
-// which card lies on top of the face-down deck.
+// applySideBacks gives every card of a side deck the deck's shared back,
+// whatever back its source tells: one card with another back would show which
+// card lies on top of the face-down deck.
 func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
 	backs := make(map[string]pack.Back)
 	for _, packSets := range sets {
 		for _, set := range packSets {
-			if set.Side == nil || set.Side.Back == "" {
+			if set.Side == nil {
 				continue
 			}
 			for _, code := range set.Cards {

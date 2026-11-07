@@ -1233,13 +1233,9 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 	t.Run("side deck backs", func(t *testing.T) {
 		// Protect Humanity (59004) comes with an encounter back from the
 		// sources: in a face-down Labor deck of player backs it would stand
-		// out. Every committed side deck has a printed back its cards share.
+		// out. Every card of a side deck shows the deck's shared back.
 		for _, set := range sets {
 			if set.Side == nil {
-				continue
-			}
-			if set.Side.Back == "" {
-				t.Errorf("side deck %s has no shared back", set.Code)
 				continue
 			}
 			for _, code := range set.Cards {
