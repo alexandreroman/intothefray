@@ -40,7 +40,6 @@ function renderSheet(
       cards: props.cards ?? CARDS,
       faceOf,
       seat: 1,
-      area: 'p1',
       landscape: props.landscape ?? false,
       picker: props.withPicker ? picker : undefined,
       ...handlers,

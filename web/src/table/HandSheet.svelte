@@ -37,7 +37,6 @@
     cards,
     faceOf,
     seat,
-    area,
     landscape,
     picker,
     onplay,
@@ -50,8 +49,6 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** The seat whose hand this is. */
     seat: number;
-    /** The seat's area ("p1"), where its hand cards live. */
-    area: string;
     /** The screen is in landscape: the cards are sized from the sheet's height, not its width. */
     landscape: boolean;
     /** The hero selector, shown in the header with 2+ own decks. */
@@ -122,7 +119,6 @@
           aria-label="Cards in hand"
           data-carousel
           data-seat={seat}
-          data-area={area}
           bind:this={carousel}
           onscroll={findCentred}
         >

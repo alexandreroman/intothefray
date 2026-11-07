@@ -2792,7 +2792,6 @@
       cards={dockHand}
       {faceOf}
       seat={selected}
-      area={areaOf(selected)}
       landscape={dockRail}
       picker={deckPicker}
       onplay={(id) => runHandAction(id, 'play')}
