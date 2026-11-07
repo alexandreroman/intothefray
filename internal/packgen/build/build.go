@@ -403,7 +403,8 @@ func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) e
 }
 
 // isEncounterSetKind reports whether a set of this kind is one setup adds to
-// the encounter deck on top of the villain set.
+// the encounter deck on top of the villain set. The lobby offers exactly these
+// sets, unlisted ones aside.
 func isEncounterSetKind(kind string) bool {
 	switch kind {
 	case pack.SetKindModular, pack.SetKindStandard, pack.SetKindExpert, pack.SetKindMainScheme:
@@ -614,7 +615,7 @@ func buildIndex(
 			Position: packFile.Position,
 		})
 		for _, set := range packFile.Sets {
-			if isLobbyKind(set.Kind) && !set.Unlisted {
+			if isEncounterSetKind(set.Kind) && !set.Unlisted {
 				index.Sets = append(index.Sets, pack.SetRef{
 					Code: set.Code, Name: set.Name, Pack: packFile.Code, Kind: set.Kind,
 					Recommended: recommendations[set.Code],
@@ -626,11 +627,4 @@ func buildIndex(
 		return cmp.Compare(positions[a.Pack], positions[b.Pack])
 	})
 	return index
-}
-
-// isLobbyKind tells whether the lobby can offer sets of this kind. Unlisted
-// sets stay out of the lobby whatever their kind.
-func isLobbyKind(kind string) bool {
-	return kind == pack.SetKindModular || kind == pack.SetKindStandard || kind == pack.SetKindExpert ||
-		kind == pack.SetKindMainScheme
 }
