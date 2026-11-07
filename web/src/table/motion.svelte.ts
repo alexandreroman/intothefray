@@ -79,9 +79,9 @@ const TILT_MS = 180;
 /** A stage card just chosen turns in like a card being put down. */
 const TURN_IN_MS = 420;
 /** A card turned over: its old side turns away edge-on, then its new side turns in. */
-const FLIP_MS = 360;
+export const FLIP_MS = 360;
 /** The depth from which a card turning about its vertical axis is seen: turned over, or turning in. */
-const FLIP_PERSPECTIVE = 'perspective(700px)';
+export const FLIP_PERSPECTIVE = 'perspective(700px)';
 /** The soft flash on a card that just changed. */
 const GLOW_MS = 1100;
 /**
