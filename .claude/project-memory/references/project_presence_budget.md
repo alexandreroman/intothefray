@@ -24,8 +24,10 @@ connected spectators (`View.spectators`), both filled by the server from a
 relays presence to the sender's token. While alone, the session records the
 latest cursor, drag and preview and drops pings; when the count of others
 rises, it sends that latest state in one message, so a newcomer sees a drag in
-progress. A player's first tab opening or last tab closing re-sends every
-connection a full view, a cost tied to joins and leaves, not to activity.
+progress. A participant's first tab opening or last tab closing, a player's
+or a spectator's, changes who is connected and re-sends every connection a
+full view, a cost tied to joins and leaves, not to activity. A known token's
+hello writes nothing to the game, so another tab re-sends no other view.
 
 **Why:** keep the Redis op rate of a busy table within a small managed tier
 while remote cursors still look smooth.
