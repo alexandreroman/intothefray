@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -330,7 +331,7 @@ func TestSameSeedSameGame(t *testing.T) {
 // included: their ten basic cards come three times each.
 func fourPlayerGame(t *testing.T) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	deck := spiderManDeck(t, cat)
 	basics := deck.Cards[len(deck.Cards)-10:] // spiderManDeck lists them last
 	for i := range basics {
@@ -422,7 +423,7 @@ func TestReplayRecordedGames(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			recording := filepath.Join("testdata", "replays", tt.name+".json")
 			golden := filepath.Join("testdata", "replays", tt.name+".table.golden.json")
-			cat := newCatalog(t)
+			cat := packstest.Catalog(t)
 			if *recordGames {
 				tt.record(t, recording, golden)
 			}

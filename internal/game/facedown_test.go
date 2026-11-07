@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/alexandreroman/intothefray/packs/packstest"
 	"slices"
 	"strings"
 	"testing"
@@ -54,7 +55,7 @@ func (f *doFixture) sideDeckLabeled(t *testing.T, label string) string {
 // hero's deck.
 func heroFixture(identity, name string) func(t *testing.T) *doFixture {
 	return func(t *testing.T) *doFixture {
-		return heroGame(t, heroDeck(t, newCatalog(t), identity, name))
+		return heroGame(t, heroDeck(t, packstest.Catalog(t), identity, name))
 	}
 }
 

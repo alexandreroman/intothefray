@@ -17,8 +17,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/game"
-	"github.com/alexandreroman/intothefray/internal/pack"
-	"github.com/alexandreroman/intothefray/packs"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 func TestParseLinks(t *testing.T) {
@@ -70,15 +69,6 @@ func readFixture(t *testing.T, name string) []byte {
 	return data
 }
 
-func loadCatalog(t *testing.T) *pack.Catalog {
-	t.Helper()
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return cat
-}
-
 // newImporter serves handler as marvelcdb and returns an importer pointed at it.
 func newImporter(t *testing.T, handler http.Handler) *Importer {
 	t.Helper()
@@ -104,7 +94,7 @@ func TestImportDeckOK(t *testing.T) {
 		serveJSON(w, deck)
 	}))
 
-	got, err := im.Import(context.Background(), deckLink, loadCatalog(t))
+	got, err := im.Import(context.Background(), deckLink, packstest.Catalog(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +134,7 @@ func TestImportDeckUnsupported(t *testing.T) {
 		}
 	}))
 
-	_, err = im.Import(context.Background(), deckLink, loadCatalog(t))
+	_, err = im.Import(context.Background(), deckLink, packstest.Catalog(t))
 	var unsupported *UnsupportedError
 	if !errors.As(err, &unsupported) {
 		t.Fatalf("err = %v, want *UnsupportedError", err)
@@ -168,7 +158,7 @@ func TestImportDeckUnsupportedCardLookupFails(t *testing.T) {
 		serveJSON(w, body)
 	}))
 
-	_, err := im.Import(context.Background(), deckLink, loadCatalog(t))
+	_, err := im.Import(context.Background(), deckLink, packstest.Catalog(t))
 	var unsupported *UnsupportedError
 	if !errors.As(err, &unsupported) {
 		t.Fatalf("err = %v, want *UnsupportedError", err)
@@ -195,7 +185,7 @@ func TestImportDeckNotFound(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			im := newImporter(t, tt.handler)
-			_, err := im.Import(context.Background(), deckLink, loadCatalog(t))
+			_, err := im.Import(context.Background(), deckLink, packstest.Catalog(t))
 			if !errors.Is(err, ErrNotFound) {
 				t.Fatalf("err = %v, want ErrNotFound", err)
 			}
@@ -217,7 +207,7 @@ func TestImportDeckUnavailable(t *testing.T) {
 			im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				http.Error(w, "unavailable", status)
 			}))
-			_, err := im.Import(context.Background(), deckLink, loadCatalog(t))
+			_, err := im.Import(context.Background(), deckLink, packstest.Catalog(t))
 			if err == nil {
 				t.Fatal("Import succeeded, want an error")
 			}
@@ -252,7 +242,7 @@ func TestImportStoresCanonicalURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
-			got, err := im.Import(context.Background(), tt.link, loadCatalog(t))
+			got, err := im.Import(context.Background(), tt.link, packstest.Catalog(t))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -265,7 +255,7 @@ func TestImportStoresCanonicalURL(t *testing.T) {
 
 func TestImportBadLink(t *testing.T) {
 	im := &Importer{BaseURL: "http://127.0.0.1:0"}
-	_, err := im.Import(context.Background(), "https://example.com/x", loadCatalog(t))
+	_, err := im.Import(context.Background(), "https://example.com/x", packstest.Catalog(t))
 	if !errors.Is(err, ErrLink) {
 		t.Fatalf("err = %v, want ErrLink", err)
 	}
@@ -291,7 +281,7 @@ func TestImportUnsupportedLookupsAreBounded(t *testing.T) {
 		serveJSON(w, body)
 	}))
 
-	_, err = im.Import(context.Background(), deckLink, loadCatalog(t))
+	_, err = im.Import(context.Background(), deckLink, packstest.Catalog(t))
 	var unsupported *UnsupportedError
 	if !errors.As(err, &unsupported) {
 		t.Fatalf("err = %v, want *UnsupportedError", err)
@@ -326,7 +316,7 @@ func TestImportInvalidDeck(t *testing.T) {
 				t.Fatal(err)
 			}
 			im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { serveJSON(w, body) }))
-			_, err = im.Import(context.Background(), deckLink, loadCatalog(t))
+			_, err = im.Import(context.Background(), deckLink, packstest.Catalog(t))
 			if !errors.Is(err, ErrInvalidDeck) {
 				t.Fatalf("err = %v, want ErrInvalidDeck", err)
 			}

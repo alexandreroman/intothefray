@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // Identities of heroes with side decks or set-aside cards.
@@ -64,7 +65,7 @@ func heroGame(t *testing.T, decks ...DeckChoice) *doFixture {
 // the Sense deck and no discard pile).
 func sideDeckFixture(t *testing.T) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	return heroGame(t,
 		heroDeck(t, cat, doctorStrangeIdentity, "Doctor Strange"),
 		heroDeck(t, cat, daredevilIdentity, "Daredevil"))
@@ -139,7 +140,7 @@ func TestSetupSideDecks(t *testing.T) {
 }
 
 func TestSetupTwoSideDecks(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	table := f.g.Table
 	y := rowY(playerRow(0))
 
@@ -163,7 +164,7 @@ func TestSetupTwoSideDecks(t *testing.T) {
 }
 
 func TestSetupSetAsideHeroCards(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	tests := []struct {
 		name     string
 		deck     DeckChoice
@@ -486,7 +487,7 @@ func TestSideDeckViews(t *testing.T) {
 // "side:p0:0" without a discard pile) and a Sense card drawn into his hand.
 func tuckedSenseFixture(t *testing.T) (f *doFixture, sense string) {
 	t.Helper()
-	f = heroGame(t, heroDeck(t, newCatalog(t), daredevilIdentity, "Daredevil"))
+	f = heroGame(t, heroDeck(t, packstest.Catalog(t), daredevilIdentity, "Daredevil"))
 	return f, drawSide(t, f, "h", "side:p0:0", 1)
 }
 
@@ -569,7 +570,7 @@ func TestShuffleIntoSideDeckTakesTheTuckedSideCards(t *testing.T) {
 }
 
 func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	f := heroGame(t, heroDeck(t, cat, doctorStrangeIdentity, "Doctor Strange", DeckEntry{Code: "09032", Qty: 1}))
 	table := f.g.Table
 	if slices.Contains(codesOf(table, table.Piles["deck:p0"].Cards), "09032") {
@@ -581,7 +582,7 @@ func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
 }
 
 func TestFaceDownSideDeckShowsItsCountOnly(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	pile := f.g.Table.Piles[sideDeckID(0, 0)]
 	for _, token := range []string{"h", "nobody"} {
 		tv := f.g.ViewFor(token).Table
@@ -599,7 +600,7 @@ func TestFaceDownSideDeckShowsItsCountOnly(t *testing.T) {
 }
 
 func TestSideDeckSharedBacks(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	table := f.g.Table
 	wantBacks := map[string]pack.Back{"Labor": pack.BackPlayer, "Gift": pack.BackEncounter}
 

@@ -22,6 +22,7 @@ import (
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/store"
 	"github.com/alexandreroman/intothefray/internal/store/storetest"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 const (
@@ -150,7 +151,7 @@ type twoPlayerGame struct {
 func startTwoPlayerGame(t *testing.T) *twoPlayerGame {
 	t.Helper()
 
-	cat := testCatalog(t)
+	cat := packstest.Catalog(t)
 	mr := miniredis.RunT(t)
 	first := startInstance(t, mr, nil)
 	second := startInstance(t, mr, nil)

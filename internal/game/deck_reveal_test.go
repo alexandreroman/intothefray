@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 	"slices"
 	"testing"
 )
@@ -60,7 +61,7 @@ func TestRevealOwnDeck(t *testing.T) {
 }
 
 func TestRevealFaceDownSideDeck(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	labor := f.sideDeckLabeled(t, "Labor")
 
 	id := f.revealTop(t, "h", labor, 1)
@@ -190,7 +191,7 @@ func TestDrawTakesTheRevealedCardFirst(t *testing.T) {
 }
 
 func TestDrawFromASideDeckTakesTheRevealedCardFirst(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	labor := f.sideDeckLabeled(t, "Labor")
 	id := f.revealTop(t, "h", labor, 1)
 
@@ -531,7 +532,7 @@ func TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+			f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 			labor := f.sideDeckLabeled(t, "Labor")
 			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
 			drawn := f.lastInHand("p0")
@@ -934,7 +935,7 @@ func TestRevealedCardKeepsItsTokensOnTheTable(t *testing.T) {
 // TestLaborSideDeckCountsOnItsRevealedCard counts the labors of Hercules on
 // the card revealed on his Labor side deck, which keeps them once played.
 func TestLaborSideDeckCountsOnItsRevealedCard(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	labor := f.sideDeckLabeled(t, "Labor")
 	id := f.revealTop(t, "h", labor, 1)
 

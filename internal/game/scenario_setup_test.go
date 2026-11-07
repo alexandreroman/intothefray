@@ -10,6 +10,7 @@ import (
 	"testing/fstest"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // setupCatalog returns a small catalog: a classic scenario, a self-contained one with two villains whose compact decks
@@ -622,7 +623,7 @@ func TestConfigRejectsRequiredSetAsModular(t *testing.T) {
 // Ship Command set aside whole, while the scenarios setting aside cards of their
 // own villain set keep their usual modular sets.
 func TestConfigRejectsSetAsideSetAsModular(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 
 	cfg := DefaultConfig(cat, "escape_the_museum")
 	cfg.Modulars = append(cfg.Modulars, "ship_command")

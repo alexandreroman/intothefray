@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 const (
@@ -50,7 +51,7 @@ type viewFixture struct {
 
 func newViewFixture(t *testing.T) *viewFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", hostToken, "Host", testNow)
 	if _, err := g.Join(bobToken, "Bob"); err != nil {
 		t.Fatal(err)
@@ -404,7 +405,7 @@ func TestViewIdentity(t *testing.T) {
 }
 
 func TestViewHandsOfOwnSeats(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoDeckGame(t)
 	// Alex draws into the hand of his first deck, Sam into his only one.
 	if err := g.Do("a", -1, Action{Kind: ActDraw, N: 1}, cat, at(1)); err != nil {
@@ -457,7 +458,7 @@ func TestViewHandsOfOwnSeats(t *testing.T) {
 }
 
 func TestPlayerReadyNeedsEverySlot(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoSlotLobby(t)
 	if err := g.SetDeck("a", 0, spiderManDeck(t, cat), cat); err != nil {
 		t.Fatal(err)

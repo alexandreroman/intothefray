@@ -1,6 +1,7 @@
 package game
 
 import (
+	"github.com/alexandreroman/intothefray/packs/packstest"
 	"reflect"
 	"slices"
 	"strings"
@@ -36,7 +37,7 @@ func asideCard(t *testing.T, table *Table, seat int, code string) string {
 // set aside.
 func ironheartFixture(t *testing.T) (f *doFixture, identity, version string) {
 	t.Helper()
-	f = heroGame(t, heroDeck(t, newCatalog(t), ironheartIdentity, "Ironheart"))
+	f = heroGame(t, heroDeck(t, packstest.Catalog(t), ironheartIdentity, "Ironheart"))
 	identity = identityOf(t, f.g, 0)
 	version = asideCard(t, f.g.Table, 0, ironheartSecondVersion)
 	return f, identity, version
@@ -49,7 +50,7 @@ func (f *doFixture) playOnTable(t *testing.T, id string, seconds int) {
 }
 
 func TestSetupMarksIdentityVersions(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	tests := []struct {
 		name string
 		deck DeckChoice
@@ -196,7 +197,7 @@ func TestUndoPlayedVersionRestoresIdentity(t *testing.T) {
 }
 
 func TestPlayedCardThatIsNoVersionGivesNoIdentity(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	tests := []struct {
 		name string
 		deck DeckChoice
@@ -237,7 +238,7 @@ func TestPlayedCardThatIsNoVersionGivesNoIdentity(t *testing.T) {
 }
 
 func TestVersionTakesOverOnlyItsSeatIdentity(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoSlotLobby(t)
 	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)

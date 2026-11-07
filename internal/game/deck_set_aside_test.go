@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 	"slices"
 	"testing"
 )
@@ -73,7 +74,7 @@ func checkNoSpecialists(t *testing.T, table *Table, seat int) {
 // extra entries.
 func withTraining(t *testing.T, extra ...DeckEntry) DeckChoice {
 	t.Helper()
-	deck := spiderManDeck(t, newCatalog(t))
+	deck := spiderManDeck(t, packstest.Catalog(t))
 	deck.Cards = append(deck.Cards, DeckEntry{Code: specializedTraining, Qty: 1})
 	deck.Cards = append(deck.Cards, extra...)
 	return deck
@@ -112,7 +113,7 @@ func TestSetupSetsAsideTheCardsADeckCardNames(t *testing.T) {
 }
 
 func TestSetupWithoutTheDeckCardSetsNothingAside(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	tests := []struct {
 		name     string
 		extra    []DeckEntry
@@ -140,7 +141,7 @@ func TestSetupWithoutTheDeckCardSetsNothingAside(t *testing.T) {
 }
 
 func TestSetupSetsAsideDeckCardsPerSeat(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	plain := spiderManDeck(t, cat)
 	training := withTraining(t)
 	tests := []struct {
@@ -180,7 +181,7 @@ func TestSetupSetsAsideLinkedPlayerCards(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			deck := spiderManDeck(t, newCatalog(t))
+			deck := spiderManDeck(t, packstest.Catalog(t))
 			deck.Cards = append(deck.Cards, DeckEntry{Code: tt.parent, Qty: 1})
 			table := heroGame(t, deck).g.Table
 

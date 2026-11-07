@@ -15,13 +15,11 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/packs"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 func TestEmbeddedCoreSet(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	t.Run("rhino scenario", func(t *testing.T) {
 		rhino, ok := catalog.Scenario("rhino")
@@ -160,10 +158,7 @@ func TestEmbeddedCoreSet(t *testing.T) {
 // TestEmbeddedFearNoEvil checks the pack that marvelcdb lists only partly and
 // mc4db completes.
 func TestEmbeddedFearNoEvil(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	t.Run("kingpin scenario", func(t *testing.T) {
 		ref := scenarioRef(t, catalog, "kingpin")
@@ -293,10 +288,7 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 
 // TestEmbeddedGreenGoblin checks the two scenarios of The Green Goblin.
 func TestEmbeddedGreenGoblin(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	t.Run("scenario refs", func(t *testing.T) {
 		for _, id := range []string{"risky_business", "mutagen_formula"} {
@@ -363,10 +355,7 @@ func TestEmbeddedGreenGoblin(t *testing.T) {
 }
 
 func TestEmbeddedWreckingCrew(t *testing.T) {
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	cat := packstest.Catalog(t)
 
 	t.Run("index", func(t *testing.T) {
 		found := false
@@ -495,10 +484,7 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 // Skull: their scenario decks, set-aside and in-play cards, and the sets the
 // pack keeps out of the lobby or trims.
 func TestEmbeddedRiseOfRedSkull(t *testing.T) {
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	cat := packstest.Catalog(t)
 
 	t.Run("index", func(t *testing.T) {
 		for _, id := range []string{"crossbones", "absorbing_man", "taskmaster", "zola", "red_skull"} {
@@ -621,10 +607,7 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 // encounter sets they require with those sets' Setup cards (the Milano, the
 // Power Stone), and the campaign sets the pack keeps out of the lobby.
 func TestEmbeddedGalaxysMostWanted(t *testing.T) {
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	cat := packstest.Catalog(t)
 
 	tests := []struct {
 		scenario string
@@ -921,10 +904,7 @@ func placesOf(table *game.Table, code string) []string {
 // loadPackFiles decodes every embedded pack file.
 func loadPackFiles(t *testing.T) []pack.PackFile {
 	t.Helper()
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 	var files []pack.PackFile
 	for _, ref := range catalog.Index().Packs {
 		data, err := fs.ReadFile(packs.FS, "dist/"+ref.File)
@@ -941,10 +921,7 @@ func loadPackFiles(t *testing.T) []pack.PackFile {
 }
 
 func TestEmbeddedDataInvariants(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 	files := loadPackFiles(t)
 
 	setCards := make(map[string][]string)
@@ -1363,10 +1340,7 @@ func TestEmbeddedImagesOnCDN(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	type offender struct{ where, url string }
 	var offenders []offender

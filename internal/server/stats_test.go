@@ -18,6 +18,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // newStatsServer starts a server whose clock only moves when the returned
@@ -76,7 +77,7 @@ func gamesIn(t *testing.T, resp reply) int {
 // then returns it with the host's connection.
 func startGame(t *testing.T, ts *httptest.Server, hostName string) (createGameResponse, *testClient) {
 	t.Helper()
-	return startGameWith(t, ts, hostName, game.DefaultConfig(testCatalog(t), "rhino"))
+	return startGameWith(t, ts, hostName, game.DefaultConfig(packstest.Catalog(t), "rhino"))
 }
 
 // startGameWith starts a game like startGame, configured with cfg.
@@ -274,7 +275,7 @@ func TestStatsDifficultyAndSets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts, _, _ := newStatsServer(t)
-			cfg := game.DefaultConfig(testCatalog(t), "rhino")
+			cfg := game.DefaultConfig(packstest.Catalog(t), "rhino")
 			cfg.Difficulty, cfg.Standard, cfg.Expert = tt.difficulty, tt.standard, tt.expert
 			cfg.Modulars = tt.modulars
 			startGameWith(t, ts, "Alex", cfg)
@@ -403,7 +404,7 @@ func TestHeroOf(t *testing.T) {
 }
 
 func TestStatsOf(t *testing.T) {
-	s := &Server{deps: Deps{Catalog: testCatalog(t)}}
+	s := &Server{deps: Deps{Catalog: packstest.Catalog(t)}}
 	// Seats and sets come in no particular order; cccc and bbbb are played
 	// with the same, in a different order.
 	summaries := []game.Summary{
@@ -455,7 +456,7 @@ func TestStatsOf(t *testing.T) {
 }
 
 func TestStatsJSONLeavesOutEmptyFields(t *testing.T) {
-	s := &Server{deps: Deps{Catalog: testCatalog(t)}}
+	s := &Server{deps: Deps{Catalog: packstest.Catalog(t)}}
 	summaries := []game.Summary{
 		{Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Difficulty: pack.Standard, Heroes: []string{"01001a"}},
 		// No ref, no difficulty, and a scenario, hero and set unknown to the

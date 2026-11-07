@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // testSeed is the seed of the test games: setup must be reproducible.
@@ -93,7 +94,7 @@ func expectedDeckCodes(t *testing.T, cat *pack.Catalog, deck DeckChoice) []strin
 // startedGame returns a started game of two Spider-Man players.
 func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	return startedWith(t, cfg, spiderManDeck(t, cat), spiderManDeck(t, cat)).g
 }
 
@@ -101,7 +102,7 @@ func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 // deck at p0 and "b" (Bob) the second one, if any, at p1.
 func startedWith(t *testing.T, cfg LobbyConfig, decks ...DeckChoice) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	tokens := []string{"h", "b"}[:len(decks)]
 	if len(decks) > 1 {
@@ -228,7 +229,7 @@ func TestSetupStages(t *testing.T) {
 }
 
 func TestSetupMarksVillainStagesOfWreckingCrew(t *testing.T) {
-	g := startedGame(t, DefaultConfig(newCatalog(t), "wrecking_crew"))
+	g := startedGame(t, DefaultConfig(packstest.Catalog(t), "wrecking_crew"))
 
 	want := map[string]bool{
 		"wrecker": true, "thunderball": true, "piledriver": true, "bulldozer": true,
@@ -244,7 +245,7 @@ func TestSetupMarksVillainStagesOfWreckingCrew(t *testing.T) {
 }
 
 func TestSetupEncounterDeck(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := startedGame(t, rhinoConfig())
 	table := g.Table
 
@@ -279,7 +280,7 @@ func TestSetupEncounterDeckIsShuffledDeterministically(t *testing.T) {
 }
 
 func TestSetupExpertAddsExpertSet(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	cfg := rhinoConfig()
 	cfg.Difficulty = pack.Expert
 	cfg.Expert = "expert"
@@ -329,7 +330,7 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cat := newCatalog(t)
+			cat := packstest.Catalog(t)
 			cfg := rhinoConfig()
 			cfg.Difficulty, cfg.Standard, cfg.Expert = tt.difficulty, tt.standard, tt.expert
 			table := startedGame(t, cfg).Table
@@ -365,7 +366,7 @@ func TestSetupStandardAndExpertSets(t *testing.T) {
 }
 
 func TestStartWithoutStandard(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	cfg := rhinoConfig()
 	cfg.Standard = ""
 	table := startedGame(t, cfg).Table
@@ -389,7 +390,7 @@ func TestStartWithoutStandard(t *testing.T) {
 }
 
 func TestStartExpertWithoutExpertSet(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	cfg := rhinoConfig()
 	cfg.Difficulty = pack.Expert
 	cfg.Expert = ""
@@ -426,7 +427,7 @@ func TestSetupSetInPlayFollowsScenarioInPlay(t *testing.T) {
 
 func TestSetupSetsAsideEncounterSetCards(t *testing.T) {
 	const crisisOfInfiniteDeadpools = "44037"
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	cfg := rhinoConfig()
 	cfg.Modulars = []string{"dreadpool"}
 	table := startedGame(t, cfg).Table
@@ -477,7 +478,7 @@ func TestNewCardRecordsTheShapeOfEachFace(t *testing.T) {
 		// on its back.
 		{"player side scheme", "40190", []FaceShape{{Size: pack.SizeLand, Scheme: true}, {Size: pack.SizeStd}}},
 	}
-	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
+	b := &tableBuilder{cat: packstest.Catalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, _, err := b.newCard(tt.code, 0, "deck:p0")
@@ -493,7 +494,7 @@ func TestNewCardRecordsTheShapeOfEachFace(t *testing.T) {
 
 func TestPutInPlayLeavesTheGapPastEachCard(t *testing.T) {
 	// The row ends with a classic main scheme at 460, 157 wide.
-	b := &tableBuilder{cat: newCatalog(t), rng: newTestRNG(), table: newEmptyTable(1), inPlayRight: 617}
+	b := &tableBuilder{cat: packstest.Catalog(t), rng: newTestRNG(), table: newEmptyTable(1), inPlayRight: 617}
 
 	// 01125 is landscape, 157 wide, and 24049 portrait, 112 wide: each card
 	// lies 40 past the previous one, up to the grid.
@@ -544,7 +545,7 @@ func TestSetupWithSetInPlayIsDeterministic(t *testing.T) {
 }
 
 func TestSetupPlayers(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := startedGame(t, rhinoConfig())
 	table := g.Table
 	deck := spiderManDeck(t, cat)
@@ -669,7 +670,7 @@ func TestSetupKlawSideSchemeStaysInEncounterDeck(t *testing.T) {
 // carries tokens, though main schemes print a starting threat: players place
 // all threat by hand.
 func TestSetupPlacesNoStartingThreat(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	for _, scenario := range []string{"rhino", "klaw"} {
 		t.Run(scenario, func(t *testing.T) {
 			table := startedGame(t, DefaultConfig(cat, scenario)).Table
@@ -683,7 +684,7 @@ func TestSetupPlacesNoStartingThreat(t *testing.T) {
 }
 
 func TestStartRequiresDecks(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if _, err := g.Join("b", "Bob"); err != nil {
 		t.Fatal(err)
@@ -708,7 +709,7 @@ func TestStartRequiresDecks(t *testing.T) {
 // seats 0 and 1 and Sam ("s") seat 2, with the given decks.
 func threeSeatGame(t *testing.T, decks [3]DeckChoice) *Game {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoSlotLobby(t)
 	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
@@ -730,12 +731,12 @@ func threeSeatGame(t *testing.T, decks [3]DeckChoice) *Game {
 // Alex plays two of them.
 func twoDeckGame(t *testing.T) *Game {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	return threeSeatGame(t, [3]DeckChoice{spiderManDeck(t, cat), spiderManDeck(t, cat), spiderManDeck(t, cat)})
 }
 
 func TestStartNeedsEverySlot(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoSlotLobby(t)
 	if err := g.Configure("a", rhinoConfig(), cat); err != nil {
 		t.Fatal(err)
@@ -810,7 +811,7 @@ func TestStartRowsPerSeat(t *testing.T) {
 // plays two Spider-Man decks at seats 0 and 1.
 func soloTwoDeckGame(t *testing.T) *Game {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "a", "Alex", testNow)
 	if err := g.AddDeck("a"); err != nil {
 		t.Fatal(err)
@@ -867,7 +868,7 @@ func TestFirstPlayerTokenNeedsTwoSeats(t *testing.T) {
 }
 
 func TestStartGuards(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 
 	t.Run("not configured", func(t *testing.T) {
 		g := mustNewGame(t, "g1", "h", "Host", testNow)
@@ -910,7 +911,7 @@ func TestStartLogsTheGame(t *testing.T) {
 // gameOfPlayers returns a started game of n Spider-Man players, one deck each.
 func gameOfPlayers(t *testing.T, n int) *Game {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "p0", "Player 0", testNow)
 	for i := 1; i < n; i++ {
 		if _, err := g.Join(fmt.Sprintf("p%d", i), fmt.Sprintf("Player %d", i)); err != nil {
@@ -955,7 +956,7 @@ func TestSetupLeavesRoomUnderTheVillainRow(t *testing.T) {
 	// the 10-unit grid.
 	const wantGap = 253
 
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	for _, players := range []int{1, 2} {
 		t.Run(fmt.Sprintf("%d players", players), func(t *testing.T) {
 			table := gameOfPlayers(t, players).Table
