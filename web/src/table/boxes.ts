@@ -243,6 +243,13 @@ function playAction(
 /** The box's widest, in px. */
 const BOX_MAX_WIDTH = 1200;
 
+/**
+ * A tile's widest, in px: about five columns in the widest box. The tiles follow the raised hand's
+ * card where it matters, on a small window; a large screen's raised card would make a box of few
+ * oversized cards.
+ */
+const BOX_TILE_MAX = 220;
+
 // The room around the box and inside it, in px. Keep in step with .backdrop's padding and .box's
 // border (Dialog.svelte), and with .mgrid's padding and gap (CardBox.svelte).
 const BACKDROP_PADDING = 16;
@@ -258,13 +265,14 @@ export interface BoxGrid {
 }
 
 /**
- * The grid of a box whose tiles are `tile` px wide (the raised hand fan's card), in a window
- * `windowWidth` px wide: as many columns as fit in the widest box the window allows, and the
- * box's width that holds just them, so that the grid's edges line up with its header. `gutter`
- * is the room the grid keeps for its scrollbar, 0 with overlay scrollbars. A window too narrow
- * for one tile shrinks it to fit.
+ * The grid of a box whose tiles are `tile` px wide (the raised hand's card), at most 220 px, in a
+ * window `windowWidth` px wide: as many columns as fit in the widest box the window allows, and
+ * the box's width that holds just them, so that the grid's edges line up with its header.
+ * `gutter` is the room the grid keeps for its scrollbar, 0 with overlay scrollbars. A window too
+ * narrow for one tile shrinks it to fit.
  */
-export function boxGrid(tile: number, windowWidth: number, gutter: number): BoxGrid {
+export function boxGrid(raisedCard: number, windowWidth: number, gutter: number): BoxGrid {
+  const tile = Math.min(raisedCard, BOX_TILE_MAX);
   const room = Math.min(BOX_MAX_WIDTH, windowWidth - 2 * BACKDROP_PADDING);
   // The box is border-box sized (tokens.css): its border is part of its width.
   const frame = 2 * BOX_BORDER + 2 * GRID_PADDING_X + gutter;
