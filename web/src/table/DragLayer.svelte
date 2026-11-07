@@ -181,10 +181,17 @@
   );
   /** The timer that shows the drop under a still pointer once it has stayed there, 0 when none. */
   let dwellTimer = 0;
+  /** A label above a drop target, its middle and its bottom on the screen. */
+  interface Hint {
+    glyph: string;
+    text: string;
+    tuck: boolean;
+    x: number;
+    y: number;
+  }
+
   /** The label above the drop target. */
-  let hint = $state<{ glyph: string; text: string; tuck: boolean; x: number; y: number } | null>(
-    null,
-  );
+  let hint = $state.raw<Hint | null>(null);
 
   /** What a drop lands on, and the action it sends, null when nothing would change. */
   interface Located {
@@ -407,10 +414,14 @@
     return from.y - to.y > Math.abs(to.x - from.x);
   }
 
+  /**
+   * Picks up what was pressed, measured before anything is written: the move that starts the drag
+   * goes on to measure the drop targets (aim) on the page as it is laid out already.
+   */
   function start(from: DragSource, pressedAt: Point): void {
+    grab = grabOf(from, pressedAt);
     stopSway();
     rise();
-    grab = grabOf(from, pressedAt);
     units = from.kind === 'card' ? dragUnits(from.card, interaction.group, cards) : [];
     let lifted: string[] = [];
     if (from.kind === 'card') {
@@ -451,12 +462,18 @@
     swayFrame = sway.resting ? 0 : requestAnimationFrame(stepSway);
   }
 
-  /** Stops the sway, the ghosts upright: a new drag starts from there. */
+  /**
+   * Stops the sway, the ghosts upright: a new drag starts from there. At rest, the last frame left
+   * them upright, and the layer is not written: the drag's first measures (start) would restyle the
+   * page for it.
+   */
   function stopSway(): void {
+    if (swayFrame !== 0) {
+      layer?.style.removeProperty('--sway');
+    }
     cancelAnimationFrame(swayFrame);
     swayFrame = 0;
     sway.reset();
-    layer?.style.removeProperty('--sway');
   }
 
   /**
@@ -989,7 +1006,22 @@
     if (interaction.dropOn?.kind !== on.kind || interaction.dropOn.id !== on.id) {
       interaction.dropOn = on;
     }
-    hint = { ...label, x: (rect.left + rect.right) / 2, y: rect.top - 8 };
+    // Every move over the same target makes the same label: it is not drawn again.
+    const next = { ...label, x: (rect.left + rect.right) / 2, y: rect.top - 8 };
+    if (!sameHint(hint, next)) {
+      hint = next;
+    }
+  }
+
+  function sameHint(a: Hint | null, b: Hint): boolean {
+    return (
+      a !== null &&
+      a.glyph === b.glyph &&
+      a.text === b.text &&
+      a.tuck === b.tuck &&
+      a.x === b.x &&
+      a.y === b.y
+    );
   }
 
   function onUp(event: PointerEvent): void {
@@ -1251,11 +1283,11 @@
     {@const face = faceOf(handGhost.card)}
     <div
       class="hghost"
-      style:left="{handGhost.left}px"
-      style:top="{handGhost.top}px"
+      style:translate="{handGhost.left}px {handGhost.top}px"
       style:width="{handGhost.width}px"
       style:height="{handGhost.height}px"
     >
+      <div class="shade"></div>
       {#if isHidden(handGhost.card)}
         <CardBack back={handGhost.card.back} caption={backCaption(handGhost.card, tablePiles)} />
       {:else}
@@ -1305,19 +1337,32 @@
   }
 
   /*
-    A hand card brought back over the hand: hand size, growing to table size as it leaves. Held up
-    and swaying about its middle as a table card's ghost is (CardView.svelte); out of the table, it
-    keeps its drop shadow.
+    A hand card brought back over the hand, at its size in the hand; off the hand, a table card's
+    ghost takes its place. Held up and swaying about its middle as a table card's ghost is
+    (CardView.svelte); out of the table, it keeps the hand's shadow. It follows the pointer on
+    translate, from the layer's corner: a pointer move lays nothing out again.
   */
   .hghost {
     position: absolute;
+    left: 0;
+    top: 0;
     scale: var(--lift-scale);
     rotate: var(--sway, 0deg);
-    transition:
-      width 0.14s ease-out,
-      height 0.14s ease-out,
-      scale 0.14s ease-out;
-    filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+    transition: scale 0.14s ease-out;
+  }
+
+  /*
+    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge. Its scale and rotate give
+    it its own stacking, which keeps the shade under its face. The ghost is portrait, a landscape card turned a
+    quarter in it.
+  */
+  .shade {
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--held-card-shadow);
+    pointer-events: none;
   }
 
   /* Picked up, it rises off the hand, as the drag's first ghost only. */
@@ -1330,9 +1375,7 @@
   /* Without motion, it shows held up at once. */
   @media (prefers-reduced-motion: reduce) {
     .hghost {
-      transition:
-        width 0.14s ease-out,
-        height 0.14s ease-out;
+      transition: none;
     }
   }
 

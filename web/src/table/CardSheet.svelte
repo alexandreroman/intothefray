@@ -43,7 +43,11 @@
   Reveal) never linger; the face, its counters and the layout around it
   follow once it is edge-on. When the new side needs another size, the sheet
   eases to it first, the old face still shown, then the card turns: the new
-  side is measured beforehand in a hidden copy of the content. Another
+  side is measured beforehand in a hidden copy of the content. The face a
+  Flip turns the card to is decoded ahead (nextImages), and a new side's
+  image as soon as the update brings it: edge-on, the card waits for that
+  decode, DECODE_WAIT_MS at most, so that the new side never turns back flat
+  empty. Another
   element opens a sheet of its own (Table.svelte keys it), which does not
   turn.
   One gutter keeps the card, its column and the sheet's edges apart, wide
@@ -74,6 +78,7 @@
   import { fade, fly, slide } from 'svelte/transition';
   import Sheet, { motionMs } from '../components/Sheet.svelte';
   import { buttonGrid } from '../lib/buttonGrid';
+  import { decodeImage, type Decode } from '../lib/decodeImage';
   import { overflowTip } from '../lib/overflowTip';
   import { SHORT_SCREEN_QUERY, SIDEWAYS_QUERY } from '../lib/screen';
   import CardCounters from './CardCounters.svelte';
@@ -89,6 +94,7 @@
     entries,
     note,
     images,
+    nextImages = [],
     landscape = false,
     counters,
     stack = [],
@@ -105,6 +111,11 @@
     note?: string;
     /** The face it shows: a card's, a pile's top face or back. */
     images: string[];
+    /**
+     * The face a Flip turns the card to, which the sheet decodes ahead; none when the viewer may not
+     * know it, or when the card has no other face.
+     */
+    nextImages?: string[];
     /** The face is a landscape card. */
     landscape?: boolean;
     /** The tokens, statuses and modifiers the card carries (inspector.countersFor). */
@@ -138,6 +149,11 @@
   const TURN_PERSPECTIVE = 'perspective(700px)';
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
+  /**
+   * How long, at most, the card waits edge-on for the new side's image to be decoded, in ms: past
+   * that, the new side shows as its image comes, rather than hold the turn for a slow image.
+   */
+  const DECODE_WAIT_MS = 150;
   /**
    * How much nearer the carousel's middle another card must be than the shown one before it becomes
    * the shown one, in px: twice how far past the midpoint between them the middle must go. A finger
@@ -180,6 +196,8 @@
   let heightBefore = 0;
   /** The side of the last update, which a new face turns away from. */
   let lastSide: Side | null = null;
+  /** The decode of the new side's image, which the turn waits for edge-on; null once it is past. */
+  let newFace: Decode | null = null;
   /** The hidden copy of the content, drawn with the new side to measure its height. */
   let measureElement = $state<HTMLElement | null>(null);
   /**
@@ -234,7 +252,7 @@
         if (isStackSwitch(lastSide, now)) {
           switchCard();
         } else if (faceKey(now) !== faceKey(lastSide)) {
-          changeSide(lastSide);
+          changeSide(lastSide, now);
         }
       }
       lastSide = now;
@@ -251,7 +269,20 @@
 
   $effect(() => () => {
     turn?.cancel();
+    turn = undefined;
     resize?.cancel();
+  });
+
+  /** The first image of the face a Flip turns the card to: a new array of the same images is the same. */
+  const nextUrl = $derived(nextImages[0]);
+
+  // As the sheet opens, and whenever the card shows another face or the sheet another card: the
+  // face a Flip turns the card to is decoded by the time it shows. At low priority: the face shown
+  // comes first.
+  $effect(() => {
+    if (nextUrl !== undefined) {
+      decodeImage(nextUrl, 'low');
+    }
   });
 
   // The shown card in the carousel's middle: at once as the sheet opens, gliding there after a
@@ -357,14 +388,18 @@
    * Shows the card's new side: the column changes at once, its rows neither sliding nor fading
    * (atOnce), while the face keeps the old side until it is edge-on (turnOver) and the hidden copy
    * measures the new one. Run before the update is drawn: the content's height is still the old
-   * side's, which the sheet eases from. Under reduced motion, the face and the rest just change.
+   * side's, which the sheet eases from. The new side's image starts decoding there and then, so
+   * that it is ready, in most cases, by the time the card is edge-on. Under reduced motion, the
+   * face and the rest just change.
    */
-  function changeSide(from: Side): void {
+  function changeSide(from: Side, to: Side): void {
     if (motionMs(TURN_MS) === 0 || faceElement === undefined || content === undefined) {
       return;
     }
     turn?.cancel();
     resize?.cancel();
+    const url = to.images[0];
+    newFace = url === undefined ? null : decodeImage(url);
     heightBefore = content.offsetHeight;
     leaving = from;
     measureWidth = content.offsetWidth;
@@ -403,8 +438,9 @@
    * Turns the card over around its vertical axis, as a table card does (motion.svelte.ts #flip):
    * its old side (leaving) turns away to edge-on, lifted, then its new side turns back flat and
    * comes down. Edge-on, the face, its counters and the layout take the new side, which the column
-   * shows already; the sheet has the new side's height by then. The sheet takes its own height
-   * back once the turn ends.
+   * shows already; the sheet has the new side's height by then. The card stays edge-on until the
+   * new side's image is decoded (afterNewFaceDecoded), so that it never turns back flat empty. The
+   * sheet takes its own height back once the turn ends.
    */
   function turnOver(): void {
     if (faceElement === undefined) {
@@ -422,16 +458,44 @@
       fill: 'forwards',
     });
     turn = away;
-    away.onfinish = () => {
-      leaving = null;
-      const back = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
-      turn = back;
-      away.cancel();
-      back.onfinish = () => {
-        resize?.cancel();
-        resize = undefined;
-      };
+    away.onfinish = () =>
+      afterNewFaceDecoded(() => {
+        // The sheet went away while the card waited edge-on.
+        if (turn !== away) {
+          return;
+        }
+        leaving = null;
+        const back = element.animate([edgeOn, flat], { duration: half, easing: 'ease-out' });
+        turn = back;
+        away.cancel();
+        back.onfinish = () => {
+          resize?.cancel();
+          resize = undefined;
+        };
+      });
+  }
+
+  /**
+   * Runs `then` once the new side's image is decoded, or has failed to be: at once when it is
+   * already, as it is in most cases, and DECODE_WAIT_MS later at most.
+   */
+  function afterNewFaceDecoded(then: () => void): void {
+    const decode = newFace;
+    newFace = null;
+    if (decode === null || decode.settled) {
+      then();
+      return;
+    }
+    let waiting = true;
+    const stopWaiting = () => {
+      if (waiting) {
+        waiting = false;
+        clearTimeout(timer);
+        then();
+      }
     };
+    const timer = setTimeout(stopWaiting, DECODE_WAIT_MS);
+    void decode.done.then(stopWaiting);
   }
 
   const shown = $derived(visibleEntries(live.entries));

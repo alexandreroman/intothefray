@@ -336,6 +336,29 @@ describe('Hand', () => {
     expect(interaction.previewed).toBeNull();
   });
 
+  it('slides its cards along the fan on the compositor: by transform, never by a layout property', () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+    for (const card of handCards()) {
+      expect(card.style.getPropertyValue('--x')).toMatch(/px$/);
+    }
+    const card = rule('.hcard');
+    // The box sits in the middle of the hand; only its transform takes the card's place on the fan.
+    expect(card).toMatch(/left: calc\(50% - var\(--card-w\) \/ 2\);/);
+    expect(card).toMatch(/transform: translateX\(var\(--x\)\);/);
+    expect(card).toMatch(/transition: transform 0\.18s cubic-bezier\(0\.2, 0\.8, 0\.2, 1\);/);
+    // Its translate and scale stay free for a card that slides into the hand (motion.svelte.ts).
+    expect(card).not.toMatch(/translate:|scale:/);
+  });
+
+  it('plays every transform of a card about its own middle on the fan, not the hand middle', () => {
+    const card = rule('.hcard');
+    // A slide's scale and a turn play about the card where it shows: the box's middle moved by --x.
+    expect(card).toMatch(/transform-origin: calc\(50% \+ var\(--x\)\) 50%;/);
+    // Its hit area and its face keep their own origin, below the card's bottom middle.
+    expect(rule('.hit')).toMatch(/transform-origin: 50% 110%;/);
+    expect(rule('.fan')).toMatch(/transform-origin: 50% 110%;/);
+  });
+
   it('picks the hovered card from its place at rest, which the pop never moves', () => {
     render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
     for (const card of handCards()) {
@@ -434,6 +457,27 @@ describe('Hand', () => {
     expect(foot).toMatch(/top: calc\(100% \+ var\(--ty\)\);/);
     expect(foot).toMatch(/bottom: calc\(-1 \* var\(--pad-bottom\)\);/);
     expect(foot).not.toMatch(/transform/);
+  });
+
+  it('casts each card shadow from a shade under its face, never through a filter; the gap slot casts none', () => {
+    interaction.press({ kind: 'hand', id: 'h1' }, {
+      button: 0,
+      pointerId: 1,
+      clientX: 0,
+      clientY: 0,
+      preventDefault: () => {},
+    } as unknown as PointerEvent);
+    interaction.lift('h1', ['h1']);
+    interaction.handGap = 1;
+    const { container } = render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+
+    for (const card of handCards()) {
+      expect(card.querySelector('.fan')?.firstElementChild?.classList).toContain('shade');
+    }
+    expect(container.querySelector('.hcard.gap .shade')).toBeNull();
+    expect(rule('.shade')).toMatch(/box-shadow: var\(--held-card-shadow\);/);
+    expect(rule('.shade')).toMatch(/pointer-events: none;/);
+    expect(handSource).not.toMatch(/filter:/);
   });
 
   it('turns a landscape card a quarter to fit its slot', () => {

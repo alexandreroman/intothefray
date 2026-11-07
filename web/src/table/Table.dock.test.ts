@@ -22,6 +22,7 @@ import {
   card,
   domRect,
   fakeSession,
+  ghostCorner,
   infoFrom,
   pile,
   placed,
@@ -778,14 +779,12 @@ describe('small cards and small piles in dock mode', () => {
     );
   });
 
-  /** The element's box, in table units, as its style places it. */
+  /** The element's box, in table units, as its style places it: a ghost by its translate. */
   function boxOf(el: HTMLElement): { x: number; y: number; w: number; h: number } {
-    return {
-      x: Number.parseFloat(el.style.left),
-      y: Number.parseFloat(el.style.top),
-      w: Number.parseFloat(el.style.width),
-      h: Number.parseFloat(el.style.height),
-    };
+    const [x, y] = el.classList.contains('ghost')
+      ? ghostCorner(el)
+      : [Number.parseFloat(el.style.left), Number.parseFloat(el.style.top)];
+    return { x, y, w: Number.parseFloat(el.style.width), h: Number.parseFloat(el.style.height) };
   }
 
   /** Every element on the table measures where its style puts it, the table filling the window. */
@@ -1367,8 +1366,9 @@ describe('the compact, wrapped table in dock mode', () => {
     expectShift('c2', -364.8, 116.2);
     // Its ghost set down in the slot: c2's column on the first line.
     const ghost = document.querySelector<HTMLElement>('.draglayer .card.landed')!;
-    expect(Number.parseFloat(ghost.style.left)).toBeCloseTo(358.8, 4);
-    expect(Number.parseFloat(ghost.style.top)).toBeCloseTo(306.4, 4);
+    const [x, y] = ghostCorner(ghost);
+    expect(x).toBeCloseTo(358.8, 4);
+    expect(y).toBeCloseTo(306.4, 4);
   });
 
   it('pushes nothing aside for a card dropped back where it lies, nor over another row', async () => {

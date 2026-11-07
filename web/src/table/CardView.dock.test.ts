@@ -8,7 +8,7 @@ import { DOCK_MODE_KEY } from './dockMode';
 import { DOCK_SCALE } from './dockPiles';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox, SLOT_GAP } from './layout';
-import { card } from './fixtures.testing';
+import { card, ghostCorner } from './fixtures.testing';
 
 function tableCard(extra: Partial<TableCard> = {}): TableCard {
   return card('c1', { code: '01001a', x: 120, y: 40, z: 7, ...extra });
@@ -34,14 +34,12 @@ function cardElement(container: HTMLElement): HTMLElement {
   return el;
 }
 
-/** The element's box, in table units, as its style places it. */
+/** The element's box, in table units, as its style places it: a ghost by its translate. */
 function boxOf(el: HTMLElement): { x: number; y: number; w: number; h: number } {
-  return {
-    x: Number.parseFloat(el.style.left),
-    y: Number.parseFloat(el.style.top),
-    w: Number.parseFloat(el.style.width),
-    h: Number.parseFloat(el.style.height),
-  };
+  const [x, y] = el.classList.contains('ghost')
+    ? ghostCorner(el)
+    : [Number.parseFloat(el.style.left), Number.parseFloat(el.style.top)];
+  return { x, y, w: Number.parseFloat(el.style.width), h: Number.parseFloat(el.style.height) };
 }
 
 function expectDrawnAt60(el: HTMLElement, footprint: { w: number; h: number }): void {

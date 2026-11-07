@@ -638,7 +638,7 @@
       return true;
     }
     // The cards' own CSS transitions do not count: opening or lowering the hand slides every card
-    // to its other fan (`left`), and leaving them out of the band meanwhile would lower and raise
+    // to its other fan (`transform`), and leaving them out of the band meanwhile would lower and raise
     // the hand again under a pointer at rest. Some environments (tests) have no Web Animations,
     // nor CSSTransition: nothing moves there.
     return (
@@ -810,6 +810,7 @@
         <!-- And the strip below it, down to the bottom of the screen, so the card stays up there. -->
         <div class="foot"></div>
         <div class="fan">
+          <div class="shade"></div>
           {#if isHidden(card)}
             <CardBack back={card.back} caption={captionOf(card)} />
           {:else}
@@ -957,14 +958,21 @@
     z-index: 2600;
   }
 
-  /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
+  /*
+    Placed around the middle of the hand, below its top padding: --x is the card's middle. The box
+    lies in the middle; its transform takes it to its place on the fan, a move the compositor draws
+    alone. A card sliding into the hand plays on its translate and scale (motion.svelte.ts), apart.
+    Every transform plays about the card's own middle, where --x takes it: a slide's scale and a turn
+    leave the card on its spot. The origin leaves a pure translation, as along the fan, alone.
+  */
   .hcard {
     position: absolute;
     top: var(--pad-top);
-    left: calc(50% + var(--x));
+    left: calc(50% - var(--card-w) / 2);
     width: var(--card-w);
     height: var(--card-h);
-    transform: translateX(-50%);
+    transform: translateX(var(--x));
+    transform-origin: calc(50% + var(--x)) 50%;
     /* Only its hit area and the foot below it take the pointer (see .hit and .foot). */
     pointer-events: none;
     cursor: grab;
@@ -972,7 +980,7 @@
     user-select: none;
     -webkit-user-select: none;
     /* The other cards slide aside when a dragged card comes back over the hand. */
-    transition: left 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   /* A drawn card shows once its copy, flying in from its pile, lands (Flights.svelte). */
@@ -985,7 +993,6 @@
     border: 2px dashed #49c6ff88;
     border-radius: 9px;
     background: #49c6ff14;
-    filter: none;
   }
 
   /*
@@ -1038,7 +1045,20 @@
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-    filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+  }
+
+  /*
+    The card's shadow, cast from 2px inside its edge, under its face (see --held-card-shadow): it turns and pops with
+    the card, drawn once. The fan's transform gives it its own stacking, which keeps the shade under its face. The slot
+    is portrait, a landscape card turned a quarter in it: portrait corners.
+  */
+  .shade {
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--held-card-shadow);
+    pointer-events: none;
   }
 
   /*

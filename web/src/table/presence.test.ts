@@ -1,5 +1,6 @@
 import { fireEvent, render } from '@testing-library/svelte';
 import Table from './Table.svelte';
+import presenceSource from './Presence.svelte?raw';
 import { interaction } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import { GameSession } from '../lib/session.svelte';
@@ -8,6 +9,7 @@ import type { Arrow, CardView as TableCard, PackFace, PileView, View } from '../
 import {
   card,
   domRect,
+  ghostCorner,
   infoFrom,
   placed,
   playingView,
@@ -403,6 +405,14 @@ describe("other players' presence", () => {
     expect(glide()).toBe('0ms');
   });
 
+  it("glides a card's ghost on the translate that places it, as linearly as the cursors", () => {
+    const rule = /\.presence \.ghosts :global\(\.card\.ghost\) \{([^}]*)\}/.exec(
+      presenceSource,
+    )?.[1];
+    expect(rule).toContain('translate var(--glide) linear');
+    expect(rule).not.toMatch(/\b(left|top) var\(--glide\)/);
+  });
+
   it('holds a cursor scrolled out of view at the top or bottom edge, its label pointing there', async () => {
     const { receive } = await renderTable();
     // Far below what shows: the table spans 40 to 900 on the screen, the layer starting at 40.
@@ -552,7 +562,7 @@ describe("other players' presence", () => {
     const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="sam"]');
     expect(ghost).not.toBeNull();
     // In table units of the layer: the surface lies at (20, 40) in it.
-    expect([ghost!.style.left, ghost!.style.top]).toEqual(['520px', '360px']);
+    expect(ghostCorner(ghost!)).toEqual([520, 360]);
 
     // Let go: it stays where it was until a view shows where it went, 2 s at most.
     receive({ color: 1, name: 'Sam', drag: null });
@@ -575,7 +585,7 @@ describe("other players' presence", () => {
     await nextFrame();
     const ghost = document.querySelector<HTMLElement>('.presence .card[data-id="ss"]');
     // Its corner where Sam's landscape ghost has it, not turned into the deck's portrait slot.
-    expect([ghost?.style.left, ghost?.style.top]).toEqual(['520px', '360px']);
+    expect(ghostCorner(ghost!)).toEqual([520, 360]);
     expect([ghost?.style.width, ghost?.style.height]).toEqual(['157px', '112px']);
     expect(ghost?.querySelector('.land-in-portrait')).toBeNull();
   });
@@ -611,7 +621,7 @@ describe("other players' presence", () => {
     receive({ color: 1, name: 'Sam', drag: { cards: ['sam'], x: 100, y: 120 } });
     await nextFrame();
     expect(ghost()).not.toBe(landing);
-    expect([ghost()!.style.left, ghost()!.style.top]).toEqual(['120px', '160px']);
+    expect(ghostCorner(ghost()!)).toEqual([120, 160]);
     expect(document.querySelectorAll('.presence .card')).toHaveLength(1);
   });
 

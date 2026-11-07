@@ -728,13 +728,13 @@
     Other players' drags glide between their moves, as the cursors do; the viewer's own ghosts
     (DragLayer) follow the pointer without delay. A ghost that appears shows in its place at once:
     a transition only runs on a change. While the table moves under them, --glide is 0: they move
-    with it. Under .presence: above the ghost rules of CardView and MarkerToken, whatever the
-    order of the bundled styles.
+    with it. A card's ghost takes its place on translate (CardView), a marker's on left and top.
+    Under .presence: above the ghost rules of CardView and MarkerToken, whatever the order of the
+    bundled styles.
   */
   .presence .ghosts :global(.card.ghost) {
     transition:
-      left var(--glide) linear,
-      top var(--glide) linear,
+      translate var(--glide) linear,
       scale 0.12s;
   }
 

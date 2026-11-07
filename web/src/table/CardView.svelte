@@ -36,7 +36,7 @@
     draggable?: boolean;
     /** The caption of its back: the side deck it belongs to, when that deck has its own back. */
     caption?: string;
-    /** Dock mode, during a drag: how far it is drawn pushed aside, as a translate. */
+    /** Dock mode, during a drag: how far it is drawn pushed aside, as a translate. Never a ghost's. */
     shift?: string;
   } = $props();
 
@@ -153,12 +153,12 @@
   class:grab={draggable && !ghost}
   class:drop-target={tuckTarget}
   class:drop-pile={pileTarget}
-  style:left="{card.x}px"
-  style:top="{card.y}px"
+  style:left={ghost ? undefined : `${card.x}px`}
+  style:top={ghost ? undefined : `${card.y}px`}
   style:width="{drawn.w}px"
   style:height="{drawn.h}px"
   style:z-index={card.z}
-  style:translate={shift}
+  style:translate={ghost ? `${card.x}px ${card.y}px` : shift}
   style:--scale={dock.current ? DOCK_SCALE : undefined}
   style:--lift-scale={armed ? LIFT_SCALE : undefined}
   style:--lift-shade={armed ? LIFT_SHADE : undefined}
@@ -410,8 +410,13 @@
     of an exhausted card. Another player's are held up a little, upright, their shadow under them.
     Let go (landed), the viewer's own ghost stays held up where it landed: the view that shows
     the card settles it on the table from there (motion.svelte.ts).
+    A ghost lies at its layer's corner and takes its place on translate (inline): a pointer move
+    lays nothing out again. Its scale and rotate play about its own middle: the translate
+    carries the ghost, lifted and leaning, to its place.
   */
   .card.ghost {
+    left: 0;
+    top: 0;
     cursor: grabbing;
     scale: var(--lift-scale, 1.04);
     rotate: var(--sway, 0deg);
