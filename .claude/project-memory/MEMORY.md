@@ -61,7 +61,7 @@
 - [Campaign player card backs](references/project_campaign_card_backs.md) — faction campaign + player card type gets the player back
 - [Rise of Red Skull scenarios](references/project_red_skull_scenarios.md) — five villains curated; weapons and side-scheme decks; searches manual
 - [Scenario decks and several villains](references/project_scenario_decks.md) — deck cards out of the classic deck; several villains
-- [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; a deck takes any card of its owner
+- [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; any deck takes its owner's cards
 - [Stage change carry-over](references/project_stage_carry_over.md) — villain keeps all but damage, main scheme only acceleration
 - [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); not offered as modulars
 - [Action menu organisation](references/project_action_bars.md) — click opens the menu; hand by drag and keys; chips; touch: inspector sheet
