@@ -152,37 +152,30 @@ func (h *hub) watched(gameID string) bool {
 	return h.games[gameID] != nil
 }
 
-// connections returns the local connections of every game, as the store
-// records them.
-func (h *hub) connections() map[string][]store.Connection {
+// connections returns a copy of the local connections of every game.
+func (h *hub) connections() map[string][]*conn {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	byGame := make(map[string][]store.Connection, len(h.games))
+	byGame := make(map[string][]*conn, len(h.games))
 	for id, local := range h.games {
-		for c := range local.conns {
-			byGame[id] = append(byGame[id], c.online())
-		}
+		byGame[id] = slices.Collect(maps.Keys(local.conns))
 	}
 	return byGame
 }
 
-// registered reports whether connection is still among the local connections
-// of the game.
-func (h *hub) registered(gameID string, connection store.Connection) bool {
+// registered reports whether c is still among the local connections of its
+// game.
+func (h *hub) registered(c *conn) bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	local := h.games[gameID]
+	local := h.games[c.gameID]
 	if local == nil {
 		return false
 	}
-	for c := range local.conns {
-		if c.online() == connection {
-			return true
-		}
-	}
-	return false
+	_, ok := local.conns[c]
+	return ok
 }
 
 // relay sends a presence message to the local connections of a game but
@@ -424,7 +417,11 @@ func (s *Server) touchLocalGames(ctx context.Context) {
 // or disconnected.
 func (s *Server) renewOnline(ctx context.Context) {
 	for id, conns := range s.hub.connections() {
-		s.keepOnline(ctx, id, conns)
+		online := make([]store.Connection, 0, len(conns))
+		for _, c := range conns {
+			online = append(online, c.online())
+		}
+		s.keepOnline(ctx, id, online)
 		s.forgetClosed(ctx, id, conns)
 		if err := s.sendStoredGame(ctx, id); err != nil {
 			s.deps.Logger.Warn("load game to tell who is connected", "game_id", id, "error", err)
@@ -455,14 +452,14 @@ func (s *Server) keepOnline(ctx context.Context, gameID string, conns []store.Co
 // and been undone by it. A connection leaves the hub before it sets itself
 // offline, so one that closed too late to be seen here sets itself offline
 // after the renewal.
-func (s *Server) forgetClosed(ctx context.Context, gameID string, conns []store.Connection) {
+func (s *Server) forgetClosed(ctx context.Context, gameID string, conns []*conn) {
 	forgotten := false
-	for _, connection := range conns {
-		if s.hub.registered(gameID, connection) {
+	for _, c := range conns {
+		if s.hub.registered(c) {
 			continue
 		}
 		storeCtx, cancel := context.WithTimeout(ctx, storeCallTimeout)
-		err := s.deps.Store.SetOffline(storeCtx, gameID, connection)
+		err := s.deps.Store.SetOffline(storeCtx, gameID, c.online())
 		cancel()
 		if err != nil {
 			// Its lease passes in time: the count corrects itself then.
