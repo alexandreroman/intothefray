@@ -206,7 +206,12 @@ func TestImportDeckNotFound(t *testing.T) {
 // TestImportDeckUnavailable checks that a marvelcdb failure is not taken
 // for a missing deck: the player is asked to try again instead.
 func TestImportDeckUnavailable(t *testing.T) {
-	for _, status := range []int{http.StatusInternalServerError, http.StatusServiceUnavailable, http.StatusTooManyRequests} {
+	statuses := []int{
+		http.StatusInternalServerError,
+		http.StatusServiceUnavailable,
+		http.StatusTooManyRequests,
+	}
+	for _, status := range statuses {
 		t.Run(strconv.Itoa(status), func(t *testing.T) {
 			t.Parallel()
 			im := newImporter(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
