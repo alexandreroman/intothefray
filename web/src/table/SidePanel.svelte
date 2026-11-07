@@ -4,7 +4,10 @@
   The preview of the hovered card floats over the table (Table.svelte).
 -->
 <script module lang="ts">
-  /** The Undo button's label, here and on the narrow table's top bar (Table.svelte). */
+  /**
+   * The Undo button's label: here, in the history sheet, in the dock, and on the narrow table's floating Undo
+   * (Table.svelte).
+   */
   export const UNDO_TIP = 'Undo last action';
   /** The tip of the Undo button when the viewer has nothing to undo. */
   export const NOTHING_TO_UNDO = 'Nothing of yours to undo';
