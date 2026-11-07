@@ -167,6 +167,23 @@ interface Placed {
   scale: number;
 }
 
+/** A copy's way from one place to another, on the screen: how far it goes, and how much it grows. */
+function wayTo(from: Measured, to: Measured): { dx: number; dy: number; scale: number } {
+  return { dx: to.cx - from.cx, dy: to.cy - from.cy, scale: from.w ? to.w / from.w : 1 };
+}
+
+/**
+ * An element's way back from where it showed to its new place (FLIP): how far off it starts, in its
+ * own units (table units on a zoomed surface), and how much larger.
+ */
+function wayFrom({ to, scale }: Placed, from: Measured): { dx: number; dy: number; size: number } {
+  return {
+    dx: (from.cx - to.cx) / scale,
+    dy: (from.cy - to.cy) / scale,
+    size: to.w ? from.w / to.w : 1,
+  };
+}
+
 /** What starts a motion measured beforehand: it writes to the page, and measures nothing. */
 type Start<T = void> = () => T;
 
@@ -762,9 +779,7 @@ function playerColor(color: number): string {
  * from one side, then flat on the other.
  */
 function turningFrames(from: Measured, to: Measured, angle: number, turns: boolean): Keyframe[] {
-  const dx = to.cx - from.cx;
-  const dy = to.cy - from.cy;
-  const scale = from.w ? to.w / from.w : 1;
+  const { dx, dy, scale } = wayTo(from, to);
   // Part of the way there, turned about its vertical axis by turn degrees.
   const at = (progress: number, turn: number): Keyframe => ({
     transform:
@@ -867,9 +882,7 @@ const ARRIVE_FRAMES: Keyframe[] = [...DRAW_AWAY_FRAMES].reverse();
  * pile lay over it. The clip is in the copy's own box, before its scale.
  */
 function underFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
-  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  const { dx, dy, scale } = wayTo(flight.from, flight.to);
   return [
     { transform: 'translate(0, 0) scale(1)', clipPath: 'inset(0% 0 0 0)' },
     {
@@ -883,9 +896,7 @@ function underFrames(flight: PileFlight): Keyframe[] {
 }
 
 function toPileFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
-  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  const { dx, dy, scale } = wayTo(flight.from, flight.to);
   return [
     { transform: 'translate(0, 0) scale(1)' },
     { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
@@ -900,8 +911,8 @@ function toPileFrames(flight: PileFlight): Keyframe[] {
  * keyframes carry their own easing: the animation runs linear.
  */
 function quarterFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
+  const { dx, dy } = wayTo(flight.from, flight.to);
+  // Its long side ends as tall as the pile.
   const scale = flight.from.w ? flight.to.h / flight.from.w : 1;
   // Part of the way there, turned about the screen's vertical axis by turn degrees.
   const pose = (progress: number, turn: number): string =>
@@ -935,9 +946,7 @@ function flipsFirst(flight: PileFlight): boolean {
  * the chip. The keyframes carry their own easing: the animation runs linear.
  */
 function chipFlipFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
-  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  const { dx, dy, scale } = wayTo(flight.from, flight.to);
   // Part of the way there, turned about its vertical axis by turn degrees, as turningFrames has it.
   const pose = (progress: number, turn: number): string =>
     `${FLIP_PERSPECTIVE} translate(${dx * progress}px, ${dy * progress}px)` +
@@ -1876,16 +1885,9 @@ class TableMotion {
    * comes back as the first step ends. Even a card already on its slot, the end of its own chain,
    * shifts out and back in.
    */
-  #tuck(
-    { element, to, scale }: Placed,
-    from: Measured,
-    subject: Subject,
-    tuck: Tuck,
-  ): Animation | null {
-    // Translations are in the element's own units: table units on a zoomed surface.
-    const dx = (from.cx - to.cx) / scale;
-    const dy = (from.cy - to.cy) / scale;
-    const size = to.w ? from.w / to.w : 1;
+  #tuck(placed: Placed, from: Measured, subject: Subject, tuck: Tuck): Animation | null {
+    const { element, to, scale } = placed;
+    const { dx, dy, size } = wayFrom(placed, from);
     const stagingX = (to.w / scale) * TUCK_STAGING;
     const stagingY = (to.h / scale) * TUCK_STAGING;
     const duration = TUCK_OUT_MS + TUCK_IN_MS;
@@ -1936,16 +1938,9 @@ class TableMotion {
   }
 
   /** Slides an element from where it showed to its new place, measured there (FLIP). */
-  #slide(
-    { element, to, scale }: Placed,
-    from: Measured,
-    subject: Subject,
-    moves: boolean,
-  ): Animation | null {
-    // Translations are in the element's own units: table units on a zoomed surface.
-    const dx = (from.cx - to.cx) / scale;
-    const dy = (from.cy - to.cy) / scale;
-    const size = to.w ? from.w / to.w : 1;
+  #slide(placed: Placed, from: Measured, subject: Subject, moves: boolean): Animation | null {
+    const { dx, dy, size } = wayFrom(placed, from);
+    const { element } = placed;
     if (Math.abs(dx) + Math.abs(dy) <= 1 && Math.abs(size - 1) <= 0.02) {
       return null;
     }
@@ -2171,13 +2166,10 @@ class TableMotion {
     if (!element || !from) {
       return () => null;
     }
-    const { to, scale } = placedAt(element, zoom);
+    const placed = placedAt(element, zoom);
     const shade = element.querySelector<HTMLElement>(':scope > .shade');
     return () => {
-      // Translations are in the element's own units: table units on a zoomed surface.
-      const dx = (from.cx - to.cx) / scale;
-      const dy = (from.cy - to.cy) / scale;
-      const size = to.w ? from.w / to.w : 1;
+      const { dx, dy, size } = wayFrom(placed, from);
       const settleMs = MOVE_MS * LAND_SETTLES_AT;
       const duration = settleMs + SETTLE_MS;
       const slid = MOVE_MS / duration;
