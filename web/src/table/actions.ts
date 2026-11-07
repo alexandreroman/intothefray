@@ -170,6 +170,17 @@ export const STATUSES: readonly Counter[] = [
 ];
 
 /**
+ * The number a status tab shows after its label: none for one, "×2" for several ("Tough ×2").
+ * The count of Retaliate is its value, which always shows: "Retaliate 1".
+ */
+export function statusCount(name: string, count: number): string | null {
+  if (name === 'retaliate') {
+    return `${count}`;
+  }
+  return count > 1 ? `×${count}` : null;
+}
+
+/**
  * The stats a modifier changes, in the order cards print them: the stat column, then the hit
  * points. Mirrors modifierNames in internal/game/apply.go.
  */

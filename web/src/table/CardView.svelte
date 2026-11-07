@@ -5,7 +5,7 @@
 <script lang="ts">
   import { playerColorVar } from '../lib/playerColor';
   import type { PackFace, CardView as TableCard } from '../lib/types';
-  import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
+  import { MODIFIERS, statusCount, STATUSES, withSign, type TokenName } from './actions';
   import CardBack from './CardBack.svelte';
   import CardFace from './CardFace.svelte';
   import { dockCounterLayout, measureChipText, moreText, type Box } from './dockCounters';
@@ -63,17 +63,6 @@
   const threatInCorner = $derived(scheme && threatTokens.length > 0);
   const threatInPile = $derived(!scheme && threatTokens.length > 0);
   const statuses = $derived(STATUSES.filter(({ name }) => (card.status?.[name] ?? 0) > 0));
-
-  /**
-   * The number a status tab shows after its label: none for one, "×2" for several ("Tough ×2").
-   * The count of Retaliate is its value, which always shows: "Retaliate 1".
-   */
-  function statusCount(name: string, count: number): string | null {
-    if (name === 'retaliate') {
-      return `${count}`;
-    }
-    return count > 1 ? `×${count}` : null;
-  }
 
   // A modifier is signed: only 0 hides it.
   const modifiers = $derived(MODIFIERS.filter((name) => (card.mods?.[name] ?? 0) !== 0));

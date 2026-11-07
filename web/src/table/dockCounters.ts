@@ -18,7 +18,7 @@
 // exhausted card turns its layout with it.
 
 import type { CardView } from '../lib/types';
-import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
+import { MODIFIERS, statusCount, STATUSES, withSign, type TokenName } from './actions';
 
 /** The font size of every number, status initial and modifier: the readable floor on a phone. */
 const NUMBER_PX = 11;
@@ -168,11 +168,7 @@ function placeTokens(
 
 /** A status chip's text: its initial, then its value (Retaliate) or its count when above one. */
 function statusText(name: string, label: string, count: number): string {
-  const initial = label.charAt(0);
-  if (name === 'retaliate') {
-    return `${initial}${count}`;
-  }
-  return count > 1 ? `${initial}×${count}` : initial;
+  return label.charAt(0) + (statusCount(name, count) ?? '');
 }
 
 function placeStatuses(

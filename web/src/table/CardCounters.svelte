@@ -21,7 +21,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { motionMs } from '../lib/motion';
-  import { counterName, MAX_COUNT, MODIFIERS, STATUSES, withSign } from './actions';
+  import { counterName, MAX_COUNT, MODIFIERS, statusCount, STATUSES, withSign } from './actions';
   import type { SheetCounter } from './inspector';
   import { cardBox } from './layout';
 
@@ -111,14 +111,6 @@
     return delta === 1 ? `Add one ${name}` : `Remove one ${name}`;
   }
 
-  /** The number a status tab shows after its label (CardView.svelte): none for one, "×2" for several. */
-  function statusCount(counter: SheetCounter): string | null {
-    if (counter.name === 'retaliate') {
-      return `${counter.value}`;
-    }
-    return counter.value > 1 ? `×${counter.value}` : null;
-  }
-
   /** A tap on a token opens its pill, or closes it when already open; a picture has none. */
   function toggle(counter: SheetCounter): void {
     if (onstep === undefined) {
@@ -198,7 +190,7 @@
         ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
       >{/if}{counter.value}
   {:else if counter.kind === 'status'}
-    {@const count = statusCount(counter)}
+    {@const count = statusCount(counter.name, counter.value)}
     <!-- The label, then its count after a space: "Tough ×2". -->
     {#if counter.name === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
         ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
