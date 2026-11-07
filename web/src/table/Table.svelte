@@ -16,7 +16,6 @@
   import { modal } from '../components/modal.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
-  import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
   import { byId } from '../lib/byId';
@@ -2934,8 +2933,6 @@
       oncancel={() => (asking = null)}
     />
   {/if}
-
-  <Tooltip />
 
   {#if sidePanel}
     <aside class="side" id="history-panel" aria-label="History">

@@ -4,7 +4,6 @@
   import Icon from '../components/Icon.svelte';
   import ScenarioPicker from '../components/lobby/ScenarioPicker.svelte';
   import Seats from '../components/lobby/Seats.svelte';
-  import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { loadIndex } from '../lib/catalog';
   import { playerColorVar } from '../lib/playerColor';
@@ -268,8 +267,6 @@
     </div>
   </div>
 </div>
-
-<Tooltip />
 
 <style>
   /*

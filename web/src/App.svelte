@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Tooltip from './components/Tooltip.svelte';
   import { route } from './lib/router.svelte';
   import { appTitle } from './lib/title';
   import About from './screens/About.svelte';
@@ -25,3 +26,6 @@
 {:else}
   <Home />
 {/if}
+
+<!-- The tooltips of every screen: one page-wide listener (data-tip). -->
+<Tooltip />

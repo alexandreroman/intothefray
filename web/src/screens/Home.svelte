@@ -11,7 +11,6 @@
   import { fetchGamesInProgress } from '../lib/stats';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
-  import Tooltip from '../components/Tooltip.svelte';
   import WhatsNewDialog from '../components/WhatsNewDialog.svelte';
   import { lastPressByPointer } from '../components/modal.svelte';
 
@@ -232,8 +231,6 @@
 
   <footer>Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.</footer>
 </div>
-
-<Tooltip />
 
 {#if shownUnread}
   <WhatsNewDialog entries={news.entries} unread={shownUnread} onclose={closeWhatsNew} />
