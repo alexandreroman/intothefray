@@ -19,6 +19,7 @@
   import { tick, untrack } from 'svelte';
   import { prefersReducedMotion } from 'svelte/motion';
   import { byId } from '../lib/byId';
+  import type { Rect } from '../lib/rect';
   import type {
     Action,
     Area,
@@ -63,7 +64,6 @@
     type DropRect,
     type DropSpot,
     type PileDrop,
-    type Rect,
     type TableRect,
   } from './drag';
   import { dockMode } from './dockMode';

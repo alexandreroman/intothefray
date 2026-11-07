@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
-import type { Box } from '../../lib/dropdown';
+import type { Rect } from '../../lib/rect';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -87,7 +87,7 @@ function viewOf(config: LobbyConfig, you: YouView = asHost): View {
 }
 
 /** The room the Add a set menu stays within: the whole window. */
-function windowRoom(): Box {
+function windowRoom(): Rect {
   return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 }
 

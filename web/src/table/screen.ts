@@ -2,8 +2,8 @@
 // units of the surface, so that it lands on the same card whatever the zoom,
 // the scroll position or the window size of each viewer.
 
+import type { Rect } from '../lib/rect';
 import type { Point } from '../lib/types';
-import type { Rect } from './drag';
 
 /** The surface, where the cards and piles lie, measured on the screen. */
 export function surfaceRect(root: ParentNode | undefined): DOMRect | undefined {

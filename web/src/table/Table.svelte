@@ -24,6 +24,7 @@
   import { localizedFace, localizedName } from '../lib/localize';
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
+  import type { Rect } from '../lib/rect';
   import { pointerBlur } from '../lib/releaseFocus';
   import {
     NARROW_SCREEN_QUERY,
@@ -87,7 +88,7 @@
     type DockPreview,
   } from './dockLayout';
   import { setDockMode } from './dockMode';
-  import { DRAG_THRESHOLD, intersect, sourceOf, takesHandDrop, type Rect } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, takesHandDrop } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';

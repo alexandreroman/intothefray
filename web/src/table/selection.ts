@@ -3,9 +3,10 @@
 // sends. Pure helpers; Table.svelte draws the band and DragLayer.svelte drags
 // the group.
 
+import type { Rect } from '../lib/rect';
 import type { Action, CardView, Point, View } from '../lib/types';
 import { MAX_COUNT } from './actions';
-import { mainCardOf, pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
+import { mainCardOf, pileTargets, sourceOf, type PileTarget } from './drag';
 import { TABLE_LIMIT } from './layout';
 import { ALL_TABLE, type TableMap } from './rows';
 

@@ -1,8 +1,8 @@
 import { modal } from '../components/modal.svelte';
+import type { Rect } from '../lib/rect';
 import { releaseFocus } from '../lib/releaseFocus';
 import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
-import type { Rect } from './drag';
 import { holdPhase, type HoldPhase } from './gestures';
 import { isFree } from './selection';
 

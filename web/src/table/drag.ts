@@ -3,6 +3,7 @@
 // the pointer, measures the screen and calls them.
 
 import { byId } from '../lib/byId';
+import type { Rect } from '../lib/rect';
 import {
   markerPoint,
   type Action,
@@ -49,14 +50,6 @@ const PILE_MARGIN = 20;
 const HAND_SIDE_ROOM = 140;
 const HAND_TOP_ROOM = 20;
 const EMPTY_HAND_ROOM = 140;
-
-/** A box on the screen. A DOMRect is one. */
-export interface Rect {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-}
 
 /**
  * What a drop onto a pile does: back on top of the deck, discarded, or put in

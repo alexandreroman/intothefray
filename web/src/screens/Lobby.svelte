@@ -9,7 +9,7 @@
   import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
   import { hostName, MAX_SEATS, seatCount, type Index, type View } from '../lib/types';
-  import type { Rect } from '../table/drag';
+  import type { Rect } from '../lib/rect';
 
   let { session, view }: { session: GameSession; view: View } = $props();
 

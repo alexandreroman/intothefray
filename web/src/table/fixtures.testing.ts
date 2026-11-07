@@ -2,6 +2,7 @@
 // measured boxes, as most tests build them, and lookups on the drawn table.
 
 import type { CardInfo } from '../lib/catalog';
+import type { Rect } from '../lib/rect';
 import type {
   Action,
   Area,
@@ -17,7 +18,6 @@ import type {
   View,
   YouView,
 } from '../lib/types';
-import type { Rect } from './drag';
 
 /** The villain's stage, its one card `v` showing. */
 export const VILLAIN_STAGE: Stage = {
