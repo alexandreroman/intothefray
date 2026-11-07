@@ -508,7 +508,7 @@ interface FreshId {
 
 /**
  * The card the server just gave a new id, so that the other players cannot
- * follow it (freshID in internal/game/ids.go), when the viewer can: a
+ * follow it (renamedOnTheWay in internal/game/ids.go), when the viewer can: a
  * face-down table card taken into the viewer's hand, or that move undone.
  * Exactly one card left the view and one card came into it, the one from the
  * table face down and the other in the hand, or the other way round, with no

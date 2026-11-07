@@ -1418,7 +1418,7 @@ describe('diffViews', () => {
     }
 
     // The server gives a card a new id when it goes into a hand or a deck out of a hand or face down
-    // off the table, so that the other players cannot follow it (freshID in internal/game/ids.go).
+    // off the table, so that the other players cannot follow it (renamedOnTheWay in internal/game/ids.go).
     describe('a card that gets a new id on its way', () => {
       it('taken face down into the hand moves there under its new id and turns face up', () => {
         const prev = view({ cards: [card('d', { faceDown: true, x: 100 })], hands: { p0: [] } });
