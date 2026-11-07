@@ -183,10 +183,9 @@ for size in 192 512; do
 done
 ```
 
-`web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`,
-where crawlers look for a favicon by default; the pages declare
-`favicon.svg` only. After a change to `favicon.svg`, render it again with
-headless Chrome and ImageMagick (`magick`):
+`web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`;
+the pages declare `favicon.svg` only. After a change to `favicon.svg`,
+render it again with headless Chrome and ImageMagick (`magick`):
 
 ```bash
 cd web
@@ -197,8 +196,8 @@ magick /tmp/favicon.png -alpha off \
   -define icon:auto-resize=48,32,16 public/favicon.ico
 ```
 
-Every icon is full-bleed, with no transparent corners: Google crops a
-favicon into a circle and fills its transparent pixels with white.
+Every icon is full-bleed, with no transparent corners, and keeps the mark
+within its inscribed circle.
 
 ## Architecture
 

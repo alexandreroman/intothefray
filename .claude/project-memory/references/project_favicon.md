@@ -17,7 +17,10 @@ type: project
 
 **Why:** Google Search results show the favicon cropped to a circle,
 with transparent pixels filled with white (seen on this site's rounded
-icon), and crawlers look for `/favicon.ico` at the root.
+icon). For a document that declares no icon, the HTML Living Standard
+lets user agents fetch `/favicon.ico` from the root of its origin
+(<https://html.spec.whatwg.org/multipage/links.html#rel-icon>): the root
+file answers them.
 
 **How to apply:** keep every icon free of transparent corners and keep
 the mark within the inscribed circle; regenerate `favicon.ico` after any
