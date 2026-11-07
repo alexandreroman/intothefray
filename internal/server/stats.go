@@ -119,8 +119,8 @@ func (s *Server) playedGameOf(summary game.Summary) playedGame {
 // face. The card must have a face.
 func heroOf(card pack.Card) playedHero {
 	hero := playedHero{Hero: card.HeroFace().Name}
-	if alterEgo, ok := card.AlterEgo(); ok {
-		hero.AlterEgo = alterEgo.Name
+	if alterEgo, ok := card.FaceOfType(pack.FaceTypeAlterEgo); ok {
+		hero.AlterEgo = card.Faces[alterEgo].Name
 	}
 	return hero
 }

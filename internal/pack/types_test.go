@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestCardHeroFaceAndAlterEgo(t *testing.T) {
+func TestCardFaceOfTypeAndHeroFace(t *testing.T) {
 	identity := Card{Faces: []Face{
 		{Name: "Peter Parker", Type: FaceTypeAlterEgo},
 		{Name: "Spider-Man", Type: FaceTypeHero},
@@ -15,16 +15,19 @@ func TestCardHeroFaceAndAlterEgo(t *testing.T) {
 	if got := identity.HeroFace().Name; got != "Spider-Man" {
 		t.Errorf("HeroFace = %q, want Spider-Man", got)
 	}
-	if got, ok := identity.AlterEgo(); !ok || got.Name != "Peter Parker" {
-		t.Errorf("AlterEgo = %q, %v; want Peter Parker", got.Name, ok)
+	if got, ok := identity.FaceOfType(FaceTypeHero); !ok || got != 1 {
+		t.Errorf("FaceOfType(hero) = %d, %v; want 1", got, ok)
+	}
+	if got, ok := identity.FaceOfType(FaceTypeAlterEgo); !ok || got != 0 {
+		t.Errorf("FaceOfType(alter_ego) = %d, %v; want 0", got, ok)
 	}
 
 	plain := Card{Faces: []Face{{Name: "Plain Side", Type: "upgrade"}}}
 	if got := plain.HeroFace().Name; got != "Plain Side" {
 		t.Errorf("HeroFace without a hero face = %q, want the first face", got)
 	}
-	if _, ok := plain.AlterEgo(); ok {
-		t.Error("AlterEgo without an alter-ego face reports one")
+	if got, ok := plain.FaceOfType(FaceTypeAlterEgo); ok || got != 0 {
+		t.Errorf("FaceOfType without an alter-ego face = %d, %v; want 0, false", got, ok)
 	}
 }
 

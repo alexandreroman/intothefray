@@ -887,7 +887,8 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if err != nil {
 		return err
 	}
-	face := alterEgoFace(identityDef)
+	// An identity lies on its alter-ego face, or on its first one without any.
+	face, _ := identityDef.FaceOfType(pack.FaceTypeAlterEgo)
 	if face >= len(identityDef.Faces) {
 		return invalid("card %s has no face", identityDef.Code)
 	}
@@ -1078,19 +1079,9 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 // isIdentityCard reports whether def is an identity: one of its faces is a
 // hero or an alter ego.
 func isIdentityCard(def pack.Card) bool {
-	return slices.ContainsFunc(def.Faces, func(face pack.Face) bool {
-		return face.Type == pack.FaceTypeHero || face.Type == pack.FaceTypeAlterEgo
-	})
-}
-
-// alterEgoFace returns the index of the alter-ego face, or 0 if there is none.
-func alterEgoFace(def pack.Card) int {
-	for i, face := range def.Faces {
-		if face.Type == pack.FaceTypeAlterEgo {
-			return i
-		}
-	}
-	return 0
+	_, hero := def.FaceOfType(pack.FaceTypeHero)
+	_, alterEgo := def.FaceOfType(pack.FaceTypeAlterEgo)
+	return hero || alterEgo
 }
 
 func (b *tableBuilder) shuffle(pileID string) {

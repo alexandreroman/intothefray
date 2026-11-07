@@ -427,8 +427,8 @@ func heroTitleOf(cat *pack.Catalog, identity string) (heroTitle, bool) {
 	face := card.HeroFace()
 	title := heroTitle{name: face.Name, subtitle: face.Subname}
 	if title.subtitle == "" {
-		if alterEgo, ok := card.AlterEgo(); ok {
-			title.subtitle = alterEgo.Name
+		if alterEgo, ok := card.FaceOfType(pack.FaceTypeAlterEgo); ok {
+			title.subtitle = card.Faces[alterEgo].Name
 		}
 	}
 	return title, true
