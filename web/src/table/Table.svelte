@@ -69,7 +69,7 @@
   import CardBox from './CardBox.svelte';
   import CardSheet from './CardSheet.svelte';
   import ContextMenu from './ContextMenu.svelte';
-  import Dock from './Dock.svelte';
+  import Dock, { type DockCard } from './Dock.svelte';
   import {
     cardHeader,
     contextItems,
@@ -412,7 +412,9 @@
 
   // The hero selector at the bottom left (HeroPicker): in "Villain + player", every seat, its entry
   // picking the row shown; in "All", the viewer's own decks, its entry picking the hand shown. It
-  // shows only with two entries or more: a single hero leaves nothing to pick.
+  // shows only with two entries or more: a single hero leaves nothing to pick. In dock mode, a card
+  // drawn into a deck's hand flies to its entry when no hand shows it: its badge counts it once the
+  // card has landed (motion.drawing), as the dock does.
   const pickerEntries = $derived<HeroEntry[]>(
     seatedDecks
       .filter(({ seat }) => focused || own.includes(seat))
@@ -424,10 +426,16 @@
           name: deck?.heroName ?? seatPlayer(view, seat)?.name ?? '',
           image: deck?.heroImage,
           color: playerColorVar(color),
-          handCount: deck?.handCount ?? 0,
+          handCount: (deck?.handCount ?? 0) - (dockMode ? arrivingIn(seat) : 0),
         };
       }),
   );
+
+  /** How many of a seat's hand cards are still flying in (motion.drawing): none for another player's. */
+  function arrivingIn(seat: number): number {
+    const hand = view.table?.hands?.[areaOf(seat)] ?? [];
+    return hand.filter((id) => motion.drawing.has(id)).length;
+  }
   const pickerCurrent = $derived(focused ? shownSeat : selected);
   const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null);
   // The selector's width in px while it shows, bound out of HeroPicker: on a wide screen, the hands
@@ -1836,6 +1844,14 @@
   // The selected deck, which the dock's hand button shows and opens; none for a spectator.
   const dockDeck = $derived(selected === null ? undefined : seatDeck(view, selected));
   const dockHand = $derived(selected === null ? [] : handOf(selected));
+  // A card still flying in (motion.drawing) is hidden in its place on the hand button, and not counted.
+  const dockCards = $derived<DockCard[]>(
+    dockHand.map((card) => ({
+      id: card.id,
+      images: faceOf(card)?.images ?? [],
+      arriving: motion.drawing.has(card.id),
+    })),
+  );
   const dockColor = $derived(
     playerColorVar(selected === null ? view.you.color : (seatColor(view, selected) ?? 0)),
   );
@@ -2769,8 +2785,8 @@
 
   {#if dockMode}
     <Dock
-      handCount={dockHand.length}
-      minis={dockHand.map((card) => faceOf(card)?.images ?? [])}
+      hand={dockCards}
+      seat={selected ?? undefined}
       avatar={dockDeck?.heroImage ? [dockDeck.heroImage] : null}
       heroName={dockDeck?.heroName ?? ''}
       color={dockColor}

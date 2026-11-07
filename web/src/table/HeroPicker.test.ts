@@ -68,6 +68,12 @@ describe('HeroPicker', () => {
     ]);
   });
 
+  it("names each entry's seat, for a card drawn into its hand to fly to", () => {
+    renderPicker([SPIDER_MAN, ANT_MAN, KIM], 0);
+
+    expect(radios().map((radio) => radio.dataset.seat)).toEqual(['0', '1', '2']);
+  });
+
   it('checks the current entry, the only one tabbed to', () => {
     renderPicker([SPIDER_MAN, ANT_MAN], 1);
 
