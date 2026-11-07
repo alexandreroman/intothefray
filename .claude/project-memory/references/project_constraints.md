@@ -15,7 +15,9 @@ type: project
   hand or face down off the table. So do the tucked cards that drop under
   a deck, those under a covered revealed card included, and a revealed
   card covered by a card put on top (see [[project_deck_reveal]]). The
-  new ids of one action or group are distinct.
+  new ids of one action or group are distinct. A card in a hand or a pile
+  carries no table position (x, y and z are 0, `resetCard` in
+  internal/game), so its last spot cannot follow it out of sight.
 - Card images, card backs and theme images are stored in a Cloudflare R2
   bucket and served by `https://img.intothefray.xyz`, the only image host
   the browser loads from (see [[project_image_cdn]]). The user accepts that
