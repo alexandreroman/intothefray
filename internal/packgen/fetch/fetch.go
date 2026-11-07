@@ -30,7 +30,12 @@ type Client struct {
 // cached in CacheDir/<sha256(url)>.json, so repeated runs do not hit the network.
 func (c *Client) JSON(ctx context.Context, url string, v any) error {
 	// Cache only a body that decodes, so an error page is never replayed.
-	decodeInto := func(body []byte) error { return decode(url, body, v) }
+	decodeInto := func(body []byte) error {
+		if err := json.Unmarshal(body, v); err != nil {
+			return fmt.Errorf("decode %s: %w", url, err)
+		}
+		return nil
+	}
 	_, err := c.get(ctx, url, c.cachePath(url, ".json"), decodeInto)
 	return err
 }
@@ -67,13 +72,6 @@ func (c *Client) get(ctx context.Context, url, path string, check func([]byte) e
 		return nil, fmt.Errorf("cache %s: %w", url, err)
 	}
 	return body, nil
-}
-
-func decode(url string, body []byte, v any) error {
-	if err := json.Unmarshal(body, v); err != nil {
-		return fmt.Errorf("decode %s: %w", url, err)
-	}
-	return nil
 }
 
 // cachePath returns the cache file of url, named after the hash of url and
