@@ -536,7 +536,12 @@
               <span class="chip" class:guest-chip={!isHost}>
                 {setName(code)}
                 {#if recommended.includes(code)}
-                  <span class="rec" title="Recommended for this scenario">★</span>
+                  <span
+                    class="rec"
+                    role="img"
+                    aria-label="Recommended for this scenario"
+                    data-tip="Recommended for this scenario">★</span
+                  >
                 {/if}
                 {#if code === chosenMainScheme?.code}
                   <span class="scheme">main scheme</span>

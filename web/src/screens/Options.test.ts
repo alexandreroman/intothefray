@@ -125,6 +125,13 @@ describe('Options', () => {
     expect(screen.getByLabelText<HTMLInputElement>('Your name').value).toBe('Abcdefghijklmnop');
   });
 
+  it('names the dice button and gives it a tooltip, no native title', () => {
+    render(Options);
+    const dice = screen.getByRole('button', { name: 'Pick a new random name' });
+    expect(dice.dataset.tip).toBe('Pick a new random name');
+    expect(dice.hasAttribute('title')).toBe(false);
+  });
+
   it('picks and stores a new random name with the dice', async () => {
     setPref('itf-name', 'Alex');
     render(Options);
@@ -229,7 +236,9 @@ describe('Options', () => {
     render(Options);
 
     expect(versionText()).toBe('version 0123456');
-    expect(screen.getByText('0123456').getAttribute('title')).toBe(APP_SHA);
+    const sha = screen.getByText('0123456');
+    expect(sha.dataset.tip).toBe(APP_SHA);
+    expect(sha.hasAttribute('title')).toBe(false);
   });
 
   it('shows a single version when the app and server match', async () => {
@@ -246,7 +255,7 @@ describe('Options', () => {
     stubServerCommit(SERVER_SHA);
     render(Options);
 
-    expect((await screen.findByText('fedcba9')).getAttribute('title')).toBe(SERVER_SHA);
+    expect((await screen.findByText('fedcba9')).dataset.tip).toBe(SERVER_SHA);
     expect(versionText()).toBe('version mismatch 0123456/fedcba9');
     expect(versionLine().classList.contains('mismatch')).toBe(true);
   });

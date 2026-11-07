@@ -157,7 +157,7 @@
         <button
           class="dice"
           aria-label="Pick a new random name"
-          title="Pick a new random name"
+          data-tip="Pick a new random name"
           onclick={pickRandomName}
         >
           <Icon name="dice" />
@@ -236,7 +236,7 @@
 </div>
 
 {#snippet commit(sha: string)}
-  <span title={sha}>{shortCommit(sha)}</span>
+  <span data-tip={sha}>{shortCommit(sha)}</span>
 {/snippet}
 
 <style>

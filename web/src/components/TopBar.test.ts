@@ -93,7 +93,8 @@ describe('TopBar', () => {
     const onback = vi.fn();
     const { container } = render(TopBar, { onback });
     const back = screen.getByRole('button', { name: 'Back' });
-    expect(back.getAttribute('title')).toBe('Back');
+    expect(back.dataset.tip).toBe('Back');
+    expect(back.hasAttribute('title')).toBe(false);
     expect(container.querySelector('header .bar')?.firstElementChild).toBe(back);
     await fireEvent.click(back);
     expect(onback).toHaveBeenCalledOnce();
@@ -109,7 +110,8 @@ describe('TopBar', () => {
     render(TopBar, { spectators: 1 });
     const badge = screen.getByRole('img', { name: '1 spectator' });
     expect(badge.textContent?.trim()).toBe('1');
-    expect(badge.getAttribute('title')).toBe('1 spectator');
+    expect(badge.dataset.tip).toBe('1 spectator');
+    expect(badge.hasAttribute('title')).toBe(false);
     // The narrow-screen media queries hide it through this class.
     expect(badge.classList).toContain('pill');
   });
@@ -118,15 +120,16 @@ describe('TopBar', () => {
     render(TopBar, { spectators: 3 });
     const badge = screen.getByRole('img', { name: '3 spectators' });
     expect(badge.textContent?.trim()).toBe('3');
-    expect(badge.getAttribute('title')).toBe('3 spectators');
+    expect(badge.dataset.tip).toBe('3 spectators');
   });
 
-  it('labels its icon buttons', () => {
+  it('labels its icon buttons and gives them a tooltip, no native title', () => {
     document.documentElement.requestFullscreen = vi.fn();
     render(TopBar, { spectators: 0, onend: () => {} });
     for (const name of ['Fullscreen', 'End game']) {
       const button = screen.getByRole('button', { name });
-      expect(button.getAttribute('title')).toBe(name);
+      expect(button.dataset.tip).toBe(name);
+      expect(button.hasAttribute('title')).toBe(false);
       expect(button.textContent?.trim()).toBe('');
     }
   });
@@ -219,7 +222,7 @@ describe('TopBar', () => {
     setFullscreenElement('fullscreenElement', document.documentElement);
     await fireEvent(document, new Event('fullscreenchange'));
     const exit = screen.getByRole('button', { name: 'Exit fullscreen' });
-    expect(exit.getAttribute('title')).toBe('Exit fullscreen');
+    expect(exit.dataset.tip).toBe('Exit fullscreen');
     expect(exit.classList).toContain('active');
 
     const exitFullscreen = vi.fn().mockResolvedValue(undefined);

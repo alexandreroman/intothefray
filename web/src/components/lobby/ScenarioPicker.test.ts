@@ -106,6 +106,17 @@ function setSelect(label: string): HTMLSelectElement {
   return screen.getByRole('combobox', { name: label }) as HTMLSelectElement;
 }
 
+describe('ScenarioPicker modular chips', () => {
+  it('marks a recommended set with a named star and its tooltip, no native title', () => {
+    renderPicker(rhino);
+
+    const star = screen.getByRole('img', { name: 'Recommended for this scenario' });
+    expect(star.textContent).toBe('★');
+    expect(star.dataset.tip).toBe('Recommended for this scenario');
+    expect(star.hasAttribute('title')).toBe(false);
+  });
+});
+
 describe('ScenarioPicker set dropdowns', () => {
   it('offers None first in both dropdowns', () => {
     renderPicker({ ...rhino, difficulty: 'expert', expert: 'expert' });
