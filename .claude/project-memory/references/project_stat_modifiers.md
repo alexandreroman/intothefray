@@ -35,8 +35,8 @@ type: project
 such as a hero's +1 DEF or a villain's −1 ATK.
 
 **How to apply:** keep `modifierNames` (internal/game/apply.go) and
-`MODIFIERS` (web/src/table/actions.ts) in step, and `MAX_MODIFIER` equal
-to the server's clamp (`maxCount`); a new counter kind
+`MODIFIERS` (web/src/table/actions.ts) in step, and `MAX_COUNT` (same
+file) equal to the server's `maxCount`, its clamp; a new counter kind
 mirrors every place `ActToken` and the counter target kinds are handled,
 and decides whether it carries over on a stage change
 (see [[project_stage_carry_over]]).
