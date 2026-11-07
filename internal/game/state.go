@@ -230,7 +230,7 @@ type Pile struct {
 	// TopFaceUp shows the top card of a side deck to everyone.
 	TopFaceUp bool `json:"topFaceUp,omitempty"`
 	// Back is the printed back the cards of a side deck share, which the
-	// client captions with the deck's label; empty when they keep their own.
+	// client captions with the deck's label; empty on any other pile.
 	Back pack.Back `json:"back,omitempty"`
 	// Compact is a compact scenario deck or discard pile, drawn 80 x 112 (see
 	// pack.ScenarioDeck.Compact).
