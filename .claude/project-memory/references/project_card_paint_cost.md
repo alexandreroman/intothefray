@@ -7,15 +7,21 @@ type: project
 # Cards are cheap to paint
 
 - A table card or pile casts its shadow from a `.shade` box 2px inside its
-  edge, at z-index -1 under its face: a box-shadow (`--card-shadow`, each
-  layer with a 2px spread) with the card's corners (`--card-radius`,
-  `--card-radius-land`). The values match three stacked `drop-shadow()`s
-  (Chrome takes a drop-shadow's blur as a standard deviation, half a
-  box-shadow's). Table cards and piles carry no CSS `filter`.
+  edge, at z-index -1 under its face: one global `.shade` rule in
+  `web/src/styles/tokens.css`, a box-shadow (`--shade-shadow`, defaulting
+  to `--card-shadow`, each layer with a 2px spread) with the card's
+  corners (`--card-radius`, `--card-radius-land`). The values match three
+  stacked `drop-shadow()`s (Chrome takes a drop-shadow's blur as a
+  standard deviation, half a box-shadow's). Table cards and piles cast no
+  shadow through a CSS `filter`; only a token's small icon (the
+  acceleration chevrons, `CounterGlyph.svelte`) carries one, drawn once
+  into the card's layer.
 - Every card that moves casts its shadow from such a shade too, never a
-  filter: the hand's cards, the hand card's drag ghost and the flying copies
-  (`--held-card-shadow`, fitted to two stacked drop-shadows, landscape
-  corners for a landscape flying box), and the hand sheet's carousel cards.
+  filter: the hand's cards, the hand card's drag ghost, the card box's
+  reorder ghost (`.tile-ghost` in `CardBox.svelte`) and the flying copies
+  (their component sets `--shade-shadow` to `--held-card-shadow`, fitted
+  to two stacked drop-shadows, landscape corners for a landscape card),
+  and the hand sheet's carousel cards.
   A filter on a moving element is blurred again on every frame, per card.
   An element that does not itself move may carry a filter (the preview art,
   the remote cursors): it is drawn once into its moving parent's layer.
@@ -27,13 +33,14 @@ type: project
   by `transform: translateX(var(--x))` from a box in the hand's middle,
   turning and scaling about its own middle (`transform-origin:
   calc(50% + var(--x)) 50%`; its `translate` and `scale` are free for a
-  card sliding into the hand),
-  every card's drag ghost follows the pointer on `translate` from its layer's
-  corner (the hand card's, the viewer's own table ghosts, landed ones
+  card sliding into the hand), every card's drag ghost follows the
+  pointer on `translate` from its layer's corner (the hand card's, the
+  card box's reorder ghost, the viewer's own table ghosts, landed ones
   included, and other players' ghosts, which glide on a `translate`
-  transition), and the notices and the preview follow the sliding top bar on
-  `translate`. A ghost's `scale` (lift) and `rotate` (sway) play about
-  its own middle; an exhausted ghost keeps its `transform` tilt.
+  transition), and the notices and the preview follow the sliding top bar
+  on `translate`. A ghost's `scale` (lift) and `rotate` (sway, or the card
+  box ghost's fixed tilt) play about its own middle; an exhausted ghost
+  keeps its `transform` tilt.
 - Reads of the page come before writes, so that a frame lays out once: a
   view's motions measure everything they start from (origins, new places,
   own transforms, pile boxes, player colours) before any of them starts
