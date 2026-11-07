@@ -490,7 +490,7 @@ function stageItem(): ActionItem {
  * single-faced card has no Flip, nor a card the catalog does not know yet.
  */
 function stageFlipItem(card: CardView, stage: Stage): ActionItem | null {
-  const faces = card.code ? (knownCard(card.code)?.card.faces.length ?? 1) : 1;
+  const faces = faceCount(card);
   if (faces < 2) {
     return null;
   }
@@ -505,6 +505,17 @@ function stageFlipItem(card: CardView, stage: Stage): ActionItem | null {
 }
 
 /**
+ * The number of faces of the card, one while it is unknown or its catalog entry is not loaded.
+ * Mirrors faceCount in internal/game/apply.go.
+ */
+function faceCount(card: CardView): number {
+  if (!card.code) {
+    return 1;
+  }
+  return knownCard(card.code)?.card.faces.length ?? 1;
+}
+
+/**
  * Whether Flip changes the card (the server decides how, in resolveFlip): a face-down card turns
  * face up, a card with several faces shows its next one, and a card with a single face turns face
  * down. An identity card stays face up, so a single-faced one has nothing to flip to.
@@ -513,8 +524,7 @@ function canFlip(card: CardView): boolean {
   if (card.faceDown || !card.code || !card.identity) {
     return true;
   }
-  const faces = knownCard(card.code)?.card.faces.length ?? 1;
-  return faces > 1;
+  return faceCount(card) > 1;
 }
 
 function flipItem(card: CardView): ActionItem {
