@@ -246,8 +246,9 @@ const statusGameNotFound = websocket.StatusCode(4404)
 // hands it to serveConn.
 func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	exists, err := s.gameExists(r.Context(), id)
-	if err != nil {
+	_, err := s.loadGame(r.Context(), id)
+	unknown := errors.Is(err, store.ErrNotFound)
+	if err != nil && !unknown {
 		s.deps.Logger.Error("load game", "game_id", id, "error", err)
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
@@ -269,27 +270,22 @@ func (s *Server) handleGameSocket(w http.ResponseWriter, r *http.Request) {
 		s.deps.Logger.Warn("websocket upgrade refused", "game_id", id, "error", err)
 		return
 	}
-	if !exists {
+	if unknown {
 		s.rejectUnknownGame(r.Context(), conn)
 		return
 	}
 	s.serveConn(r.Context(), conn, id)
 }
 
-// gameExists reports whether the game exists. An id newGameID cannot have
-// generated names no game: Redis is not asked.
-func (s *Server) gameExists(ctx context.Context, id string) (bool, error) {
+// loadGame loads the game whose id comes from a request path. An id
+// newGameID cannot have generated names no game: Redis is not asked, and the
+// error wraps store.ErrNotFound as for an unknown game.
+func (s *Server) loadGame(ctx context.Context, id string) (*game.Game, error) {
 	if !validGameID(id) {
-		return false, nil
+		return nil, fmt.Errorf("game %q: %w", id, store.ErrNotFound)
 	}
-	_, _, err := s.deps.Store.Load(ctx, id)
-	if errors.Is(err, store.ErrNotFound) {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	g, _, err := s.deps.Store.Load(ctx, id)
+	return g, err
 }
 
 // rejectUnknownGame tells the viewer that its game does not exist, then
