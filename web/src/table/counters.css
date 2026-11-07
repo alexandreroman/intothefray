@@ -2,10 +2,12 @@
   A card's tokens, status tabs and modifier badges, as the table draws them on a card
   (CardView.svelte) and the inspector on its face (CardCounters.svelte): the same places and the
   same look. The card's own element carries the class `counters`, beside `card`, `land` and
-  `scheme`, so that the rules reach nothing else of the app (the lobby has its own `.st`). Each
-  rule weighs what it did scoped in a component, one class for the scope: a rule on the card
-  names `.card.counters`, any other one `.counters` alone. A component's own rules, its rings and
-  dock chips, are set against these weights.
+  `scheme`, so that the rules reach nothing else of the app (the lobby has its own `.st`). A
+  rule that names `.counters` alone weighs what it did scoped in a component, the class standing
+  for the scope. A rule on the card names `.card.counters`: it weighs one class more than it did
+  scoped. No outcome changes for it: each component rule it meets sets other properties or
+  weighed less already. A component's own rules, its rings and dock chips, are set against these
+  weights.
 */
 
 /*
