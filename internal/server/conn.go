@@ -381,14 +381,8 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	if c.token != "" {
 		return fmt.Errorf("%w: second hello", errInvalidMessage)
 	}
-	fresh, err := newToken()
-	if err != nil {
-		return err
-	}
-	onlineID, err := newToken()
-	if err != nil {
-		return err
-	}
+	fresh := newToken()
+	onlineID := newToken()
 
 	var token string
 	var role game.Role
@@ -477,10 +471,7 @@ func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
 	case opTakeSeat:
 		return s.update(ctx, c.gameID, func(g *game.Game) error { return g.TakeSeat(c.token) })
 	case opStart:
-		seed, err := newSeed()
-		if err != nil {
-			return err
-		}
+		seed := newSeed()
 		return s.update(ctx, c.gameID, func(g *game.Game) error {
 			return g.Start(c.token, cat, seed, s.deps.Now())
 		})

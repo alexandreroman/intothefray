@@ -196,12 +196,12 @@ func TestCreateGameEmptyName(t *testing.T) {
 func TestCreateGameRetriesTakenID(t *testing.T) {
 	ids := []string{"takentaken", "takentaken", "freefree23"}
 	ts, mr := newTestServerWith(t, func(s *Server) {
-		s.newID = func() (string, error) {
+		s.newID = func() string {
 			id := ids[0]
 			if len(ids) > 1 {
 				ids = ids[1:]
 			}
-			return id, nil
+			return id
 		}
 	})
 	if resp := postGame(t, ts, "", `{"name": "Alex"}`); resp.status != http.StatusCreated {
@@ -469,10 +469,7 @@ func assertGameNotFound(t *testing.T, client *testClient) {
 
 func TestValidGameID(t *testing.T) {
 	for range 100 {
-		id, err := newGameID()
-		if err != nil {
-			t.Fatal(err)
-		}
+		id := newGameID()
 		if !validGameID(id) {
 			t.Fatalf("validGameID(%q) = false for a generated id", id)
 		}

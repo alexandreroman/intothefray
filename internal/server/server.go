@@ -62,7 +62,7 @@ type Server struct {
 	deps Deps
 	hub  *hub
 	// newID generates game ids; tests replace it to force collisions.
-	newID func() (string, error)
+	newID func() string
 	// originPatterns are the allowed origins as websocket.AcceptOptions
 	// patterns: they hold the scheme, so the WebSocket check matches the
 	// whole origin, like CORS does.
@@ -181,13 +181,7 @@ func (s *Server) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := newToken()
-	if err != nil {
-		s.deps.Logger.Error("generate token", "error", err)
-		writeError(w, http.StatusInternalServerError, "internal error")
-		return
-	}
-
+	token := newToken()
 	id, err := s.createGame(r.Context(), token, req.Name)
 	if errors.Is(err, game.ErrInvalid) {
 		writeError(w, http.StatusBadRequest, "a name is required")
@@ -223,15 +217,9 @@ func (s *Server) readCreateRequest(w http.ResponseWriter, r *http.Request) (crea
 // id is retried with another one; the game keeps the statistics reference
 // drawn for it, which no stored game depends on.
 func (s *Server) createGame(ctx context.Context, hostToken, hostName string) (string, error) {
-	statsRef, err := newStatsRef()
-	if err != nil {
-		return "", err
-	}
+	statsRef := newStatsRef()
 	for range maxCreateAttempts {
-		id, err := s.newID()
-		if err != nil {
-			return "", err
-		}
+		id := s.newID()
 		g, err := game.NewGame(id, hostToken, hostName, s.deps.Now())
 		if err != nil {
 			return "", err
@@ -337,46 +325,40 @@ func validGameID(id string) bool {
 	return true
 }
 
-func newGameID() (string, error) {
+// newGameID draws a game id. Like the other generators below, it ignores the
+// error of rand.Read, which never returns one: it crashes the program instead.
+func newGameID() string {
 	id := make([]byte, gameIDLength)
-	if _, err := rand.Read(id); err != nil {
-		return "", fmt.Errorf("generate game id: %w", err)
-	}
+	_, _ = rand.Read(id)
 	for i, b := range id {
 		// The alphabet has 31 letters; the modulo bias over 256 values is
 		// irrelevant for an unguessable-enough public id.
 		id[i] = gameIDAlphabet[int(b)%len(gameIDAlphabet)]
 	}
-	return string(id), nil
+	return string(id)
 }
 
 // newStatsRef draws the reference of a game in the public statistics (see
 // game.Game.StatsRef): random, so that it reveals nothing of the game id and
 // every instance agrees on it without a shared secret. Its 16 hex characters
 // never pass for a 10-letter game id.
-func newStatsRef() (string, error) {
+func newStatsRef() string {
 	raw := make([]byte, statsRefBytes)
-	if _, err := rand.Read(raw); err != nil {
-		return "", fmt.Errorf("generate statistics reference: %w", err)
-	}
-	return hex.EncodeToString(raw), nil
+	_, _ = rand.Read(raw)
+	return hex.EncodeToString(raw)
 }
 
-func newToken() (string, error) {
+func newToken() string {
 	raw := make([]byte, tokenBytes)
-	if _, err := rand.Read(raw); err != nil {
-		return "", fmt.Errorf("generate token: %w", err)
-	}
-	return base64.RawURLEncoding.EncodeToString(raw), nil
+	_, _ = rand.Read(raw)
+	return base64.RawURLEncoding.EncodeToString(raw)
 }
 
 // newSeed draws the seed of a game, from which all its randomness derives.
-func newSeed() (uint64, error) {
+func newSeed() uint64 {
 	var raw [8]byte
-	if _, err := rand.Read(raw[:]); err != nil {
-		return 0, fmt.Errorf("generate seed: %w", err)
-	}
-	return binary.LittleEndian.Uint64(raw[:]), nil
+	_, _ = rand.Read(raw[:])
+	return binary.LittleEndian.Uint64(raw[:])
 }
 
 func writeJSON(w http.ResponseWriter, status int, body any) {
