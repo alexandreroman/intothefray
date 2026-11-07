@@ -47,6 +47,9 @@ type hub struct {
 	// all holds every open connection, including those that have not said
 	// hello yet, so that shutdown closes them all.
 	all map[*conn]struct{}
+	// serving counts the connections added and not yet cleaned up, so that
+	// shutdown waits until they are forgotten in the store.
+	serving sync.WaitGroup
 	// games holds the connections that joined, by game.
 	games map[string]*localGame
 }
@@ -64,7 +67,8 @@ func newHub() *hub {
 }
 
 // add records a new connection. It returns false once the hub is closed:
-// the connection must then be closed.
+// the connection must then be closed. Otherwise the caller must call
+// h.serving.Done once the connection is cleaned up.
 func (h *hub) add(c *conn) bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -73,6 +77,7 @@ func (h *hub) add(c *conn) bool {
 		return false
 	}
 	h.all[c] = struct{}{}
+	h.serving.Add(1)
 	return true
 }
 
@@ -205,7 +210,10 @@ func (h *hub) gameIDs() []string {
 }
 
 // closeAll refuses new connections and closes the open ones, telling the
-// viewers that the server is going away. It returns once they are closed.
+// viewers that the server is going away. It then ends their contexts, so that
+// a message still being handled, such as a deck import, stops at once, and
+// returns once every connection is cleaned up, set offline in the store
+// included.
 func (h *hub) closeAll() {
 	h.mu.Lock()
 	h.closed = true
@@ -219,12 +227,18 @@ func (h *hub) closeAll() {
 		wg.Go(func() { _ = c.ws.Close(websocket.StatusGoingAway, "server shutting down") })
 	}
 	wg.Wait()
+	// Only after the closes: a read cut by its context would close the
+	// connection without telling the viewer why.
+	for _, c := range conns {
+		c.cancel()
+	}
+	h.serving.Wait()
 }
 
 // Run relays the events of every game to the viewers connected to this
 // instance, and keeps their games from expiring, until ctx ends. It then
-// closes every connection: http.Server.Shutdown does not, as WebSocket
-// connections are hijacked.
+// closes every connection and returns once each is set offline in the store:
+// http.Server.Shutdown does neither, as WebSocket connections are hijacked.
 func (s *Server) Run(ctx context.Context) error {
 	defer s.hub.closeAll()
 

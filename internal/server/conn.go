@@ -53,6 +53,9 @@ type conn struct {
 	ws     *websocket.Conn
 	gameID string
 	logger *slog.Logger
+	// cancel ends the connection's context. It is set before the hub adds
+	// the connection, which calls it on shutdown.
+	cancel context.CancelFunc
 	// token, presenceID and onlineID are set by a successful hello, before
 	// the hub registers the connection, and never change afterwards.
 	// onlineID tells this connection apart from the other tabs of the token
@@ -285,11 +288,15 @@ func (c *conn) closeWhenTooSlow(ctx context.Context) {
 func (s *Server) serveConn(ctx context.Context, ws *websocket.Conn, gameID string) {
 	ws.SetReadLimit(maxMessageBytes)
 	c := newConn(ws, gameID, s.deps.Logger)
+	ctx, cancel := context.WithCancel(ctx)
+	c.cancel = cancel
 	if !s.hub.add(c) {
+		cancel()
 		_ = ws.Close(websocket.StatusGoingAway, "server shutting down")
 		return
 	}
-	ctx, cancel := context.WithCancel(ctx)
+	// Deferred first, so that it runs last: shutdown waits for the cleanup.
+	defer s.hub.serving.Done()
 	var wg sync.WaitGroup
 	// Deferred, so that even a panic leaves neither the hub entry, the online
 	// connection nor the socket behind. The read loop that sets the token has

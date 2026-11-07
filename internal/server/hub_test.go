@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"maps"
+	"net/http"
 	"net/http/httptest"
 	"slices"
 	"strings"
@@ -17,6 +18,7 @@ import (
 	"github.com/coder/websocket"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/store"
 	"github.com/alexandreroman/intothefray/internal/store/storetest"
@@ -743,12 +745,56 @@ func TestShutdownClosesConnections(t *testing.T) {
 	if err := stop(); err != nil {
 		t.Fatalf("Run = %v, want nil after the context ends", err)
 	}
+	// Run returns once the closed connections are forgotten in the store.
+	if online := "online:" + created.ID; mr.Exists(online) {
+		members, _ := mr.ZMembers(online)
+		t.Errorf("online connections after the shutdown = %q, want none", members)
+	}
 
 	late := connect(t, ts, created.ID)
 	for name, c := range map[string]*testClient{"joined": joined, "before hello": silent, "after shutdown": late} {
 		if _, err := drain(t, c.ws); websocket.CloseStatus(err) != websocket.StatusGoingAway {
 			t.Errorf("%s: read ended with %v, want close status %v", name, err, websocket.StatusGoingAway)
 		}
+	}
+}
+
+func TestShutdownStopsDeckImport(t *testing.T) {
+	importing := make(chan struct{})
+	notifyImporting := sync.OnceFunc(func() { close(importing) })
+	// A marvelcdb that never answers: only the end of the import's context
+	// ends the request.
+	unresponsive := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+		notifyImporting()
+		<-r.Context().Done()
+	}))
+	t.Cleanup(unresponsive.Close)
+	mr := miniredis.RunT(t)
+	srv := newServerOn(t, mr)
+	srv.deps.Decks = &decks.Importer{BaseURL: unresponsive.URL}
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+	stop := runInBackground(t, srv, mr)
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	host.lobby("setDeck", map[string]any{"url": deckLink})
+	select {
+	case <-importing:
+	case <-time.After(waitTimeout):
+		t.Fatal("the deck import never reached marvelcdb")
+	}
+	// Answers the close handshake, as a browser does.
+	go func() { _, _ = drain(t, host.ws) }()
+
+	start := time.Now()
+	err := stop()
+	if err != nil {
+		t.Fatalf("Run = %v, want nil after the context ends", err)
+	}
+	// The import alone would last up to marvelcdb's request timeout (10 s).
+	if elapsed := time.Since(start); elapsed > waitTimeout {
+		t.Errorf("Run returned after %v, want the deck import stopped at once", elapsed)
 	}
 }
 
