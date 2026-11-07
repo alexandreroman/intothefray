@@ -112,7 +112,10 @@ type: project
   out of a hidden pile, the draws 70 ms apart (`FLY_STAGGER_MS`), and
   the avatar (or the entry) pulses on each landing: `scale` 1 → 1.12 →
   1, 200 ms. With the hand sheet open on that hand, the copy flies into
-  its carousel slot, drawn over the sheet. Until a copy lands, its card
+  its carousel slot, drawn over the sheet; a slot out of the carousel's
+  sight (past the centred card) takes the sheet's count capsule instead,
+  shrinking and fading out into it as into an avatar, with no pulse. A
+  sheet sliding away (inert) counts as shut. Until a copy lands, its card
   is in `motion.drawing`: the dock's mini and the sheet's card keep
   their place unseen (opacity), and the dock's count, the sheet's and
   the hero selector badge leave it out, so each count steps up as its
@@ -139,7 +142,8 @@ table cards, no box-shadow animation; see [[project_card_paint_cost]]).
 On a phone the hand is the dock's button: the cards flying into it, one
 after the other, show the hand forming there. With the hand sheet open,
 the sheet covers the table: the copy flying into the carousel over it is
-the simplest motion that still lands where the card shows.
+the simplest motion that still lands where the card shows, or on the
+count when that card is out of sight.
 
 **How to apply:** a new way for a card to change place needs its motion in
 `animate.ts` and `motion.svelte.ts`, reusing the kinds of `Anim` (`move`,
