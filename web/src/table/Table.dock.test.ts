@@ -1349,6 +1349,37 @@ describe('the compact, wrapped table in dock mode', () => {
     }
   });
 
+  it("drops the shifts of a view that ends, and glides the ones the next view's first preview pushes", async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(busyView());
+    measureDrawn();
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    expectShift('c2', -364.8, 116.2);
+
+    // Another player's action: the preview, made on the view before, is dropped at once, its
+    // shifts jumping with the new view's cards.
+    await rerender({ session, view: busyView() });
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('');
+
+    // The drag goes on: the first preview made on the new view glides there.
+    await fireEvent.pointerMove(window, {
+      clientX: 160 * shownZoom(),
+      clientY: 350 * shownZoom(),
+      buttons: 1,
+    });
+    await nextFrame();
+    // Left of the identity: it and every played card a column right, c2 on the second line.
+    expectShift('c1', 91.2, 0);
+    expectShift('c7', -182.4, -116.2);
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('180ms');
+  });
+
   it('lands a card where it was let go, the others kept aside in its slot until the server answers', async () => {
     mockScreen(PHONE);
     const { session } = await renderTable(busyView());

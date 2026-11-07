@@ -770,25 +770,12 @@
         )
       : NO_SHIFTS,
   );
-  // The shifts glide (a CSS transition) from one preview to the next of the same view. A new view
-  // draws every card at its new place at once, its own motions playing from where they showed
-  // (motion.svelte.ts): the shifts it drops jump with it, for the first frame it draws.
-  let shiftsGlide = $state(true);
-  let glideFrame = 0;
-
-  /** Lets the shifts jump for the next frame drawn, then glide again. */
-  function pauseGlide(): void {
-    cancelAnimationFrame(glideFrame);
-    shiftsGlide = false;
-    glideFrame = requestAnimationFrame(() => {
-      glideFrame = requestAnimationFrame(() => {
-        glideFrame = 0;
-        shiftsGlide = true;
-      });
-    });
-  }
-
-  $effect(() => () => cancelAnimationFrame(glideFrame));
+  // The shifts glide (a CSS transition) from one preview to the next of the same view, and back
+  // when the drag ends. A new view draws every card at its new place at once, its own motions
+  // playing from where they showed (motion.svelte.ts): the shifts it drops jump with it, as the
+  // glide goes off in the same change. A change of style transitions by its new transition
+  // values, so the first preview made on the new view glides again.
+  const shiftsGlide = $derived(fedPreview === null || fedPreview.view === view);
 
   // ---- The zoom ----
 
@@ -1160,9 +1147,6 @@
       drawnDock = after;
       if (prev === next) {
         return;
-      }
-      if (fedPreview !== null) {
-        pauseGlide();
       }
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
