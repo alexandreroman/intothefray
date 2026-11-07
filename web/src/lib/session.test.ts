@@ -30,22 +30,9 @@ const view = (players: PlayerView[] = [player()]): View => ({
   log: [],
 });
 
-// Like the browser's: calling it with another receiver than the global object throws.
-function strictSetTimeout(
-  this: unknown,
-  handler: () => void,
-  ms?: number,
-): ReturnType<typeof setTimeout> {
-  if (this !== undefined && this !== globalThis) {
-    throw new TypeError('Illegal invocation');
-  }
-  return setTimeout(handler, ms);
-}
-
 function newSession(gameId = 'g1'): GameSession {
   const session = new GameSession(gameId, 'Alex', {
     WebSocket: FakeWebSocket as unknown as typeof WebSocket,
-    setTimeout: strictSetTimeout as typeof setTimeout,
   });
   session.connect();
   return session;

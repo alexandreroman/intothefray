@@ -46,7 +46,6 @@ type ServerMessage =
 
 interface Deps {
   WebSocket?: typeof WebSocket;
-  setTimeout?: typeof setTimeout;
 }
 
 /** Retry delays in ms; the last one repeats forever. */
@@ -103,7 +102,6 @@ export class GameSession {
   readonly #gameId: string;
   readonly #name: string;
   readonly #WebSocketImpl: typeof WebSocket;
-  readonly #setTimeout: (handler: () => void, ms: number) => void;
 
   #socket: WebSocket | null = null;
   #failedAttempts = 0;
@@ -139,12 +137,6 @@ export class GameSession {
     this.#gameId = gameId;
     this.#name = name;
     this.#WebSocketImpl = deps.WebSocket ?? WebSocket;
-    // Called as a plain function: the browser's setTimeout throws "Illegal
-    // invocation" when it is called as a method of another object.
-    const timer = deps.setTimeout ?? setTimeout;
-    this.#setTimeout = (handler, ms) => {
-      timer(handler, ms);
-    };
   }
 
   connect(): void {
@@ -356,12 +348,12 @@ export class GameSession {
   /**
    * Sends the held moves once the pointer stays still for an interval: the
    * others then see exactly where it stopped. Each new held move restarts
-   * the wait; the timer cannot be cleared, so a newer one makes it stale.
+   * the wait: a newer timer makes the older ones stale.
    */
   #settlePresence(): void {
     this.#settleGeneration += 1;
     const generation = this.#settleGeneration;
-    this.#setTimeout(() => {
+    setTimeout(() => {
       const latest = generation === this.#settleGeneration;
       if (latest && Object.keys(this.#heldPresence).length > 0) {
         this.#sendPresenceNow({});
@@ -375,7 +367,7 @@ export class GameSession {
       return;
     }
     this.#presenceWindowOpen = true;
-    this.#setTimeout(() => {
+    setTimeout(() => {
       this.#presenceWindowOpen = false;
       this.#releasePendingPresence();
     }, PRESENCE_INTERVAL_MS);
@@ -558,7 +550,7 @@ export class GameSession {
     this.status = 'reconnecting';
     const delay = BACKOFF_MS[Math.min(this.#failedAttempts, BACKOFF_MS.length - 1)] ?? 0;
     this.#failedAttempts += 1;
-    this.#setTimeout(() => {
+    setTimeout(() => {
       if (this.status === 'reconnecting') {
         this.connect();
       }
