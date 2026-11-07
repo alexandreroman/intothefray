@@ -145,7 +145,11 @@ type: project
     own Play or Discard empties the hand.
   - A card played or discarded from the hand rises and fades out where it
     was shown: the hand sheet or the dock's hand button
-    (`RiseFlight` in motion.svelte.ts, 300 ms).
+    (`RiseFlight` in motion.svelte.ts, 300 ms). A card drawn or taken
+    back into the hand flies to the hand button's minis (the rail's
+    avatar, another deck's hero selector entry), or into the open
+    sheet's carousel, and the counts step up as each card lands (see
+    [[project_card_move_animations]]).
   - The history opens as a sheet (`HistorySheet.svelte`) from the dock's
     or rail's History button.
   - Dock mode never shows the history panel nor its strip, at any width:

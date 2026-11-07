@@ -692,6 +692,7 @@ describe("a rising copy's animation", () => {
     expect(app.querySelector('.fly')?.classList).toContain('rise');
     const zIndex = (source: string, selector: string) =>
       Number(new RegExp(`\\n {2}${selector} \\{[^}]*z-index: (\\d+);`).exec(source)?.[1]);
-    expect(zIndex(flightsSource, '\\.fly\\.rise')).toBeGreaterThan(zIndex(sheetSource, '\\.sheet'));
+    const rule = '\\.fly\\.rise,\\s*\\.fly\\.over';
+    expect(zIndex(flightsSource, rule)).toBeGreaterThan(zIndex(sheetSource, '\\.sheet'));
   });
 });

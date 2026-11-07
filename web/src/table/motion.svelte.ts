@@ -6,7 +6,9 @@
 // drawn: the chip on its owner's frame stands for it, a card flying to it
 // fades out into it (CHIP_FADE_FROM), turning over first where it starts when
 // it turns (flipsFirst), and a card leaves it at a card's size
-// (measureOrigin). Nothing here holds the table up: the new view is drawn at
+// (measureOrigin). In dock mode, a card drawn into the viewer's hand, or taken back into it off the
+// table, flies to the dock's hand button or to its deck's hero selector entry when no hand sheet
+// shows its hand (dockLanding). Nothing here holds the table up: the new view is drawn at
 // once, in its final state, and the animations only paint over it, never
 // catching the pointer.
 
@@ -16,6 +18,7 @@ import { createSubscriber, SvelteMap, SvelteSet } from 'svelte/reactivity';
 import {
   MARKERS,
   markerPoint,
+  type Area,
   type Back,
   type CardView,
   type MarkerName,
@@ -27,9 +30,10 @@ import { playerColorToken } from '../lib/playerColor';
 import type { Anim, Tuck, Turn } from './animate';
 import { DOCK_SCALE } from './dockPiles';
 import { unknownTopId } from './drag';
-import { pileBack, pileCaption } from './face';
+import { isHidden, pileBack, pileCaption } from './face';
 import { EXHAUST_DEGREES, isDiscardPile, PORTRAIT_CARD } from './layout';
 import { tableCard, tablePile } from './screen';
+import { seatOf } from './seats';
 
 /**
  * A card held up off the table: dragged, turning over, flying. It shows a little larger, and its
@@ -140,6 +144,12 @@ const DRAW_AWAY_SCALE = 0.85;
  */
 const RISE_MS = 300;
 const RISE_PX = 120;
+/**
+ * In dock mode, the avatar a drawn card's copy lands on or beside pulses as it lands: it grows a
+ * little and back, on its scale alone (transform-family: nothing painted again).
+ */
+const PULSE_MS = 200;
+const PULSE_SCALE = 1.12;
 
 /** A card or a pile on the screen: its middle, and its size without its tilt. */
 interface Measured {
@@ -204,11 +214,15 @@ interface PileFlight extends FlightBase {
   fades: boolean;
 }
 
-/** A copy of a drawn card on its way from its pile to its slot in the hand. */
+/**
+ * A copy of a drawn card on its way from its pile to its slot in the hand; in dock mode, with no
+ * hand sheet showing its hand, to the dock's hand button or a hero selector entry (dock), also from
+ * the table for a card taken back into the hand.
+ */
 interface DrawFlight extends FlightBase {
   kind: 'draw';
-  /** The pile it flies out of. */
-  pile: string;
+  /** The pile it flies out of; none for a card taken from the table. */
+  pile: string | undefined;
   /** The card as it is in the hand. */
   card: CardView;
   /** It shows its face all along; otherwise it leaves on its back and turns over on the way. */
@@ -216,6 +230,23 @@ interface DrawFlight extends FlightBase {
   to: Measured;
   /** The slot's tilt on the fan, in degrees. */
   angle: number;
+  /** Where it lands on the dock or the hero selector (dockLanding); null for a hand slot. */
+  dock: DockLanding | null;
+  /** It lands in an open sheet (the hand sheet's carousel or its header): it is drawn over it. */
+  overSheet: boolean;
+}
+
+/**
+ * Where a drawn card's copy lands in dock mode when no hand sheet shows its slot: on the dock or a
+ * hero selector entry (dockLanding), or in the hand sheet's hand size (sheetCountLanding). Nothing
+ * follows it there (#follow), an accepted approximation: the mini cards may move up as others leave
+ * the hand, a switch of deck moves the selector's entries.
+ */
+interface DockLanding {
+  /** It goes into an avatar or a capsule: it fades out on the last part of its way, as into a chip. */
+  fades: boolean;
+  /** The avatar that pulses as it lands; none for the hand sheet's hand size. */
+  pulse: HTMLElement | null;
 }
 
 /** A copy of a card going into or out of a hand the viewer does not see. */
@@ -272,6 +303,10 @@ const pilePlace = (id: string) => `${tablePile(id)}, .surface .chip[data-pile="$
 const PILE_CHIP = '.surface .chip[data-pile]';
 /** The hand button of the dock (Dock.svelte), where the hand opens in dock mode. */
 const DOCK_HAND_BUTTON = '.dock .handbtn';
+/** The dock's hand button while it shows that seat's hand. */
+const dockHandButton = (seat: number) => `${DOCK_HAND_BUTTON}[data-seat="${seat}"]`;
+/** A seat's entry in a hero selector (HeroPicker.svelte). */
+const heroEntry = (seat: number) => `.picker .item[data-seat="${seat}"]`;
 const tableMarker = (name: MarkerName) => `.surface .marker[data-marker="${name}"]`;
 /** The marker another player drags, or has just let go of (Presence.svelte). */
 const remoteMarker = (name: MarkerName) => `.presence .marker.ghost[data-marker="${name}"]`;
@@ -477,6 +512,127 @@ function riseOrigin(
     return { from: tableCardOn(button, zoom, true), zoomed: true };
   }
   return null;
+}
+
+/**
+ * Whether a table card goes back into the viewer's hand in dock mode by an action, not a drop of
+ * the viewer's (dropped): it flies to the dock as a drawn card does, unless the hand sheet shows its
+ * hand once the view is drawn (#dockFlight). Its place on the table must have been measured.
+ */
+function takenBackToDock(
+  root: HTMLElement,
+  anim: Anim,
+  before: ReadonlyMap<string, Measured>,
+): anim is Extract<Anim, { kind: 'move' }> {
+  if (anim.kind !== 'move' || anim.dropped || !root.matches('.dock-mode')) {
+    return false;
+  }
+  return anim.from.zone === 'table' && anim.to.zone === 'hand' && before.has(anim.id);
+}
+
+/** The seat whose hand a card is in, in a table view: hands are listed by seat area. */
+function handSeatOf(table: TableView | undefined, id: string): number | null {
+  for (const [area, hand] of Object.entries(table?.hands ?? {})) {
+    if (hand?.includes(id)) {
+      return seatOf(area as Area);
+    }
+  }
+  return null;
+}
+
+/**
+ * The first element matching selector that still shows: none of an inert part of the page, as a
+ * sheet sliding away is until it is gone (Sheet.svelte).
+ */
+function shownElement(root: HTMLElement, selector: string): HTMLElement | null {
+  for (const element of root.querySelectorAll<HTMLElement>(selector)) {
+    if (!element.closest('[inert]')) {
+      return element;
+    }
+  }
+  return null;
+}
+
+/** A portrait card as high as an element, centred on it: what goes into an avatar. */
+function portraitOn(element: HTMLElement): Measured {
+  const rect = element.getBoundingClientRect();
+  return {
+    cx: rect.left + rect.width / 2,
+    cy: rect.top + rect.height / 2,
+    w: (rect.height * PORTRAIT_CARD.w) / PORTRAIT_CARD.h,
+    h: rect.height,
+  };
+}
+
+/**
+ * Where a card drawn into a seat's hand lands in dock mode when no hand sheet shows that hand. On
+ * the dock's hand button showing the seat: on the bar, the card's own mini card, or the last one for
+ * a card past them; on the rail, which has none, the avatar. Else that seat's hero selector entry,
+ * the hand sheet's own first, as it lies over the table, unless the sheet is sliding away
+ * (shownElement). Null when none shows (no selector, a drag over the hand button).
+ */
+function dockLanding(
+  root: HTMLElement,
+  id: string,
+  seat: number,
+  zoom: number,
+): { to: Measured; dock: DockLanding; overSheet: boolean } | null {
+  const button = root.querySelector<HTMLElement>(dockHandButton(seat));
+  if (button) {
+    const avatar = button.querySelector<HTMLElement>('.avatar');
+    const minis = [...button.querySelectorAll<HTMLElement>('.mini')];
+    const mini = minis.find((element) => element.dataset.id === id) ?? minis.at(-1);
+    if (mini && avatar) {
+      return { to: measure(mini, zoom), dock: { fades: false, pulse: avatar }, overSheet: false };
+    }
+    if (avatar) {
+      return { to: portraitOn(avatar), dock: { fades: true, pulse: avatar }, overSheet: false };
+    }
+    return null;
+  }
+  const entry =
+    shownElement(root, `.sheet ${heroEntry(seat)}`) ?? shownElement(root, heroEntry(seat));
+  const swatch = entry?.querySelector<HTMLElement>('.swatch');
+  if (!swatch) {
+    return null;
+  }
+  return {
+    to: portraitOn(swatch),
+    dock: { fades: true, pulse: swatch },
+    overSheet: swatch.closest('.sheet') !== null,
+  };
+}
+
+/**
+ * Whether a hand sheet card's slot lies out of sight in its carousel, its middle past the
+ * carousel's edges: a drawn card's is added after the others, past the card in the middle.
+ */
+function outOfCarousel(card: HTMLElement): boolean {
+  const carousel = card.closest('[data-carousel]');
+  if (!carousel) {
+    return false;
+  }
+  const box = carousel.getBoundingClientRect();
+  const { slot } = measureSlot(card);
+  return slot.cx < box.left || slot.cx > box.right || slot.cy < box.top || slot.cy > box.bottom;
+}
+
+/**
+ * Where a card drawn into the hand the hand sheet shows lands when its slot lies out of sight
+ * (outOfCarousel): in the hand size in the sheet's header, fading out. Null without one.
+ */
+function sheetCountLanding(card: HTMLElement): { to: Measured; dock: DockLanding } | null {
+  const count = card.closest('.sheet')?.querySelector<HTMLElement>('.title .count-pill');
+  return count ? { to: portraitOn(count), dock: { fades: true, pulse: null } } : null;
+}
+
+/**
+ * A card taken back into the hand flies as the hand draws it, portrait: off a landscape spot on the
+ * table, it leaves from a portrait box about the same middle, its long side upright. The box
+ * changes at once, with no quarter turn: the copy shows the card as the hand does from the start.
+ */
+function asPortrait(from: Measured): Measured {
+  return from.w > from.h ? { ...from, w: from.h, h: from.w } : from;
 }
 
 /** A deck's hidden top card the viewer dragged landed as an unknown card, not under its id. */
@@ -693,6 +849,9 @@ const DRAW_AWAY_FRAMES: Keyframe[] = [
   { transform: `translate(0, ${DRAW_AWAY_DROP_PX}px) scale(${DRAW_AWAY_SCALE})`, opacity: 0 },
 ];
 
+/** The avatar a drawn card's copy lands on in dock mode pulses (PULSE_MS). */
+const PULSE_FRAMES: Keyframe[] = [{ scale: '1' }, { scale: `${PULSE_SCALE}` }, { scale: '1' }];
+
 /** A card discarded or played from the viewer's hand in dock mode rises, held up, and fades out (RiseFlight). */
 const RISE_FRAMES: Keyframe[] = [
   { transform: 'translateY(0)', scale: `${LIFT_SCALE}`, opacity: 1 },
@@ -891,7 +1050,10 @@ class TableMotion {
   flights = $state.raw<Flight[]>([]);
   /** The cards flying to a pile: their pile is drawn as it was until they land. */
   readonly flying = new SvelteSet<string>();
-  /** The cards drawn into the hand, flying in from their pile: hidden in the hand until they land. */
+  /**
+   * The cards drawn into the hand, flying in from their pile, and in dock mode the table cards taken
+   * back into it, flying to the dock: hidden in the hand, and left out of its counts, until they land.
+   */
   readonly drawing = new SvelteSet<string>();
   /**
    * Counts the frames while cards move: what is drawn from the cards' places
@@ -1070,10 +1232,16 @@ class TableMotion {
     for (const id of flying) {
       this.flying.add(id);
     }
-    // A drawn card is hidden in the hand from the start: its copy shows it on its way there.
+    // A drawn card is hidden in the hand from the start: its copy shows it on its way there. So is a
+    // table card taken back into the hand in dock mode, until the view shows whether it flies to the
+    // dock (#dockFlight).
+    const takenBack = new Set(
+      shown.flatMap((anim) => (takenBackToDock(root, anim, before) ? [anim.id] : [])),
+    );
     const drawn = shown.flatMap((anim) =>
       anim.kind === 'draw' && pilesBefore.has(anim.fromPile) ? [anim.id] : [],
     );
+    drawn.push(...takenBack);
     for (const id of drawn) {
       this.drawing.add(id);
     }
@@ -1174,6 +1342,30 @@ class TableMotion {
             const inHand = cardsBefore.get(anim.id);
             if (rise && inHand) {
               flights.push({ kind: 'rise', key: ++this.#nextKey, card: inHand, ...rise, delay: 0 });
+            }
+            // A table card taken back into a hand no sheet shows flies to the dock, leaving as the
+            // table showed it: on its back when it lay face down (under the id it had there), turning
+            // face up on its way. Into the hand the sheet shows, it slides into its slot.
+            if (takenBack.has(anim.id)) {
+              const from = before.get(anim.id);
+              const card = cardsAfter.get(anim.id);
+              const onTable = cardsBefore.get(anim.was ?? anim.id);
+              const faceUp = onTable === undefined || !isHidden(onTable);
+              const shownInSheet = shownElement(root, handCard(anim.id)) !== null;
+              const flight =
+                from && card && !shownInSheet
+                  ? this.#dockFlight(
+                      root,
+                      { card, pile: undefined, from: asPortrait(from), faceUp },
+                      tables.after,
+                      zoom,
+                    )
+                  : null;
+              if (flight) {
+                launch(anim, flight);
+                break;
+              }
+              this.drawing.delete(anim.id);
             }
             starts.push(slideOf(anim));
             break;
@@ -1281,7 +1473,9 @@ class TableMotion {
             const from = pilesBefore.get(anim.fromPile);
             const card = cardsAfter.get(anim.id);
             const flight =
-              from && card ? this.#drawFlight(root, anim, from, card, pileViews) : null;
+              from && card
+                ? this.#drawFlight(root, anim, from, card, pileViews, tables.after, zoom)
+                : null;
             if (flight) {
               launch(anim, flight);
             }
@@ -1324,6 +1518,36 @@ class TableMotion {
         if (!handedOver.has(pile)) {
           this.#unhush(pile);
         }
+      }
+      // So does a card hidden from the start whose copy never took off, should drawing the view
+      // throw. A newer view that took over has shown them already, and may hide them again.
+      if (generation === this.#generation) {
+        this.#showUnlaunched(drawn, flying);
+      }
+    }
+  }
+
+  /**
+   * Shows the cards hidden as a view was drawn (in the hand, or as their pile was) that no copy
+   * still flying carries: their copy never took off.
+   */
+  #showUnlaunched(drawn: readonly string[], flying: readonly string[]): void {
+    const carried = (waiting: SvelteSet<string>) =>
+      new Set(
+        this.flights.flatMap((flight) =>
+          this.#waitingFor(flight) === waiting && flight.card ? [flight.card.id] : [],
+        ),
+      );
+    const stillDrawing = carried(this.drawing);
+    for (const id of drawn) {
+      if (!stillDrawing.has(id)) {
+        this.drawing.delete(id);
+      }
+    }
+    const stillFlying = carried(this.flying);
+    for (const id of flying) {
+      if (!stillFlying.has(id)) {
+        this.flying.delete(id);
       }
     }
   }
@@ -1395,10 +1619,16 @@ class TableMotion {
           { ...timing, duration: DRAW_MS },
           null,
         );
-        if (toSlot) {
+        // A hand slot moves with its hand; the dock and the hero selector stay where they are.
+        if (toSlot && flight.dock === null) {
           this.#follow(toSlot, flight);
         }
         animations.push(toSlot);
+        // Into an avatar, on the copy's opacity: a turning copy's back plays on its own element.
+        if (flight.dock?.fades) {
+          const fade = { ...timing, duration: DRAW_MS, easing: 'linear' };
+          animations.push(this.#run(element, chipFadeFrames(CHIP_FADE_FROM), fade, null));
+        }
         // On the scale property: the keyframes #follow rewrites leave it alone.
         animations.push(
           this.#run(
@@ -2172,9 +2402,11 @@ class TableMotion {
   }
 
   /**
-   * A drawn card's copy, from its pile to its slot in the hand. When the hand
-   * shown is not the one it went to (another of the viewer's decks), it
-   * leaves the pile as another player's draw does.
+   * A drawn card's copy, from its pile to its slot in the hand: in dock mode, the hand sheet's
+   * carousel, drawn over the sheet, or the sheet's hand size when that slot lies out of sight. With
+   * no hand showing it, it flies to the dock in dock mode
+   * (#dockFlight); else, or with nothing there to land on, it leaves the pile as another player's
+   * draw does.
    */
   #drawFlight(
     root: HTMLElement,
@@ -2182,23 +2414,66 @@ class TableMotion {
     from: Measured,
     card: CardView,
     piles: ReadonlyMap<string, PileView>,
+    after: TableView | undefined,
+    zoom: number,
   ): Flight {
-    const element = root.querySelector<HTMLElement>(handCard(anim.id));
+    // In dock mode the hand card is the hand sheet's, which shows it no more as it slides away.
+    const element = root.matches('.dock-mode')
+      ? shownElement(root, handCard(anim.id))
+      : root.querySelector<HTMLElement>(handCard(anim.id));
     if (!element) {
-      return this.#awayFlight(anim.fromPile, from, anim.faceUp ? card : undefined, piles);
+      return (
+        this.#dockFlight(
+          root,
+          { card, pile: anim.fromPile, from, faceUp: anim.faceUp },
+          after,
+          zoom,
+        ) ?? this.#awayFlight(anim.fromPile, from, anim.faceUp ? card : undefined, piles)
+      );
     }
-    const { slot, angle } = measureSlot(element);
-    return {
-      kind: 'draw',
+    const copy = {
+      kind: 'draw' as const,
       key: ++this.#nextKey,
       card,
       faceUp: anim.faceUp,
       pile: anim.fromPile,
       from,
-      to: slot,
-      angle,
+      overSheet: element.closest('.sheet') !== null,
       delay: 0,
     };
+    // Into a carousel slot out of sight, it would fly off the screen over the sheet.
+    const intoCount =
+      root.matches('.dock-mode') && outOfCarousel(element) ? sheetCountLanding(element) : null;
+    if (intoCount) {
+      return { ...copy, ...intoCount, angle: 0 };
+    }
+    const { slot, angle } = measureSlot(element);
+    return { ...copy, to: slot, angle, dock: null };
+  }
+
+  /**
+   * In dock mode, a copy of a card come into the viewer's hand, out of its pile or off the table
+   * (no pile), flying to where the dock or the hero selector shows its hand (dockLanding); null out
+   * of dock mode, or with nothing there to land on.
+   */
+  #dockFlight(
+    root: HTMLElement,
+    copy: Pick<DrawFlight, 'card' | 'pile' | 'from' | 'faceUp'>,
+    after: TableView | undefined,
+    zoom: number,
+  ): DrawFlight | null {
+    if (!root.matches('.dock-mode')) {
+      return null;
+    }
+    const seat = handSeatOf(after, copy.card.id);
+    if (seat === null) {
+      return null;
+    }
+    const landing = dockLanding(root, copy.card.id, seat, zoom);
+    if (!landing) {
+      return null;
+    }
+    return { kind: 'draw', key: ++this.#nextKey, ...copy, ...landing, angle: 0, delay: 0 };
   }
 
   /** A copy leaving its pile, or the table (no pile), for a hand the viewer does not see. */
@@ -2219,7 +2494,10 @@ class TableMotion {
     };
   }
 
-  /** The copy reached where it went: its card shows there from now on. */
+  /**
+   * The copy reached where it went: its card shows there from now on. On the dock or a hero
+   * selector entry, the avatar it landed on pulses.
+   */
   #land(flight: Flight): void {
     // stop() has already cleared away a flight it cancelled.
     if (!this.flights.some((f) => f.key === flight.key)) {
@@ -2227,6 +2505,10 @@ class TableMotion {
     }
     this.flights = this.flights.filter((f) => f.key !== flight.key);
     this.#release([flight]);
+    const pulse = flight.kind === 'draw' ? flight.dock?.pulse : undefined;
+    if (pulse?.isConnected) {
+      this.#run(pulse, PULSE_FRAMES, { duration: PULSE_MS, easing: 'ease-out' }, null);
+    }
   }
 
   /**

@@ -18,6 +18,10 @@
   one-line header, the card as large as fits, and the actions under it. On
   its side, the carousel on the left with cards as high as the sheet, and the
   header and the stacked actions in a column on its right.
+
+  A card drawn into the hand, out of a pile, flies into its slot over the sheet (Flights.svelte),
+  or into the hand size in the header when its slot lies out of sight: until its copy lands, it is
+  hidden in its slot and the hand size leaves it out.
 -->
 <script lang="ts">
   import { untrack, type Snippet } from 'svelte';
@@ -27,6 +31,7 @@
   import './countPill.css';
   import { interaction } from './interaction.svelte';
   import { cardBox } from './layout';
+  import { motion } from './motion.svelte';
 
   let {
     cards,
@@ -62,6 +67,8 @@
   // after a Play, the next card slides into the middle, and that index names it.
   let centred = $state(0);
   const current = $derived(cards[Math.min(centred, cards.length - 1)]);
+  // The cards landed: one still flying in is counted once its copy lands.
+  const landed = $derived(cards.filter((card) => !motion.drawing.has(card.id)).length);
 
   /** Finds the card nearest the middle of the carousel, after a scroll. */
   function findCentred(): void {
@@ -103,7 +110,7 @@
   <div class="body" class:landscape>
     <header>
       {@render picker?.()}
-      <b class="title">Your hand <span class="count count-pill">{cards.length}</span></b>
+      <b class="title">Your hand <span class="count count-pill">{landed}</span></b>
     </header>
 
     {#if cards.length === 0}
@@ -124,6 +131,7 @@
             <li
               class="hcard"
               class:dim={card !== current}
+              class:arriving={motion.drawing.has(card.id)}
               data-id={card.id}
               aria-current={card === current ? 'true' : undefined}
               onpointerdown={(event) => interaction.press({ kind: 'hand', id: card.id }, event)}
@@ -302,6 +310,11 @@
     border-radius: var(--card-radius);
     box-shadow: 4px 8px 24px 2px #000000c0;
     pointer-events: none;
+  }
+
+  /* A drawn card shows once its copy, flying in over the sheet, lands, keeping its slot meanwhile. */
+  .hcard.arriving {
+    opacity: 0;
   }
 
   .hcard.dim .fan {

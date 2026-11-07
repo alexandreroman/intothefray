@@ -100,6 +100,27 @@ type: project
   half way through it (`LAND_SETTLES_AT`), upright from the ghost's lean
   over the slide. The slot follows the view, measured where it draws the
   card. Markers, desktops and tablets land on their grid spot.
+- In dock mode a card going into one of the viewer's hands (a `draw`
+  out of a pile, or a table card taken back by an action, an undo
+  included) flies from its pile or spot to where that hand shows
+  (`#dockFlight`, `dockLanding` in `motion.svelte.ts`): its own mini on
+  the dock's hand button (the last mini past the fourth card), landing
+  at the mini's size; on the rail, the avatar; for another of the
+  viewer's decks, its hero selector entry. Into an avatar or an entry,
+  it shrinks to a portrait card as high as it and fades out over the
+  last 45 % of its way (`CHIP_FADE_FROM`). It turns face up on the way
+  out of a hidden pile, the draws 70 ms apart (`FLY_STAGGER_MS`), and
+  the avatar (or the entry) pulses on each landing: `scale` 1 → 1.12 →
+  1, 200 ms. With the hand sheet open on that hand, the copy flies into
+  its carousel slot, drawn over the sheet; a slot out of the carousel's
+  sight (past the centred card) takes the sheet's count capsule instead,
+  shrinking and fading out into it as into an avatar, with no pulse. A
+  sheet sliding away (inert) counts as shut. Until a copy lands, its card
+  is in `motion.drawing`: the dock's mini and the sheet's card keep
+  their place unseen (opacity), and the dock's count, the sheet's and
+  the hero selector badge leave it out, so each count steps up as its
+  card lands. No target found, it leaves its pile as another player's
+  draw does (`drawAway`).
 - A table card turning over (`flip`, `turnIn`) rises to 1.06 at edge-on
   and comes back down; one that slides in the same view is not lifted, as
   both play on `scale`. Copies flying to a pile (not under it) or into the
@@ -118,6 +139,11 @@ type: project
 at the table without reading the history, and cards feel physical and
 alive without drawing attention, while staying cheap to paint (no filter on
 table cards, no box-shadow animation; see [[project_card_paint_cost]]).
+On a phone the hand is the dock's button: the cards flying into it, one
+after the other, show the hand forming there. With the hand sheet open,
+the sheet covers the table: the copy flying into the carousel over it is
+the simplest motion that still lands where the card shows, or on the
+count when that card is out of sight.
 
 **How to apply:** a new way for a card to change place needs its motion in
 `animate.ts` and `motion.svelte.ts`, reusing the kinds of `Anim` (`move`,

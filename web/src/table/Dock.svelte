@@ -6,7 +6,22 @@
   no hand button. During a drag of a card that can go to a hand, or of a hand card, the hand button
   is the drop target, the only hand the drag layer knows in dock mode (DragLayer.svelte). The
   parent places nothing: the dock floats.
+
+  A card drawn into the hand shown, or taken back into it off the table, flies to its mini card,
+  or to the avatar on the rail (motion.svelte.ts, dockLanding): until its copy lands, its mini is
+  hidden in its place and the size leaves it out, so that each steps up as its card lands.
 -->
+<script module lang="ts">
+  /** A card of the hand, as the dock shows it. */
+  export interface DockCard {
+    id: string;
+    /** Its image URLs, as CardFace takes them. */
+    images: string[];
+    /** Its copy is still flying in (motion.drawing): hidden, and not counted yet. */
+    arriving: boolean;
+  }
+</script>
+
 <script lang="ts">
   import CardArt from '../components/CardArt.svelte';
   import Icon from '../components/Icon.svelte';
@@ -16,8 +31,8 @@
   import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
   let {
-    handCount,
-    minis,
+    hand,
+    seat,
     avatar,
     heroName,
     color,
@@ -29,9 +44,10 @@
     onundo,
     onhistory,
   }: {
-    handCount: number;
-    /** The image URLs of the hand's cards, in order, as CardFace takes them; the first four show. */
-    minis: string[][];
+    /** The hand's cards, in order; the first four show as mini cards. */
+    hand: DockCard[];
+    /** The seat whose hand the button shows, for a drawn card's copy to find it. */
+    seat?: number;
     /** The image URLs of the current deck's hero, or null before a hero is chosen. */
     avatar: string[] | null;
     heroName: string;
@@ -52,6 +68,8 @@
   const MAX_MINIS = 4;
   const DROP_LABEL = 'Drop here: back to hand';
 
+  // The cards landed: a card still flying in is counted once its copy lands.
+  const handCount = $derived(hand.filter((card) => !card.arriving).length);
   // Read aloud and shown as a tooltip in the rail; the button itself shows the size in a capsule.
   const handName = $derived(`Hand · ${handCount}`);
   const handLabel = $derived.by(() => {
@@ -69,6 +87,7 @@
     <button
       class="handbtn"
       class:drop={dropActive}
+      data-seat={seat}
       aria-label={handLabel}
       data-tip={landscape ? handLabel : undefined}
       onclick={onhand}
@@ -85,10 +104,12 @@
         {#if landscape}
           <span class="count count-pill" aria-hidden="true">{handCount}</span>
         {:else}
-          {#if minis.length > 0}
+          {#if hand.length > 0}
             <span class="minis" aria-hidden="true">
-              {#each minis.slice(0, MAX_MINIS) as images, index (index)}
-                <span class="mini"><CardFace {images} /></span>
+              {#each hand.slice(0, MAX_MINIS) as card (card.id)}
+                <span class="mini" class:arriving={card.arriving} data-id={card.id}>
+                  <CardFace images={card.images} />
+                </span>
               {/each}
             </span>
           {/if}
@@ -283,6 +304,11 @@
     margin-right: -9px;
     border-radius: 3px;
     box-shadow: 1px 1px 3px #000c;
+  }
+
+  /* A drawn card shows once its copy lands on it, keeping its place meanwhile. */
+  .mini.arriving {
+    opacity: 0;
   }
 
   .lbl {

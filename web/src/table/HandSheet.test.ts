@@ -3,6 +3,7 @@ import { createRawSnippet, flushSync } from 'svelte';
 import HandSheet from './HandSheet.svelte';
 import sheetSource from './HandSheet.svelte?raw';
 import { interaction } from './interaction.svelte';
+import { motion } from './motion.svelte';
 import { DOCK_MODE_KEY } from './dockMode';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 
@@ -78,6 +79,7 @@ function rule(selector: string): string {
 afterEach(() => {
   vi.restoreAllMocks();
   interaction.reset();
+  motion.drawing.clear();
 });
 
 /** Fires a touch event of one finger at (x, y), at `at` ms; tells whether it was let through. */
@@ -111,6 +113,21 @@ describe('HandSheet', () => {
     expect(title().querySelector('.count')?.textContent).toBe('3');
     expect(cardItems()).toHaveLength(3);
     expect(screen.getByRole('img', { name: 'Swinging Web Kick' })).toBeTruthy();
+  });
+
+  it('hides a card still drawing in its slot, its count stepping up as it lands', () => {
+    motion.drawing.add('h3');
+    renderSheet();
+
+    expect(title().querySelector('.count')?.textContent).toBe('2');
+    const arriving = cardItems().map((item) => item.classList.contains('arriving'));
+    expect(arriving).toEqual([false, false, true]);
+    expect(rule('.hcard.arriving')).toMatch(/opacity: 0;/);
+
+    motion.drawing.delete('h3');
+    flushSync();
+    expect(title().querySelector('.count')?.textContent).toBe('3');
+    expect(cardItems().some((item) => item.classList.contains('arriving'))).toBe(false);
   });
 
   it('renders the picker in the header when given', () => {

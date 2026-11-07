@@ -1879,3 +1879,138 @@ describe('a "+N" on a table card in dock mode', () => {
     expect(tokenPill()).toBeNull();
   });
 });
+
+describe('a card drawn into the hand in dock mode', () => {
+  let original: typeof Element.prototype.animate;
+  let started: { element: Element; finish: () => void }[] = [];
+
+  beforeEach(() => {
+    original = Element.prototype.animate;
+    started = [];
+    Element.prototype.animate = function (this: Element) {
+      let finish = () => {};
+      const finished = new Promise<void>((resolve) => (finish = resolve));
+      started.push({ element: this, finish });
+      return {
+        cancel: () => {},
+        finished,
+        effect: { setKeyframes: () => {} },
+      } as unknown as Animation;
+    } as typeof Element.prototype.animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = original;
+  });
+
+  /** The fixture with a deck for each of Alex's decks: p0's always, p1's with two decks. */
+  function withDecks(twoDecks = false): View {
+    const view = makeView({ twoDecks });
+    if (twoDecks) {
+      view.table!.piles.push(pile('deck:p1', { owner: 1, x: 700 }));
+    }
+    return view;
+  }
+
+  /** The view after the seat drew those cards out of its deck, into its hand. */
+  function drew(view: View, seat: number, ids: string[]): View {
+    const area: Area = `p${seat}`;
+    const table = view.table!;
+    const hands = table.hands ?? {};
+    return {
+      ...view,
+      players: view.players.map((player) => ({
+        ...player,
+        decks: player.decks.map((deck) =>
+          deck.area === area ? { ...deck, handCount: deck.handCount + ids.length } : deck,
+        ),
+      })),
+      table: {
+        ...table,
+        cards: [...table.cards, ...ids.map((id) => card(id, { owner: seat, zone: 'hand' }))],
+        piles: table.piles.map((p) =>
+          p.id === `deck:${area}` ? { ...p, count: p.count - ids.length } : p,
+        ),
+        hands: { ...hands, [area]: [...(hands[area] ?? []), ...ids] },
+      },
+    };
+  }
+
+  /** The copies flying, in the order they started. */
+  function copies(): Element[] {
+    return [...new Set(started.map(({ element }) => element))].filter((element) =>
+      element.matches('.fly'),
+    );
+  }
+
+  /** Lands a copy: the first animation started on it is its way. */
+  async function land(copy: Element): Promise<void> {
+    started.find(({ element }) => element === copy)?.finish();
+    await tick();
+    await tick();
+  }
+
+  function badge(seat: number): string | null | undefined {
+    return document.querySelector(`.seatpick .item[data-seat="${seat}"] .n`)?.textContent;
+  }
+
+  it("steps the hand button's size and mini cards up as each copy lands on its mini", async () => {
+    mockScreen(PHONE);
+    const view = withDecks();
+    const { session, rerender } = await renderTable(view);
+
+    await rerender({ session, view: drew(view, 0, ['d1', 'd2']) });
+    await tick();
+    await tick();
+
+    expect(copies()).toHaveLength(2);
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 2, Spider-Man');
+    const arriving = () =>
+      [...handButton().querySelectorAll('.mini')].map((mini) =>
+        mini.classList.contains('arriving'),
+      );
+    expect(arriving()).toEqual([false, false, true, true]);
+
+    const [first, second] = copies();
+    await land(first!);
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 3, Spider-Man');
+    expect(arriving()).toEqual([false, false, false, true]);
+
+    await land(second!);
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 4, Spider-Man');
+    expect(arriving()).toEqual([false, false, false, false]);
+  });
+
+  it("steps another own deck's selector badge up as its copy lands on its entry", async () => {
+    mockScreen(PHONE);
+    const view = withDecks(true);
+    const { session, rerender } = await renderTable(view);
+    expect(badge(1)).toBe('1');
+
+    await rerender({ session, view: drew(view, 1, ['a2']) });
+    await tick();
+    await tick();
+
+    expect(copies()).toHaveLength(1);
+    expect(badge(1)).toBe('1');
+    // The dock shows the other deck's hand, which did not change.
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 2, Spider-Man');
+
+    await land(copies()[0]!);
+    expect(badge(1)).toBe('2');
+  });
+
+  it('keeps the selector badges at the hand sizes out of dock mode', async () => {
+    mockScreen(DESKTOP);
+    const view = withDecks(true);
+    const { session, rerender } = await renderTable(view);
+
+    await rerender({ session, view: drew(view, 0, ['d1']) });
+    await tick();
+    await tick();
+
+    expect(copies()).toHaveLength(1);
+    const entry = document.querySelector('.item[data-seat="0"] .n');
+    expect(entry?.textContent).toBe('3');
+  });
+});

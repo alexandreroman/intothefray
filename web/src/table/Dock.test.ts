@@ -5,16 +5,15 @@ import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
 const CARD = 'https://img.intothefray.xyz/cards/en/';
 
+/** A hand card as the dock takes it: its id, its images, and whether its copy is still drawing. */
+function handCard(id: string, arriving = false) {
+  return { id, images: [CARD + `${id}.avif`], arriving };
+}
+
 function props(overrides: Record<string, unknown> = {}) {
   return {
-    handCount: 5,
-    minis: [
-      [CARD + 'a.avif'],
-      [CARD + 'b.avif'],
-      [CARD + 'c.avif'],
-      [CARD + 'd.avif'],
-      [CARD + 'e.avif'],
-    ],
+    hand: ['a', 'b', 'c', 'd', 'e'].map((id) => handCard(id)),
+    seat: 2,
     avatar: [CARD + 'hero.avif'],
     heroName: 'Rocket Raccoon',
     color: 'var(--p1)',
@@ -60,6 +59,37 @@ describe('Dock', () => {
     expect(hand.querySelector('.lbl b .count')?.textContent).toBe('5');
     expect(hand.querySelector('.lbl small')?.textContent).toBe('Rocket Raccoon');
     expect(hand.querySelectorAll('.minis img')).toHaveLength(4);
+  });
+
+  it("names the seat it shows and each mini card's id, for a drawn card's copy to fly to", () => {
+    render(Dock, props());
+    const hand = handButton();
+    expect(hand.dataset.seat).toBe('2');
+    const minis = [...hand.querySelectorAll<HTMLElement>('.mini')];
+    expect(minis.map((mini) => mini.dataset.id)).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('counts only the cards landed, a drawn card hidden in its place until its copy lands', () => {
+    const hand = [handCard('a'), handCard('b'), handCard('c', true), handCard('d', true)];
+    render(Dock, props({ hand }));
+    const button = handButton();
+    expect(button.getAttribute('aria-label')).toBe('Hand · 2, Rocket Raccoon');
+    expect(button.querySelector('.lbl b .count')?.textContent).toBe('2');
+    // Each keeps its place: the minis do not shift as a card lands.
+    const minis = [...button.querySelectorAll<HTMLElement>('.mini')];
+    expect(minis.map((mini) => mini.classList.contains('arriving'))).toEqual([
+      false,
+      false,
+      true,
+      true,
+    ]);
+    expect(dockSource).toMatch(/\n {2}\.mini\.arriving \{\s*opacity: 0;\s*\}/);
+  });
+
+  it('counts only the cards landed on the rail too', () => {
+    render(Dock, props({ landscape: true, hand: [handCard('a'), handCard('b', true)] }));
+    expect(handButton().querySelector('.count')?.textContent).toBe('1');
+    expect(handButton().getAttribute('aria-label')).toBe('Hand · 1, Rocket Raccoon');
   });
 
   it('rings the avatar with the seat colour', () => {
@@ -124,7 +154,7 @@ describe('Dock', () => {
   });
 
   it('has no hand button without a hand to show, as for a spectator (spectator_no_hand_button)', () => {
-    render(Dock, props({ showHand: false, handCount: 0, minis: [], avatar: null, heroName: '' }));
+    render(Dock, props({ showHand: false, hand: [], avatar: null, heroName: '' }));
     expect(screen.queryByRole('button', { name: /hand/i })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
     expect(screen.getByRole('button', { name: UNDO_TIP })).toBeTruthy();
