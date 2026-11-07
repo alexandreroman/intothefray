@@ -575,7 +575,7 @@ a.btn-primary {
   background-size: 10px 10px;
 }
 
-/* The empty table: dotted felt, shared by the screens outside a game and the theme previews. */
+/* The empty table: dotted felt, for the end screen (Ended) and the theme previews (Options). */
 .table-bg {
   background-color: var(--table-bg);
 }
