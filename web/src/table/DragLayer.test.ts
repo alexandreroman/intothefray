@@ -1593,6 +1593,22 @@ describe('dragging a hand card', () => {
     );
   });
 
+  it('keeps the card under the pointer where it was held over the hand, moved by translate', async () => {
+    await renderTable();
+    // h2 lies at 440, 700, 132 by 185: held 60 px in from its left edge and 80 down.
+    await press(handCard('h2'), 500, 780);
+    await moveTo(520, 760);
+    const ghost = document.querySelector<HTMLElement>('.draglayer .hghost');
+    // A pointer move only moves it on the compositor: its box stays where layout put it.
+    expect(ghost?.style.translate).toBe('460px 680px');
+    expect(ghost?.style.left).toBe('');
+    expect(ghost?.style.top).toBe('');
+    expect([ghost?.style.width, ghost?.style.height]).toEqual(['132px', '185px']);
+
+    await moveTo(540, 750);
+    expect(ghost?.style.translate).toBe('480px 670px');
+  });
+
   it('plays it under the card it is dropped on', async () => {
     const { session } = await renderTable();
     await press(handCard('h2'), 500, 780);

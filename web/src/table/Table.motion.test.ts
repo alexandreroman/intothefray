@@ -2312,7 +2312,7 @@ describe('Table animations', () => {
   }
 
   it('a card taken face down into the hand turns face up about its middle, with no old side', async () => {
-    // The hand card's translateX(-50%), as computed: it comes before the turn.
+    // The hand card's place on its fan (translateX), as computed: it comes before the turn.
     const shift = 'matrix(1, 0, 0, 1, -70, 0)';
     const spy = stubTransform('.hand .hcard', shift);
     try {

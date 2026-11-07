@@ -1733,7 +1733,7 @@ class TableMotion {
       if (!own) {
         return turn;
       }
-      // A table card's tilt turns with it. A hand card's placement (translateX(-50%)) comes
+      // A table card's tilt turns with it. A hand card's place on its fan (translateX) comes
       // first: after the turn, it would shift the axis to the card's edge.
       return onTable ? `${turn} ${own}` : `${own} ${turn}`;
     };

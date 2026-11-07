@@ -638,7 +638,7 @@
       return true;
     }
     // The cards' own CSS transitions do not count: opening or lowering the hand slides every card
-    // to its other fan (`left`), and leaving them out of the band meanwhile would lower and raise
+    // to its other fan (`transform`), and leaving them out of the band meanwhile would lower and raise
     // the hand again under a pointer at rest. Some environments (tests) have no Web Animations,
     // nor CSSTransition: nothing moves there.
     return (
@@ -958,14 +958,18 @@
     z-index: 2600;
   }
 
-  /* Placed around the middle of the hand, below its top padding: --x is the card's middle. */
+  /*
+    Placed around the middle of the hand, below its top padding: --x is the card's middle. The box
+    lies in the middle; its transform takes it to its place on the fan, a move the compositor draws
+    alone. A card sliding into the hand plays on its translate and scale (motion.svelte.ts), apart.
+  */
   .hcard {
     position: absolute;
     top: var(--pad-top);
-    left: calc(50% + var(--x));
+    left: calc(50% - var(--card-w) / 2);
     width: var(--card-w);
     height: var(--card-h);
-    transform: translateX(-50%);
+    transform: translateX(var(--x));
     /* Only its hit area and the foot below it take the pointer (see .hit and .foot). */
     pointer-events: none;
     cursor: grab;
@@ -973,7 +977,7 @@
     user-select: none;
     -webkit-user-select: none;
     /* The other cards slide aside when a dragged card comes back over the hand. */
-    transition: left 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   /* A drawn card shows once its copy, flying in from its pile, lands (Flights.svelte). */

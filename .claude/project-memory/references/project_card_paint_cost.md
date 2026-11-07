@@ -22,6 +22,12 @@ type: project
 - The shade sits inside the card's edge because a box-shadow is cut away
   inside its own box: cast from the card's box, it lets the card underneath
   show through the anti-aliased edge, a light seam where cards overlap.
+- What moves under the hand fan or a drag moves on transform-family
+  properties, never on a layout one: a hand card takes its place on the fan
+  by `transform: translateX(var(--x))` from a box in the hand's middle
+  (its `translate` and `scale` stay free for a card sliding into the hand),
+  the hand card's drag ghost follows the pointer on `translate`, and the
+  notices and the preview follow the sliding top bar on `translate`.
 - Card images (CardFace, CardBack) round their corners with `border-radius`
   (`--card-radius`), never a `clip-path`.
 - The surface zooms with CSS `zoom` (`--z`): layout is a few percent of a

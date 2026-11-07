@@ -1125,7 +1125,18 @@ describe('Table under a compact top bar', () => {
     await fireEvent.pointerEnter(cardInPlay());
     const panel = peek(container)!;
     expect(panel.classList).toContain('top-left');
-    expect(panel.style.margin.split(' ')[0]).toBe(`${FOCUS_MARGINS.top + TOP_BAR_HEIGHT}px`);
+    // Off the bar by its translate, which follows the bar as it slides with no new layout.
+    expect(panel.style.margin.split(' ')[0]).toBe(`${FOCUS_MARGINS.top}px`);
+    expect(panel.style.translate).toBe(`0px ${TOP_BAR_HEIGHT}px`);
+    const peekRule = /\n {2}\.peek \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(peekRule).toMatch(/transition: translate 0\.2s ease;/);
+  });
+
+  it('keeps the notices under the bar on their translate as it slides, the select pill included', () => {
+    const noticeRule = /\n {2}\.notice \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(noticeRule).toMatch(/margin: 8px 0 0;/);
+    expect(noticeRule).toMatch(/translate: 0 var\(--bar-room\);/);
+    expect(noticeRule).toMatch(/transition: translate 0\.2s ease;/);
   });
 
   it('unhides the bar when the window widens past the compact screen', async () => {

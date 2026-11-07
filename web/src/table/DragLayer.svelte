@@ -1251,8 +1251,7 @@
     {@const face = faceOf(handGhost.card)}
     <div
       class="hghost"
-      style:left="{handGhost.left}px"
-      style:top="{handGhost.top}px"
+      style:translate="{handGhost.left}px {handGhost.top}px"
       style:width="{handGhost.width}px"
       style:height="{handGhost.height}px"
     >
@@ -1308,10 +1307,13 @@
   /*
     A hand card brought back over the hand: hand size, growing to table size as it leaves. Held up
     and swaying about its middle as a table card's ghost is (CardView.svelte); out of the table, it
-    keeps the hand's shadow.
+    keeps the hand's shadow. It follows the pointer on translate, from the layer's corner: a pointer
+    move lays nothing out again.
   */
   .hghost {
     position: absolute;
+    left: 0;
+    top: 0;
     scale: var(--lift-scale);
     rotate: var(--sway, 0deg);
     transition:

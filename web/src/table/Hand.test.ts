@@ -336,6 +336,20 @@ describe('Hand', () => {
     expect(interaction.previewed).toBeNull();
   });
 
+  it('slides its cards along the fan on the compositor: by transform, never by a layout property', () => {
+    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+    for (const card of handCards()) {
+      expect(card.style.getPropertyValue('--x')).toMatch(/px$/);
+    }
+    const card = rule('.hcard');
+    // The box sits in the middle of the hand; only its transform takes the card's place on the fan.
+    expect(card).toMatch(/left: calc\(50% - var\(--card-w\) \/ 2\);/);
+    expect(card).toMatch(/transform: translateX\(var\(--x\)\);/);
+    expect(card).toMatch(/transition: transform 0\.18s cubic-bezier\(0\.2, 0\.8, 0\.2, 1\);/);
+    // Its translate and scale stay free for a card that slides into the hand (motion.svelte.ts).
+    expect(card).not.toMatch(/translate:|scale:/);
+  });
+
   it('picks the hovered card from its place at rest, which the pop never moves', () => {
     render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
     for (const card of handCards()) {

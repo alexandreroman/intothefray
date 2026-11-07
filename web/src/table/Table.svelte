@@ -1070,13 +1070,21 @@
     });
   }
 
-  /** The panel's margins in its corner: off the play area's edges and the top bar, and above the controls at home. */
+  /** The panel's margins in its corner: off the play area's edges, and above the controls at home. */
   function focusMargin(corner: Corner): string {
-    const top = corner.startsWith('top') ? FOCUS_MARGINS.top + barRoom : 0;
+    const top = corner.startsWith('top') ? FOCUS_MARGINS.top : 0;
     const bottom = bottomRoom(corner, homeControls);
     const left = corner.endsWith('left') ? FOCUS_MARGINS.side : 0;
     const right = corner.endsWith('right') ? FOCUS_MARGINS.side : 0;
     return `${top}px ${right}px ${bottom}px ${left}px`;
+  }
+
+  /**
+   * How far the panel moves down in a top corner, off the top bar: a translate, which follows the
+   * bar as it slides on the compositor, with no new layout.
+   */
+  function focusShift(corner: Corner): string | undefined {
+    return corner.startsWith('top') ? `0px ${barRoom}px` : undefined;
   }
 
   // Placed before it is drawn, when what is hovered, the zoom, the play area's or the panel's size change.
@@ -2908,6 +2916,7 @@
         class:land={drawnPreview.landscape}
         class:leaving={!preview}
         style:margin={focusMargin(focusCorner)}
+        style:translate={focusShift(focusCorner)}
         onanimationend={onPreviewAnimationEnd}
         bind:offsetWidth={focusWidth}
         bind:offsetHeight={focusHeight}
@@ -3139,14 +3148,18 @@
     min-height: 0;
   }
 
-  /* Under the top bar floating over the table (--bar-room), following it as it slides. */
+  /*
+    Under the top bar floating over the table (--bar-room), following it as it slides: on its
+    translate, which the compositor moves with no new layout.
+  */
   .notice {
     grid-area: table;
     align-self: start;
     justify-self: center;
     z-index: 40;
-    margin: calc(8px + var(--bar-room)) 0 0;
-    transition: margin-top 0.2s ease;
+    margin: 8px 0 0;
+    translate: 0 var(--bar-room);
+    transition: translate 0.2s ease;
     padding: 4px 14px;
     background: var(--panel-2);
     border: 1px solid var(--accent);
@@ -3409,8 +3422,8 @@
     border-radius: 14px;
     box-shadow: 0 14px 36px #000000a6;
     pointer-events: none;
-    /* In a top corner, it follows the top bar as it slides (focusMargin). */
-    transition: margin-top 0.2s ease;
+    /* In a top corner, it follows the top bar as it slides (focusShift). */
+    transition: translate 0.2s ease;
   }
 
   /* A landscape card: 498 px wide. */
