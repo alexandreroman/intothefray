@@ -123,13 +123,24 @@ function heroSelector(parent: HTMLElement, seats: number[]): void {
   parent.append(picker);
 }
 
-/** The hand sheet open on seat 0's hand, its carousel listing cards, its header a hero selector. */
+/** Where the hand size shows in the hand sheet's header, in its capsule. */
+const SHEET_COUNT = { left: 150, top: 100, width: 24, height: 16 };
+
+/**
+ * The hand sheet open on seat 0's hand: its header with a hero selector and the hand size, its
+ * carousel as wide as the screen listing cards, the first one centred, the others past its right
+ * edge.
+ */
 function handSheet(app: HTMLElement, cards: string[], seats: number[] = []): HTMLElement {
   const sheet = document.createElement('div');
   sheet.className = 'sheet dock';
   heroSelector(sheet, seats);
-  const hand = document.createElement('ul');
-  hand.className = 'hand';
+  const title = document.createElement('b');
+  title.className = 'title';
+  title.append(box('count count-pill', SHEET_COUNT));
+  sheet.append(title);
+  const hand = box('hand', { left: 0, top: 150, width: 390, height: 450 });
+  hand.dataset.carousel = '';
   hand.dataset.seat = '0';
   for (const [i, id] of cards.entries()) {
     const item = box('hcard', { left: 70 + 260 * i, top: 200, width: 250, height: 350 });
@@ -486,23 +497,48 @@ describe("a drawn card's copy flying to the dock", () => {
 });
 
 describe('a card drawn into the hand in dock mode, the hand sheet open', () => {
-  it('flies into its carousel slot, over the sheet', async () => {
+  it('flies into its carousel slot, over the sheet, following it', async () => {
+    const app = page();
+    dockBar(app, 0, ['d']);
+    handSheet(app, ['d']);
+    renderFlights(app);
+    const frames = vi.spyOn(window, 'requestAnimationFrame');
+
+    await draw(app, ['d']);
+    await tick();
+
+    expect(motion.flights).toMatchObject([
+      { kind: 'draw', to: { cx: 195, cy: 375, w: 250, h: 350 }, dock: null, overSheet: true },
+    ]);
+    expect(motion.drawing.has('d')).toBe(true);
+    expect(frames).toHaveBeenCalled();
+    expect(app.querySelector('.fly')?.classList).toContain('over');
+    const zIndex = (source: string, selector: string) =>
+      Number(new RegExp(`\\n {2}${selector} \\{[^}]*z-index: (\\d+);`).exec(source)?.[1]);
+    expect(zIndex(flightsSource, '\\.fly\\.over')).toBeGreaterThan(zIndex(sheetSource, '\\.sheet'));
+  });
+
+  it("flies into the sheet's hand size, fading out, when its slot lies out of the carousel's sight", async () => {
     const app = page();
     dockBar(app, 0, ['h1', 'd']);
     handSheet(app, ['h1', 'd']);
     renderFlights(app);
+    const frames = vi.spyOn(window, 'requestAnimationFrame');
 
     await draw(app, ['d'], ['h1']);
     await tick();
 
     expect(motion.flights).toMatchObject([
-      { kind: 'draw', to: { cx: 330 + 125, cy: 375, w: 250, h: 350 }, dock: null, overSheet: true },
+      { kind: 'draw', to: portraitOn(SHEET_COUNT), dock: { fades: true }, overSheet: true },
     ]);
     expect(motion.drawing.has('d')).toBe(true);
     expect(app.querySelector('.fly')?.classList).toContain('over');
-    const zIndex = (source: string, selector: string) =>
-      Number(new RegExp(`\\n {2}${selector} \\{[^}]*z-index: (\\d+);`).exec(source)?.[1]);
-    expect(zIndex(flightsSource, '\\.fly\\.over')).toBeGreaterThan(zIndex(sheetSource, '\\.sheet'));
+    const fades = animationsOf('.fly').filter(({ keyframes }) => 'opacity' in keyframes[0]!);
+    expect(fades.map(({ keyframes }) => keyframes)).toEqual([
+      [{ opacity: 1 }, { opacity: 1, offset: 0.55 }, { opacity: 0 }],
+    ]);
+    // The capsule stays where it is: nothing follows it.
+    expect(frames).not.toHaveBeenCalled();
   });
 
   it("flies to the sheet's own hero selector entry, over the sheet, for another own deck", async () => {

@@ -16,7 +16,8 @@
   zoom from the dock's hand button. A card drawn into the viewer's hand, or
   taken back into it off the table, flies to the dock's hand button or to its
   deck's hero selector entry when no hand sheet shows its hand, and over the
-  hand sheet into its carousel slot when one does.
+  hand sheet into its carousel slot when one does (into the sheet's hand
+  size when that slot lies out of sight).
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';

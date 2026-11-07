@@ -237,14 +237,16 @@ interface DrawFlight extends FlightBase {
 }
 
 /**
- * Where a drawn card's copy lands in dock mode when no hand sheet shows its hand (dockLanding): a
- * box that does not move, so nothing follows it (#follow).
+ * Where a drawn card's copy lands in dock mode when no hand sheet shows its slot: on the dock or a
+ * hero selector entry (dockLanding), or in the hand sheet's hand size (sheetCountLanding). Nothing
+ * follows it there (#follow), an accepted approximation: the mini cards may move up as others leave
+ * the hand, a switch of deck moves the selector's entries.
  */
 interface DockLanding {
-  /** It goes into an avatar: it fades out on the last part of its way, as into a chip. */
+  /** It goes into an avatar or a capsule: it fades out on the last part of its way, as into a chip. */
   fades: boolean;
-  /** The avatar that pulses as it lands. */
-  pulse: HTMLElement;
+  /** The avatar that pulses as it lands; none for the hand sheet's hand size. */
+  pulse: HTMLElement | null;
 }
 
 /** A copy of a card going into or out of a hand the viewer does not see. */
@@ -599,6 +601,29 @@ function dockLanding(
     dock: { fades: true, pulse: swatch },
     overSheet: swatch.closest('.sheet') !== null,
   };
+}
+
+/**
+ * Whether a hand sheet card's slot lies out of sight in its carousel, its middle past the
+ * carousel's edges: a drawn card's is added after the others, past the card in the middle.
+ */
+function outOfCarousel(card: HTMLElement): boolean {
+  const carousel = card.closest('[data-carousel]');
+  if (!carousel) {
+    return false;
+  }
+  const box = carousel.getBoundingClientRect();
+  const { slot } = measureSlot(card);
+  return slot.cx < box.left || slot.cx > box.right || slot.cy < box.top || slot.cy > box.bottom;
+}
+
+/**
+ * Where a card drawn into the hand the hand sheet shows lands when its slot lies out of sight
+ * (outOfCarousel): in the hand size in the sheet's header, fading out. Null without one.
+ */
+function sheetCountLanding(card: HTMLElement): { to: Measured; dock: DockLanding } | null {
+  const count = card.closest('.sheet')?.querySelector<HTMLElement>('.title .count-pill');
+  return count ? { to: portraitOn(count), dock: { fades: true, pulse: null } } : null;
 }
 
 /**
@@ -2374,7 +2399,8 @@ class TableMotion {
 
   /**
    * A drawn card's copy, from its pile to its slot in the hand: in dock mode, the hand sheet's
-   * carousel, drawn over the sheet. With no hand showing it, it flies to the dock in dock mode
+   * carousel, drawn over the sheet, or the sheet's hand size when that slot lies out of sight. With
+   * no hand showing it, it flies to the dock in dock mode
    * (#dockFlight); else, or with nothing there to land on, it leaves the pile as another player's
    * draw does.
    */
@@ -2401,20 +2427,24 @@ class TableMotion {
         ) ?? this.#awayFlight(anim.fromPile, from, anim.faceUp ? card : undefined, piles)
       );
     }
-    const { slot, angle } = measureSlot(element);
-    return {
-      kind: 'draw',
+    const copy = {
+      kind: 'draw' as const,
       key: ++this.#nextKey,
       card,
       faceUp: anim.faceUp,
       pile: anim.fromPile,
       from,
-      to: slot,
-      angle,
-      dock: null,
       overSheet: element.closest('.sheet') !== null,
       delay: 0,
     };
+    // Into a carousel slot out of sight, it would fly off the screen over the sheet.
+    const intoCount =
+      root.matches('.dock-mode') && outOfCarousel(element) ? sheetCountLanding(element) : null;
+    if (intoCount) {
+      return { ...copy, ...intoCount, angle: 0 };
+    }
+    const { slot, angle } = measureSlot(element);
+    return { ...copy, to: slot, angle, dock: null };
   }
 
   /**

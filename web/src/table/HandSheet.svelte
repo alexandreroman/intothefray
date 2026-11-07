@@ -19,8 +19,9 @@
   its side, the carousel on the left with cards as high as the sheet, and the
   header and the stacked actions in a column on its right.
 
-  A card drawn into the hand, out of a pile, flies into its slot over the sheet (Flights.svelte):
-  until its copy lands, it is hidden in its slot and the hand size leaves it out.
+  A card drawn into the hand, out of a pile, flies into its slot over the sheet (Flights.svelte),
+  or into the hand size in the header when its slot lies out of sight: until its copy lands, it is
+  hidden in its slot and the hand size leaves it out.
 -->
 <script lang="ts">
   import { untrack, type Snippet } from 'svelte';
