@@ -58,12 +58,38 @@ describe('a flying copy', () => {
     expect(copy.style.getPropertyValue('--scale')).toBe('');
   });
 
-  it('zooms its face and its back, and the back inside a turning side, not the side itself', () => {
+  it('zooms its face and its back, and the back inside a turning side, not the side itself nor its shade', () => {
     const rule = /\n {2}(\.fly\.scaled[^{]*)\{\s*zoom: var\(--scale\);/.exec(flightsSource);
-    const selectors = rule?.[1]?.split(',').map((selector) => selector.trim());
+    // One selector per line: a comma inside :not() does not split them.
+    const selectors = rule?.[1]?.split(/,\s*\n/).map((selector) => selector.trim());
     expect(selectors).toEqual([
-      '.fly.scaled > :global(*:not(.side))',
+      '.fly.scaled > :global(*:not(.side, .shade))',
       '.fly.scaled > .side > :global(*)',
     ]);
+  });
+
+  it('casts its shadow from a shade under what it shows, not through a filter', () => {
+    const { container } = renderFlights(false);
+
+    const copy = container.querySelector<HTMLElement>('.fly')!;
+    expect(copy.firstElementChild?.classList).toContain('shade');
+    expect(copy.classList).not.toContain('land');
+    const fly = /\n {2}\.fly \{([^}]*)\}/.exec(flightsSource)?.[1];
+    expect(fly).not.toMatch(/filter/);
+  });
+
+  it('gives a landscape copy the landscape corners', () => {
+    vi.spyOn(motion, 'launch').mockReturnValue(() => {});
+    const from = { cx: 100, cy: 100, w: 94, h: 67 };
+    motion.flights = [{ ...TO_DECK, from }] as unknown as typeof motion.flights;
+    const { container } = render(Flights, {
+      props: { faceOf: () => null, captionOf: () => undefined },
+      context: new Map([[DOCK_MODE_KEY, { current: false }]]),
+    });
+
+    expect(container.querySelector('.fly')?.classList).toContain('land');
+    expect(flightsSource).toMatch(
+      /\n {2}\.fly\.land \.shade \{\s*border-radius: var\(--card-radius-land\);/,
+    );
   });
 });

@@ -1256,6 +1256,7 @@
       style:width="{handGhost.width}px"
       style:height="{handGhost.height}px"
     >
+      <div class="shade"></div>
       {#if isHidden(handGhost.card)}
         <CardBack back={handGhost.card.back} caption={backCaption(handGhost.card, tablePiles)} />
       {:else}
@@ -1307,7 +1308,7 @@
   /*
     A hand card brought back over the hand: hand size, growing to table size as it leaves. Held up
     and swaying about its middle as a table card's ghost is (CardView.svelte); out of the table, it
-    keeps its drop shadow.
+    keeps the hand's shadow.
   */
   .hghost {
     position: absolute;
@@ -1317,7 +1318,20 @@
       width 0.14s ease-out,
       height 0.14s ease-out,
       scale 0.14s ease-out;
-    filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+  }
+
+  /*
+    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge as it grows. Its scale and
+    rotate give it its own stacking, which keeps the shade under its face. The ghost is portrait, a landscape card
+    turned a quarter in it.
+  */
+  .shade {
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--held-card-shadow);
+    pointer-events: none;
   }
 
   /* Picked up, it rises off the hand, as the drag's first ghost only. */

@@ -61,6 +61,14 @@
   */
   --card-shadow:
     2px 2px 4px 2px #000000c3, 8px 8px 22px 2px #000000c5, 17px 17px 43px 2px #00000047;
+  /*
+    A card in the hand, a hand card dragged, a card flying: the same light, a shorter shadow, cast as --card-shadow
+    is, from a shade 2px inside the card's edge. Drawn once with the card, it moves with it, where a filter on a moving
+    card blurs again on every frame. The values match two stacked drop-shadows (2px 2px 3px #000000a0, then
+    7px 7px 10px #00000060): the second one, cast from the card and the first shadow together, falls a little further
+    and darker than its own values say.
+  */
+  --held-card-shadow: 2px 2px 6px 2px #000000a0, 8px 8px 21px 2px #00000066;
   /* The first player token lies flat, lit from above. */
   --token-shadow: drop-shadow(0 3px 4px #000c);
 }

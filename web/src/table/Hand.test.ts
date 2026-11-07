@@ -436,6 +436,27 @@ describe('Hand', () => {
     expect(foot).not.toMatch(/transform/);
   });
 
+  it('casts each card shadow from a shade under its face, never through a filter; the gap slot casts none', () => {
+    interaction.press({ kind: 'hand', id: 'h1' }, {
+      button: 0,
+      pointerId: 1,
+      clientX: 0,
+      clientY: 0,
+      preventDefault: () => {},
+    } as unknown as PointerEvent);
+    interaction.lift('h1', ['h1']);
+    interaction.handGap = 1;
+    const { container } = render(Hand, { cards: CARDS, faceOf, captionOf, seat: 0 });
+
+    for (const card of handCards()) {
+      expect(card.querySelector('.fan')?.firstElementChild?.classList).toContain('shade');
+    }
+    expect(container.querySelector('.hcard.gap .shade')).toBeNull();
+    expect(rule('.shade')).toMatch(/box-shadow: var\(--held-card-shadow\);/);
+    expect(rule('.shade')).toMatch(/pointer-events: none;/);
+    expect(handSource).not.toMatch(/filter:/);
+  });
+
   it('turns a landscape card a quarter to fit its slot', () => {
     const landscape = (card: TableCard): PackFace | null => {
       const face = faceOf(card);

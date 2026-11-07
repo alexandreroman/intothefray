@@ -810,6 +810,7 @@
         <!-- And the strip below it, down to the bottom of the screen, so the card stays up there. -->
         <div class="foot"></div>
         <div class="fan">
+          <div class="shade"></div>
           {#if isHidden(card)}
             <CardBack back={card.back} caption={captionOf(card)} />
           {:else}
@@ -985,7 +986,6 @@
     border: 2px dashed #49c6ff88;
     border-radius: 9px;
     background: #49c6ff14;
-    filter: none;
   }
 
   /*
@@ -1038,7 +1038,20 @@
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-    filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+  }
+
+  /*
+    The card's shadow, cast from 2px inside its edge, under its face (see --held-card-shadow): it turns and pops with
+    the card, drawn once. The fan's transform gives it its own stacking, which keeps the shade under its face. The slot
+    is portrait, a landscape card turned a quarter in it: portrait corners.
+  */
+  .shade {
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--held-card-shadow);
+    pointer-events: none;
   }
 
   /*

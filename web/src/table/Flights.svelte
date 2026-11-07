@@ -95,6 +95,7 @@
     class="fly"
     class:scaled={scaled(flight)}
     class:rise={flight.kind === 'rise'}
+    class:land={flight.from.w > flight.from.h}
     aria-hidden="true"
     style:--scale={scaled(flight) ? DOCK_SCALE : undefined}
     style:left="{flight.from.cx - flight.from.w / 2}px"
@@ -103,6 +104,7 @@
     style:height="{flight.from.h}px"
     {@attach (element) => motion.launch(element, flight)}
   >
+    <div class="shade"></div>
     {#if flight.kind === 'toPile'}
       {#if isHidden(flight.card)}
         <CardBack back={flight.card.back} caption={captionOf(flight.card)} />
@@ -141,7 +143,24 @@
     z-index: 2900;
     pointer-events: none;
     transform-origin: center;
-    filter: drop-shadow(2px 2px 3px #000000a0) drop-shadow(7px 7px 10px #00000060);
+  }
+
+  /*
+    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge, under what it shows: it
+    turns, shrinks and fades with the copy, drawn once. Its corners are those of the copy's box, which is the card's
+    as it was measured, landscape for a landscape card lying on the table; a quarter turn on the way turns it along.
+  */
+  .shade {
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: var(--card-radius);
+    box-shadow: var(--held-card-shadow);
+    pointer-events: none;
+  }
+
+  .fly.land .shade {
+    border-radius: var(--card-radius-land);
   }
 
   /*
@@ -156,8 +175,9 @@
     Dock mode: the copy is the card's drawn box. What it shows is zoomed by the same scale, so that a
     back's label and caption, the borders and the corners shrink with it; the percentages still fill
     the box. A turning side is sized in px for an upright quarter turn: only what it holds is zoomed.
+    The shade is not: the copy casts the hand's shadow at any scale.
   */
-  .fly.scaled > :global(*:not(.side)),
+  .fly.scaled > :global(*:not(.side, .shade)),
   .fly.scaled > .side > :global(*) {
     zoom: var(--scale);
   }

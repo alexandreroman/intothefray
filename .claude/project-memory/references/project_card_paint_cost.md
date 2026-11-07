@@ -12,6 +12,13 @@ type: project
   `--card-radius-land`). The values match three stacked `drop-shadow()`s
   (Chrome takes a drop-shadow's blur as a standard deviation, half a
   box-shadow's). Table cards and piles carry no CSS `filter`.
+- Every card that moves casts its shadow from such a shade too, never a
+  filter: the hand's cards, the hand card's drag ghost and the flying copies
+  (`--held-card-shadow`, fitted to two stacked drop-shadows, landscape
+  corners for a landscape flying box), and the hand sheet's carousel cards.
+  A filter on a moving element is blurred again on every frame, per card.
+  A filter stays on an element that does not itself move (the preview art,
+  the remote cursors): it is drawn once into its moving parent's layer.
 - The shade sits inside the card's edge because a box-shadow is cut away
   inside its own box: cast from the card's box, it lets the card underneath
   show through the anti-aliased edge, a light seam where cards overlap.
