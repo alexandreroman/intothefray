@@ -3,7 +3,8 @@
 // (rows.ts, rowPitch). Dock mode keeps the fine grid: its drops on a row are
 // insertions among the row's cards (dockLayout.ts).
 
-import { GRID } from './layout';
+/** Table units are multiples of this. */
+export const GRID = 10;
 
 /**
  * The lines a card's top-left corner snaps to, in table units: across, every
@@ -14,7 +15,7 @@ export interface SnapGrid {
   offsetY: number;
 }
 
-/** The table's 10-unit grid (layout.ts), for a mouse or a pen. */
+/** The table's 10-unit grid, for a mouse or a pen. */
 export const FINE_GRID: SnapGrid = { step: GRID, offsetY: 0 };
 
 /**
@@ -34,4 +35,9 @@ export function snapTo(v: number, step: number, offset = 0): number {
 /** The grid line at or above `v`, lines lying every `step` from `offset`. */
 export function floorTo(v: number, step: number, offset = 0): number {
   return Math.floor((v - offset) / step) * step + offset;
+}
+
+/** The grid line at or past `v`, lines lying every `step` from `offset`. */
+export function ceilTo(v: number, step: number, offset = 0): number {
+  return Math.ceil((v - offset) / step) * step + offset;
 }

@@ -9,7 +9,7 @@
 
 import { getPref, setPref } from '../lib/prefs';
 import type { PileView, Point } from '../lib/types';
-import { GRID } from './layout';
+import { floorTo, GRID } from './grid';
 
 /**
  * The height of the villain's row, in table units: it covers [0, 440), leaving
@@ -155,8 +155,7 @@ export function rowPitch(
   if (fittedRows === 2 && pitch < minVillain) {
     pitch = available - ROW_HEIGHT - minVillain;
   }
-  const onGrid = Math.floor(pitch / step) * step;
-  return Math.min(MAX_PITCH, Math.max(MIN_PITCH, onGrid));
+  return Math.min(MAX_PITCH, Math.max(MIN_PITCH, floorTo(pitch, step)));
 }
 
 /**

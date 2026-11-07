@@ -9,10 +9,8 @@ import {
   type Size,
   type TableView,
 } from '../lib/types';
+import { ceilTo, GRID } from './grid';
 import { asideId, PILE_SCENARIO_ASIDE, PILE_VICTORY } from './seats';
-
-/** Table units are multiples of this. */
-export const GRID = 10;
 
 /** The farthest a card can lie on the table, both ways, in table units: the server's bound. */
 export const TABLE_LIMIT = 20000;
@@ -800,7 +798,7 @@ function slotInRow(
       return box.right <= x - SLOT_GAP || box.left >= x + width + SLOT_GAP;
     });
   const pastItems = items
-    .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
+    .map((item) => ceilTo(visualBox(item).right + SLOT_GAP, GRID))
     .filter((x) => x >= start.x);
   const candidates = [start.x, ...pastItems].sort((a, b) => a - b);
   // The last spot lies past every item, so there is always a free one.
