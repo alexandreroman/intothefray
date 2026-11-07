@@ -142,7 +142,7 @@ jobs:
       # Runs in the compose web service so that the Caddy version stays pinned
       # in compose.yaml only.
       - name: Validate the Caddyfile
-        run: docker compose run --rm --no-deps -T web caddy validate --config /etc/caddy/Caddyfile
+        run: docker compose run --rm --no-deps web caddy validate --config /etc/caddy/Caddyfile
 
   # Publishes the image only once every check of the commit has passed.
   publish:
@@ -165,7 +165,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # The default gha cache scope reuses the layers the docker job built.
+      # Reads the layers the docker job cached (same default gha scope).
       - uses: docker/build-push-action@v7
         with:
           context: .
@@ -179,7 +179,6 @@ jobs:
             org.opencontainers.image.source=https://github.com/alexandreroman/intothefray
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   # Deploys the frontend the web job built. It goes out once its image is
   # published, so the release order stays image, frontend, then backend.
