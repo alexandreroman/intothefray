@@ -233,15 +233,26 @@ export function isLocked(card: CardView): boolean {
 }
 
 /**
+ * The label of a counter as its list gives it: a token or status by its label, "Damage",
+ * "Stunned"; a modifier by its stat, "DEF".
+ */
+export function counterLabel(kind: CounterKind, name: string): string {
+  if (kind === 'modifier') {
+    return name.toUpperCase();
+  }
+  const counters = kind === 'token' ? TOKENS : STATUSES;
+  return counters.find((counter) => counter.name === name)?.label ?? name;
+}
+
+/**
  * The name of a counter as the pill says it: a token or status in lower case, "damage",
  * "stunned"; a modifier by its stat, "DEF modifier".
  */
 export function counterName(kind: CounterKind, name: string): string {
   if (kind === 'modifier') {
-    return `${name.toUpperCase()} modifier`;
+    return `${counterLabel(kind, name)} modifier`;
   }
-  const counters = kind === 'token' ? TOKENS : STATUSES;
-  return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
+  return counterLabel(kind, name).toLowerCase();
 }
 
 /**
@@ -763,13 +774,16 @@ export function deckName(home: PileView): string {
   return plain ? 'deck' : pileName(home);
 }
 
+/** The id of Draw an arrow, whatever card it is for. */
+export const ARROW_ID = 'arrow';
+
 /**
  * Draw an arrow, for the context menu only: it is no action of the keys' list, as the A key and
  * Shift + drag start it. It starts the same arrow mode as A.
  */
 export function arrowItem(card: string): ActionItem {
   return {
-    id: 'arrow',
+    id: ARROW_ID,
     label: 'Draw an arrow',
     key: KEYS.arrow,
     group: GROUP_POINT,
