@@ -15,9 +15,9 @@ type: project
   `favicon.svg` and served at `/favicon.ico`; `index.html` declares only
   the SVG. The render command is in `DEVELOPMENT.md`.
 
-**Why:** Google crops a favicon into a circle and fills transparent
-pixels with white, and crawlers fetch `/favicon.ico` by default
-(<https://developers.google.com/search/docs/appearance/favicon-in-search>).
+**Why:** Google Search results show the favicon cropped to a circle,
+with transparent pixels filled with white (seen on this site's rounded
+icon), and crawlers look for `/favicon.ico` at the root.
 
 **How to apply:** keep every icon free of transparent corners and keep
 the mark within the inscribed circle; regenerate `favicon.ico` after any
