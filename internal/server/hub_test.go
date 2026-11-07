@@ -601,8 +601,7 @@ func TestPlayerOnlineFollowsConnections(t *testing.T) {
 
 	// Coming back with his token leaves the game as it is too: the game is
 	// neither written again nor sent at a new version.
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	reader := store.New(rdb, time.Hour)
 	_, stored, err := reader.Load(t.Context(), created.ID)
 	if err != nil {
@@ -639,8 +638,7 @@ func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
 
 	// Carol watches from an instance that stops without closing her
 	// connection: nothing renews her lease, nor tells that she left.
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	vanished := store.New(rdb, time.Hour)
 	_, _, err := vanished.Update(t.Context(), created.ID, func(g *game.Game) error {
 		g.Spectators = append(g.Spectators, &game.Spectator{Token: "carol-token", Name: "Carol"})
@@ -672,13 +670,11 @@ func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
 // beforeRenewal is a Redis hook that runs before once, as the first lease
 // renewal (a pipeline holding a ZADD) is about to reach Redis.
 type beforeRenewal struct {
+	storetest.PassHook
+
 	once   sync.Once
 	before func()
 }
-
-func (h *beforeRenewal) DialHook(next redis.DialHook) redis.DialHook { return next }
-
-func (h *beforeRenewal) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
 
 func (h *beforeRenewal) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -693,9 +689,7 @@ func TestConnectionClosedDuringRenewalStopsCounting(t *testing.T) {
 	mr := miniredis.RunT(t)
 	srv := newServerOn(t, mr)
 	hook := &beforeRenewal{}
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	rdb.AddHook(hook)
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr, hook)
 	srv.deps.Store = store.New(rdb, time.Hour)
 
 	g, err := game.NewGame(testGameID, "host-token", "Alex", time.Now())
@@ -857,13 +851,13 @@ func TestReconnectResyncsViewers(t *testing.T) {
 // always go through. It is armed after the viewers joined, as a known token's
 // hello touches the game too.
 type expireBlocker struct {
+	storetest.PassHook
+
 	armed       atomic.Bool
 	entered     chan struct{}
 	enteredOnce sync.Once
 	release     chan struct{}
 }
-
-func (b *expireBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
 
 func (b *expireBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -906,9 +900,7 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 	mr := miniredis.RunT(t)
 	blocker := &expireBlocker{entered: make(chan struct{}), release: make(chan struct{})}
 	ts := startInstance(t, mr, func(s *Server) {
-		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-		rdb.AddHook(blocker)
-		t.Cleanup(func() { _ = rdb.Close() })
+		rdb := storetest.Client(t, mr, blocker)
 		s.deps.Store = store.New(rdb, time.Hour)
 		s.touchInterval = 10 * time.Millisecond
 	})
@@ -939,13 +931,13 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 // sends, once a first lease is recorded (a pipeline holding a ZADD), until
 // release is closed.
 type loadBlocker struct {
+	storetest.PassHook
+
 	leased      atomic.Bool
 	entered     chan struct{}
 	enteredOnce sync.Once
 	release     chan struct{}
 }
-
-func (b *loadBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
 
 func (b *loadBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -973,9 +965,7 @@ func TestViewFromBeforeJoinNotSent(t *testing.T) {
 	blocker := &loadBlocker{entered: make(chan struct{}), release: make(chan struct{})}
 	var srv *Server
 	second := startInstance(t, mr, func(s *Server) {
-		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-		rdb.AddHook(blocker)
-		t.Cleanup(func() { _ = rdb.Close() })
+		rdb := storetest.Client(t, mr, blocker)
 		s.deps.Store = store.New(rdb, time.Hour)
 		srv = s
 	})

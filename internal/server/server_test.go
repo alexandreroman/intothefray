@@ -17,11 +17,11 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/coder/websocket"
-	"github.com/redis/go-redis/v9"
 
 	"github.com/alexandreroman/intothefray/internal/config"
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/internal/store/storetest"
 	"github.com/alexandreroman/intothefray/internal/version"
 	"github.com/alexandreroman/intothefray/packs/packstest"
 )
@@ -74,8 +74,7 @@ func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Confi
 	t.Helper()
 
 	cat := packstest.Catalog(t)
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 
 	return New(Deps{
 		Config:  cfg,

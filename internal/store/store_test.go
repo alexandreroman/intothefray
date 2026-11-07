@@ -24,8 +24,7 @@ const testTTL = 24 * time.Hour
 func newTestStore(t *testing.T) (*Store, *miniredis.Miniredis) {
 	t.Helper()
 	mr := miniredis.RunT(t)
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	return New(rdb, testTTL), mr
 }
 
@@ -242,13 +241,11 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 // beforeExpire is a Redis hook that runs before once, as the first pipeline
 // holding an EXPIRE is about to reach Redis.
 type beforeExpire struct {
+	storetest.PassHook
+
 	once   sync.Once
 	before func()
 }
-
-func (h *beforeExpire) DialHook(next redis.DialHook) redis.DialHook { return next }
-
-func (h *beforeExpire) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
 
 func (h *beforeExpire) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -265,8 +262,6 @@ func TestTouchDuringEndKeepsShortTTL(t *testing.T) {
 	if err := s.Create(ctx, newGame("abc")); err != nil {
 		t.Fatalf("Create: %v", err)
 	}
-	touching := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = touching.Close() })
 	// The game ends after Touch read its phase and before it sets the
 	// expiries.
 	hook := &beforeExpire{before: func() {
@@ -278,7 +273,7 @@ func TestTouchDuringEndKeepsShortTTL(t *testing.T) {
 			t.Errorf("Update: %v", err)
 		}
 	}}
-	touching.AddHook(hook)
+	touching := storetest.Client(t, mr, hook)
 
 	if err := New(touching, testTTL).Touch(ctx, "abc"); err != nil {
 		t.Fatalf("Touch: %v", err)
@@ -611,13 +606,11 @@ func TestTouchExtendsSummary(t *testing.T) {
 // pipelineRecorder is a Redis hook that records the commands of every
 // pipeline, MULTI and EXEC included, as their names.
 type pipelineRecorder struct {
+	storetest.PassHook
+
 	mu        sync.Mutex
 	pipelines [][]string
 }
-
-func (r *pipelineRecorder) DialHook(next redis.DialHook) redis.DialHook { return next }
-
-func (r *pipelineRecorder) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
 
 func (r *pipelineRecorder) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -634,8 +627,7 @@ func (r *pipelineRecorder) ProcessPipelineHook(next redis.ProcessPipelineHook) r
 
 func TestTouchExpiresBothKeysInOneTransaction(t *testing.T) {
 	mr := miniredis.RunT(t)
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	s := New(rdb, testTTL)
 	if err := s.Create(t.Context(), newGame("abc")); err != nil {
 		t.Fatalf("Create: %v", err)
