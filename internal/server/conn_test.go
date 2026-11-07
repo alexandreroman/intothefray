@@ -192,6 +192,22 @@ func TestHelloThenView(t *testing.T) {
 	}
 }
 
+func TestHelloWithKnownTokenResetsExpiry(t *testing.T) {
+	const idle = 40 * time.Minute // GAME_TTL is 1 h in tests
+
+	ts, mr := newTestServer(t)
+	created := createGame(t, ts, "Alex")
+	mr.FastForward(idle)
+
+	connect(t, ts, created.ID).hello(created.Token, "Alex")
+
+	for _, key := range []string{"game:" + created.ID, "game:" + created.ID + ":info"} {
+		if got := mr.TTL(key); got != time.Hour {
+			t.Errorf("TTL(%s) = %v after the hello, want 1h", key, got)
+		}
+	}
+}
+
 func TestHelloWithUnknownTokenGetsFreshToken(t *testing.T) {
 	ts, _ := newTestServer(t)
 	created := createGame(t, ts, "Alex")

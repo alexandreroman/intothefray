@@ -596,9 +596,24 @@ func TestPlayerOnlineFollowsConnections(t *testing.T) {
 			gone.View.Spectators)
 	}
 
+	// Coming back with his token leaves the game as it is too: the game is
+	// neither written again nor sent at a new version.
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = rdb.Close() })
+	reader := store.New(rdb, time.Hour)
+	_, stored, err := reader.Load(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
 	back := connect(t, second, created.ID)
 	back.hello(bobWelcome.Token, "Bob")
-	alex.awaitView(func(v game.View) bool { return playerOnline(v, bobColor) })
+	returned := alex.awaitView(func(v game.View) bool { return playerOnline(v, bobColor) })
+	if returned.Version != gone.Version {
+		t.Errorf("version = %d after Bob came back, want %d, the game being unchanged", returned.Version, gone.Version)
+	}
+	if _, version, err := reader.Load(t.Context(), created.ID); err != nil || version != stored {
+		t.Errorf("stored version = %d (%v) after Bob came back, want %d", version, err, stored)
+	}
 }
 
 func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
@@ -790,9 +805,12 @@ func TestReconnectResyncsViewers(t *testing.T) {
 }
 
 // expireBlocker is a Redis hook that holds every EXPIRE of a game key, alone
-// or in a pipeline, such as the MULTI/EXEC a touch round sends, until release
-// is closed. Nothing else is held, so presence commands always go through.
+// or in a pipeline, such as the MULTI/EXEC a touch round sends, once armed is
+// set and until release is closed. Nothing else is held, so presence commands
+// always go through. It is armed after the viewers joined, as a known token's
+// hello touches the game too.
 type expireBlocker struct {
+	armed       atomic.Bool
 	entered     chan struct{}
 	enteredOnce sync.Once
 	release     chan struct{}
@@ -819,6 +837,9 @@ func (b *expireBlocker) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
 }
 
 func (b *expireBlocker) block() {
+	if !b.armed.Load() {
+		return
+	}
 	b.enteredOnce.Do(func() { close(b.entered) })
 	<-b.release
 }
@@ -853,6 +874,7 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 	bob := connect(t, ts, created.ID)
 	bob.hello("", "Bob")
 	alex.awaitView(bothSeatedOnline)
+	blocker.armed.Store(true)
 	select {
 	case <-blocker.entered:
 	case <-time.After(waitTimeout):

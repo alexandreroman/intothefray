@@ -381,27 +381,14 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	if c.token != "" {
 		return fmt.Errorf("%w: second hello", errInvalidMessage)
 	}
-	fresh := newToken()
-	onlineID := newToken()
-
-	var token string
-	var role game.Role
-	joinVersion, err := s.updateVersion(ctx, c.gameID, func(g *game.Game) error {
-		token = msg.Token
-		if !g.TakesPart(token) {
-			token = fresh
-		}
-		var joinErr error
-		role, joinErr = g.Join(token, msg.Name)
-		return joinErr
-	})
+	token, role, joinVersion, err := s.join(ctx, c.gameID, msg.Token, msg.Name)
 	if err != nil {
 		return err
 	}
 
 	c.token = token
 	c.presenceID = presenceID(token)
-	c.onlineID = onlineID
+	c.onlineID = newToken()
 	c.send(welcomeMessage{Type: typeWelcome, Token: token, Role: role})
 	// Recorded online before it is registered: the viewer's first view, and
 	// any view the event loop relays to the others meanwhile, already show
@@ -426,6 +413,41 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	// The other viewers count c from now on.
 	s.publish(ctx, c.gameID, onlineEvent{Kind: eventOnline})
 	return nil
+}
+
+// join joins the game with token, or with a fresh token when the game does
+// not know it, and returns the token, its role and the version of the game
+// that holds it. A token never leaves a game, and Join changes nothing for a
+// known one: such a token joins without a write, which would send every
+// viewer a full view of an unchanged game. Its game only gets its expiry
+// reset, as a write would.
+func (s *Server) join(ctx context.Context, gameID, token, name string) (string, game.Role, int64, error) {
+	g, version, err := s.deps.Store.Load(ctx, gameID)
+	if err != nil {
+		return "", "", 0, err
+	}
+	if g.TakesPart(token) {
+		role, err := g.Join(token, name)
+		if err != nil {
+			return "", "", 0, err
+		}
+		if err := s.deps.Store.Touch(ctx, gameID); err != nil {
+			return "", "", 0, err
+		}
+		return token, role, version, nil
+	}
+
+	fresh := newToken()
+	var role game.Role
+	version, err = s.updateVersion(ctx, gameID, func(g *game.Game) error {
+		var joinErr error
+		role, joinErr = g.Join(fresh, name)
+		return joinErr
+	})
+	if err != nil {
+		return "", "", 0, err
+	}
+	return fresh, role, version, nil
 }
 
 // setOffline forgets c among the connections of its game, and tells every
