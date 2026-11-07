@@ -125,10 +125,10 @@
   }
 </script>
 
-<div class="options">
+<div class="screen-page settings-page">
   <TopBar onback={() => go('/')} />
 
-  <main>
+  <main class="screen-column">
     <div class="head">
       <div class="title">
         <span class="caption">Options</span>
@@ -140,12 +140,12 @@
       </p>
     </div>
 
-    <div class="row">
-      <div class="about">
-        <label for="name">Your name</label>
+    <div class="settings-row">
+      <div class="settings-side">
+        <label class="settings-title" for="name">Your name</label>
         <p>Shown to the other players at the table.</p>
       </div>
-      <div class="control name">
+      <div class="settings-body name">
         <input
           type="text"
           id="name"
@@ -165,13 +165,13 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="about">
-        <span class="label">Theme</span>
+    <div class="settings-row">
+      <div class="settings-side">
+        <span class="settings-title">Theme</span>
         <p>Card backs, first player token and table colours: only on your screen.</p>
       </div>
       <div
-        class="control themes"
+        class="settings-body themes"
         use:selectionIndicator
         style:--card-ratio="{PORTRAIT_CARD.w} / {PORTRAIT_CARD.h}"
         style:--token-ratio="{FIRST_PLAYER_BOX.w} / {FIRST_PLAYER_BOX.h}"
@@ -204,12 +204,12 @@
 
     <!-- No choice to make while a single language is offered. -->
     {#if OFFERED_LANGS.length > 1}
-      <div class="row">
-        <div class="about">
-          <label for="lang">Language</label>
+      <div class="settings-row">
+        <div class="settings-side">
+          <label class="settings-title" for="lang">Language</label>
           <p>Card names and images. The interface stays in English.</p>
         </div>
-        <div class="control">
+        <div class="settings-body">
           <select id="lang" value={lang} onchange={(e) => chooseLang(e.currentTarget.value)}>
             {#each OFFERED_LANGS as option (option.code)}
               <option value={option.code} lang={option.code}>{option.label}</option>
@@ -220,7 +220,7 @@
     {/if}
 
     <footer>
-      <a class="about-link" href={href('/about')}>About Into the Fray</a>
+      <a class="about-link text-link" href={href('/about')}>About Into the Fray</a>
       <p class="version" class:mismatch={mismatchedServer !== undefined}>
         version
         {#if mismatchedServer}
@@ -240,31 +240,6 @@
 {/snippet}
 
 <style>
-  /* The column's width and gutter are shared with the top bar. */
-  .options {
-    --content-max: 920px;
-    --content-gutter: 24px;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: var(--table-bg);
-  }
-
-  main {
-    flex: 1;
-    width: 100%;
-    max-width: var(--content-max);
-    margin: 0 auto;
-    padding-block: 44px 56px;
-    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
-    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
-      max(var(--content-gutter), env(safe-area-inset-right));
-    display: flex;
-    flex-direction: column;
-    animation: rise 0.25s ease-out;
-  }
-
   .head {
     display: flex;
     flex-wrap: wrap;
@@ -295,44 +270,21 @@
     height: 16px;
   }
 
-  /* A setting: its label and help on the left, its control on the right, or below on a phone. */
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px 40px;
-    padding: 28px 0;
-    border-top: 1px solid var(--panel-2);
+  /* A setting: its label and help on the side, its control in the body, 16px under them on a phone. */
+  .settings-row {
+    row-gap: 16px;
   }
 
-  /* The last setting: the footer after it is no .row. */
-  .row:last-of-type {
-    border-bottom: 1px solid var(--panel-2);
-  }
-
-  .about {
-    flex: 1 1 220px;
-    min-width: 0;
-  }
-
-  .about label,
-  .about .label {
+  .settings-title {
     display: block;
     margin-bottom: 6px;
-    font-stretch: 85%;
-    font-weight: 800;
-    font-size: 18px;
   }
 
-  .about p {
+  .settings-side p {
     margin: 0;
     font-size: 14px;
     line-height: 1.5;
     color: var(--muted);
-  }
-
-  .control {
-    flex: 999 1 420px;
-    min-width: 0;
   }
 
   input,
@@ -487,27 +439,8 @@
   }
 
   .about-link {
+    --link-color: var(--muted);
     font-size: 13px;
-    color: var(--muted);
-    text-decoration: underline;
-    text-decoration-color: var(--line-strong);
-    text-underline-offset: 3px;
-    transition:
-      color 0.12s,
-      text-decoration-color 0.12s;
-  }
-
-  @media (hover: hover) {
-    .about-link:hover {
-      color: var(--text);
-      text-decoration-color: currentColor;
-    }
-  }
-
-  .about-link:focus-visible {
-    outline: 2px solid var(--sel);
-    outline-offset: 2px;
-    border-radius: 2px;
   }
 
   .version {
@@ -522,17 +455,8 @@
     color: color-mix(in srgb, var(--warn) 60%, var(--table-bg));
   }
 
-  /* A phone: 16px gutters, and smaller theme cards to fit three in a row. */
+  /* A phone: smaller theme cards to fit three in a row. */
   @media (max-width: 560px) {
-    .options {
-      --content-gutter: 16px;
-    }
-
-    main {
-      padding-top: 32px;
-      padding-bottom: 40px;
-    }
-
     .themes {
       gap: 8px;
     }

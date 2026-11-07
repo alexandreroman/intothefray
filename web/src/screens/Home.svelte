@@ -115,10 +115,10 @@
   }
 </script>
 
-<div class="home">
+<div class="home screen-page">
   <div class="halo"></div>
 
-  <main>
+  <main class="screen-column">
     <!-- Out of the flow, in the page's top padding: the page stays put when the count arrives. -->
     {#if showsGamesInProgress}
       <p class="games" in:fade={{ duration: motionMs(GAMES_FADE_MS) }}>
@@ -229,7 +229,9 @@
     </div>
   </main>
 
-  <footer>Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.</footer>
+  <footer class="screen-column">
+    Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.
+  </footer>
 </div>
 
 {#if shownUnread}
@@ -238,14 +240,10 @@
 
 <style>
   .home {
-    /* The side gutter of main and the footer. */
-    --gutter: 24px;
+    /* The column of main and the footer: its width and side gutter. */
+    --content-max: 1240px;
+    --content-gutter: 24px;
     position: relative;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: var(--table-bg);
     /* The fanned cards reach past a narrow screen: they are cut, never scrolled to. */
     overflow: hidden;
     /* Measured by the column layout's query (at the end): the page's width, without a scrollbar. */
@@ -269,13 +267,7 @@
   main {
     position: relative;
     flex: 1;
-    width: 100%;
-    max-width: 1240px;
-    margin: 0 auto;
     padding-block: 72px 40px;
-    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
-    padding-inline: max(var(--gutter), env(safe-area-inset-left))
-      max(var(--gutter), env(safe-area-inset-right));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -771,13 +763,8 @@
 
   footer {
     position: relative;
-    width: 100%;
-    max-width: 1240px;
-    margin: 0 auto;
     /* The last line of the page stays clear of the home indicator. */
     padding-block: 20px max(28px, env(safe-area-inset-bottom));
-    padding-inline: max(var(--gutter), env(safe-area-inset-left))
-      max(var(--gutter), env(safe-area-inset-right));
     font-size: 12px;
     color: var(--faint);
   }
@@ -804,7 +791,7 @@
      column layout above. */
   @media (max-width: 640px) {
     .home {
-      --gutter: 16px;
+      --content-gutter: 16px;
     }
 
     main {

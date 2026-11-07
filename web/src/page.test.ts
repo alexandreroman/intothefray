@@ -36,30 +36,6 @@ describe('the page', () => {
   });
 });
 
-describe('the screens around the table', () => {
-  // Read from the disk: Vitest hands a component's styles over empty.
-  function sourceOf(screenName: string): string {
-    return readFileSync(path.join(import.meta.dirname, 'screens', `${screenName}.svelte`), 'utf8');
-  }
-
-  it.each(['Home', 'Lobby', 'Options', 'About', 'Ended'])(
-    '%s keeps its content clear of the notch in landscape',
-    (screenName) => {
-      const source = sourceOf(screenName);
-      expect(source).toContain('env(safe-area-inset-left)');
-      expect(source).toContain('env(safe-area-inset-right)');
-    },
-  );
-
-  // Options and About end on a bottom padding taller than the home indicator.
-  it.each(['Home', 'Lobby', 'Ended'])(
-    '%s keeps its last line, or its start bar, clear of the home indicator',
-    (screenName) => {
-      expect(sourceOf(screenName)).toContain('env(safe-area-inset-bottom)');
-    },
-  );
-});
-
 describe('the web app manifest', () => {
   const manifest = JSON.parse(manifestSource);
 

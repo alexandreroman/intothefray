@@ -165,7 +165,7 @@
   }
 </script>
 
-<div class="screen">
+<div class="screen screen-page">
   <div class="topbar" bind:this={topBar}>
     <TopBar
       spectators={view.spectators}
@@ -176,7 +176,7 @@
     />
   </div>
 
-  <main class="lobby">
+  <main class="lobby screen-column">
     <header class="intro">
       <div class="heading">
         <span class="caption">Lobby</span>
@@ -252,7 +252,7 @@
   </main>
 
   <div class="startbar" bind:this={startBar}>
-    <div class="startbar-inner">
+    <div class="startbar-inner screen-column">
       {#if otherError}
         <span class="why error" role="alert">{otherError}</span>
       {:else}
@@ -276,11 +276,6 @@
   .screen {
     --content-max: 1200px;
     --content-gutter: 24px;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: var(--table-bg);
   }
 
   /* Holds the top bar only to reach its box: it has none of its own, so the bar stays sticky to
@@ -291,13 +286,7 @@
 
   .lobby {
     flex: 1;
-    width: 100%;
-    max-width: var(--content-max);
-    margin: 0 auto;
     padding-block: 36px 48px;
-    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
-    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
-      max(var(--content-gutter), env(safe-area-inset-right));
     display: flex;
     flex-direction: column;
     gap: 28px;
@@ -476,12 +465,8 @@
   }
 
   .startbar-inner {
-    max-width: var(--content-max);
-    margin: 0 auto;
     /* Its button stays clear of the home indicator, as the bar sticks to the window's bottom. */
     padding-block: 14px max(14px, env(safe-area-inset-bottom));
-    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
-      max(var(--content-gutter), env(safe-area-inset-right));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
