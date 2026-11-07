@@ -18,10 +18,12 @@ type: project
   `tableKey` or `playerKey` handles) calls `releaseFocus(null)` with its
   `preventDefault()`. Other keys (Tab, Enter, Space) keep the focus.
 - Chrome buttons outside dialogs and menus (top bar, `Segmented`, zoom
-  control, history toggles and Undo buttons, narrow Undo, hero steps) carry
-  `{@attach pointerBlur}`: a pointer click (`detail > 0`) blurs them, a
-  keyboard activation (`detail === 0`) keeps the focus. The history toggle
-  refocuses its replacement button on keyboard activation only.
+  control, history toggles and Undo buttons, narrow Undo and History, hero
+  steps, the phone dock's hand, Undo and History buttons, the History
+  sheet's Undo button) carry `{@attach pointerBlur}`: a pointer click
+  (`detail > 0`) blurs them, a keyboard activation (`detail === 0`) keeps
+  the focus. The history toggle refocuses its replacement button on
+  keyboard activation only.
 - Hover looks (button washes, rings, zooms, colours) sit under
   `@media (hover: hover)`: a touch screen keeps matching `:hover` on the
   element tapped last until the next tap elsewhere, which would read as a
