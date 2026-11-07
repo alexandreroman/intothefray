@@ -653,7 +653,7 @@ describe('diffViews', () => {
       const before = view({ cards: [mine, held], piles: [seatPile('deck:p0', { count: 10 })] });
       const after = view({
         piles: [seatPile('deck:p0', { count: 12 })],
-        log: [OLD_LINE, line('put 2 cards at the bottom of their deck', alex)],
+        log: [OLD_LINE, line('put 2 cards at the bottom of their deck (Spider-Man, a card)', alex)],
       });
 
       expect(diffViews(before, after)).toEqual([

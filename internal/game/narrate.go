@@ -23,9 +23,10 @@ func topCount(n int) string {
 // Invocation discard pile". A scenario area goes by its label alone: "The
 // Collection". The client parses these names (narratedName in
 // web/src/table/animate.ts), and matches the verbs of the lines that name
-// them: a line starting "shuffled ", a line "put … at the bottom of " a pile,
-// and the line of an undo, starting "undid ". Rewording any of them here
-// breaks the table's animations.
+// them: a line starting "shuffled ", a line "put … at the bottom of " a pile
+// (a group's line ending with its card list in brackets, which the client
+// strips), and the line of an undo, starting "undid ". Rewording any of them
+// here breaks the table's animations.
 func (g *Game) pileName(who actor, id string) string {
 	switch id {
 	case PileEncounter:
