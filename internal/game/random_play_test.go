@@ -392,6 +392,18 @@ type recordedGame struct {
 	Events []Event     `json:"events"`
 }
 
+// writeRecording stores the setup and events of the game of f at recording,
+// and its live table at golden.
+func writeRecording(t *testing.T, f *doFixture, recording, golden string) {
+	t.Helper()
+	setup, err := f.g.ReplaySetup()
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, recording, indentedJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events}))
+	writeFile(t, golden, indentedJSON(t, f.g.Table))
+}
+
 // TestReplayRecordedGames replays each stored game and compares the table it
 // ends with to its golden one, byte for byte: a two-player Rhino game recorded
 // from random play, and a scripted one with group actions (replaced group
@@ -450,12 +462,7 @@ func recordRandomGame(t *testing.T, recording, golden string) {
 	for range 120 {
 		play.step()
 	}
-	setup, err := f.g.ReplaySetup()
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeFile(t, recording, indentedJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events}))
-	writeFile(t, golden, indentedJSON(t, f.g.Table))
+	writeRecording(t, f, recording, golden)
 }
 
 func indentedJSON(t *testing.T, v any) []byte {
