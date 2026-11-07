@@ -30,7 +30,7 @@
   import CardFace from './CardFace.svelte';
   import './countPill.css';
   import { interaction } from './interaction.svelte';
-  import { cardBox } from './layout';
+  import { isLandscape } from './layout';
   import { motion } from './motion.svelte';
 
   let {
@@ -142,7 +142,7 @@
                 <CardFace
                   images={face?.images ?? []}
                   name={face?.name ?? ''}
-                  rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+                  rotated={isLandscape(face?.size ?? 'std')}
                 />
               </div>
             </li>

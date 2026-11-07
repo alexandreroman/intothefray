@@ -26,7 +26,7 @@
   import { dockMode } from './dockMode';
   import { DOCK_SCALE } from './dockPiles';
   import { isHidden } from './face';
-  import { cardBox, isLandscape } from './layout';
+  import { isLandscape } from './layout';
   import { motion } from './motion.svelte';
 
   let {
@@ -57,7 +57,7 @@
   <CardFace
     images={face?.images ?? []}
     name={face?.name ?? ''}
-    rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+    rotated={isLandscape(face?.size ?? 'std')}
   />
 {/snippet}
 

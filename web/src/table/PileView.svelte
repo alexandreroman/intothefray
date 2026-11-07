@@ -12,7 +12,7 @@
   import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
-  import { cardBox, pileBox } from './layout';
+  import { isLandscape, pileBox } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import './countPill.css';
 
@@ -66,7 +66,7 @@
   );
   const shownTop = $derived(empty ? undefined : top);
   // A landscape top card is turned a quarter to fit the portrait slot.
-  const rotated = $derived(cardBox(face?.size ?? 'std', { onPile: true }).rotated);
+  const rotated = $derived(isLandscape(face?.size ?? 'std'));
   const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
   const element = $derived({ kind: 'pile', id: pile.id } as const);
   const hovered = $derived(interaction.isHovered(element));

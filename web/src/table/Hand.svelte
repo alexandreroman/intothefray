@@ -25,13 +25,13 @@
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import {
-    cardBox,
     fanExtent,
     filledFanPositions,
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
+    isLandscape,
     type FanSlot,
     type HandInsets,
     restingFanPositions,
@@ -818,7 +818,7 @@
             <CardFace
               images={face?.images ?? []}
               name={face?.name ?? ''}
-              rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+              rotated={isLandscape(face?.size ?? 'std')}
             />
           {/if}
         </div>

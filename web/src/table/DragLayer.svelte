@@ -72,7 +72,7 @@
   import { HOLD_MS } from './gestures';
   import { FINE_GRID, type SnapGrid } from './grid';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
-  import { cardBox, HAND_CARD, MARKER_BOXES, type Box } from './layout';
+  import { cardBox, HAND_CARD, isLandscape, MARKER_BOXES, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
@@ -1276,7 +1276,7 @@
         <CardFace
           images={face?.images ?? []}
           name={face?.name ?? ''}
-          rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+          rotated={isLandscape(face?.size ?? 'std')}
         />
       {/if}
     </div>
