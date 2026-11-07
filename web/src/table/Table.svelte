@@ -2337,7 +2337,8 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    // Escape leaves select mode and keeps the group, which the table's Escape would clear.
+    // Escape leaves select mode and keeps the group, which the table's Escape would clear. Taking the key keeps
+    // fullscreen (see the "Escape in fullscreen" project memory note).
     if (selecting && event.key === 'Escape' && !modal.open) {
       event.preventDefault();
       leaveSelectMode();
