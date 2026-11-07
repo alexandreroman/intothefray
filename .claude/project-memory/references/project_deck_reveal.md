@@ -1,6 +1,6 @@
 ---
 name: "Revealed card is its deck's top card"
-description: "Reveal on the encounter deck, own decks and face-down side decks; a revealed card counts as its deck's top card"
+description: "Reveal on the encounter and scenario decks, own decks and face-down side decks; a revealed card counts as its deck's top card"
 type: project
 ---
 
@@ -8,9 +8,10 @@ type: project
 
 - Reveal puts a deck's top card face up on the table, lying on that deck
   (`OnPile`), visible to all. It exists on the encounter deck (default
-  action, `reveal` names no pile), on a player's own deck and on an own
-  side deck that hides its top card (Labor, Gift, Weather): there it
-  sends `pile`, comes right after Draw X, and Draw 1 stays the default.
+  action, `reveal` names no pile), on a scenario deck (default action
+  too, naming its `pile`), on a player's own deck and on an own side deck
+  that hides its top card (Labor, Gift, Weather): there it sends `pile`,
+  comes right after Draw X, and Draw 1 stays the default.
   A side deck showing its top card (Invocation, Sense) has no Reveal.
 - Only the deck's owner reveals a player deck; one revealed card per deck
   at a time.
@@ -19,8 +20,10 @@ type: project
   Discard 1 / X, Deal, Top X, Search, Shuffle (and shuffles into the
   deck), playing the top, putting a card on top, every count limit and
   the menu header's count.
-- Played as the deck's top (a deck-top play, or Play from a Search box),
-  the revealed card lands face up and its history line names it (see
+- Played as the deck's top (a deck-top play, or Play from a card box),
+  the revealed card is taken as it lies, as a move takes it: it keeps its
+  face (a flipped face stays), its tokens and the cards tucked under it,
+  nothing is renamed, and its history line names it (see
   [[project_face_down_cards]] for the other cards of a hidden deck).
 - Every deck action that covers a revealed card (a draw, a discard of
   the top, a deal, a Top X reorder, a shuffle, a shuffle in, a card put
@@ -80,7 +83,8 @@ renames them before resolving the kind, `apply` gives them before
 performing it (`splitRenames`), the open views first for the revealed
 cards (`revealedRenames`, `renameInViews`), and a rebuild renames them
 again on the table it meets (`renamedAgain`). Views and a deck-top play use
-`deckCards`, and `applyPlay` plays a revealed card as it lies.
+`deckCards`; `applyPlay` hands a revealed card to `playRevealed`
+(apply.go), which plays it as it lies.
 `resolveReorderTop` records the renames of a reorder that takes a
 revealed card back. On the web, `deckCount` (actions.ts) counts the
 revealed card in count limits and in the pile menu header. See also
