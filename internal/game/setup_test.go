@@ -94,20 +94,31 @@ func expectedDeckCodes(t *testing.T, cat *pack.Catalog, deck DeckChoice) []strin
 func startedGame(t *testing.T, cfg LobbyConfig) *Game {
 	t.Helper()
 	cat := newCatalog(t)
+	return startedWith(t, cfg, spiderManDeck(t, cat), spiderManDeck(t, cat)).g
+}
+
+// startedWith returns a started game of cfg where "h" (Host) plays the first
+// deck at p0 and "b" (Bob) the second one, if any, at p1.
+func startedWith(t *testing.T, cfg LobbyConfig, decks ...DeckChoice) *doFixture {
+	t.Helper()
+	cat := newCatalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
-	if _, err := g.Join("b", "Bob"); err != nil {
-		t.Fatal(err)
+	tokens := []string{"h", "b"}[:len(decks)]
+	if len(decks) > 1 {
+		if _, err := g.Join("b", "Bob"); err != nil {
+			t.Fatal(err)
+		}
 	}
 	if err := g.Configure("h", cfg, cat); err != nil {
 		t.Fatal(err)
 	}
-	for _, token := range []string{"h", "b"} {
-		seatDeck(t, g, token, 0, spiderManDeck(t, cat), cat)
+	for i, token := range tokens {
+		seatDeck(t, g, token, 0, decks[i], cat)
 	}
 	if err := g.Start("h", cat, testSeed, testNow); err != nil {
 		t.Fatal(err)
 	}
-	return g
+	return &doFixture{g: g, cat: cat}
 }
 
 func rhinoConfig() LobbyConfig {

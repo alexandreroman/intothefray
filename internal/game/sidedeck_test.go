@@ -53,28 +53,10 @@ func heroDeck(t *testing.T, cat *pack.Catalog, identity, name string, extra ...D
 	return deck
 }
 
-// heroGame returns a started Rhino game where "h" (Host) plays the first deck
-// at p0 and "b" (Bob) the second one, if any, at p1.
+// heroGame returns a started Rhino game of decks (see startedWith).
 func heroGame(t *testing.T, decks ...DeckChoice) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
-	g := mustNewGame(t, "g1", "h", "Host", testNow)
-	tokens := []string{"h", "b"}[:len(decks)]
-	if len(decks) > 1 {
-		if _, err := g.Join("b", "Bob"); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := g.Configure("h", rhinoConfig(), cat); err != nil {
-		t.Fatal(err)
-	}
-	for i, token := range tokens {
-		seatDeck(t, g, token, 0, decks[i], cat)
-	}
-	if err := g.Start("h", cat, testSeed, testNow); err != nil {
-		t.Fatal(err)
-	}
-	return &doFixture{g: g, cat: cat}
+	return startedWith(t, rhinoConfig(), decks...)
 }
 
 // sideDeckFixture is a started game where Host plays Doctor Strange (p0,
