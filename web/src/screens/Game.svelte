@@ -65,7 +65,9 @@
     border-radius: 999px;
     color: var(--muted);
     font-size: 13px;
-    /* Over the top bar, which may float over the page (100), under the dialogs (5600). */
+    /* In the lobby, over the top bar (100) and under the dialogs (5600). The table's .app is fixed,
+       a stacking context of its own, so the pill shows over the whole table, its dialogs and sheets
+       included. */
     z-index: 200;
   }
 </style>

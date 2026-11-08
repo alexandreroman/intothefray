@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { swapFade } from '../../lib/motion';
   import type { DeckView, UnsupportedCard } from '../../lib/types';
   import Icon from '../Icon.svelte';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
   /**
-   * One deck slot of the viewer. `slot` is the 1-based number shown when the
+   * One deck slot of the viewer. `number` is the 1-based number shown when the
    * player has several decks, null with a single one; `onremove` is given only
    * when the slot can be removed. `autofocus` focuses the deck link as the slot
    * mounts. `loading` tells that the slot's deck load is in flight: the form
@@ -21,7 +22,7 @@
    */
   let {
     deck,
-    slot,
+    number,
     deckError,
     error,
     onload,
@@ -32,7 +33,7 @@
     loaded,
   }: {
     deck: DeckView;
-    slot: number | null;
+    number: number | null;
     deckError: UnsupportedCard[] | null;
     error: string | null;
     onload: (url: string) => void;
@@ -50,9 +51,13 @@
   // The deck being replaced after Change: the form shows until another deck arrives.
   let changingFrom = $state<string | null>(null);
 
-  const label = $derived(slot === null ? 'Deck link' : `Deck ${slot} link`);
-  const removeLabel = $derived(slot === null ? 'Remove this deck' : `Remove deck ${slot}`);
-  const changeLabel = $derived(slot === null ? 'Change deck' : `Change deck ${slot}`);
+  const label = $derived(number === null ? 'Deck link' : `Deck ${number} link`);
+  const placeholder = $derived(
+    number === null ? 'Paste a deck link…' : `Paste deck ${number} link…`,
+  );
+  const loadLabel = $derived(number === null ? 'Load' : `Load deck ${number}`);
+  const removeLabel = $derived(number === null ? 'Remove this deck' : `Remove deck ${number}`);
+  const changeLabel = $derived(number === null ? 'Change deck' : `Change deck ${number}`);
   const signature = $derived(JSON.stringify([deck.hero, deck.deckName]));
   const showForm = $derived(!deck.ready || changingFrom === signature);
   const unsupportedCount = $derived(deckError?.reduce((sum, card) => sum + card.qty, 0) ?? 0);
@@ -94,72 +99,89 @@
   }
 </script>
 
-<div class="sect slot">
+<!-- The form and the loaded deck cross-fade in place, one over the other, as a deck loads or the
+     player changes it. Both are one line of the same height, so that nothing under the slot moves;
+     only an error adds lines under the form. -->
+<div class="slot">
   {#if showForm}
-    <div class="lblrow">
-      <label class="lbl" for={inputId}>{label}</label>
-      {@render remove()}
-    </div>
-    <!-- Busy, the form leaves out the status line below: a busy region may hold back what it
-         announces. -->
-    <form class="row" onsubmit={load} aria-busy={loading || undefined}>
-      <input
-        id={inputId}
-        type="text"
-        placeholder="Paste a deck link…"
-        readonly={loading}
-        bind:value={url}
-        bind:this={input}
-      />
-      <!-- aria-disabled rather than disabled while a load is in flight: the button keeps the focus. -->
-      <button class="btn" type="submit" disabled={url.trim() === ''} aria-disabled={locked}>
-        <!-- Both labels share one cell, so that the button keeps its width. Hidden, the other label
-             is left out of the button's name too. -->
-        <span class="labels">
-          <span style:visibility={loading ? 'hidden' : undefined}>Load</span>
-          <span class="busy" style:visibility={loading ? undefined : 'hidden'}>
-            <span class="spinner"></span>Loading
-          </span>
-        </span>
-      </button>
-      {#if changingFrom !== null}
-        <button class="btn" type="button" disabled={loading} onclick={() => (changingFrom = null)}>
-          Cancel
+    <div class="pane" transition:swapFade>
+      <!-- Busy, the form leaves out the status line below: a busy region may hold back what it
+           announces. The field's name is for screen readers only: its placeholder says it all. -->
+      <form class="form" onsubmit={load} aria-busy={loading || undefined}>
+        <label class="sr-only" for={inputId}>{label}</label>
+        <input
+          id={inputId}
+          type="text"
+          {placeholder}
+          readonly={loading}
+          bind:value={url}
+          bind:this={input}
+        />
+        <!-- A square as tall as the field; while its load is in flight, the spinner takes the
+             icon's place. aria-disabled rather than disabled meanwhile: the button keeps the
+             focus. -->
+        <button
+          class="btn load"
+          type="submit"
+          data-tip={loadLabel}
+          aria-label={loadLabel}
+          disabled={url.trim() === ''}
+          aria-disabled={locked}
+        >
+          {#if loading}
+            <span class="spinner"></span>
+          {:else}
+            <Icon name="arrow-right" />
+          {/if}
         </button>
+        {#if changingFrom !== null}
+          <button
+            class="btn-ghost tool"
+            type="button"
+            data-tip="Cancel"
+            aria-label="Cancel"
+            disabled={loading}
+            onclick={() => (changingFrom = null)}
+          >
+            <Icon name="undo" />
+          </button>
+        {:else if !deck.ready}
+          {@render remove()}
+        {/if}
+      </form>
+      <!-- Always there while the form shows: a live region must exist before what it announces.
+           Only screen readers get it; the spinner in Load shows the load. -->
+      <p class="sr-only" role="status">
+        {#if loading}Loading the deck…{/if}
+      </p>
+      {#if deckError && deckError.length > 0}
+        <div class="err" role="alert">
+          <b>This deck can't be used yet: {unsupportedText}</b>
+          <ul>
+            {#each deckError as card (card.code)}
+              <li>
+                <!-- The server names only the first cards; the others have just a code. -->
+                <span class="q">{card.qty}×</span>{card.name || card.code}
+                {#if card.pack}<span class="pk">{card.pack}</span>{/if}
+              </li>
+            {/each}
+          </ul>
+          <p>
+            Remove {unsupportedCount === 1 ? 'it' : 'them'} from the deck, or pick another deck.
+          </p>
+        </div>
+      {:else if error}
+        <p class="err" role="alert">{error}</p>
       {/if}
-    </form>
-    <!-- Always there while the form shows: a live region must exist before what it announces. Only
-         screen readers get it; the Loading button shows the load. -->
-    <p class="sr-only" role="status">
-      {#if loading}Loading the deck…{/if}
-    </p>
-    {#if deckError && deckError.length > 0}
-      <div class="err" role="alert">
-        <b>This deck can't be used yet: {unsupportedText}</b>
-        <ul>
-          {#each deckError as card (card.code)}
-            <li>
-              <!-- The server names only the first cards; the others have just a code. -->
-              <span class="q">{card.qty}×</span>{card.name || card.code}
-              {#if card.pack}<span class="pk">{card.pack}</span>{/if}
-            </li>
-          {/each}
-        </ul>
-        <p>
-          Remove {unsupportedCount === 1 ? 'it' : 'them'} from the deck, or pick another deck.
-        </p>
-      </div>
-    {:else if error}
-      <p class="err" role="alert">{error}</p>
-    {/if}
+    </div>
   {:else}
-    <div class="loaded">
+    <div class="pane loaded" transition:swapFade>
       <HeroThumb image={deck.heroImage} name={deck.heroName} />
       <!-- The view carries no card count for a deck, so none is shown. -->
       <DeckNames heroName={deck.heroName ?? ''} deckName={deck.deckName ?? ''} />
       <div class="tools">
         <button
-          class="btn-ghost tool change"
+          class="btn-ghost tool"
           data-tip={changeLabel}
           aria-label={changeLabel}
           onclick={() => (changingFrom = signature)}
@@ -175,53 +197,60 @@
 {#snippet remove()}
   {#if onremove}
     <button
-      class="btn-ghost tool remove"
+      class="btn-ghost tool"
+      type="button"
       data-tip={removeLabel}
       aria-label={removeLabel}
       aria-disabled={locked}
       onclick={removeSlot}
     >
-      <Icon name="cross" />
+      <Icon name="trash" />
     </button>
   {/if}
 {/snippet}
 
 <style>
-  /* The label shares its line with the remove button. */
-  .lblrow {
+  /* Both panes share the one cell, at its top, while one fades out as the other fades in. */
+  .slot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
+
+  .pane {
+    grid-area: 1 / 1;
+    align-self: start;
+    min-width: 0;
+  }
+
+  /*
+    One 44px line at every width: the field, then the Load, Cancel and remove icon buttons. The
+    field stands further from Load than Load from the next icon: 12px, clear of the focus outline.
+  */
+  .form {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
     gap: 8px;
+    height: 44px;
   }
 
-  .row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .row button {
-    flex: none;
-  }
-
-  /* The field stands further from Load than Load from Cancel: 12px, clear of the focus outline. */
-  .row input {
+  .form input {
+    flex: 1;
+    min-width: 0;
     margin-right: 4px;
   }
 
-  .labels {
-    display: grid;
-    justify-items: center;
+  /* `.btn.load` outweighs the lobby's `.btn` padding. */
+  .form .btn.load {
+    flex: none;
+    width: 44px;
+    padding: 0;
   }
 
-  .labels > * {
-    grid-area: 1 / 1;
-  }
-
-  .busy {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .load :global(svg) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
   }
 
   /* A ring with one side left open, turning. */
@@ -255,52 +284,44 @@
     }
   }
 
+  /* As tall as the form, so that the slot keeps its height as a deck loads or is changed. */
   .loaded {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
+    height: 44px;
+    min-width: 0;
   }
 
-  /* The names stand wider apart from the hero image than from the buttons. */
-  .loaded > :global(.names) {
-    margin-left: 6px;
-  }
-
-  /*
-    The slot's icon buttons, change and remove, side by side. Their glyphs line up with the
-    section's edge: the buttons reach into its padding by their own inset.
-  */
+  /* The slot's icon buttons, change and remove, side by side, reaching into the card's padding by
+     their own (8px): their 16px icons end on its edge, as the Load button does. */
   .tools {
     flex: none;
     display: flex;
-    margin-right: -7px;
+    gap: 2px;
+    margin-right: -8px;
   }
 
   .tool {
     flex: none;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    color: var(--faint);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 8px;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
   }
 
-  /* Alone beside the label, the remove button stays on the label's line. */
-  .lblrow .tool {
-    margin: -6px -7px 0 0;
+  .tool :global(svg) {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
   }
 
-  /* Icon draws at 1.25em: a 15px pencil, beside the 14px cross. */
-  .change {
-    font-size: 12px;
-  }
-
-  .remove :global(svg) {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2.2;
+  /* In the form too, the icon button reaches into the card's padding by its own. */
+  .form .tool {
+    margin-right: -8px;
   }
 
   .err {

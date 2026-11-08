@@ -24,14 +24,18 @@
     | 'dice'
     | 'plus'
     | 'copy'
-    | 'megaphone';
+    | 'megaphone'
+    | 'user-minus'
+    | 'leave'
+    | 'trash';
 </script>
 
 <script lang="ts">
   let { name }: { name: IconName } = $props();
 
   // Stroke icons on a 24x24 grid, drawn with currentColor. A caller changes their size and stroke width
-  // with CSS: the stroke-width attribute gives way to any style.
+  // with CSS: the stroke-width attribute gives way to any style. data-icon names the drawing, so a test
+  // can tell which one a control shows. The cross closes things only (bars, dialogs, chips).
 </script>
 
 <svg
@@ -42,6 +46,7 @@
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-hidden="true"
+  data-icon={name}
 >
   {#if name === 'sliders'}
     <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
@@ -163,6 +168,18 @@
     <path d="M7 9H5.5a2.5 2.5 0 0 0 0 5H7" />
     <path d="M8.4 14.6 9.8 20h2.8l-1.2-4.4" />
     <path d="M20 9a4.5 4.5 0 0 1 0 5" />
+  {:else if name === 'user-minus'}
+    <!-- A person, and a minus beside them: a player taken off their seat. -->
+    <circle cx="9" cy="8" r="4" />
+    <path d="M2 21c0-4 3-7 7-7s7 3 7 7" />
+    <path d="M16 11h6" />
+  {:else if name === 'leave'}
+    <!-- An arrow going out of a door, to the left. -->
+    <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+    <path d="M10 17l-5-5 5-5M5 12h11" />
+  {:else if name === 'trash'}
+    <!-- A bin with its lid. -->
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
   {:else if name === 'back'}
     <!-- An arrow pointing left. -->
     <path d="M19 12H5M11 6l-6 6 6 6" />

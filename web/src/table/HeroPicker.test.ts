@@ -159,6 +159,11 @@ describe('HeroPicker', () => {
     expect(rule('.step')).not.toMatch(/min-width/);
   });
 
+  it('lays no square tap highlight over a tapped entry: the sliding ring is the feedback', () => {
+    // The entries' rule, `.item, .item:hover`, found by its last selector.
+    expect(rule('.item:hover')).toContain('-webkit-tap-highlight-color: transparent;');
+  });
+
   it('shows the hand size of each entry in its badge', () => {
     renderPicker([SPIDER_MAN, ANT_MAN, KIM], 0);
 

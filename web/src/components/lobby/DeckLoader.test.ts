@@ -19,7 +19,7 @@ function renderLoader(
   const onload = vi.fn();
   const { rerender } = render(DeckLoader, {
     deck,
-    slot: fields.slot ?? null,
+    number: fields.slot ?? null,
     deckError: null,
     error: null,
     onload,
@@ -82,13 +82,42 @@ describe('DeckLoader', () => {
     }
   });
 
-  it('changes the deck from an icon button named in its tooltip', () => {
+  it('loads the link from an icon button named in its tooltip, disabled while the field is empty', async () => {
+    const { onload } = renderLoader(waiting);
+
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Load' });
+    expect(button.dataset.tip).toBe('Load');
+    expect(button.textContent?.trim()).toBe('');
+    expect(button.querySelector('svg')?.dataset.icon).toBe('arrow-right');
+    expect(button.disabled).toBe(true);
+
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck link' }), {
+      target: { value: ' https://example.com/deck/1 ' },
+    });
+    expect(button.disabled).toBe(false);
+    await fireEvent.click(button);
+    expect(onload).toHaveBeenCalledExactlyOnceWith('https://example.com/deck/1');
+  });
+
+  it('numbers the load button of one of several decks', () => {
+    renderLoader(waiting, { slot: 2 });
+
+    expect(screen.getByRole('button', { name: 'Load deck 2' }).dataset.tip).toBe('Load deck 2');
+  });
+
+  it('changes the deck from a pencil icon button named in its tooltip', () => {
     renderLoader(ready);
 
     const change = screen.getByRole('button', { name: 'Change deck' });
     expect(change.dataset.tip).toBe('Change deck');
     expect(change.textContent?.trim()).toBe('');
-    expect(change.querySelector('svg')).toBeTruthy();
+    expect(change.querySelector('svg')?.dataset.icon).toBe('pencil');
+  });
+
+  it('shows no Ready status beside a loaded deck: its hero tells it', () => {
+    renderLoader(ready);
+
+    expect(screen.queryByText(/Ready|Waiting/)).toBeNull();
   });
 
   it('numbers the change button of one of several decks', () => {
@@ -107,18 +136,81 @@ describe('DeckLoader', () => {
     expect(screen.queryByRole('textbox', { name: 'Deck link' })).toBeNull();
   });
 
-  it('numbers the slot of one of several decks', () => {
+  it('numbers the slot of one of several decks, in its name and its placeholder', () => {
     renderLoader(waiting, { slot: 2 });
 
-    expect(screen.getByRole('textbox', { name: 'Deck 2 link' })).toBeTruthy();
+    const field = screen.getByRole('textbox', { name: 'Deck 2 link' });
+    expect(field.getAttribute('placeholder')).toBe('Paste deck 2 link…');
   });
 
-  it('removes the slot from its remove button', async () => {
+  it('names the field for screen readers only, with no label line above the form', () => {
+    for (const slot of [null, 2]) {
+      const { unmount } = render(DeckLoader, {
+        deck: waiting,
+        number: slot,
+        deckError: null,
+        error: null,
+        onload: vi.fn(),
+        onremove: vi.fn(),
+      });
+
+      const label = document.querySelector('label');
+      expect(label?.classList.contains('sr-only')).toBe(true);
+      expect(label?.closest('form')).not.toBeNull();
+      const pane = document.querySelector('.pane');
+      expect([...(pane?.children ?? [])].map((child) => child.tagName)).toEqual(['FORM', 'P']);
+      unmount();
+    }
+  });
+
+  it("puts an empty slot's trash icon button on the form's line", () => {
+    renderLoader(waiting, { slot: 2, onremove: vi.fn() });
+
+    const remove = screen.getByRole('button', { name: 'Remove deck 2' });
+    expect(remove.closest('form')).toBe(document.querySelector('form'));
+    expect(remove.getAttribute('type')).toBe('button');
+  });
+
+  it('cancels a Change from an undo icon button on the form line, named in its tooltip', async () => {
+    renderLoader(ready, { slot: 2, onremove: vi.fn() });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Change deck 2' }));
+
+    const cancel = screen.getByRole('button', { name: 'Cancel' });
+    expect(cancel.closest('form')).toBe(document.querySelector('form'));
+    expect(cancel.dataset.tip).toBe('Cancel');
+    expect(cancel.textContent?.trim()).toBe('');
+    expect(cancel.querySelector('svg')?.dataset.icon).toBe('undo');
+    expect(cancel.getAttribute('type')).toBe('button');
+    // Changing a loaded deck, the slot offers Cancel rather than its trash.
+    expect(screen.queryByRole('button', { name: 'Remove deck 2' })).toBeNull();
+  });
+
+  it('removes the slot from its trash icon button, named in its tooltip', async () => {
     const onremove = vi.fn();
     renderLoader(ready, { slot: 2, onremove });
 
+    const remove = screen.getByRole('button', { name: 'Remove deck 2' });
+    expect(remove.dataset.tip).toBe('Remove deck 2');
+    expect(remove.querySelector('svg')?.dataset.icon).toBe('trash');
+    await fireEvent.click(remove);
+    expect(onremove).toHaveBeenCalledOnce();
+  });
+
+  it('removes an empty slot from its trash icon button too', async () => {
+    const onremove = vi.fn();
+    renderLoader(waiting, { slot: 2, onremove });
+
     await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 2' }));
     expect(onremove).toHaveBeenCalledOnce();
+  });
+
+  it('never shows the cross, which closes things only', async () => {
+    renderLoader(ready, { slot: 2, onremove: vi.fn() });
+    expect(document.querySelector('[data-icon="cross"]')).toBeNull();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Change deck 2' }));
+    expect(document.querySelector('[data-icon="cross"]')).toBeNull();
   });
 
   it('has no remove button without onremove', () => {
@@ -141,19 +233,20 @@ describe('DeckLoader', () => {
       expect(document.querySelector('[aria-busy]')).toBeNull();
     });
 
-    it('names the load button Loading and marks it disabled, keeping it focusable', async () => {
+    it('shows a spinner in place of the Load icon and marks it disabled, keeping it focusable', async () => {
       await startLoading(waiting);
 
-      const button = screen.getByRole('button', { name: 'Loading' });
+      const button = screen.getByRole('button', { name: 'Load' });
       expect(button.getAttribute('aria-disabled')).toBe('true');
       expect(button.hasAttribute('disabled')).toBe(false);
-      expect(screen.queryByRole('button', { name: 'Load' })).toBeNull();
+      expect(button.querySelector('.spinner')).not.toBeNull();
+      expect(button.querySelector('svg')).toBeNull();
     });
 
     it('does not load again on submit', async () => {
       const { onload } = await startLoading(waiting);
 
-      await fireEvent.click(screen.getByRole('button', { name: 'Loading' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
 
       expect(onload).not.toHaveBeenCalled();
     });
@@ -269,7 +362,7 @@ describe('DeckLoader', () => {
       renderLoader(waiting, { locked: true });
 
       expect(document.querySelector('[aria-busy]')).toBeNull();
-      expect(screen.queryByRole('button', { name: 'Loading' })).toBeNull();
+      expect(document.querySelector('.spinner')).toBeNull();
       expect(screen.getByRole('status').textContent?.trim()).toBe('');
     });
 
@@ -304,5 +397,51 @@ describe('DeckLoader', () => {
 
       expect(onload).toHaveBeenCalledWith('https://example.com/deck/1');
     });
+  });
+});
+
+describe('DeckLoader in motion', () => {
+  // jsdom has no Web Animations: each animation finishes on the next task.
+  const animate = vi.fn(() => {
+    const animation = { onfinish: null as (() => void) | null, cancel: () => {}, effect: null };
+    setTimeout(() => animation.onfinish?.());
+    return animation as unknown as Animation;
+  });
+  const originalAnimate = Element.prototype.animate;
+
+  beforeEach(() => {
+    Element.prototype.animate = animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = originalAnimate;
+    animate.mockClear();
+  });
+
+  /** The elements that played a 200 ms animation. */
+  function faded(): Element[] {
+    return animate.mock.calls.flatMap((call: unknown[], i) => {
+      const options = call[1] as KeyframeAnimationOptions | undefined;
+      return options?.duration === 200 ? [animate.mock.contexts[i] as Element] : [];
+    });
+  }
+
+  it('shows its first state at once', async () => {
+    renderLoader(ready);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('cross-fades the loaded deck into the form on Change, in the same place', async () => {
+    renderLoader(ready);
+    const loaded = document.querySelector('.loaded');
+    const slot = loaded?.parentElement;
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Change deck' }));
+
+    const form = screen.getByRole('textbox', { name: 'Deck link' }).closest('.pane');
+    await vi.waitFor(() => expect(new Set(faded())).toEqual(new Set([loaded, form])));
+    expect(form?.parentElement).toBe(slot);
   });
 });

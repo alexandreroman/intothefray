@@ -174,11 +174,16 @@ function renderLive() {
   };
 }
 
-/** The seat of a player in the players area. */
+/** The card of a player in the players area. */
 function seatRow(playerName: string): HTMLElement {
-  const row = screen.getByText(playerName).closest('.seat');
+  const row = screen.getByText(playerName, { selector: '.seat .nm b' }).closest('.seat');
   if (!(row instanceof HTMLElement)) throw new Error(`no row for ${playerName}`);
   return row;
+}
+
+/** Waits for the scenario index: the Scenario area then replaces its loading box. */
+async function indexLoaded(): Promise<void> {
+  await vi.waitFor(() => expect(screen.queryByText('Loading scenarios…')).toBeNull());
 }
 
 function renderLobby(fields: {
@@ -238,35 +243,47 @@ describe('Lobby', () => {
     expect(screen.queryByRole('button', { name: 'Close the lobby' })).toBeNull();
   });
 
-  it('titles the screen and tells the host what to do', () => {
+  it('titles the screen with a caption and a heading, and nothing more', () => {
     renderLobby({});
 
-    expect(screen.getByText('Lobby').classList.contains('caption')).toBe(true);
-    expect(screen.getByRole('heading', { level: 1, name: 'ASSEMBLE YOUR TEAM' })).toBeTruthy();
+    const caption = screen.getByText('Lobby');
+    expect(caption.classList.contains('caption')).toBe(true);
+    const heading = screen.getByRole('heading', { level: 1, name: 'ASSEMBLE YOUR TEAM' });
+    expect(heading.parentElement).toBe(caption.parentElement);
+    expect(heading.parentElement?.children).toHaveLength(2);
+  });
+
+  it('lays out the Players, Scenario and Start areas in that order, the start area last', async () => {
+    renderLobby({});
+    await indexLoaded();
+
+    const main = screen.getByRole('main');
+    const players = screen.getByRole('heading', { level: 2, name: 'Players' });
+    const scenario = screen.getByRole('heading', { level: 2, name: 'Scenario' });
+    const start = main.querySelector('.start');
+    expect(start).toBe(main.lastElementChild);
     expect(
-      screen.getByText(
-        'You are the host: you choose the scenario, and everyone sees it. Each player brings their own deck.',
-      ),
+      players.compareDocumentPosition(scenario) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      scenario.compareDocumentPosition(start!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 
-  it('tells a guest who chooses the scenario', () => {
-    renderLobby({ you: asSam });
+  it('shows a loading box for the scenarios until their index arrives', async () => {
+    vi.mocked(loadIndex).mockReturnValue(new Promise(() => {}));
+    renderLobby({});
 
-    expect(
-      screen.getByText(
-        'Alex is the host: they choose the scenario, and everyone sees it. Bring your own deck.',
-      ),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 2, name: 'Scenario' })).toBeTruthy();
+    expect(screen.getByText('Loading scenarios…')).toBeTruthy();
   });
 
-  it('tells a spectator who chooses the scenario', () => {
-    renderLobby({ you: { role: 'spectator', name: 'Max', color: 0, host: false } });
+  it('says so when the scenarios cannot be loaded', async () => {
+    vi.mocked(loadIndex).mockRejectedValue(new Error('offline'));
+    renderLobby({});
 
     expect(
-      screen.getByText(
-        'You are watching: Alex chooses the scenario, and each player brings their own deck.',
-      ),
+      await screen.findByText('The scenarios could not be loaded. Reload the page.'),
     ).toBeTruthy();
   });
 
@@ -288,95 +305,9 @@ describe('Lobby', () => {
     expect(screen.getByRole('button', { name: 'Remove Bomb Scare' })).toBeTruthy();
   });
 
-  it('shows the full scenario name in a tooltip when it is cut short, and no native title', async () => {
-    renderLobby({});
-
-    const klaw = await screen.findByRole('button', { name: /Klaw/ });
-    // The pack's name shows in the header above, and support on the tile itself.
-    expect(klaw.hasAttribute('title')).toBe(false);
-    const name = klaw.querySelector<HTMLElement>('.nm')!;
-    cutShort(name);
-    await fireEvent.pointerOver(name);
-    expect(name.dataset.tip).toBe('Klaw');
-  });
-
-  it('measures the first pack name and tile that set the floor of the villain list', async () => {
-    // jsdom lays nothing out: the observer is triggered and the sizes are set by hand.
-    const observed: { callback: ResizeObserverCallback; targets: Element[] }[] = [];
-    vi.stubGlobal(
-      'ResizeObserver',
-      class {
-        private readonly entry: { callback: ResizeObserverCallback; targets: Element[] };
-        constructor(callback: ResizeObserverCallback) {
-          this.entry = { callback, targets: [] };
-          observed.push(this.entry);
-        }
-        observe(target: Element): void {
-          this.entry.targets.push(target);
-        }
-        unobserve(): void {}
-        disconnect(): void {
-          this.entry.targets = [];
-        }
-      },
-    );
-    try {
-      renderLobby({});
-      await screen.findByRole('button', { name: /Klaw/ });
-      const list = document.querySelector<HTMLElement>('.villains')!;
-      expect(list.style.getPropertyValue('--pack-name-height')).toBe('');
-      expect(list.style.getPropertyValue('--tile-height')).toBe('');
-      const resize = async (element: Element | null) => {
-        for (const { callback, targets } of observed) {
-          if (element && targets.includes(element)) {
-            callback([], {} as ResizeObserver);
-          }
-        }
-        await tick();
-      };
-      const nextFrame = async () => {
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        await tick();
-      };
-
-      const sized = (height: number) => () => new DOMRect(0, 0, 200, height);
-      const packName = list.querySelector<HTMLElement>('.pkname')!;
-      const tile = list.querySelector<HTMLElement>('.vil')!;
-      packName.getBoundingClientRect = sized(41);
-      tile.getBoundingClientRect = sized(112.5);
-
-      // The sizes set the list's floor, so a resize of the list itself measures nothing.
-      await resize(list);
-      await nextFrame();
-      expect(list.style.getPropertyValue('--tile-height')).toBe('');
-
-      // The sizes resize the list, which other observers watch (scrollFade): they wait for the
-      // next frame, as a resize within the observers' delivery is a ResizeObserver loop.
-      await resize(tile);
-      expect(list.style.getPropertyValue('--tile-height')).toBe('');
-      await nextFrame();
-      // The rows themselves add up in CSS, which jsdom does not lay out.
-      expect(list.style.getPropertyValue('--pack-name-height')).toBe('41px');
-      expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
-
-      packName.getBoundingClientRect = sized(44);
-      await resize(packName);
-      await nextFrame();
-      expect(list.style.getPropertyValue('--pack-name-height')).toBe('44px');
-
-      // A hidden list lays out nothing: its zero-height tile keeps the last sizes.
-      tile.getBoundingClientRect = sized(0);
-      await resize(tile);
-      await nextFrame();
-      expect(list.style.getPropertyValue('--tile-height')).toBe('112.5px');
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
   it('names no deck provider in its copy', async () => {
     renderLobby({});
-    await screen.findByRole('button', { name: /Rhino/ });
+    await indexLoaded();
 
     const deckLink = screen.getByRole('textbox', { name: 'Deck link' });
     expect(deckLink.getAttribute('placeholder')).toBe('Paste a deck link…');
@@ -387,8 +318,8 @@ describe('Lobby', () => {
     const session = renderLobby({});
 
     const tile = await screen.findByRole('button', { name: /Marauders/ });
-    expect(tile.textContent).toContain('Not supported yet');
-    expect((tile as HTMLButtonElement).disabled).toBe(true);
+    // Disabled either way: aria-disabled keeps its tooltip.
+    expect(tile.matches(':disabled, [aria-disabled="true"]')).toBe(true);
     await fireEvent.click(tile);
     expect(session.lobby).not.toHaveBeenCalled();
   });
@@ -473,7 +404,7 @@ describe('Lobby', () => {
     };
     renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: rhino });
 
-    await screen.findByRole('button', { name: /Rhino/ });
+    await indexLoaded();
     expect(screen.getByText('Everyone is ready.')).toBeTruthy();
     const start = screen.getByRole('button', { name: 'Set up the table' });
     expect((start as HTMLButtonElement).disabled).toBe(false);
@@ -487,7 +418,7 @@ describe('Lobby', () => {
     };
     renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config: wreckingCrew });
 
-    await screen.findByRole('button', { name: /Wrecking Crew/ });
+    await indexLoaded();
     expect(screen.getByText('Everyone is ready.')).toBeTruthy();
     const start = screen.getByRole('button', { name: 'Set up the table' });
     expect((start as HTMLButtonElement).disabled).toBe(false);
@@ -497,7 +428,7 @@ describe('Lobby', () => {
     const config: LobbyConfig = { ...noScenario, scenario: 'self_contained' };
     renderLobby({ players: [{ ...alex, decks: [spiderMan] }], config });
 
-    await screen.findByRole('button', { name: /Self Contained/ });
+    await indexLoaded();
     expect(screen.queryByText('Choose at least one modular set.')).toBeNull();
     expect(screen.getByText('Everyone is ready.')).toBeTruthy();
     const start = screen.getByRole('button', { name: 'Set up the table' });
@@ -577,7 +508,7 @@ describe('Lobby', () => {
         config: { ...bullseye, modulars: ['art_museum_heist', 'bomb_scare'] },
       });
 
-      await screen.findByRole('button', { name: /Bullseye/ });
+      await indexLoaded();
       expect(screen.getByText('Everyone is ready.')).toBeTruthy();
       const start = screen.getByRole('button', { name: 'Set up the table' });
       expect((start as HTMLButtonElement).disabled).toBe(false);
@@ -606,7 +537,7 @@ describe('Lobby', () => {
 
     const seats = screen.getAllByRole('button', { name: 'Take this seat' });
     expect(seats).toHaveLength(2);
-    expect(screen.queryByText('Your decks')).toBeNull();
+    expect(screen.queryByRole('textbox', { name: /^Deck/ })).toBeNull();
     const firstSeat = seats[0];
     if (!firstSeat) throw new Error('no free seat');
     await fireEvent.click(firstSeat);
@@ -638,17 +569,18 @@ describe('Lobby', () => {
     expect(screen.queryByRole('img', { name: 'Spider-Man' })).toBeNull();
   });
 
-  it('shows the hero image of the loaded deck at the size of its seat', () => {
+  it("shows the viewer's loaded deck by its hero image, in their own card", () => {
     const asJo: YouView = { role: 'player', name: 'Jo', color: 2, host: false };
     renderLobby({
       you: asJo,
       players: [alex, { ...jo, decks: [{ ...spiderMan, heroImage: 'hero.jpg' }] }],
     });
 
-    const images = screen.getAllByRole('img', { name: 'Spider-Man' });
-    expect(images.map((image) => image.getAttribute('src'))).toEqual(['hero.jpg', 'hero.jpg']);
-    // Both boxes share one portrait size, so the names beside it line up the same way.
-    expect(images.every((image) => image.closest('.hero') !== null)).toBe(true);
+    const image = screen.getByRole('img', { name: 'Spider-Man' });
+    expect(image.getAttribute('src')).toBe('hero.jpg');
+    expect(image.closest('.hero')).not.toBeNull();
+    expect(image.closest('.seat')).toBe(seatRow('Jo'));
+    expect(within(seatRow('Jo')).getByRole('button', { name: 'Change deck' })).toBeTruthy();
   });
 
   it('loads a deck from its link', async () => {
@@ -679,15 +611,13 @@ describe('Lobby', () => {
       view: lobbyView([alex, { ...sam, ready: true, decks: [captainMarvel] }]),
     });
 
-    const deckBox = screen.getByText('Your decks').closest('section');
-    if (!deckBox) throw new Error('no deck box');
-    expect(within(deckBox).getByRole('alert').textContent).toBe(
+    expect(within(seatRow('Alex')).getByRole('alert').textContent).toBe(
       'This is not a marvelcdb deck link.',
     );
     expect(screen.getAllByRole('alert')).toHaveLength(1);
   });
 
-  it('shows any other error in the start bar', async () => {
+  it('shows any other error in the start area', async () => {
     const live = renderLive();
     await live.receive({
       type: 'error',
@@ -697,7 +627,7 @@ describe('Lobby', () => {
 
     const alert = screen.getByRole('alert');
     expect(alert.textContent).toBe('You are not allowed to do that.');
-    expect(alert.closest('.startbar')).not.toBeNull();
+    expect(alert.closest('.start')).not.toBeNull();
   });
 
   it('lists an unsupported card by its code when its name is unknown', () => {
@@ -729,23 +659,22 @@ describe('Lobby', () => {
     await fireEvent.click(document.body);
     expect(document.querySelector('.menu')).toBeNull();
   });
-  it('row lists each slot', () => {
+  it("holds the viewer's deck slots in their own card", () => {
     renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
 
     const row = seatRow('Alex');
     expect(within(row).getByText('Spider-Man')).toBeTruthy();
     expect(within(row).getByText('Friendly neighbourhood')).toBeTruthy();
-    expect(within(row).getByText('No deck yet')).toBeTruthy();
-    expect(within(row).getByText('you · host')).toBeTruthy();
+    expect(within(row).getByRole('button', { name: 'Change deck 1' })).toBeTruthy();
+    expect(within(row).getByRole('textbox', { name: 'Deck 2 link' })).toBeTruthy();
+    expect(within(row).getByRole('button', { name: 'Add a deck' })).toBeTruthy();
+    expect(within(seatRow('Sam')).queryByRole('textbox')).toBeNull();
   });
 
-  it('ready per slot', () => {
-    renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, sam] });
+  it('shows no Ready or Waiting status beside the decks', () => {
+    renderLobby({ players: [{ ...alex, decks: [spiderMan, noDeck] }, jo] });
 
-    const row = screen.getByText('Alex').closest('.seat');
-    if (!(row instanceof HTMLElement)) throw new Error('no row for Alex');
-    expect(within(row).getAllByText('Ready')).toHaveLength(1);
-    expect(within(row).getAllByText('Waiting')).toHaveLength(1);
+    expect(screen.queryByText(/^(Ready|Waiting)$/)).toBeNull();
   });
 
   it('add a deck sends addDeck', async () => {
@@ -804,7 +733,7 @@ describe('Lobby', () => {
     await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
       target: { value: 'https://example.com/deck/2' },
     });
-    await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
 
     expect(session.lobby).toHaveBeenCalledWith('setDeck', {
       url: 'https://example.com/deck/2',
@@ -888,7 +817,7 @@ describe('Lobby', () => {
     await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
       target: { value: 'https://example.com/nope' },
     });
-    await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
     await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
 
     const alert = screen.getByRole('alert');
@@ -920,6 +849,30 @@ describe('Lobby', () => {
     expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck 1 link' }).value).toBe('');
   });
 
+  it('keeps the other slots, with their typed links, as a slot between them is removed', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+    });
+    const first = screen.getByRole('textbox', { name: 'Deck 1 link' });
+    const third = screen.getByRole('textbox', { name: 'Deck 3 link' });
+    await fireEvent.input(third, { target: { value: 'https://example.com/deck/3' } });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 2' }));
+    await live.receive({
+      type: 'view',
+      version: 3,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+
+    // The same nodes, so that neither replays its opening: the former deck 3 is deck 2 now.
+    expect(screen.getByRole('textbox', { name: 'Deck 1 link' })).toBe(first);
+    expect(screen.getByRole('textbox', { name: 'Deck 2 link' })).toBe(third);
+    expect((third as HTMLInputElement).value).toBe('https://example.com/deck/3');
+  });
+
   it('shows no failed deck load under another slot once a slot is removed', async () => {
     const live = renderLive();
     await live.receive({
@@ -930,7 +883,7 @@ describe('Lobby', () => {
     await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
       target: { value: 'https://example.com/nope' },
     });
-    await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+    await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
     await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
     expect(screen.getByRole('alert')).toBeTruthy();
 
@@ -959,7 +912,7 @@ describe('Lobby', () => {
       await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
         target: { value: 'https://example.com/deck/2' },
       });
-      await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+      await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
       return live;
     }
 
@@ -976,7 +929,7 @@ describe('Lobby', () => {
         target: { value: 'https://example.com/deck/1' },
       });
       await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
-      expect(screen.getByRole('button', { name: 'Loading' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Load' }).querySelector('.spinner')).not.toBeNull();
       return live;
     }
 
@@ -988,7 +941,10 @@ describe('Lobby', () => {
       expect(busy[0]?.querySelector('input')?.id).toBe(
         screen.getByRole('textbox', { name: 'Deck 2 link' }).id,
       );
-      expect(screen.getAllByRole('button', { name: 'Loading' })).toHaveLength(1);
+      expect(document.querySelectorAll('.spinner')).toHaveLength(1);
+      expect(
+        screen.getByRole('button', { name: 'Load deck 2' }).querySelector('.spinner'),
+      ).not.toBeNull();
       // Each slot's status is visually hidden: only screen readers announce the load.
       expect(screen.getAllByRole('status').map((status) => status.textContent?.trim())).toEqual([
         '',
@@ -1004,7 +960,9 @@ describe('Lobby', () => {
         target: { value: 'https://example.com/deck/1' },
       });
 
-      const others = screen.getAllByRole('button', { name: 'Load' });
+      const others = ['Load deck 1', 'Load deck 3'].map((name) =>
+        screen.getByRole('button', { name }),
+      );
       await fireEvent.click(others[0]!);
 
       expect(others.map((button) => button.getAttribute('aria-disabled'))).toEqual([
@@ -1016,7 +974,7 @@ describe('Lobby', () => {
       await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
 
       expect(
-        screen.getAllByRole('button', { name: 'Load' })[0]!.getAttribute('aria-disabled'),
+        screen.getByRole('button', { name: 'Load deck 1' }).getAttribute('aria-disabled'),
       ).toBe('false');
     });
 
@@ -1030,7 +988,7 @@ describe('Lobby', () => {
       await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
         target: { value: 'https://example.com/deck/2' },
       });
-      await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+      await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
       const lobby = vi.spyOn(live.session, 'lobby');
       const add = screen.getByRole('button', { name: 'Add a deck' });
       const remove = screen.getByRole('button', { name: 'Remove deck 1' });

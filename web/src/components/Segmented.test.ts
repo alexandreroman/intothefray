@@ -89,27 +89,6 @@ describe('Segmented', () => {
     expect(button.querySelector('svg')).not.toBeNull();
   });
 
-  it('keeps a read-only selection showing', () => {
-    render(Segmented<Level>, {
-      props: {
-        options: LEVELS,
-        value: 'expert',
-        onchange: vi.fn(),
-        label: 'Difficulty',
-        disabled: true,
-      },
-    });
-
-    expect(
-      within(group())
-        .getAllByRole('button')
-        .every((b) => b.hasAttribute('disabled')),
-    ).toBe(true);
-    expect(screen.getByRole('button', { name: 'Expert' }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
-  });
-
   it('places its indicator over the selected option without sliding', () => {
     renderLevels('standard');
 

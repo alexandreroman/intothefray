@@ -197,6 +197,8 @@ button {
 }
 
 [data-indicator] ~ button {
+  /* The browser's tap highlight is square over the option: the sliding indicator is the feedback. */
+  -webkit-tap-highlight-color: transparent;
   transition:
     color 0.2s ease-out,
     opacity 0.2s ease-out,

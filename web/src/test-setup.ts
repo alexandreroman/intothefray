@@ -34,6 +34,14 @@ function setUpDom(): void {
   // jsdom lays nothing out, so no element is ever under a point; tests that
   // need one install their own.
   document.elementFromPoint ??= (): Element | null => null;
+
+  // jsdom has no Web Animations: no element plays any. Svelte asks for them as an item leaves a
+  // list with `animate:`. Tests that play animations install their own.
+  Element.prototype.getAnimations ??= (): Animation[] => [];
+
+  // jsdom does not scroll: its window.scrollTo only reports that it is not implemented. Tests of a
+  // scroll spy on it.
+  window.scrollTo = (): void => {};
 }
 
 // Tests of the build (seo.test.ts) run in Node, with no DOM to set up.
