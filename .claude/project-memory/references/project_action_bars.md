@@ -25,7 +25,8 @@ type: project
   stage, or the pile's owner) above the card name, or the pile kind with
   its count pill, which counts a card revealed on the deck.
 - Entries follow one order, separated by group: the default action in
-  bold (Exhaust, Draw 1, Reveal, Search, Browse…, Play on a box tile),
+  bold (Exhaust, Draw 1, Reveal, Take top card to hand, Search, Browse…,
+  Play on a box tile),
   the rest of the main group, then look actions, "Add a token", "Add a
   status" and "Add a modifier" submenus, Discard and the Move to
   submenu, then "Draw an arrow" for a card in play. Each entry that has
@@ -45,7 +46,15 @@ type: project
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W), Reveal (R) │ Top X
   (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X) │ Shuffle (U);
   encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X │
-  Shuffle; discard pile Search │ Shuffle into deck. Shuffle is always
+  Shuffle; own discard pile (an own side discard pile too) Take top card
+  to hand (H) │ Search (K) │ Shuffle into deck; any other discard pile
+  Search, plus Shuffle into deck where the viewer may use it. Take top
+  card to hand is the own discard pile's default, as Draw 1 is the own
+  deck's; it sends `toHand` for the top card, which goes to its owner's
+  hand, and is refused (greyed with its reason, left out of the
+  inspector) for an encounter card or another player's card, as the
+  engine refuses them. In a pile's box a tile offers "Take to hand" on a
+  discard pile, "Draw" on a deck. Shuffle is always
   its own last group (`GROUP_SHUFFLE`). Dragging the top of
   an own deck (or the encounter deck) onto its discard pile discards it,
   as Discard 1 does. A deck's top card dropped right over its own deck

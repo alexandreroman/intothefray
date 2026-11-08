@@ -98,6 +98,13 @@
       ],
     ],
     [
+      'Discard pile under the mouse',
+      [
+        { what: 'Take the top card to hand', keys: [KEYS.hand] },
+        { what: 'Search', keys: [KEYS.search] },
+      ],
+    ],
+    [
       'Table',
       [
         { what: 'Undo your last action', keys: ['Z'] },

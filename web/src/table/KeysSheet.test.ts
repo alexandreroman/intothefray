@@ -116,6 +116,7 @@ describe('KeysSheet', () => {
           'Shuffle: U',
         ],
       ],
+      ['Discard pile under the mouse', ['Take the top card to hand: H', 'Search: K']],
       [
         'Table',
         [

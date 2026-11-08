@@ -40,6 +40,9 @@ function makeView(): View {
         card('down', { code: undefined, faceDown: true }),
         card('inv', { home: 'side:p0:0' }),
         card('sense', { home: 'side:p0:1' }),
+        // The cards of the own discard piles, which the server lists with the table's.
+        card('y', { zone: 'pile' }),
+        card('u', { zone: 'pile', home: 'side:p0:0' }),
       ],
       piles: [
         pile('deck:p0', { owner: 0, count: 34 }),
@@ -284,9 +287,11 @@ describe('contextItems', () => {
     }
   });
 
-  it('starts a discard pile with Search', () => {
+  it('starts an own discard pile with Take top card to hand, any other with Search', () => {
     expect(texts(entriesFor({ kind: 'pile', id: 'disc:p0' }))).toEqual([
-      '*Search [K]',
+      '*Take top card to hand [H]',
+      '---',
+      'Search [K]',
       '---',
       'Shuffle into deck',
     ]);
@@ -328,7 +333,9 @@ describe('contextItems', () => {
       'Shuffle [U]',
     ]);
     expect(texts(entriesFor({ kind: 'pile', id: 'sided:p0:0' }))).toEqual([
-      '*Search [K]',
+      '*Take top card to hand [H]',
+      '---',
+      'Search [K]',
       '---',
       'Shuffle into deck',
     ]);

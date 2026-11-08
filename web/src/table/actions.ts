@@ -102,7 +102,8 @@ export interface ActionItem {
  * (handActions) have no context menu: keys.ts and the dock's hand sheet run
  * them. Several actions share a key, each on its own kind of element: W draws a
  * revealed card or from a deck, X discards a card, a hand card or a deck's
- * top card, and with Shift, Draw X and Discard X.
+ * top card, H takes a card or an own discard pile's top card to the hand, and
+ * with Shift, Draw X and Discard X.
  */
 export const KEYS = {
   exhaust: 'E',
@@ -129,9 +130,10 @@ const GROUP_LEAVE = 2;
 // The context menu's own last group, which the keys reach otherwise (A): the arrow.
 const GROUP_POINT = 3;
 
-// Groups of a pile, in menu order: its main action (Draw, Reveal), the ways to
-// look at its cards, the rarer actions (Discard 1, Discard X), then a deck's
-// Shuffle on its own, apart from the entries that move cards.
+// Groups of a pile, in menu order: its main action (Draw, Reveal, Take top card
+// to hand), the ways to look at its cards, the rarer actions (Discard 1,
+// Discard X), then a deck's Shuffle on its own, apart from the entries that
+// move cards.
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
 const GROUP_MORE = 2;
@@ -1074,17 +1076,65 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
     case 'discard':
     case 'encounterDiscard':
     case 'scenarioDiscard':
-    case 'sideDiscard': {
-      // Anyone may search a discard pile, its default action; only its owner shuffles it into its deck.
-      const search: ActionItem = { ...searchItem(pile), default: true };
-      return own ? [search, shuffleBackItem(pile)] : [search];
-    }
+    case 'sideDiscard':
+      return discardPileActions(pile, own, context);
     case 'victory':
     case 'scenarioArea':
     case 'aside':
       // Not drawn on the table: the chips on their owner's frame open their box.
       return [];
   }
+}
+
+/**
+ * A discard pile's actions. Anyone may search it; only its owner shuffles it into its deck. A
+ * discard pile of one of the viewer's seats, a side one too, takes its top card to the hand by
+ * default, as their deck draws one: Search is then one of the ways to look at its cards. Any
+ * other discard pile, the shared encounter and scenario ones included, is searched by default.
+ */
+function discardPileActions(pile: PileView, own: boolean, context: Context): ActionItem[] {
+  const playerPile = pile.kind === 'discard' || pile.kind === 'sideDiscard';
+  if (playerPile && context.seats.includes(pile.owner)) {
+    const takeTop = takeTopItem(pile, context);
+    const items = takeTop ? [takeTop] : [];
+    items.push(searchItem(pile), shuffleBackItem(pile));
+    return items;
+  }
+  const search: ActionItem = { ...searchItem(pile), default: true };
+  return own ? [search, shuffleBackItem(pile)] : [search];
+}
+
+/**
+ * Take top card to hand: H, as a card in play goes back to hand. The server puts the card into
+ * the hand of its owner's seat, so the action names the card alone. It mirrors resolveToHand:
+ * an encounter card goes to no hand, another player's card to none of the viewer's. Undefined
+ * when the view lacks the top card.
+ */
+function takeTopItem(pile: PileView, context: Context): ActionItem | undefined {
+  // A public pile lists its cards bottom to top.
+  const topId = pile.cards?.at(-1);
+  if (topId === undefined) {
+    return undefined;
+  }
+  const top = context.table.cards.find((c) => c.id === topId);
+  if (top === undefined) {
+    return undefined;
+  }
+  const takeTop: ActionItem = {
+    id: 'takeTop',
+    label: 'Take top card to hand',
+    key: KEYS.hand,
+    default: true,
+    group: GROUP_MAIN,
+    run: () => ({ kind: 'toHand', card: top.id }),
+  };
+  if (top.owner === -1) {
+    return { ...takeTop, disabled: true, reason: 'Encounter cards go to no hand' };
+  }
+  if (!context.seats.includes(top.owner)) {
+    return { ...takeTop, disabled: true, reason: 'This card belongs to another player' };
+  }
+  return takeTop;
 }
 
 /**
@@ -1255,7 +1305,7 @@ function searchItem(pile: PileView): ActionItem {
   };
 }
 
-/** The only rarer action of a discard pile. */
+/** The only rarer action of a discard pile: Shuffle into deck. */
 function shuffleBackItem(pile: PileView): ActionItem {
   return {
     id: 'shuffleBack',
