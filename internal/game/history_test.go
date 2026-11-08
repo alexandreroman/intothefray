@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // Keys of the stages of the classic scenarios.
@@ -29,14 +30,14 @@ type doFixture struct {
 
 func newDoFixture(t *testing.T) *doFixture {
 	t.Helper()
-	return &doFixture{g: startedGame(t, rhinoConfig()), cat: newCatalog(t)}
+	return &doFixture{g: startedGame(t, rhinoConfig()), cat: packstest.Catalog(t)}
 }
 
 // klawFixture is a started Klaw game of two Spider-Man players: its villain
 // and main scheme both have several stages.
 func klawFixture(t *testing.T) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	return &doFixture{g: startedGame(t, DefaultConfig(cat, "klaw")), cat: cat}
 }
 
@@ -290,7 +291,7 @@ func TestSpectatorCannotAct(t *testing.T) {
 func TestDoRequiresPlaying(t *testing.T) {
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
-	err := g.Do("h", -1, Action{Kind: ActDraw, N: 1}, newCatalog(t), testNow)
+	err := g.Do("h", -1, Action{Kind: ActDraw, N: 1}, packstest.Catalog(t), testNow)
 	if !errors.Is(err, ErrPhase) {
 		t.Errorf("Do in the lobby = %v, want ErrPhase", err)
 	}
@@ -1528,7 +1529,7 @@ func TestUndoRestoresVillainBeforeStageChange(t *testing.T) {
 }
 
 func TestStageChangeOfOneWreckingCrewVillainLeavesTheOthers(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	f := &doFixture{g: startedGame(t, DefaultConfig(cat, "wrecking_crew")), cat: cat}
 	villains := []string{"wrecker", "thunderball", "piledriver", "bulldozer"}
 	for i, key := range villains {

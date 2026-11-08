@@ -1,4 +1,4 @@
-// Dragging several cards selected with the rubber band (spec 5.2). The
+// Dragging several cards selected with the rubber band. The
 // fixtures mirror DragLayer.test.ts: the screen at zoom 1, the surface 20 px
 // in from the left and 40 px down from the top, the hand at the bottom.
 import { fireEvent, render, screen } from '@testing-library/svelte';
@@ -17,6 +17,7 @@ import {
   playingView,
   seated,
   tallTable,
+  VILLAIN_STAGE,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -56,7 +57,7 @@ function makeView(cards: TableCard[] = CARDS): View {
       cards,
       piles: PILES,
       hands: { p0: ['h1', 'h2', 'h3'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 860, y: 340 },
     },
   });

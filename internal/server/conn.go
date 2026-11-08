@@ -53,6 +53,9 @@ type conn struct {
 	ws     *websocket.Conn
 	gameID string
 	logger *slog.Logger
+	// cancel ends the connection's context. It is set before the hub adds
+	// the connection, which calls it on shutdown.
+	cancel context.CancelFunc
 	// token, presenceID and onlineID are set by a successful hello, before
 	// the hub registers the connection, and never change afterwards.
 	// onlineID tells this connection apart from the other tabs of the token
@@ -285,11 +288,15 @@ func (c *conn) closeWhenTooSlow(ctx context.Context) {
 func (s *Server) serveConn(ctx context.Context, ws *websocket.Conn, gameID string) {
 	ws.SetReadLimit(maxMessageBytes)
 	c := newConn(ws, gameID, s.deps.Logger)
+	ctx, cancel := context.WithCancel(ctx)
+	c.cancel = cancel
 	if !s.hub.add(c) {
+		cancel()
 		_ = ws.Close(websocket.StatusGoingAway, "server shutting down")
 		return
 	}
-	ctx, cancel := context.WithCancel(ctx)
+	// Deferred first, so that it runs last: shutdown waits for the cleanup.
+	defer s.hub.serving.Done()
 	var wg sync.WaitGroup
 	// Deferred, so that even a panic leaves neither the hub entry, the online
 	// connection nor the socket behind. The read loop that sets the token has
@@ -381,33 +388,14 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	if c.token != "" {
 		return fmt.Errorf("%w: second hello", errInvalidMessage)
 	}
-	fresh, err := newToken()
-	if err != nil {
-		return err
-	}
-	onlineID, err := newToken()
-	if err != nil {
-		return err
-	}
-
-	var token string
-	var role game.Role
-	joinVersion, err := s.updateVersion(ctx, c.gameID, func(g *game.Game) error {
-		token = msg.Token
-		if !g.TakesPart(token) {
-			token = fresh
-		}
-		var joinErr error
-		role, joinErr = g.Join(token, msg.Name)
-		return joinErr
-	})
+	token, role, joinVersion, err := s.join(ctx, c.gameID, msg.Token, msg.Name)
 	if err != nil {
 		return err
 	}
 
 	c.token = token
 	c.presenceID = presenceID(token)
-	c.onlineID = onlineID
+	c.onlineID = newToken()
 	c.send(welcomeMessage{Type: typeWelcome, Token: token, Role: role})
 	// Recorded online before it is registered: the viewer's first view, and
 	// any view the event loop relays to the others meanwhile, already show
@@ -432,6 +420,41 @@ func (s *Server) hello(ctx context.Context, c *conn, msg clientMessage) error {
 	// The other viewers count c from now on.
 	s.publish(ctx, c.gameID, onlineEvent{Kind: eventOnline})
 	return nil
+}
+
+// join joins the game with token, or with a fresh token when the game does
+// not know it, and returns the token, its role and the version of the game
+// that holds it. A token never leaves a game, and Join changes nothing for a
+// known one: such a token joins without a write, which would send every
+// viewer a full view of an unchanged game. Its game only gets its expiry
+// reset, as a write would.
+func (s *Server) join(ctx context.Context, gameID, token, name string) (string, game.Role, int64, error) {
+	g, version, err := s.deps.Store.Load(ctx, gameID)
+	if err != nil {
+		return "", "", 0, err
+	}
+	if g.TakesPart(token) {
+		role, err := g.Join(token, name)
+		if err != nil {
+			return "", "", 0, err
+		}
+		if err := s.deps.Store.Touch(ctx, gameID); err != nil {
+			return "", "", 0, err
+		}
+		return token, role, version, nil
+	}
+
+	fresh := newToken()
+	var role game.Role
+	version, err = s.updateVersion(ctx, gameID, func(g *game.Game) error {
+		var joinErr error
+		role, joinErr = g.Join(fresh, name)
+		return joinErr
+	})
+	if err != nil {
+		return "", "", 0, err
+	}
+	return fresh, role, version, nil
 }
 
 // setOffline forgets c among the connections of its game, and tells every
@@ -477,10 +500,7 @@ func (s *Server) lobby(ctx context.Context, c *conn, msg clientMessage) error {
 	case opTakeSeat:
 		return s.update(ctx, c.gameID, func(g *game.Game) error { return g.TakeSeat(c.token) })
 	case opStart:
-		seed, err := newSeed()
-		if err != nil {
-			return err
-		}
+		seed := newSeed()
 		return s.update(ctx, c.gameID, func(g *game.Game) error {
 			return g.Start(c.token, cat, seed, s.deps.Now())
 		})

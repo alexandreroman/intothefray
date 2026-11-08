@@ -1,4 +1,4 @@
-// The table's keyboard shortcuts (spec 5.10). One keydown listener on the
+// The table's keyboard shortcuts. One keydown listener on the
 // window acts on the element under the pointer, or on the one whose context
 // menu is open, with the items its menu lists; the arrow, which is no item of
 // that list, gets its own key here, and the hand cards, which have no menu, the
@@ -56,7 +56,7 @@ export function handleKey(event: KeyboardEvent, table: KeyTable): void {
   if (modal.open) {
     return;
   }
-  // Escape lets go of the table, even from a field, as in the prototype. What
+  // Escape lets go of the table, even from a field. What
   // it dropped takes the key, so that fullscreen stays (lib/fullscreen, and the
   // "Escape in fullscreen" project memory note).
   if (event.key === 'Escape') {

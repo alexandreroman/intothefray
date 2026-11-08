@@ -1,8 +1,7 @@
 <!--
-  The card box (spec 5.7): Search, Look at top, Browse and the stage choice
-  share one fixed-size box, two rows of 5:7 tiles with the rest scrolling, a
-  name filter and a footer (the prototype's renderDeckView and
-  renderStageView). Its tiles are as wide as the raised hand's cards, at most
+  The card box: Search, Look at top, Browse and the stage choice share one
+  fixed-size box, two rows of 5:7 tiles with the rest scrolling, a name filter
+  and a footer. Its tiles are as wide as the raised hand's cards, at most
   220 px (`tileWidth`, boxGrid), in as many columns as the window holds, and
   the box is as wide as those columns. A click, a tap or a right click on a pile tile opens
   its context menu at the pointer, over the box; in Look at top, tiles are
@@ -16,10 +15,12 @@
   import { tick, untrack } from 'svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import Dialog from '../components/Dialog.svelte';
+  import { byId } from '../lib/byId';
   import { overflowTip } from '../lib/overflowTip';
   import { releaseFocus } from '../lib/releaseFocus';
   import { TOUCH_MODE_QUERY } from '../lib/screen';
   import { scrollFade } from '../lib/scrollFade';
+  import { matchesQuery } from '../lib/textFilter';
   import type {
     Action,
     CardView,
@@ -56,6 +57,7 @@
     box,
     view,
     facesOf,
+    englishName,
     sizeOf,
     readOnly,
     selected,
@@ -68,6 +70,8 @@
     view: View;
     /** Every face of a card, from the catalog; none while it loads. */
     facesOf: (card: CardView) => PackFace[];
+    /** The English name of a card's face, which the filter matches too; undefined while unknown. */
+    englishName: (card: CardView, face: number) => string | undefined;
     sizeOf: (card: CardView) => Size;
     /** A spectator's box: it shows the cards and offers nothing. */
     readOnly: boolean;
@@ -85,7 +89,7 @@
     tileWidth: number;
   } = $props();
 
-  // The prototype's values: the grid scrolls by this step when a dragged tile nears its edge.
+  // A dragged tile within EDGE_SCROLL px of the grid's top or bottom scrolls it by SCROLL_STEP px a move.
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
   // A card is 1.4 times as high as wide.
@@ -100,6 +104,8 @@
     card: CardView;
     face: number;
     name: string;
+    /** The face's English name, else its shown one. */
+    englishName: string;
     images: string[];
     landscape: boolean;
     /** "#3" (place in the pile, for a pile listed top first) or "On the table". */
@@ -108,7 +114,7 @@
     shown: boolean;
   }
 
-  const cardsById = $derived(new Map((view.table?.cards ?? []).map((card) => [card.id, card])));
+  const cardsById = $derived(byId(view.table?.cards ?? []));
 
   // Cards put at the bottom of their deck from this box leave it, though they stay in the pile.
   let sentDown = $state<string[]>([]);
@@ -125,11 +131,13 @@
       return cards.sort(compareCardNumbers).flatMap((card) =>
         facesOf(card).map((face, index) => {
           const onTable = card.id === stage.current && card.face === index;
+          const name = stageFaceName(face, index);
           return {
             key: `${card.id}:${index}`,
             card,
             face: index,
-            name: stageFaceName(face, index),
+            name,
+            englishName: englishName(card, index) ?? name,
             images: face.images,
             landscape: isLandscape(face.size),
             badge: onTable ? 'On the table' : undefined,
@@ -146,12 +154,14 @@
         return [];
       }
       const face = facesOf(card)[card.face];
+      const name = face?.name ?? '';
       return [
         {
           key: id,
           card,
           face: card.face,
-          name: face?.name ?? '',
+          name,
+          englishName: englishName(card, card.face) ?? name,
           images: face?.images ?? [],
           landscape: face ? isLandscape(face.size) : false,
           badge: byNumber ? undefined : `#${index + 1}`,
@@ -165,10 +175,7 @@
   const tiles = $derived(tilesOf(box));
 
   let query = $state('');
-  const matching = $derived.by(() => {
-    const wanted = query.trim().toLowerCase();
-    return wanted === '' ? tiles : tiles.filter((t) => t.name.toLowerCase().includes(wanted));
-  });
+  const matching = $derived(tiles.filter((t) => matchesQuery(query, [t.name, t.englishName])));
 
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
 
@@ -371,8 +378,9 @@
   /**
    * Two rows of 5:7 tiles, from the fitted tiles' width only (never from what
    * the grid shows), so that every box opens at the same size; the rest
-   * scrolls. In dock mode the box fills the screen, and the grid all the room
-   * left in it.
+   * scrolls. On a short window the dialog's column, 88vh at most, shrinks the
+   * scrolling grid to the room its header and footer leave. In dock mode the
+   * box fills the screen, and the grid all the room left in it.
    */
   let gridHeight = $state<number | null>(null);
 
@@ -390,10 +398,7 @@
     if (element.clientWidth - padX <= 0) {
       return;
     }
-    gridHeight = Math.min(
-      2 * fitted.tile * CARD_RATIO + gap + padY,
-      window.innerHeight * 0.88 - 160,
-    );
+    gridHeight = 2 * fitted.tile * CARD_RATIO + gap + padY;
   }
 
   // ---- Reordering the top cards ----
@@ -447,7 +452,7 @@
 
   // When other players' actions move the tiles, the browser reports the tile
   // that lands under a pointer at rest as entered, at the very spot the
-  // pointer rests: that is not the viewer hovering it (spec 5.8), and its ring
+  // pointer rests: that is not the viewer hovering it, and its ring
   // would mark a card they did not point at.
   let pointer = { x: NaN, y: NaN };
   let drawnAt = { x: NaN, y: NaN };
@@ -802,21 +807,23 @@
   {#if drag?.lifted}
     <div
       class="tile-ghost"
-      style:left="{drag.ghost.x}px"
-      style:top="{drag.ghost.y}px"
+      style:translate="{drag.ghost.x}px {drag.ghost.y}px"
       style:width="{drag.ghost.width}px"
       style:height="{drag.ghost.height}px"
     >
-      {@render art(drag.tile, false)}
+      <span class="face" class:land={drag.tile.landscape}>
+        <span class="shade"></span>
+        <CardFace images={drag.tile.images} name={drag.tile.name} landscape={drag.tile.landscape} />
+      </span>
     </div>
   {/if}
 </Dialog>
 
-{#snippet art(tile: Tile, withBadge = true)}
+{#snippet art(tile: Tile)}
   <span class="face" class:land={tile.landscape}>
     <CardFace images={tile.images} name={tile.name} landscape={tile.landscape} />
   </span>
-  {#if withBadge && tile.badge}
+  {#if tile.badge}
     <span class="pos">{tile.badge}</span>
   {/if}
 {/snippet}
@@ -1108,14 +1115,25 @@
     white-space: nowrap;
   }
 
-  /* The dragged card, the tile's size, its card contained as in the tile. */
+  /*
+    The dragged card, the tile's size, its card contained as in the tile. It follows the pointer on
+    translate, from the window's corner: a pointer move lays nothing out again. It casts a held
+    card's shadow (.shade, tokens.css) from its card's own box, under its face.
+  */
   .tile-ghost {
+    --shade-shadow: var(--held-card-shadow);
     position: fixed;
+    left: 0;
+    top: 0;
     z-index: 6;
     display: grid;
     place-items: center;
     pointer-events: none;
-    transform: rotate(-3deg) scale(1.04);
-    filter: drop-shadow(6px 8px 12px #000c);
+    rotate: -3deg;
+    scale: 1.04;
+  }
+
+  .tile-ghost .face.land .shade {
+    border-radius: var(--card-radius-land);
   }
 </style>

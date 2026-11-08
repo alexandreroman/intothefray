@@ -11,13 +11,13 @@
    */
   type Size = number | 'inherit';
 
-  type Lockup =
-    // The mark with the wordmark on one line, for the top bars: it has a size of its own.
-    | { variant?: 'horizontal'; size?: Size }
-    // The mark alone, or with the wordmark on two lines (home): each place sets its size.
-    | { variant: 'stacked' | 'mark'; size: Size };
-
-  type Props = Lockup & {
+  type Props = {
+    /**
+     * The mark with the wordmark on one line (the top bars), on two lines (home), or alone. Each
+     * place sets its size.
+     */
+    variant?: 'horizontal' | 'stacked' | 'mark';
+    size: Size;
     /**
      * Whether the mark shows its spark. By default it does when the mark is large enough, which
      * a mark of inherited size is taken to be: a place that knows its mark stays small says so.
@@ -27,8 +27,6 @@
 
   let { variant = 'horizontal', size, spark: sparkWanted }: Props = $props();
 
-  // The top bars' "FRAY", in pixels.
-  const HORIZONTAL_SIZE = 28;
   // The mark's size for a "FRAY" of 1px, from the approved lockups.
   const MARK_RATIO = { horizontal: 32 / 28, stacked: 190 / 172, mark: 1 };
   // The spark is lost in a small mark.
@@ -39,15 +37,17 @@
   const bottomClipId = `${uid}-bottom`;
 
   // Unset when inherited: the size is then unknown here.
-  let fontSize = $derived(size === 'inherit' ? undefined : (size ?? HORIZONTAL_SIZE));
+  const fontSize = $derived(size === 'inherit' ? undefined : size);
   // In pixels, or in em of the inherited font size.
-  let markSize = $derived(
+  const markSize = $derived(
     fontSize === undefined ? `${MARK_RATIO[variant]}em` : fontSize * MARK_RATIO[variant],
   );
   // A mark of unknown size is taken as a large one, with its spark.
-  let spark = $derived(sparkWanted ?? (typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE));
+  const spark = $derived(
+    sparkWanted ?? (typeof markSize === 'string' || markSize >= SPARK_MIN_SIZE),
+  );
   // A small mark needs a wider fracture to show it.
-  let offset = $derived(spark ? 1.6 : 1.8);
+  const offset = $derived(spark ? 1.6 : 1.8);
 </script>
 
 <span

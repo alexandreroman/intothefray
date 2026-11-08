@@ -7,11 +7,11 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
   import Sheet from '../components/Sheet.svelte';
-  import { playerColorVar } from '../lib/playerColor';
   import { pointerBlur } from '../lib/releaseFocus';
   import type { LogView } from '../lib/types';
   import { dockMode } from './dockMode';
-  import { partsOf, timeOf, type NameOf } from './historyLines';
+  import { historyLines, type NameOf } from './historyLines';
+  import HistoryText from './HistoryText.svelte';
   import { NOTHING_TO_UNDO, UNDO_TIP } from './SidePanel.svelte';
 
   let {
@@ -38,18 +38,7 @@
     }
   }
 
-  // The words come from historyLines.ts and the markup below reproduces SidePanel's, so that both
-  // read the same. Keyed by their position from the oldest, which does not move when lines are added.
-  const lines = $derived(
-    log
-      .map((entry, index) => ({
-        key: index,
-        entry,
-        parts: partsOf(entry, nameOf),
-        time: timeOf(entry.at),
-      }))
-      .reverse(),
-  );
+  const lines = $derived(historyLines(log, nameOf));
 </script>
 
 <Sheet label="History" {onclose} maxHeight="62%" dock={dock.current}>
@@ -60,14 +49,7 @@
       {#each lines as { key, entry, parts, time } (key)}
         <li class="e" class:undone={entry.undone}>
           <time class="t">{time}</time>
-          <!-- The line break between the name and the text renders as one space. -->
-          <span class="txt">
-            <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
-            {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}
-                  >{part.text}</b
-                >{:else if part.aside}<span class="aside">{part.text}</span
-                >{:else}{part.text}{/if}{/each}
-          </span>
+          <span class="txt"><HistoryText {entry} {parts} /></span>
         </li>
       {/each}
     </ul>
@@ -125,18 +107,6 @@
     flex: 1;
     min-width: 0;
     overflow-wrap: anywhere;
-  }
-
-  .w {
-    font-weight: 700;
-  }
-
-  .card {
-    font-weight: 700;
-  }
-
-  .aside {
-    color: var(--faint);
   }
 
   .t {

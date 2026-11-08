@@ -20,7 +20,8 @@ type: project
   through the action history.
 - Another face of the same card (1A to 1B) changes only the face.
 - Setup marks a stage as a villain's (`Stage.Villain`) when its top card
-  is a villain; any other stage follows the main scheme rule.
+  is a villain or a leader, as Civil War's Iron Man is
+  (`pack.Card.IsVillain`); any other stage follows the main scheme rule.
 
 **Why:** user decision, from the Rules Reference v1.3: "Excess damage
 ... does not carry over to the new stage. Attachments, status cards,

@@ -212,27 +212,42 @@ func (s *Store) Update(
 // Touch resets the expiry of a game and of its summary without changing them,
 // in one MULTI/EXEC: both expiries change together or not at all. Like Create's
 // script and Update's transaction, it always gives both keys the same expiry
-// at once. A game without a summary, such as one stored before summaries
-// existed, is touched all the same.
+// at once. It reads the phase that sets the expiry from the summary, which is
+// small, under WATCH: a write that lands in between has just set both
+// expiries itself, so the touch is then dropped. A game whose game or summary
+// key is gone is not found.
 func (s *Store) Touch(ctx context.Context, id string) error {
-	g, _, err := s.Load(ctx, id)
-	if err != nil {
-		return err
-	}
-	ttl := s.ttlFor(g.Phase)
-	var touched *redis.BoolCmd
-	_, err = s.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		touched = pipe.Expire(ctx, gameKey(id), ttl)
-		pipe.Expire(ctx, infoKey(id), ttl)
+	key := infoKey(id)
+	touch := func(tx *redis.Tx) error {
+		data, err := tx.Get(ctx, key).Bytes()
+		if err != nil {
+			return readError(id, err)
+		}
+		var summary game.Summary
+		if err := json.Unmarshal(data, &summary); err != nil {
+			return fmt.Errorf("decode summary of game %s: %w", id, err)
+		}
+		ttl := s.ttlFor(summary.Phase)
+		var touched *redis.BoolCmd
+		_, err = tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			touched = pipe.Expire(ctx, gameKey(id), ttl)
+			pipe.Expire(ctx, key, ttl)
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("touch game %s: %w", id, err)
+		}
+		if !touched.Val() {
+			return fmt.Errorf("touch game %s: %w", id, ErrNotFound)
+		}
 		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("touch game %s: %w", id, err)
 	}
-	if !touched.Val() {
-		return fmt.Errorf("touch game %s: %w", id, ErrNotFound)
+
+	err := s.rdb.Watch(ctx, touch, key)
+	if errors.Is(err, redis.TxFailedErr) {
+		return nil
 	}
-	return nil
+	return err
 }
 
 // GameSummaries returns the summary of every game that has not expired, in
@@ -240,9 +255,9 @@ func (s *Store) Touch(ctx context.Context, id string) error {
 // deduplicated. It walks those keys with SCAN, which never blocks Redis the
 // way KEYS would, and reads their small values with one MGET per round: it
 // reads no game value. SCAN may return a key twice while Redis resizes its
-// table; such a key is read once, so each game appears once. A game stored before summaries existed has none and is
-// left out, and so is a summary that expires during the walk or that cannot
-// be decoded: one bad value must not fail the whole statistics.
+// table; such a key is read once, so each game appears once. A summary that
+// expires during the walk, or that cannot be decoded, is left out: one bad
+// value must not fail the whole statistics.
 func (s *Store) GameSummaries(ctx context.Context) ([]game.Summary, error) {
 	var (
 		summaries []game.Summary

@@ -96,7 +96,7 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 			return nil
 		}
 		ids = append(ids, c.ID)
-	case ActDiscard, ActToPile, ActPlay:
+	case ActDiscard, ActToPile:
 	default:
 		return nil
 	}
@@ -174,12 +174,6 @@ func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 		a.Actions = subs
 		return a, nil
 	}
-	// replayEvent resolves a shuffle again instead, and a group holds none:
-	// this keeps a shuffle's renames, which give its pile a new order, out of
-	// the renaming below should another caller ever pass one.
-	if producesShuffle(a) {
-		return a, nil
-	}
 	covered, hidden, err := t.coveredFor(a, a.Area)
 	if err != nil {
 		return a, err
@@ -231,14 +225,15 @@ func renamesCards(a Action) bool {
 }
 
 // takesAway are the kinds that may take a card out of its place, and with it
-// the cards it carries (see carried and renamedOnTheWay).
+// the cards it carries (see carried and renamedOnTheWay). A play is none: it
+// takes a card out of a hand or a pile into everybody's sight, and a card
+// revealed on a deck as it lies, its stack along (see applyPlay).
 var takesAway = map[Kind]bool{
 	ActToDeck:  true,
 	ActToHand:  true,
 	ActFlip:    true,
 	ActDiscard: true,
 	ActToPile:  true,
-	ActPlay:    true,
 }
 
 // checkRenames checks the renames of a shuffle: they must cover exactly the

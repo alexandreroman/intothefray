@@ -84,7 +84,8 @@ describe('Segmented', () => {
     });
 
     const button = screen.getByRole('button', { name: 'All' });
-    expect(button.getAttribute('title')).toBe('All');
+    expect(button.dataset.tip).toBe('All');
+    expect(button.hasAttribute('title')).toBe(false);
     expect(button.querySelector('svg')).not.toBeNull();
   });
 

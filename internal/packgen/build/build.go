@@ -264,14 +264,14 @@ func applySetDefs(
 	return nil
 }
 
-// applySideBacks gives every card of a side deck with a shared back that
-// back, whatever back its source tells: one card with another back would show
-// which card lies on top of the face-down deck.
+// applySideBacks gives every card of a side deck the deck's shared back,
+// whatever back its source tells: one card with another back would show which
+// card lies on top of the face-down deck.
 func applySideBacks(cards map[string][]pack.Card, sets map[string][]pack.Set) {
 	backs := make(map[string]pack.Back)
 	for _, packSets := range sets {
 		for _, set := range packSets {
-			if set.Side == nil || set.Side.Back == "" {
+			if set.Side == nil {
 				continue
 			}
 			for _, code := range set.Cards {
@@ -403,7 +403,8 @@ func checkSetAside(set pack.Set, setAside []string, cardCodes map[string]bool) e
 }
 
 // isEncounterSetKind reports whether a set of this kind is one setup adds to
-// the encounter deck on top of the villain set.
+// the encounter deck on top of the villain set. The lobby offers exactly these
+// sets, unlisted ones aside.
 func isEncounterSetKind(kind string) bool {
 	switch kind {
 	case pack.SetKindModular, pack.SetKindStandard, pack.SetKindExpert, pack.SetKindMainScheme:
@@ -614,7 +615,7 @@ func buildIndex(
 			Position: packFile.Position,
 		})
 		for _, set := range packFile.Sets {
-			if isLobbyKind(set.Kind) && !set.Unlisted {
+			if isEncounterSetKind(set.Kind) && !set.Unlisted {
 				index.Sets = append(index.Sets, pack.SetRef{
 					Code: set.Code, Name: set.Name, Pack: packFile.Code, Kind: set.Kind,
 					Recommended: recommendations[set.Code],
@@ -626,11 +627,4 @@ func buildIndex(
 		return cmp.Compare(positions[a.Pack], positions[b.Pack])
 	})
 	return index
-}
-
-// isLobbyKind tells whether the lobby can offer sets of this kind. Unlisted
-// sets stay out of the lobby whatever their kind.
-func isLobbyKind(kind string) bool {
-	return kind == pack.SetKindModular || kind == pack.SetKindStandard || kind == pack.SetKindExpert ||
-		kind == pack.SetKindMainScheme
 }

@@ -6,8 +6,8 @@
 
 import type { CardView } from '../lib/types';
 import {
-  arrowItem,
-  counterName,
+  ARROW_ID,
+  counterLabel,
   countersOf,
   MODIFIERS,
   STATUSES,
@@ -50,9 +50,6 @@ const MAX_MAIN = 4;
 const TOKEN_NAMES = TOKENS.map((token) => token.name);
 const STATUS_NAMES = STATUSES.map((status) => status.name);
 
-/** The id of Draw an arrow, whatever card it is for. */
-const ARROW_ID = arrowItem('').id;
-
 /**
  * The counters the card carries, in the order of its menus: the tokens, the
  * statuses, then the modifiers. A counter at zero is left out.
@@ -72,19 +69,16 @@ function carried(card: CardView, kind: CounterKind, names: readonly string[]): S
   for (const name of names) {
     const value = values[name] ?? 0;
     if (value !== 0) {
-      counters.push({ kind, name, label: labelOf(kind, name), value, signed: kind === 'modifier' });
+      counters.push({
+        kind,
+        name,
+        label: counterLabel(kind, name),
+        value,
+        signed: kind === 'modifier',
+      });
     }
   }
   return counters;
-}
-
-/** A modifier by its stat alone, beside its signed value ("DEF"); a token or status as the pill names it. */
-function labelOf(kind: CounterKind, name: string): string {
-  if (kind === 'modifier') {
-    return name.toUpperCase();
-  }
-  const spelt = counterName(kind, name);
-  return spelt.charAt(0).toUpperCase() + spelt.slice(1);
 }
 
 /**

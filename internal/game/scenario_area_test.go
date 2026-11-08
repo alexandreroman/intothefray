@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // collectionID is the pile of The Collection, the scenario area of Infiltrate
@@ -15,7 +17,7 @@ const collectionID = "area:collection"
 // Spider-Man players: "h" (Host, p0) and "b" (Bob, p1).
 func collectionFixture(t *testing.T) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	return &doFixture{g: startedGame(t, DefaultConfig(cat, "infiltrate_the_museum")), cat: cat}
 }
 

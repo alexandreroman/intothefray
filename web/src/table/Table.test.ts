@@ -17,6 +17,8 @@ import {
   pile,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 import { HAND_CARD, HANDS_GAP, restingFanWidth } from './layout';
 
@@ -118,7 +120,7 @@ function makeView(extra: { cards?: TableCard[]; piles?: PileView[] } = {}): View
     table: {
       cards,
       piles,
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
   });
 }
@@ -253,42 +255,46 @@ describe('Table', () => {
     expect(name.dataset.tip).toBe('Alex · Spider-Man');
   });
 
-  it("frames each owner's deck and discard pile, named after them and their hero, their hand count as tip", async () => {
-    render(Table, { session: fakeSession(), view: makeView() });
-    await catalogLoaded();
+  it(
+    "frames each owner's deck and discard pile, named after them and their hero, " +
+      'their hand count as tip',
+    async () => {
+      render(Table, { session: fakeSession(), view: makeView() });
+      await catalogLoaded();
 
-    const boxes = ownerBoxes();
-    // The hero is named even for a player with one deck.
-    expect(boxes.map((box) => box.querySelector('.owner')?.textContent)).toEqual([
-      'Villain',
-      'Alex · Spider-Man',
-      'Sam · Ant-Man',
-    ]);
-    // Screen readers read the hand count, which the pointer finds in the tooltip.
-    expect(boxes.map((box) => box.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'Villain',
-      'Alex · Spider-Man : 6 cards in hand',
-      'Sam · Ant-Man : 5 cards in hand',
-    ]);
-    expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
-      'var(--villain)',
-      'var(--p1)',
-      'var(--p2)',
-    ]);
-    expect(boxes.map((box) => box.dataset.tip)).toEqual([
-      undefined,
-      '6 cards in hand',
-      '5 cards in hand',
-    ]);
-    // Around Sam's deck (0, 690) and discard pile (130, 690), drawn at 520, 10 units off their edges.
-    const sam = boxes[2]!;
-    expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
-      '-10px',
-      '510px',
-      '262px',
-      '177px',
-    ]);
-  });
+      const boxes = ownerBoxes();
+      // The hero is named even for a player with one deck.
+      expect(boxes.map((box) => box.querySelector('.owner')?.textContent)).toEqual([
+        'Villain',
+        'Alex · Spider-Man',
+        'Sam · Ant-Man',
+      ]);
+      // Screen readers read the hand count, which the pointer finds in the tooltip.
+      expect(boxes.map((box) => box.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+        'Villain',
+        'Alex · Spider-Man : 6 cards in hand',
+        'Sam · Ant-Man : 5 cards in hand',
+      ]);
+      expect(boxes.map((box) => box.style.getPropertyValue('--owner'))).toEqual([
+        'var(--villain)',
+        'var(--p1)',
+        'var(--p2)',
+      ]);
+      expect(boxes.map((box) => box.dataset.tip)).toEqual([
+        undefined,
+        '6 cards in hand',
+        '5 cards in hand',
+      ]);
+      // Around Sam's deck (0, 690) and discard pile (130, 690), drawn at 520, 10 units off their edges.
+      const sam = boxes[2]!;
+      expect([sam.style.left, sam.style.top, sam.style.width, sam.style.height]).toEqual([
+        '-10px',
+        '510px',
+        '262px',
+        '177px',
+      ]);
+    },
+  );
 
   it('draws no out-of-play pile on the table', async () => {
     const view = makeView();
@@ -408,7 +414,7 @@ describe('Table', () => {
 
   it('a spectator opens the out-of-play piles from their chips too', async () => {
     const view = withOutOfPlay(makeView());
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -879,7 +885,7 @@ describe('Table', () => {
 
     render(Table, {
       session: fakeSession(),
-      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+      view: { ...view, you: spectatorYou() },
     });
     expect(screen.queryByRole('list', { name: 'Your hand' })).toBeNull();
   });
@@ -1056,7 +1062,7 @@ describe('Table', () => {
 
     render(Table, {
       session: fakeSession(),
-      view: { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+      view: { ...view, you: spectatorYou() },
     });
     expect(screen.queryByRole('button', { name: 'Ready all cards' })).toBeNull();
   });
@@ -1077,7 +1083,7 @@ describe('Table', () => {
 
     render(Table, {
       session: fakeSession(),
-      view: { ...makeView(), you: { role: 'spectator', name: 'Kim', color: -1, host: false } },
+      view: { ...makeView(), you: spectatorYou() },
     });
     expect(surface().querySelectorAll('.card.grab')).toHaveLength(0);
   });
@@ -1704,7 +1710,7 @@ describe('several decks', () => {
 
   it('leaves Shift + ← / → to the browser for a spectator in the All view', async () => {
     const view = makeTwoDeckView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1774,7 +1780,7 @@ describe('several decks', () => {
 
   it('leaves the hero stepping keys out of the shortcuts sheet for a spectator in the All view', async () => {
     const view = makeTwoDeckView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 
@@ -1991,7 +1997,7 @@ describe('several decks', () => {
 
   it('shows a spectator no hand and no selector in the All view', async () => {
     const view = makeTwoDeckView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     render(Table, { session: fakeSession(), view });
     await catalogLoaded();
 

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"maps"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // newStatsServer starts a server whose clock only moves when the returned
@@ -75,7 +77,7 @@ func gamesIn(t *testing.T, resp reply) int {
 // then returns it with the host's connection.
 func startGame(t *testing.T, ts *httptest.Server, hostName string) (createGameResponse, *testClient) {
 	t.Helper()
-	return startGameWith(t, ts, hostName, game.DefaultConfig(testCatalog(t), "rhino"))
+	return startGameWith(t, ts, hostName, game.DefaultConfig(packstest.Catalog(t), "rhino"))
 }
 
 // startGameWith starts a game like startGame, configured with cfg.
@@ -177,6 +179,32 @@ func TestStatsStoreFailure(t *testing.T) {
 	}
 }
 
+func TestStatsScanOutlivesItsRequest(t *testing.T) {
+	srv, mr := newServer(t)
+	g, err := game.NewGame(testGameID, "host-token", "Alex", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.Phase = game.PhasePlaying
+	if err := srv.deps.Store.Create(t.Context(), g); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	// The client that asked first went away: the other waiters still need
+	// the scan.
+	gone, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	stats, err := srv.readStats(gone)
+	if err != nil || stats.Games != 1 {
+		t.Fatalf("readStats = %+v, %v; want one game", stats, err)
+	}
+	// Cached: Redis is not asked again within the minute.
+	mr.Close()
+	if cached, err := srv.readStats(t.Context()); err != nil || cached.Games != 1 {
+		t.Errorf("readStats after the first = %+v, %v; want the cached game", cached, err)
+	}
+}
+
 func TestStatsListsGamesInPlay(t *testing.T) {
 	ts, mr, _ := newStatsServer(t)
 	createGame(t, ts, "Sam") // stays in the lobby
@@ -247,7 +275,7 @@ func TestStatsDifficultyAndSets(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts, _, _ := newStatsServer(t)
-			cfg := game.DefaultConfig(testCatalog(t), "rhino")
+			cfg := game.DefaultConfig(packstest.Catalog(t), "rhino")
 			cfg.Difficulty, cfg.Standard, cfg.Expert = tt.difficulty, tt.standard, tt.expert
 			cfg.Modulars = tt.modulars
 			startGameWith(t, ts, "Alex", cfg)
@@ -376,7 +404,7 @@ func TestHeroOf(t *testing.T) {
 }
 
 func TestStatsOf(t *testing.T) {
-	s := &Server{deps: Deps{Catalog: testCatalog(t)}}
+	s := &Server{deps: Deps{Catalog: packstest.Catalog(t)}}
 	// Seats and sets come in no particular order; cccc and bbbb are played
 	// with the same, in a different order.
 	summaries := []game.Summary{
@@ -385,7 +413,6 @@ func TestStatsOf(t *testing.T) {
 			Difficulty: pack.Expert, Standard: "standard_iii", Expert: "expert_ii",
 			Modulars: []string{"masters_of_evil", "bomb_scare"},
 		},
-		{Phase: game.PhasePlaying, Scenario: "rhino", Heroes: []string{"01001a"}},
 		{Phase: game.PhaseEnded, Ref: "0000", Scenario: "rhino", Heroes: []string{"01001a"}},
 		{
 			Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Heroes: []string{"99999"},
@@ -396,7 +423,7 @@ func TestStatsOf(t *testing.T) {
 			Difficulty: pack.Expert, Standard: "standard_iii", Expert: "expert_ii",
 			Modulars: []string{"bomb_scare", "masters_of_evil"},
 		},
-		{Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"bomb_scare"}},
+		{Ref: "dddd", Phase: game.PhasePlaying, Scenario: "klaw", Modulars: []string{"bomb_scare"}},
 		{Phase: game.PhaseLobby, Ref: "0001"},
 	}
 
@@ -411,15 +438,14 @@ func TestStatsOf(t *testing.T) {
 		}
 	}
 	want := statsResponse{
-		Games: 5, // the games being played only
-		// Sorted by ref; the games without one come first, by scenario. Heroes
-		// and sets are sorted by name; unknown codes are left out.
+		Games: 4, // the games being played only
+		// Sorted by ref. Heroes and sets are sorted by name; unknown codes are
+		// left out.
 		Playing: []playedGame{
-			{Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
-			{Heroes: []playedHero{spiderMan}, Scenario: "Rhino"},
 			{Ref: "aaaa", Scenario: "Klaw", Sets: []string{"Masters of Evil"}},
 			sameContent("bbbb"),
 			sameContent("cccc"),
+			{Ref: "dddd", Scenario: "Klaw", Sets: []string{"Bomb Scare"}},
 		},
 	}
 	if !reflect.DeepEqual(got, want) {
@@ -428,12 +454,12 @@ func TestStatsOf(t *testing.T) {
 }
 
 func TestStatsJSONLeavesOutEmptyFields(t *testing.T) {
-	s := &Server{deps: Deps{Catalog: testCatalog(t)}}
+	s := &Server{deps: Deps{Catalog: packstest.Catalog(t)}}
 	summaries := []game.Summary{
 		{Ref: "aaaa", Phase: game.PhasePlaying, Scenario: "klaw", Difficulty: pack.Standard, Heroes: []string{"01001a"}},
-		// No ref, no difficulty, and a scenario, hero and set unknown to the
-		// catalog: every field of the entry is empty.
-		{Phase: game.PhasePlaying, Scenario: "nope", Heroes: []string{"99999"}, Modulars: []string{"unknown"}},
+		// No difficulty, and a scenario, hero and set unknown to the catalog:
+		// every field of the entry but its ref is empty.
+		{Ref: "bbbb", Phase: game.PhasePlaying, Scenario: "nope", Heroes: []string{"99999"}, Modulars: []string{"unknown"}},
 	}
 
 	data, err := json.Marshal(s.statsOf(summaries))
@@ -441,8 +467,9 @@ func TestStatsJSONLeavesOutEmptyFields(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := `{"games":2,"playing":[{},{"ref":"aaaa",` +
-		`"heroes":[{"hero":"Spider-Man","alterEgo":"Peter Parker"}],"scenario":"Klaw","difficulty":"standard"}]}`
+	want := `{"games":2,"playing":[{"ref":"aaaa",` +
+		`"heroes":[{"hero":"Spider-Man","alterEgo":"Peter Parker"}],"scenario":"Klaw","difficulty":"standard"},` +
+		`{"ref":"bbbb"}]}`
 	if string(data) != want {
 		t.Errorf("JSON = %s, want %s", data, want)
 	}

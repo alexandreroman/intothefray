@@ -11,14 +11,17 @@ type: project
   `DEVELOPMENT.md` and the license.
 - `DEVELOPMENT.md` (repository root) is the contributor guide:
   prerequisites, make targets, local stack, configuration, card pack
-  generation, CI, deployment, architecture. Casper support is documented
-  only in `.casper.json`, `scripts/casper.sh` and its memory note.
+  generation, CI, deployment, the share previews and the commands that
+  render the share images and icons, architecture. Casper support is
+  documented only in `.casper.json`, `scripts/casper.sh` and its memory
+  note.
 - `CLAUDE.md` holds what an agent needs every session: summary, stack,
   key commands, a module map (one line per directory), the Agents, Skills
   and Memory rules and the conventions. It points to `DEVELOPMENT.md`.
 - Source-by-source merging rules and curated file formats live in the doc
-  comments of `internal/packgen/`; design rationale and per-feature
-  decisions live in the memory notes.
+  comments of `internal/packgen/` (curated formats: the `curated` package
+  and the `internal/pack` types it reuses); design rationale and
+  per-feature decisions live in the memory notes.
 
 **Why:** short front pages stay accurate; long lists of features, curated
 data and source quirks drift with the code and duplicate the notes and the

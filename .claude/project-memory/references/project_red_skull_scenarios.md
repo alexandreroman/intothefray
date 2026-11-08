@@ -20,8 +20,9 @@ type: project
   rulebook says (see [[project_discard_destinations]]). Taskmaster sets
   aside his four captive allies, Red Skull The Sleeper.
 - Taskmaster's scenario requires the Hydra Patrol set (`sets` in
-  `taskmaster.json`): setup shuffles it into the encounter deck, and the
-  lobby offers only Weapon Master as his modular set.
+  `taskmaster.json`): setup shuffles it into the encounter deck, the
+  lobby never offers it as a modular set, and it preselects Weapon
+  Master, Cerebro's recommendation.
 - Manual: Absorbing Man's random starting environment, the Hydra Patrol
   side scheme Taskmaster's Setup has players search for, Zola's Hydra
   Prison and Ultimate Bio-Servants, and bringing weapons and side schemes

@@ -3,7 +3,7 @@
 // hovered element, nor the controls in the corners. At home, bottom right, it
 // sits right above the zoom control (and the narrow screen's Undo).
 
-import type { Rect } from './drag';
+import type { Rect } from '../lib/rect';
 
 export type Corner = 'top-right' | 'top-left' | 'bottom-left' | 'bottom-right';
 

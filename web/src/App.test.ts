@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import { flushSync } from 'svelte';
 import App from './App.svelte';
 import { navigate } from './lib/router.testing';
@@ -34,5 +34,27 @@ describe('App title', () => {
     navigate('/');
     flushSync();
     expect(document.title).toBe('Into the Fray · Play Marvel Champions in your browser');
+  });
+});
+
+describe('App tooltips', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('hide with their screen when the route changes, the pointer still', async () => {
+    vi.useFakeTimers();
+    navigate('/');
+    render(App);
+    const options = screen.getByRole('button', { name: 'Options' });
+
+    await fireEvent.pointerOver(options);
+    await vi.advanceTimersByTimeAsync(350);
+    expect(screen.getByRole('tooltip').textContent).toBe('Options');
+
+    navigate('/about');
+    flushSync();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(screen.queryByRole('tooltip')).toBeNull();
   });
 });

@@ -459,12 +459,7 @@ func (t *Table) checkStaysOnTable(c *Card) error {
 	if c.Identity {
 		return invalid("the identity card stays on the table")
 	}
-	return t.checkNotStageCurrent(c)
-}
-
-// checkNotStageCurrent refuses to take away the card a stage shows: the stage
-// would be left with nothing on the table.
-func (t *Table) checkNotStageCurrent(c *Card) error {
+	// The stage would be left with nothing on the table.
 	if stage := t.stageShowing(c.ID); stage != nil {
 		return invalid("the %s card stays on the table; choose another card to show", strings.ToLower(stage.Label))
 	}
@@ -525,8 +520,12 @@ func (t *Table) leave(c *Card) {
 	resetCard(c)
 }
 
-// resetCard clears everything a card carries while it is in play.
+// resetCard clears everything a card carries while it is in play, its place on
+// the table included: a card in a hand or a pile keeping its last spot would
+// let a viewer tie it to the card they saw there, under any new id. Every way
+// onto the table places it again (placeOnTable, layOutStack, applyChooseStage).
 func resetCard(c *Card) {
+	c.X, c.Y, c.Z = 0, 0, 0
 	c.Face = 0
 	c.FaceDown = false
 	c.Exhausted = false
@@ -807,9 +806,10 @@ func landsFaceDown(pile *Pile) bool {
 // with a target, at the end of that table card's stack as attach does. It
 // lands face up, but when dropped out of a pile that hides its cards (see
 // landsFaceDown): an explicit Play (a.FaceUp) lands it face up there too. A
-// card revealed on a deck is played as that deck's top card, face up, as
-// everybody saw it, with the tokens it carries there (see inPlayCard). A
-// version of its owner's identity takes the identity over, and stays face up.
+// card revealed on a deck is played as that deck's top card, as it lies: it is
+// on the table already, and keeps its face, tokens and stack, as a moved or
+// attached card does. A version of its owner's identity takes the identity
+// over, and stays face up.
 func applyPlay(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -830,17 +830,24 @@ func applyPlay(t *Table, a Action) error {
 			return err
 		}
 	}
+	if revealed {
+		// It never leaves the table, so it carries everything it carried there:
+		// it is attached as tuckUnder does, or moved as applyMove does.
+		if c.IdentityVersion {
+			t.takeOverIdentity(c)
+		}
+		if target != nil {
+			t.tuckUnder(c, target)
+			return nil
+		}
+		return applyMove(t, a)
+	}
 	if err := t.checkLeave(c); err != nil {
 		return err
 	}
 
 	faceDown := !a.FaceUp && c.Zone == ZonePile && landsFaceDown(t.Piles[c.Pile])
-	// A revealed card stays on the table: like a moved card, it keeps its tokens.
-	tokens := c.Tokens
 	t.leave(c)
-	if revealed {
-		c.Tokens = tokens
-	}
 	if c.IdentityVersion {
 		t.takeOverIdentity(c)
 	}
@@ -1049,17 +1056,13 @@ func applyChooseStage(t *Table, a Action) error {
 	chosen.Zone = ZoneTable
 	chosen.X, chosen.Y, chosen.Z = previous.X, previous.Y, previous.Z
 	chosen.Parent = previous.Parent
-	chosen.OnPile = previous.OnPile
 	chosen.Face = a.Face
-	chosen.FaceDown = false
-	chosen.Exhausted = false
 	carryStageCounters(stage, previous, chosen)
 
 	t.removeArrows(previous.ID)
 	previous.Zone = ZoneStage
 	previous.X, previous.Y, previous.Z = 0, 0, 0
 	previous.Parent = ""
-	previous.OnPile = ""
 	previous.Exhausted = false
 	stage.Current = chosen.ID
 	// The chosen card may not have the box of the previous one, or not be a

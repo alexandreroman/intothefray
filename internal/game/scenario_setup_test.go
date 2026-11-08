@@ -10,6 +10,7 @@ import (
 	"testing/fstest"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // setupCatalog returns a small catalog: a classic scenario, a self-contained one with two villains whose compact decks
@@ -622,7 +623,7 @@ func TestConfigRejectsRequiredSetAsModular(t *testing.T) {
 // Ship Command set aside whole, while the scenarios setting aside cards of their
 // own villain set keep their usual modular sets.
 func TestConfigRejectsSetAsideSetAsModular(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 
 	cfg := DefaultConfig(cat, "escape_the_museum")
 	cfg.Modulars = append(cfg.Modulars, "ship_command")
@@ -642,5 +643,82 @@ func TestConfigRejectsSetAsideSetAsModular(t *testing.T) {
 	cfg.Modulars = []string{"ship_command"}
 	if err := validateConfig(cfg, cat); err != nil {
 		t.Errorf("Rhino with Ship Command: got error %v, want none", err)
+	}
+}
+
+// leaderCatalog returns a catalog of one scenario built from the embedded Iron Man leader cards: a leader stage of
+// Iron Man I and II, and a main scheme stage.
+func leaderCatalog(t *testing.T) *pack.Catalog {
+	t.Helper()
+	embedded := packstest.Catalog(t)
+	codes := []string{"56059", "56060", "56063"}
+	var cards []pack.Card
+	for _, code := range codes {
+		card, _, err := embedded.Card(code)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cards = append(cards, card)
+	}
+	if got := cards[0].Faces[0].Type; got != pack.FaceTypeLeader {
+		t.Fatalf("card 56059 is a %q, want a leader", got)
+	}
+
+	file := pack.PackFile{
+		Code:  "t",
+		Name:  "Test",
+		Cards: cards,
+		Sets:  []pack.Set{{Code: "iron_man_leader", Name: "Iron Man", Kind: pack.SetKindLeader, Cards: codes}},
+		Scenarios: []pack.Scenario{{
+			ID: "leader", VillainSet: "iron_man_leader",
+			Piles: []pack.Pile{
+				{Key: "leader", Label: "Iron Man", Cards: []string{"56059", "56060"}},
+				{Key: "scheme", Label: "Main scheme", Cards: []string{"56063"}},
+			},
+			Start: map[pack.Difficulty]pack.Start{pack.Standard: {
+				Top: map[string]pack.FaceRef{"leader": {Card: "56059"}, "scheme": {Card: "56063"}},
+			}},
+		}},
+	}
+	data, err := json.Marshal(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	index, err := json.Marshal(pack.Index{
+		Version: 1, Packs: []pack.PackRef{{Code: "t", Name: "Test", File: "t.json"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cat, err := pack.Load(fstest.MapFS{"index.json": {Data: index}, "t.json": {Data: data}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cat
+}
+
+func TestSetupMarksLeaderStageAsVillain(t *testing.T) {
+	b := &tableBuilder{cat: leaderCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
+	if _, err := b.setupScenario(LobbyConfig{Scenario: "leader", Difficulty: pack.Standard}); err != nil {
+		t.Fatal(err)
+	}
+	table := b.table
+
+	got := map[string]bool{}
+	for _, stage := range table.Stages {
+		got[stage.Key] = stage.Villain
+	}
+	if want := map[string]bool{"leader": true, "scheme": false}; !maps.Equal(got, want) {
+		t.Errorf("villain flags by stage = %v, want %v", got, want)
+	}
+
+	// A leader keeps all but its damage on a stage change, as a villain does.
+	leader := cardWithCode(t, table, "56059")
+	leader.Tokens = map[string]int{"dmg": 3, "thr": 1}
+	next := cardWithCode(t, table, "56060")
+	mustApply(t, table, Action{Kind: ActChooseStage, Stage: "leader", Card: next.ID, Face: 0})
+
+	if want := map[string]int{"thr": 1}; !maps.Equal(next.Tokens, want) {
+		t.Errorf("Iron Man II tokens = %v, want %v", next.Tokens, want)
 	}
 }

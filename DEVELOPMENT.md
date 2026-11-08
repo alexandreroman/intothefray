@@ -7,7 +7,8 @@ see the [README](README.md).
 
 - Go 1.27 or later
 - Docker (or Podman) with Compose, to run Redis and Caddy locally
-- [Air](https://github.com/air-verse/air) for hot reload
+- [Air](https://github.com/air-verse/air) v1.63.2 or later (the first
+  release with `build.entrypoint`) for hot reload
 - [golangci-lint](https://golangci-lint.run/) v2 for static checks
 - Node.js and [pnpm](https://pnpm.io/) at the versions pinned in
   `mise.toml` (`mise install` with [mise](https://mise.jdx.dev/))
@@ -91,15 +92,17 @@ its image URLs on the CDN. `make packs` fails without the manifest and
 drops a card that has a face without an English image. Its report lists
 the French coverage and the records taken from mc4db. The merging rules
 are documented in `internal/packgen/`; the curated formats in
-`internal/packgen/curated/`.
+`internal/packgen/curated/` and the pack types it reuses
+(`internal/pack/types.go`).
 
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on pull requests and pushes to `main`,
-with three jobs: `go` (build, race tests, golangci-lint), `web`
+with three check jobs: `go` (race tests, golangci-lint), `web`
 (svelte-check, ESLint, Prettier, Vitest, build) and `docker` (image
-build, `compose.yaml` and Caddyfile validation). It does not regenerate
-`packs/dist/`.
+build, `compose.yaml` and Caddyfile validation). The tests, the linter
+and the image build compile the server, so no job runs `make build`. CI
+does not regenerate `packs/dist/`.
 
 ## Deployment
 
@@ -158,7 +161,7 @@ image:
 
 ```bash
 cd web
-chrome --headless=new --disable-gpu --hide-scrollbars \
+chrome --headless --disable-gpu --hide-scrollbars \
   --window-size=1200,630 --virtual-time-budget=5000 \
   --screenshot=public/og/home.png "file://$PWD/images/home.html"
 ```
@@ -175,29 +178,29 @@ scaled by the device pixel ratio:
 ```bash
 cd web
 for size in 192 512; do
-  chrome --headless=new --disable-gpu --hide-scrollbars \
+  chrome --headless --disable-gpu --hide-scrollbars \
     --window-size=180,180 \
     --force-device-scale-factor="$(echo "scale=6; $size/180" | bc)" \
     --screenshot="public/icon-$size.png" "file://$PWD/images/touch-icon.html"
 done
 ```
 
-`web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`,
-where crawlers look for a favicon by default; the pages declare
-`favicon.svg` only. After a change to `favicon.svg`, render it again with
-headless Chrome and ImageMagick (`magick`):
+`web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`;
+the pages declare it (`sizes="32x32"`) before `favicon.svg`, since Google
+Search takes no SVG favicon. After a change to `favicon.svg`, render it
+again with headless Chrome and ImageMagick (`magick`):
 
 ```bash
 cd web
-chrome --headless=new --disable-gpu --hide-scrollbars \
+chrome --headless --disable-gpu --hide-scrollbars \
   --window-size=512,512 --screenshot=/tmp/favicon.png \
   "file://$PWD/public/favicon.svg"
 magick /tmp/favicon.png -alpha off \
   -define icon:auto-resize=48,32,16 public/favicon.ico
 ```
 
-Every icon is full-bleed, with no transparent corners: Google crops a
-favicon into a circle and fills its transparent pixels with white.
+Every icon is full-bleed, with no transparent corners, and keeps the mark
+within its inscribed circle.
 
 ## Architecture
 

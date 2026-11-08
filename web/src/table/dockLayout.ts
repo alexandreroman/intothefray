@@ -22,8 +22,10 @@
 // card where the drop would put it, as if it lay there already, the units after it pushed along
 // and the slot it left closed up.
 
+import type { Point } from '../lib/types';
 import { DOCK_SCALE, type Placement } from './dockPiles';
-import { GRID, PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
+import { ceilTo, floorTo, GRID, snapTo } from './grid';
+import { PORTRAIT_CARD, SLOT_GAP, visualBox } from './layout';
 import { ROW_LABEL_ROOM, rowHeight, rowOf, rowTop } from './rows';
 
 /** The room above a row's lines for its owner names, in drawn units. */
@@ -85,11 +87,6 @@ export interface DockLayoutInput {
    * without one has a line no wider than itself.
    */
   lineWidths?: ReadonlyMap<string, number>;
-}
-
-export interface Point {
-  x: number;
-  y: number;
 }
 
 /** Where the table is drawn, in drawn units. */
@@ -374,7 +371,10 @@ interface Split {
   fixedRight: number | null;
 }
 
-/** A group of a row's frames and piles: its left edge on the table, and how far right of its scaled place it is drawn. */
+/**
+ * A group of a row's frames and piles: its left edge on the table, and how far right of its scaled
+ * place it is drawn.
+ */
 interface FixedPlace {
   left: number;
   dx: number;
@@ -574,10 +574,6 @@ function edgesOf(unit: Unit, exclude: ReadonlySet<string>): { left: number; righ
     left: Math.min(...shown.map((box) => box.left)),
     right: Math.max(...shown.map((box) => box.right)),
   };
-}
-
-function onGrid(v: number): number {
-  return Math.round(v / GRID) * GRID;
 }
 
 /** The last of a list whose top is at or above a height, else the first. */
@@ -819,20 +815,20 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
     exclude: ReadonlySet<string>,
   ): Point {
     if (before !== undefined && after !== undefined) {
-      const lo = Math.floor(before.root.x / GRID) * GRID + GRID;
-      const hi = Math.ceil(after.root.x / GRID) * GRID - GRID;
+      const lo = floorTo(before.root.x, GRID) + GRID;
+      const hi = ceilTo(after.root.x, GRID) - GRID;
       if (lo > hi) {
         // No grid line lies strictly between them: at the first one's x, a line lower, it still
         // sorts after it and before the next.
         return { x: before.root.x, y: before.root.y + GRID };
       }
       const middle = (edgesOf(before, exclude).right + edgesOf(after, exclude).left) / 2;
-      const x = Math.min(hi, Math.max(lo, onGrid(middle - width / 2)));
+      const x = Math.min(hi, Math.max(lo, snapTo(middle - width / 2, GRID)));
       return { x, y: before.root.kind === 'card' ? before.root.y : row.cardY };
     }
     if (before !== undefined) {
       // As a played card lands: 40 past the last unit's right edge, up to the grid.
-      const x = Math.ceil((edgesOf(before, exclude).right + SLOT_GAP) / GRID) * GRID;
+      const x = ceilTo(edgesOf(before, exclude).right + SLOT_GAP, GRID);
       return { x, y: row.cardY };
     }
     if (after !== undefined) {
@@ -841,10 +837,10 @@ export function dockLayout(input: DockLayoutInput): DockLayout {
       const left = edgesOf(after, exclude).left;
       const x =
         row.fixedRight === null ? left - SLOT_GAP - width : (row.fixedRight + left) / 2 - width / 2;
-      const hi = Math.ceil(after.root.x / GRID) * GRID - GRID;
-      return { x: Math.max(0, Math.min(hi, onGrid(x))), y: row.cardY };
+      const hi = ceilTo(after.root.x, GRID) - GRID;
+      return { x: Math.max(0, Math.min(hi, snapTo(x, GRID))), y: row.cardY };
     }
-    const x = row.fixedRight === null ? 0 : Math.ceil((row.fixedRight + SLOT_GAP) / GRID) * GRID;
+    const x = row.fixedRight === null ? 0 : ceilTo(row.fixedRight + SLOT_GAP, GRID);
     return { x, y: row.cardY };
   }
 

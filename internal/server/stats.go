@@ -20,6 +20,10 @@ const (
 	// statsCacheControl lets browsers and proxies keep a reply as long as the
 	// instance keeps its statistics.
 	statsCacheControl = "public, max-age=60"
+	// statsScanTimeout bounds a scan of the game summaries. The scan runs
+	// apart from the request that started it, as every request waiting for
+	// the cache shares its result.
+	statsScanTimeout = 10 * time.Second
 )
 
 // statsCache is the reply of GET /api/stats, cached for statsCacheTTL.
@@ -47,8 +51,9 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 
 // readStats returns the cached statistics, or reads them again once the cache
 // has expired. The lock is held during the read, so that requests arriving
-// meanwhile wait for its result instead of each scanning Redis. A failed read
-// is not cached: the next request tries again.
+// meanwhile wait for its result instead of each scanning Redis. The client
+// that started the read may leave: the read goes on for the others. A failed
+// read is not cached: the next request tries again.
 func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 	s.stats.mu.Lock()
 	defer s.stats.mu.Unlock()
@@ -57,7 +62,9 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 	if now.Before(s.stats.expires) {
 		return s.stats.value, nil
 	}
-	summaries, err := s.deps.Store.GameSummaries(ctx)
+	scanCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), statsScanTimeout)
+	defer cancel()
+	summaries, err := s.deps.Store.GameSummaries(scanCtx)
 	if err != nil {
 		return statsResponse{}, err
 	}
@@ -67,8 +74,8 @@ func (s *Server) readStats(ctx context.Context) (statsResponse, error) {
 }
 
 // statsOf names what the games being played are played with, and counts
-// them. The list is sorted by random ref (see comparePlayedGames), so that its
-// order tells nothing of where the games are stored.
+// them. The list is sorted by random ref, so that its order tells nothing of
+// where the games are stored.
 func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 	var playing []playedGame
 	for _, summary := range summaries {
@@ -76,7 +83,7 @@ func (s *Server) statsOf(summaries []game.Summary) statsResponse {
 			playing = append(playing, s.playedGameOf(summary))
 		}
 	}
-	slices.SortFunc(playing, comparePlayedGames)
+	slices.SortFunc(playing, func(a, b playedGame) int { return strings.Compare(a.Ref, b.Ref) })
 	return statsResponse{Games: len(playing), Playing: playing}
 }
 
@@ -111,37 +118,11 @@ func (s *Server) playedGameOf(summary game.Summary) playedGame {
 // face is a hero face, and its alter-ego face, or none when it has no such
 // face. The card must have a face.
 func heroOf(card pack.Card) playedHero {
-	hero := playedHero{Hero: card.Faces[0].Name}
-	if face, ok := faceOfType(card, pack.FaceTypeHero); ok {
-		hero.Hero = face.Name
-	}
-	if face, ok := faceOfType(card, pack.FaceTypeAlterEgo); ok {
-		hero.AlterEgo = face.Name
+	hero := playedHero{Hero: card.HeroFace().Name}
+	if alterEgo, ok := card.FaceOfType(pack.FaceTypeAlterEgo); ok {
+		hero.AlterEgo = card.Faces[alterEgo].Name
 	}
 	return hero
-}
-
-// faceOfType returns the first face of the card with the given type.
-func faceOfType(card pack.Card, faceType string) (pack.Face, bool) {
-	for _, face := range card.Faces {
-		if face.Type == faceType {
-			return face, true
-		}
-	}
-	return pack.Face{}, false
-}
-
-// comparePlayedGames orders games by ref. Games without one, which come
-// first, are ordered by scenario, then heroes, then sets, then difficulty, so
-// the order is always the same.
-func comparePlayedGames(a, b playedGame) int {
-	return cmp.Or(
-		strings.Compare(a.Ref, b.Ref),
-		strings.Compare(a.Scenario, b.Scenario),
-		slices.CompareFunc(a.Heroes, b.Heroes, comparePlayedHeroes),
-		slices.Compare(a.Sets, b.Sets),
-		strings.Compare(string(a.Difficulty), string(b.Difficulty)),
-	)
 }
 
 func comparePlayedHeroes(a, b playedHero) int {

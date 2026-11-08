@@ -19,7 +19,8 @@ type: project
   plays its top card face up where it lands, tucked under the card it is dropped
   on (one action, as a side deck's top): a play naming the `sdeck:` pile.
   Dropped on the pile its cards are discarded to, it discards the top card;
-  dropped back on the deck, it does nothing; no hand takes it. The dragging
+  dropped right over the deck, it does nothing (beside it, it is played
+  where it lands); no hand takes it. The dragging
   player sees the card's back until it lands and turns over; the others see the
   back travel with the drag, then the card enter from the deck and turn over.
 - A card revealed on a scenario deck lies over it: a press there drags

@@ -2426,7 +2426,7 @@ describe('Table animations', () => {
     });
     await settle();
 
-    // The server gave the card a new id on its way (freshID in internal/game/ids.go).
+    // The server gave the card a new id on its way (renamedOnTheWay in internal/game/ids.go).
     await rerender({
       session,
       view: makeView([card('n', { owner: 1, zone: 'hand' })], {

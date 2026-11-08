@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import Game from './Game.svelte';
 import { GameSession } from '../lib/session.svelte';
 import type { View } from '../lib/types';
+import { spectatorYou } from '../table/fixtures.testing';
 
 // Only the session is faked: the table reads the module's constants.
 vi.mock('../lib/session.svelte', async (importOriginal) => ({
@@ -21,7 +22,7 @@ const sessionMock = vi.mocked(GameSession);
 const playingView = {
   id: 'x',
   phase: 'playing',
-  you: { role: 'spectator', color: -1, host: false },
+  you: spectatorYou(),
   players: [],
   spectators: 2,
   table: { cards: [], piles: [], stages: [], firstPlayer: { x: 0, y: 0 } },

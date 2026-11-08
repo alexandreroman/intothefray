@@ -39,7 +39,7 @@ async function startLoading(deck: DeckView) {
   await fireEvent.input(screen.getByRole('textbox', { name: 'Deck link' }), {
     target: { value: 'https://example.com/deck/1' },
   });
-  await loader.rerender({ loading: true, loaded: 0 });
+  await loader.rerender({ loading: true, locked: true, loaded: 0 });
   return loader;
 }
 
@@ -50,7 +50,7 @@ async function startChange() {
   await fireEvent.input(screen.getByRole('textbox', { name: 'Deck link' }), {
     target: { value: 'https://example.com/deck/1' },
   });
-  await loader.rerender({ loading: true, loaded: 0 });
+  await loader.rerender({ loading: true, locked: true, loaded: 0 });
   return loader;
 }
 
@@ -129,7 +129,7 @@ describe('DeckLoader', () => {
 
   describe('while its deck loads', () => {
     it('marks the form busy, but not the status line', () => {
-      renderLoader(waiting, { loading: true });
+      renderLoader(waiting, { loading: true, locked: true });
 
       expect(document.querySelector('form')?.getAttribute('aria-busy')).toBe('true');
       expect(screen.getByRole('status').closest('[aria-busy]')).toBeNull();
@@ -172,7 +172,7 @@ describe('DeckLoader', () => {
       expect(status.classList.contains('sr-only')).toBe(true);
       expect(status.textContent?.trim()).toBe('');
 
-      await rerender({ loading: true });
+      await rerender({ loading: true, locked: true });
 
       expect(screen.getByRole('status')).toBe(status);
       expect(status.textContent?.trim()).toBe('Loading the deck…');
@@ -182,7 +182,7 @@ describe('DeckLoader', () => {
       const { rerender } = renderLoader(ready);
       await fireEvent.click(screen.getByRole('button', { name: 'Change deck' }));
 
-      await rerender({ loading: true });
+      await rerender({ loading: true, locked: true });
 
       expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Cancel' }).disabled).toBe(true);
     });
@@ -241,7 +241,7 @@ describe('DeckLoader', () => {
       await fireEvent.click(screen.getByRole('button', { name: 'Change deck' }));
 
       // Another slot loaded 3 decks; this one now starts loading.
-      await rerender({ loading: true, loaded: 3 });
+      await rerender({ loading: true, locked: true, loaded: 3 });
 
       expect(screen.getByRole('textbox', { name: 'Deck link' })).toBeTruthy();
     });
@@ -286,7 +286,7 @@ describe('DeckLoader', () => {
 
     it('cannot be removed while its own deck loads', async () => {
       const onremove = vi.fn();
-      renderLoader(waiting, { slot: 2, onremove, loading: true });
+      renderLoader(waiting, { slot: 2, onremove, loading: true, locked: true });
 
       await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 2' }));
 

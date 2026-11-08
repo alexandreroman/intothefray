@@ -6,7 +6,7 @@
 import type { CardView, PackFace, PileView, View } from '../lib/types';
 import { arrowItem, deckCount, pileName, type ActionItem, type TableElement } from './actions';
 import { pileLabel, stageLabel, type TileAction } from './boxes';
-import { isHidden } from './face';
+import { isHidden, SCHEME_TYPES } from './face';
 import { ownerLook } from './seats';
 
 /** An entry that runs its item when chosen. */
@@ -137,9 +137,6 @@ export interface ContextHeader {
    */
   scheme?: true;
 }
-
-/** The types of the schemes, whose tokens and tabs lie in their own places (CardView.svelte). */
-const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
 
 /**
  * The header of a card's menu, in its owner's colour: its type and stage over

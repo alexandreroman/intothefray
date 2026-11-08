@@ -24,28 +24,13 @@
   (global transitions); as it starts leaving, it lets the page go and the
   focus move on, and takes no more taps or keys.
 -->
-<script module lang="ts">
-  import { prefersReducedMotion } from 'svelte/motion';
-
-  /**
-   * How long a motion of the sheet or of what it holds lasts, in ms: no time
-   * under reduced motion, nor where the browser has no Web Animations, which
-   * Svelte's transitions play on (jsdom), so that every change is instant.
-   */
-  export function motionMs(ms: number): number {
-    if (prefersReducedMotion.current || typeof Element.prototype.animate !== 'function') {
-      return 0;
-    }
-    return ms;
-  }
-</script>
-
 <script lang="ts">
   import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
   import { on } from 'svelte/events';
   import { cubicOut } from 'svelte/easing';
   import { fade, fly } from 'svelte/transition';
-  import { lastPressByPointer, openModal } from './modal.svelte';
+  import { motionMs } from '../lib/motion';
+  import { lastPressByPointer, openModal, trapTab } from './modal.svelte';
 
   let {
     label,
@@ -147,37 +132,9 @@
     }
   });
 
-  function focusables(): HTMLElement[] {
-    const selector = 'button:not(:disabled), input:not(:disabled), select, textarea, [tabindex]';
-    return [...(panel?.querySelectorAll<HTMLElement>(selector) ?? [])].filter(
-      (element) => element.tabIndex >= 0,
-    );
-  }
-
-  /** Tab and Shift + Tab cycle through the sheet only. */
-  function trapTab(event: KeyboardEvent): void {
-    const all = focusables();
-    const first = all[0];
-    const last = all.at(-1);
-    if (!first || !last) {
-      event.preventDefault();
-      return;
-    }
-    if (!all.some((element) => element === document.activeElement)) {
-      event.preventDefault();
-      (event.shiftKey ? last : first).focus();
-    } else if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
   function onPanelKeydown(event: KeyboardEvent): void {
     if (event.key === 'Tab') {
-      trapTab(event);
+      trapTab(event, panel);
     }
   }
 
@@ -369,26 +326,13 @@
     touchSwipe = null;
   }
 
-  // The moves and the end of a touch are not passive, as Svelte's touch handlers are: the sheet
-  // prevents the moves of the finger that drags it, and the end of that drag. Its start and its
-  // cancel prevent nothing, and stay passive so as not to hold up the browser's scroll.
+  // Svelte makes `ontouchmove` passive: the sheet prevents the moves of the finger that drags it,
+  // so it listens to them itself, not passive.
   onMount(() => {
     if (!panel) {
       return;
     }
-    const passive = { passive: true };
-    const blocking = { passive: false };
-    const removers = [
-      on(panel, 'touchstart', onTouchStart, passive),
-      on(panel, 'touchmove', onTouchMove, blocking),
-      on(panel, 'touchend', onTouchEnd, blocking),
-      on(panel, 'touchcancel', onTouchCancel, passive),
-    ];
-    return () => {
-      for (const remove of removers) {
-        remove();
-      }
-    };
+    return on(panel, 'touchmove', onTouchMove, { passive: false });
   });
 </script>
 
@@ -422,6 +366,9 @@
   style:transform={offset > 0 ? `translateY(${offset}px)` : undefined}
   bind:this={panel}
   onkeydown={onPanelKeydown}
+  ontouchstart={onTouchStart}
+  ontouchend={onTouchEnd}
+  ontouchcancel={onTouchCancel}
   onoutrostart={leave}
   out:fly|global={{ y: '100%', opacity: 1, duration: motionMs(LEAVE_MS), easing: cubicOut }}
 >
@@ -437,7 +384,7 @@
     position: fixed;
     inset: 0;
     z-index: 5500;
-    background: #07090fa6;
+    background: var(--scrim);
     animation: fadein 0.26s ease-out;
   }
 
@@ -535,12 +482,6 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-  }
-
-  @keyframes fadein {
-    from {
-      opacity: 0;
-    }
   }
 
   @keyframes slideup {

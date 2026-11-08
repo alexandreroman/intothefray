@@ -32,7 +32,8 @@ type: project
   side-scheme deck is discarded to that deck's discard pile. A deck other
   than the card's home takes a drop only right over it, and a card lying on
   it (a revealed card) takes the drop instead; the home deck takes a drop
-  near it too.
+  near it too, except a deck's own top card, which returns only when
+  dropped right over the deck (see [[project_action_bars]]).
 - A scenario with its own encounter decks has no classic encounter discard
   pile, so each of its decks states `"own"` or `"none"` (checked by the
   pack generator).

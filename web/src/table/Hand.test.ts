@@ -1,4 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { tick } from 'svelte';
 import Hand from './Hand.svelte';
 import handSource from './Hand.svelte?raw';
@@ -386,16 +388,19 @@ describe('Hand', () => {
   });
 
   it('pops the hovered card up, 1.3 times as large, keeping its tilt, but in touch mode', () => {
-    const pop =
-      /\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}/.exec(
-        handSource,
-      )?.[1];
+    const pop = new RegExp(
+      String.raw`\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\)` +
+        String.raw` \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}`,
+    ).exec(handSource)?.[1];
     expect(pop).toMatch(
       /transform: translateY\(calc\(var\(--ty\) - 31px\)\) rotate\(var\(--rot\)\) scale\(1\.3\);/,
     );
     // A finger hovers nothing: no hovered card comes forward in touch mode either.
     expect(handSource).toMatch(
-      /\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover,\n {2}\.hcard\.kept,\n {2}\.hcard\.locked \{\s*z-index: 60;/,
+      new RegExp(
+        String.raw`\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\) \.hcard:hover,` +
+          String.raw`\n {2}\.hcard\.kept,\n {2}\.hcard\.locked \{\s*z-index: 60;`,
+      ),
     );
   });
 
@@ -404,7 +409,10 @@ describe('Hand', () => {
       handSource,
     )?.[1];
     expect(pop).toMatch(
-      /transform: translate\(var\(--touch-pop-x\), var\(--touch-pop-y\)\) rotate\(var\(--rot\)\)\s+scale\(var\(--touch-pop-scale\)\);/,
+      new RegExp(
+        String.raw`transform: translate\(var\(--touch-pop-x\), var\(--touch-pop-y\)\) rotate\(var\(--rot\)\)` +
+          String.raw`\s+scale\(var\(--touch-pop-scale\)\);`,
+      ),
     );
 
     vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(860);
@@ -475,8 +483,12 @@ describe('Hand', () => {
       expect(card.querySelector('.fan')?.firstElementChild?.classList).toContain('shade');
     }
     expect(container.querySelector('.hcard.gap .shade')).toBeNull();
-    expect(rule('.shade')).toMatch(/box-shadow: var\(--held-card-shadow\);/);
-    expect(rule('.shade')).toMatch(/pointer-events: none;/);
+    // The app's shade (tokens.css), which a hand card's fan gives the held card's shadow.
+    expect(rule('.fan')).toMatch(/--shade-shadow: var\(--held-card-shadow\);/);
+    const tokens = readFileSync(path.join(import.meta.dirname, '../styles/tokens.css'), 'utf8');
+    const shade = /\n\.shade \{([^}]*)\}/.exec(tokens)?.[1] ?? '';
+    expect(shade).toMatch(/box-shadow: var\(--shade-shadow, var\(--card-shadow\)\);/);
+    expect(shade).toMatch(/pointer-events: none;/);
     expect(handSource).not.toMatch(/filter:/);
   });
 

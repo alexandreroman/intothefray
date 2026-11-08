@@ -7,6 +7,7 @@ import { knownCard } from '../lib/catalog';
 import type { Lang } from '../lib/lang';
 import { localizedFace } from '../lib/localize';
 import { mainCardOf, stackOf } from './drag';
+import { SCHEME_TYPES } from './face';
 import { detachSlot, freeSlot, isOutOfPlay } from './layout';
 import {
   areaOf,
@@ -22,7 +23,7 @@ import {
   PILE_VICTORY,
   seatPlayer,
 } from './seats';
-import { groupUnits, MAX_COUNT } from './selection';
+import { groupUnits } from './selection';
 import type {
   Action,
   CardView,
@@ -95,10 +96,11 @@ export interface ActionItem {
 }
 
 /**
- * The key of each card and pile action, as its menu entry shows it and the
- * keys sheet lists it (KeysSheet.svelte); the arrow (keys.ts) has no menu
- * entry, nor do a hand card's actions (handActions), which have no menu.
- * Several actions share a key, each on its own kind of element: W draws a
+ * The key of each action, as its menu entry shows it and the keys sheet lists
+ * it (KeysSheet.svelte). The arrow is no item of actionsFor: its menu entry is
+ * added by contextItems and its key handled by keys.ts. A hand card's actions
+ * (handActions) have no context menu: keys.ts and the dock's hand sheet run
+ * them. Several actions share a key, each on its own kind of element: W draws a
  * revealed card or from a deck, X discards a card, a hand card or a deck's
  * top card, and with Shift, Draw X and Discard X.
  */
@@ -153,8 +155,20 @@ const TOKEN_LIST = [
 
 export type TokenName = (typeof TOKEN_LIST)[number]['name'];
 
-/** The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in internal/game/apply.go. */
+/**
+ * The tokens a card carries, in menu order, with the key that adds one. Mirrors tokenNames in
+ * internal/game/apply.go.
+ */
 export const TOKENS: readonly Counter[] = TOKEN_LIST;
+
+/** The tokens piled up from the bottom right corner on every card: damage in the corner, counters on top. */
+export const CORNER_TOKENS: readonly TokenName[] = ['dmg', 'gen'];
+
+/**
+ * The threat, then the acceleration to its left: in the top right corner of a scheme, between
+ * damage and counters in the corner pile of any other card. The first one takes the threat's place.
+ */
+export const THREAT_TOKENS: readonly TokenName[] = ['thr', 'acc'];
 
 /**
  * The statuses a card carries, in menu and tab order, with the key that adds one. Mirrors statusNames in
@@ -169,16 +183,28 @@ export const STATUSES: readonly Counter[] = [
 ];
 
 /**
+ * The number a status tab shows after its label: none for one, "×2" for several ("Tough ×2").
+ * The count of Retaliate is its value, which always shows: "Retaliate 1".
+ */
+export function statusCount(name: string, count: number): string | null {
+  if (name === 'retaliate') {
+    return `${count}`;
+  }
+  return count > 1 ? `×${count}` : null;
+}
+
+/**
  * The stats a modifier changes, in the order cards print them: the stat column, then the hit
  * points. Mirrors modifierNames in internal/game/apply.go.
  */
 export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec', 'hp'] as const;
 
 /**
- * The largest modifier, either way: the server clamps a modifier to ±99 (maxCount, in
- * applyCounter), so a step past it changes nothing.
+ * Mirrors maxCount in internal/game/action.go: the most cards one action takes, the most
+ * sub-actions a group holds (resolveGroup), and the largest modifier either way, where the
+ * server clamps it (applyCounter), so that a step past it changes nothing.
  */
-export const MAX_MODIFIER = 99;
+export const MAX_COUNT = 99;
 
 /** The kinds of counters a card carries: tokens and statuses count up from 0, modifiers are signed. */
 export type CounterKind = 'token' | 'status' | 'modifier';
@@ -211,15 +237,26 @@ export function isLocked(card: CardView): boolean {
 }
 
 /**
+ * The label of a counter as its list gives it: a token or status by its label, "Damage",
+ * "Stunned"; a modifier by its stat, "DEF".
+ */
+export function counterLabel(kind: CounterKind, name: string): string {
+  if (kind === 'modifier') {
+    return name.toUpperCase();
+  }
+  const counters = kind === 'token' ? TOKENS : STATUSES;
+  return counters.find((counter) => counter.name === name)?.label ?? name;
+}
+
+/**
  * The name of a counter as the pill says it: a token or status in lower case, "damage",
  * "stunned"; a modifier by its stat, "DEF modifier".
  */
 export function counterName(kind: CounterKind, name: string): string {
   if (kind === 'modifier') {
-    return `${name.toUpperCase()} modifier`;
+    return `${counterLabel(kind, name)} modifier`;
   }
-  const counters = kind === 'token' ? TOKENS : STATUSES;
-  return (counters.find((counter) => counter.name === name)?.label ?? name).toLowerCase();
+  return counterLabel(kind, name).toLowerCase();
 }
 
 /**
@@ -249,7 +286,7 @@ interface Context {
  * actions are handActions'), empty piles and elements no longer on the
  * table get nothing, nor does a viewer of an unknown token. Spectators only
  * look: see spectatorActions. On a card of the selected group, Discard and
- * Move to take the whole group (spec 2). With `touch`, for a touch screen's
+ * Move to take the whole group. With `touch`, for a touch screen's
  * inspector, a tucked card offers Detach too.
  */
 export function actionsFor(
@@ -402,13 +439,10 @@ function drawRevealedItem(card: CardView): ActionItem {
   };
 }
 
-/** The card types that never exhaust in the game: the villain and the schemes. */
-const UNEXHAUSTED_TYPES: readonly string[] = [
-  'villain',
-  'main_scheme',
-  'side_scheme',
-  'player_side_scheme',
-];
+/** Whether a card of this type never exhausts in the game: the villain and the schemes. */
+function neverExhausts(type: string): boolean {
+  return type === 'villain' || SCHEME_TYPES.includes(type);
+}
 
 /**
  * Whether the card offers Exhaust (or Ready): a villain or a scheme does not, unless it is
@@ -420,7 +454,7 @@ function canExhaust(card: CardView): boolean {
     return true;
   }
   const face = knownCard(card.code)?.card.faces[card.face];
-  return !face || !UNEXHAUSTED_TYPES.includes(face.type);
+  return !face || !neverExhausts(face.type);
 }
 
 function exhaustItem(card: CardView): ActionItem {
@@ -460,7 +494,7 @@ function stageItem(): ActionItem {
  * single-faced card has no Flip, nor a card the catalog does not know yet.
  */
 function stageFlipItem(card: CardView, stage: Stage): ActionItem | null {
-  const faces = card.code ? (knownCard(card.code)?.card.faces.length ?? 1) : 1;
+  const faces = faceCount(card);
   if (faces < 2) {
     return null;
   }
@@ -475,6 +509,17 @@ function stageFlipItem(card: CardView, stage: Stage): ActionItem | null {
 }
 
 /**
+ * The number of faces of the card, one while it is unknown or its catalog entry is not loaded.
+ * Mirrors faceCount in internal/game/apply.go.
+ */
+function faceCount(card: CardView): number {
+  if (!card.code) {
+    return 1;
+  }
+  return knownCard(card.code)?.card.faces.length ?? 1;
+}
+
+/**
  * Whether Flip changes the card (the server decides how, in resolveFlip): a face-down card turns
  * face up, a card with several faces shows its next one, and a card with a single face turns face
  * down. An identity card stays face up, so a single-faced one has nothing to flip to.
@@ -483,8 +528,7 @@ function canFlip(card: CardView): boolean {
   if (card.faceDown || !card.code || !card.identity) {
     return true;
   }
-  const faces = knownCard(card.code)?.card.faces.length ?? 1;
-  return faces > 1;
+  return faceCount(card) > 1;
 }
 
 function flipItem(card: CardView): ActionItem {
@@ -545,12 +589,12 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
 /**
  * "Add a modifier": a submenu that gives the card +1 to a stat, then, past a
  * separator, −1. Unlike most token and status items, these have no keys. A
- * step past ±MAX_MODIFIER is greyed: the server would change nothing.
+ * step past ±MAX_COUNT is greyed: the server would change nothing.
  */
 function modifierMenu(card: CardView): ActionItem {
   const step = (delta: 1 | -1) =>
     MODIFIERS.map((name): ActionItem => {
-      const limit = delta * MAX_MODIFIER;
+      const limit = delta * MAX_COUNT;
       const atLimit = delta > 0 ? modifierOf(card, name) >= limit : modifierOf(card, name) <= limit;
       return {
         id: `${name}${delta > 0 ? '+1' : '-1'}`,
@@ -744,13 +788,16 @@ export function deckName(home: PileView): string {
   return plain ? 'deck' : pileName(home);
 }
 
+/** The id of Draw an arrow, whatever card it is for. */
+export const ARROW_ID = 'arrow';
+
 /**
  * Draw an arrow, for the context menu only: it is no action of the keys' list, as the A key and
  * Shift + drag start it. It starts the same arrow mode as A.
  */
 export function arrowItem(card: string): ActionItem {
   return {
-    id: 'arrow',
+    id: ARROW_ID,
     label: 'Draw an arrow',
     key: KEYS.arrow,
     group: GROUP_POINT,
@@ -783,7 +830,7 @@ function mayPutInDeck(card: CardView, seats: readonly number[]): boolean {
  * The home deck (homeDeckOf) the viewer may return the card to (mayPutInDeck).
  * Undefined when the card is another player's, or the table lacks that deck.
  */
-export function homeDeckFor(
+function homeDeckFor(
   card: CardView,
   seats: readonly number[],
   piles: readonly PileView[],

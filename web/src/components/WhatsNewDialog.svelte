@@ -62,13 +62,13 @@
 
   <ol class="entries" {@attach scrollFade} {@attach capToFirstEntries}>
     {#each entries as entry (entry.id)}
-      <li class:illustrated={entry.image}>
-        {#if entry.image}
-          <img src={entry.image.src} alt={entry.image.alt} width="112" height="84" loading="lazy" />
-        {/if}
+      <!-- An id starts with its entry's date. -->
+      {@const date = entry.id.slice(0, 10)}
+      <li>
+        <img src={entry.image.src} alt={entry.image.alt} width="112" height="84" loading="lazy" />
         <div class="body">
           <div class="meta">
-            <time datetime={entry.date}>{formatNewsDate(entry.date)}</time>
+            <time datetime={date}>{formatNewsDate(date)}</time>
             {#if unread.has(entry.id)}
               <span class="tag">New</span>
             {/if}
@@ -120,17 +120,14 @@
     list-style: none;
   }
 
+  /* The thumbnail on the left, centred on the height of the text beside it. */
   li {
-    padding: 16px 0;
-    border-top: 1px solid var(--panel-2);
-  }
-
-  /* An entry with a thumbnail: the thumbnail on the left, centred on the height of the text beside it. */
-  li.illustrated {
     display: grid;
     grid-template-columns: 112px 1fr;
     align-items: center;
     gap: 14px;
+    padding: 16px 0;
+    border-top: 1px solid var(--panel-2);
   }
 
   .body {
@@ -195,7 +192,7 @@
 
   /* A phone: a smaller thumbnail, still beside the text. */
   @container news (max-width: 420px) {
-    li.illustrated {
+    li {
       grid-template-columns: 72px 1fr;
       gap: 12px;
     }

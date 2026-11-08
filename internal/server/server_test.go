@@ -17,14 +17,13 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/coder/websocket"
-	"github.com/redis/go-redis/v9"
 
 	"github.com/alexandreroman/intothefray/internal/config"
 	"github.com/alexandreroman/intothefray/internal/decks"
-	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/store"
+	"github.com/alexandreroman/intothefray/internal/store/storetest"
 	"github.com/alexandreroman/intothefray/internal/version"
-	"github.com/alexandreroman/intothefray/packs"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 const (
@@ -54,18 +53,6 @@ func newTestServerWith(t *testing.T, configure func(*Server)) (*httptest.Server,
 	return ts, mr
 }
 
-// testCatalog returns the real card catalog, failing the test when it
-// cannot be decoded.
-func testCatalog(t testing.TB) *pack.Catalog {
-	t.Helper()
-
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return cat
-}
-
 // newServer builds a Server backed by a fresh miniredis and the real card
 // catalog. Its deck importer points nowhere: tests that load decks replace it.
 func newServer(t *testing.T) (*Server, *miniredis.Miniredis) {
@@ -86,9 +73,8 @@ func newServerOn(t *testing.T, mr *miniredis.Miniredis) *Server {
 func newServerWithConfig(t *testing.T, mr *miniredis.Miniredis, cfg config.Config) *Server {
 	t.Helper()
 
-	cat := testCatalog(t)
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	cat := packstest.Catalog(t)
+	rdb := storetest.Client(t, mr)
 
 	return New(Deps{
 		Config:  cfg,
@@ -196,12 +182,12 @@ func TestCreateGameEmptyName(t *testing.T) {
 func TestCreateGameRetriesTakenID(t *testing.T) {
 	ids := []string{"takentaken", "takentaken", "freefree23"}
 	ts, mr := newTestServerWith(t, func(s *Server) {
-		s.newID = func() (string, error) {
+		s.newID = func() string {
 			id := ids[0]
 			if len(ids) > 1 {
 				ids = ids[1:]
 			}
-			return id, nil
+			return id
 		}
 	})
 	if resp := postGame(t, ts, "", `{"name": "Alex"}`); resp.status != http.StatusCreated {
@@ -469,10 +455,7 @@ func assertGameNotFound(t *testing.T, client *testClient) {
 
 func TestValidGameID(t *testing.T) {
 	for range 100 {
-		id, err := newGameID()
-		if err != nil {
-			t.Fatal(err)
-		}
+		id := newGameID()
 		if !validGameID(id) {
 			t.Fatalf("validGameID(%q) = false for a generated id", id)
 		}

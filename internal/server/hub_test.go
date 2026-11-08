@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"maps"
+	"net/http"
 	"net/http/httptest"
 	"slices"
 	"strings"
@@ -17,9 +18,11 @@ import (
 	"github.com/coder/websocket"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
 	"github.com/alexandreroman/intothefray/internal/store"
 	"github.com/alexandreroman/intothefray/internal/store/storetest"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 const (
@@ -148,7 +151,7 @@ type twoPlayerGame struct {
 func startTwoPlayerGame(t *testing.T) *twoPlayerGame {
 	t.Helper()
 
-	cat := testCatalog(t)
+	cat := packstest.Catalog(t)
 	mr := miniredis.RunT(t)
 	first := startInstance(t, mr, nil)
 	second := startInstance(t, mr, nil)
@@ -596,9 +599,23 @@ func TestPlayerOnlineFollowsConnections(t *testing.T) {
 			gone.View.Spectators)
 	}
 
+	// Coming back with his token leaves the game as it is too: the game is
+	// neither written again nor sent at a new version.
+	rdb := storetest.Client(t, mr)
+	reader := store.New(rdb, time.Hour)
+	_, stored, err := reader.Load(t.Context(), created.ID)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
 	back := connect(t, second, created.ID)
 	back.hello(bobWelcome.Token, "Bob")
-	alex.awaitView(func(v game.View) bool { return playerOnline(v, bobColor) })
+	returned := alex.awaitView(func(v game.View) bool { return playerOnline(v, bobColor) })
+	if returned.Version != gone.Version {
+		t.Errorf("version = %d after Bob came back, want %d, the game being unchanged", returned.Version, gone.Version)
+	}
+	if _, version, err := reader.Load(t.Context(), created.ID); err != nil || version != stored {
+		t.Errorf("stored version = %d (%v) after Bob came back, want %d", version, err, stored)
+	}
 }
 
 func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
@@ -621,8 +638,7 @@ func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
 
 	// Carol watches from an instance that stops without closing her
 	// connection: nothing renews her lease, nor tells that she left.
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	vanished := store.New(rdb, time.Hour)
 	_, _, err := vanished.Update(t.Context(), created.ID, func(g *game.Game) error {
 		g.Spectators = append(g.Spectators, &game.Spectator{Token: "carol-token", Name: "Carol"})
@@ -654,13 +670,11 @@ func TestLeasesKeepOnlyLiveConnections(t *testing.T) {
 // beforeRenewal is a Redis hook that runs before once, as the first lease
 // renewal (a pipeline holding a ZADD) is about to reach Redis.
 type beforeRenewal struct {
+	storetest.PassHook
+
 	once   sync.Once
 	before func()
 }
-
-func (h *beforeRenewal) DialHook(next redis.DialHook) redis.DialHook { return next }
-
-func (h *beforeRenewal) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
 
 func (h *beforeRenewal) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -675,9 +689,7 @@ func TestConnectionClosedDuringRenewalStopsCounting(t *testing.T) {
 	mr := miniredis.RunT(t)
 	srv := newServerOn(t, mr)
 	hook := &beforeRenewal{}
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	rdb.AddHook(hook)
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr, hook)
 	srv.deps.Store = store.New(rdb, time.Hour)
 
 	g, err := game.NewGame(testGameID, "host-token", "Alex", time.Now())
@@ -728,12 +740,56 @@ func TestShutdownClosesConnections(t *testing.T) {
 	if err := stop(); err != nil {
 		t.Fatalf("Run = %v, want nil after the context ends", err)
 	}
+	// Run returns once the closed connections are forgotten in the store.
+	if online := "online:" + created.ID; mr.Exists(online) {
+		members, _ := mr.ZMembers(online)
+		t.Errorf("online connections after the shutdown = %q, want none", members)
+	}
 
 	late := connect(t, ts, created.ID)
 	for name, c := range map[string]*testClient{"joined": joined, "before hello": silent, "after shutdown": late} {
 		if _, err := drain(t, c.ws); websocket.CloseStatus(err) != websocket.StatusGoingAway {
 			t.Errorf("%s: read ended with %v, want close status %v", name, err, websocket.StatusGoingAway)
 		}
+	}
+}
+
+func TestShutdownStopsDeckImport(t *testing.T) {
+	importing := make(chan struct{})
+	notifyImporting := sync.OnceFunc(func() { close(importing) })
+	// A marvelcdb that never answers: only the end of the import's context
+	// ends the request.
+	unresponsive := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+		notifyImporting()
+		<-r.Context().Done()
+	}))
+	t.Cleanup(unresponsive.Close)
+	mr := miniredis.RunT(t)
+	srv := newServerOn(t, mr)
+	srv.deps.Decks = &decks.Importer{BaseURL: unresponsive.URL}
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+	stop := runInBackground(t, srv, mr)
+	created := createGame(t, ts, "Alex")
+	host := connect(t, ts, created.ID)
+	host.hello(created.Token, "Alex")
+	host.lobby("setDeck", map[string]any{"url": deckLink})
+	select {
+	case <-importing:
+	case <-time.After(waitTimeout):
+		t.Fatal("the deck import never reached marvelcdb")
+	}
+	// Answers the close handshake, as a browser does.
+	go func() { _, _ = drain(t, host.ws) }()
+
+	start := time.Now()
+	err := stop()
+	if err != nil {
+		t.Fatalf("Run = %v, want nil after the context ends", err)
+	}
+	// The import alone would last up to marvelcdb's request timeout (10 s).
+	if elapsed := time.Since(start); elapsed > waitTimeout {
+		t.Errorf("Run returned after %v, want the deck import stopped at once", elapsed)
 	}
 }
 
@@ -790,15 +846,18 @@ func TestReconnectResyncsViewers(t *testing.T) {
 }
 
 // expireBlocker is a Redis hook that holds every EXPIRE of a game key, alone
-// or in a pipeline, such as the MULTI/EXEC a touch round sends, until release
-// is closed. Nothing else is held, so presence commands always go through.
+// or in a pipeline, such as the MULTI/EXEC a touch round sends, once armed is
+// set and until release is closed. Nothing else is held, so presence commands
+// always go through. It is armed after the viewers joined, as a known token's
+// hello touches the game too.
 type expireBlocker struct {
+	storetest.PassHook
+
+	armed       atomic.Bool
 	entered     chan struct{}
 	enteredOnce sync.Once
 	release     chan struct{}
 }
-
-func (b *expireBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
 
 func (b *expireBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -819,6 +878,9 @@ func (b *expireBlocker) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
 }
 
 func (b *expireBlocker) block() {
+	if !b.armed.Load() {
+		return
+	}
 	b.enteredOnce.Do(func() { close(b.entered) })
 	<-b.release
 }
@@ -838,9 +900,7 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 	mr := miniredis.RunT(t)
 	blocker := &expireBlocker{entered: make(chan struct{}), release: make(chan struct{})}
 	ts := startInstance(t, mr, func(s *Server) {
-		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-		rdb.AddHook(blocker)
-		t.Cleanup(func() { _ = rdb.Close() })
+		rdb := storetest.Client(t, mr, blocker)
 		s.deps.Store = store.New(rdb, time.Hour)
 		s.touchInterval = 10 * time.Millisecond
 	})
@@ -853,6 +913,7 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 	bob := connect(t, ts, created.ID)
 	bob.hello("", "Bob")
 	alex.awaitView(bothSeatedOnline)
+	blocker.armed.Store(true)
 	select {
 	case <-blocker.entered:
 	case <-time.After(waitTimeout):
@@ -870,13 +931,13 @@ func TestSlowTouchDoesNotDelayPresence(t *testing.T) {
 // sends, once a first lease is recorded (a pipeline holding a ZADD), until
 // release is closed.
 type loadBlocker struct {
+	storetest.PassHook
+
 	leased      atomic.Bool
 	entered     chan struct{}
 	enteredOnce sync.Once
 	release     chan struct{}
 }
-
-func (b *loadBlocker) DialHook(next redis.DialHook) redis.DialHook { return next }
 
 func (b *loadBlocker) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -904,9 +965,7 @@ func TestViewFromBeforeJoinNotSent(t *testing.T) {
 	blocker := &loadBlocker{entered: make(chan struct{}), release: make(chan struct{})}
 	var srv *Server
 	second := startInstance(t, mr, func(s *Server) {
-		rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-		rdb.AddHook(blocker)
-		t.Cleanup(func() { _ = rdb.Close() })
+		rdb := storetest.Client(t, mr, blocker)
 		s.deps.Store = store.New(rdb, time.Hour)
 		srv = s
 	})

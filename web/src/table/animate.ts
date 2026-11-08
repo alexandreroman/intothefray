@@ -154,9 +154,12 @@ export const MAX_APART_MS = 2000;
 const MAX_PILE_FLIGHTS = 5;
 
 const SHUFFLED = 'shuffled ';
-// "put Web-Shooter at the bottom of their deck", "put 3 cards at the bottom of the encounter deck".
+// "put Web-Shooter at the bottom of their deck", "put 2 cards at the bottom of the encounter deck (Rhino, a card)".
 const PUT = 'put ';
 const AT_THE_BOTTOM = ' at the bottom of ';
+// The card list a group's line ends with, after the pile it names: " (Rhino, a card)". A card name
+// may hold brackets of its own: "(A.I.M. Interference ([energy]), Kang (Immortus))".
+const GROUP_CARD_LIST = / \((?:[^()]|\([^()]*\))*\)$/;
 // The line of an undo: 'undid “shuffled their deck”'.
 const UNDID = 'undid ';
 
@@ -303,8 +306,11 @@ export function diffViews(prev: View, next: View, ownDrop?: OwnDrop): Anim[] {
   return inPileOrder(anims, after);
 }
 
-/** Where the dock layout draws an item of the table (dockLayout.ts itemBox): a card by its id, a marker by markerItemId. */
-export type DrawnAt = (id: string) => Point | null;
+/**
+ * Where the dock layout draws an item of the table (dockLayout.ts itemBox): a card by its id, a
+ * marker by markerItemId.
+ */
+type DrawnAt = (id: string) => Point | null;
 
 // What a card may also play while the flow slides it: neither moves it.
 const BESIDE_A_SLIDE: ReadonlySet<Anim['kind']> = new Set(['tilt', 'glow']);
@@ -506,7 +512,7 @@ interface FreshId {
 
 /**
  * The card the server just gave a new id, so that the other players cannot
- * follow it (freshID in internal/game/ids.go), when the viewer can: a
+ * follow it (renamedOnTheWay in internal/game/ids.go), when the viewer can: a
  * face-down table card taken into the viewer's hand, or that move undone.
  * Exactly one card left the view and one card came into it, the one from the
  * table face down and the other in the hand, or the other way round, with no
@@ -1219,15 +1225,18 @@ function slidUnder(lines: LogView[], view: View, before: TableView, after: Table
 
 /**
  * The pile a history line names last, as the line's writer says it: "shuffled
- * their deck", "put X at the bottom of the encounter deck". The longest name
- * wins ("Big Sam's deck" over "Sam's deck"); null when the line names none.
+ * their deck", "put X at the bottom of the encounter deck". A group's line
+ * names its pile before its card list, which is skipped: "put 2 cards at the
+ * bottom of their deck (Rhino, a card)". The longest name wins ("Big Sam's
+ * deck" over "Sam's deck"); null when the line names none.
  */
 function lastNamedPile(line: LogView, view: View, piles: PileView[]): string | null {
   const writer = view.players.find((player) => player.color === line.color);
+  const text = line.text.replace(GROUP_CARD_LIST, '');
   let best: { pile: string; name: string } | null = null;
   for (const pile of piles) {
     const name = narratedName(pile, writer, view);
-    if (line.text.endsWith(` ${name}`) && (!best || name.length > best.name.length)) {
+    if (text.endsWith(` ${name}`) && (!best || name.length > best.name.length)) {
       best = { pile: pile.id, name };
     }
   }

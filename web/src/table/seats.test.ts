@@ -9,7 +9,7 @@ import {
   seatOf,
 } from './seats';
 import type { View } from '../lib/types';
-import { card, pile, playingView, seated } from './fixtures.testing';
+import { card, pile, playingView, seated, spectatorYou } from './fixtures.testing';
 
 /** Alex (colour 0) plays two decks, p0 and p1 (Spider-Man); Sam (colour 1) one, p2. */
 function makeView(
@@ -46,7 +46,7 @@ function makeView(
   });
 }
 
-const SPECTATOR: View['you'] = { role: 'spectator', color: -1, host: false };
+const SPECTATOR: View['you'] = spectatorYou();
 
 describe('seatOf', () => {
   it('reads the seat of an area', () => {

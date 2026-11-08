@@ -34,38 +34,46 @@
   ];
 </script>
 
-<div class="about">
+<div class="screen-page settings-page">
   <TopBar onback={() => go('/')} />
 
-  <main>
+  <main class="screen-column">
     <div class="head">
       <span class="caption">About</span>
       <h1 class="display">ORIGIN STORY</h1>
     </div>
 
-    <section class="row">
-      <h2>Open source</h2>
-      <div class="body">
+    <section class="settings-row">
+      <h2 class="settings-side settings-title">Open source</h2>
+      <div class="settings-body">
         <p>
           Into the Fray is open source, under the
-          <a href={LICENSE} target="_blank" rel="noopener noreferrer">Apache-2.0 license</a>.
+          <a class="text-link" href={LICENSE} target="_blank" rel="noopener noreferrer"
+            >Apache-2.0 license</a
+          >.
         </p>
         <p>
-          <a href={REPOSITORY} target="_blank" rel="noopener noreferrer">Source code on GitHub</a>.
-          Issues and contributions are welcome.
+          <a class="text-link" href={REPOSITORY} target="_blank" rel="noopener noreferrer"
+            >Source code on GitHub</a
+          >. Issues and contributions are welcome.
         </p>
       </div>
     </section>
 
-    <section class="row">
-      <h2>Card data</h2>
-      <div class="body">
+    <section class="settings-row">
+      <h2 class="settings-side settings-title">Card data</h2>
+      <div class="settings-body">
         <p>The cards come from community projects. Thanks to their authors for their work.</p>
         <ul class="sources">
           {#each SOURCES as source (source.name)}
             <li>
               {#if source.url}
-                <a class="name" href={source.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  class="name text-link"
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   {source.name}
                 </a>
               {:else}
@@ -78,9 +86,9 @@
       </div>
     </section>
 
-    <section class="row">
-      <h2>Unofficial fan project</h2>
-      <div class="body">
+    <section class="settings-row">
+      <h2 class="settings-side settings-title">Unofficial fan project</h2>
+      <div class="settings-body">
         <p>Into the Fray is not affiliated with or endorsed by Fantasy Flight Games or Marvel.</p>
         <p>
           Marvel Champions: The Card Game is a trademark of its owners; card images and texts belong
@@ -92,31 +100,6 @@
 </div>
 
 <style>
-  /* The column's width and gutter are shared with the top bar. */
-  .about {
-    --content-max: 920px;
-    --content-gutter: 24px;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: var(--table-bg);
-  }
-
-  main {
-    flex: 1;
-    width: 100%;
-    max-width: var(--content-max);
-    margin: 0 auto;
-    padding-block: 44px 56px;
-    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
-    padding-inline: max(var(--content-gutter), env(safe-area-inset-left))
-      max(var(--content-gutter), env(safe-area-inset-right));
-    display: flex;
-    flex-direction: column;
-    animation: rise 0.25s ease-out;
-  }
-
   .head {
     display: flex;
     flex-direction: column;
@@ -125,31 +108,11 @@
     padding-bottom: 28px;
   }
 
-  /* A section: its heading on the left, its text on the right, or below on a phone. */
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 40px;
-    padding: 28px 0;
-    border-top: 1px solid var(--panel-2);
-  }
-
-  .row:last-of-type {
-    border-bottom: 1px solid var(--panel-2);
-  }
-
   h2 {
-    flex: 1 1 220px;
-    min-width: 0;
     margin: 0;
-    font-stretch: 85%;
-    font-weight: 800;
-    font-size: 18px;
   }
 
-  .body {
-    flex: 999 1 420px;
-    min-width: 0;
+  .settings-body {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -158,32 +121,8 @@
     color: var(--muted);
   }
 
-  .body p {
+  .settings-body p {
     margin: 0;
-  }
-
-  /* No global link style: the text's own colour, underlined, brighter on hover. */
-  a {
-    color: var(--text-soft);
-    text-decoration: underline;
-    text-decoration-color: var(--line-strong);
-    text-underline-offset: 3px;
-    transition:
-      color 0.12s,
-      text-decoration-color 0.12s;
-  }
-
-  @media (hover: hover) {
-    a:hover {
-      color: var(--text);
-      text-decoration-color: currentColor;
-    }
-  }
-
-  a:focus-visible {
-    outline: 2px solid var(--sel);
-    outline-offset: 2px;
-    border-radius: 2px;
   }
 
   .sources {
@@ -219,17 +158,5 @@
 
   .provides {
     flex: 1 1 200px;
-  }
-
-  /* A phone: 16px gutters. */
-  @media (max-width: 560px) {
-    .about {
-      --content-gutter: 16px;
-    }
-
-    main {
-      padding-top: 32px;
-      padding-bottom: 40px;
-    }
   }
 </style>

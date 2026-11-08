@@ -119,7 +119,7 @@
     --frame: color-mix(in srgb, var(--p1) 45%, transparent);
   }
 
-  /* The prototype draws no villain back: villain cards share the encounter one. */
+  /* No villain back of its own: villain cards share the encounter one. */
   .encounter,
   .villain {
     --frame: #ff443873;

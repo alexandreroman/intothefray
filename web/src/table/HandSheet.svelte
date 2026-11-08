@@ -1,7 +1,9 @@
 <!--
   The viewer's hand in dock mode: a bottom sheet with the cards in a
   carousel that snaps each card to the middle. The centred card shows at full
-  size, the others smaller and dimmed; Play and Discard act on it.
+  size, the others smaller and dimmed; Play and Discard act on it. As in the
+  inspector, a refused Discard is left out rather than greyed, since a finger
+  never sees a tooltip saying why: Play then takes the whole line.
 
   The carousel scrolls sideways only (touch-action: pan-x), so a finger moving
   up on a card is a press the drag layer turns into a drag of that card, as on
@@ -30,16 +32,16 @@
   import CardFace from './CardFace.svelte';
   import './countPill.css';
   import { interaction } from './interaction.svelte';
-  import { cardBox } from './layout';
+  import { isLandscape } from './layout';
   import { motion } from './motion.svelte';
 
   let {
     cards,
     faceOf,
     seat,
-    area,
     landscape,
     picker,
+    canDiscard,
     onplay,
     ondiscard,
     onclose,
@@ -50,12 +52,12 @@
     faceOf: (card: TableCard) => PackFace | null;
     /** The seat whose hand this is. */
     seat: number;
-    /** The seat's area ("p1"), where its hand cards live. */
-    area: string;
     /** The screen is in landscape: the cards are sized from the sheet's height, not its width. */
     landscape: boolean;
     /** The hero selector, shown in the header with 2+ own decks. */
     picker?: Snippet;
+    /** Whether a card may be discarded: a side deck's card without a discard pile may not. */
+    canDiscard: (id: string) => boolean;
     onplay: (id: string) => void;
     ondiscard: (id: string) => void;
     onclose: () => void;
@@ -67,6 +69,7 @@
   // after a Play, the next card slides into the middle, and that index names it.
   let centred = $state(0);
   const current = $derived(cards[Math.min(centred, cards.length - 1)]);
+  const discardable = $derived(current ? canDiscard(current.id) : false);
   // The cards landed: one still flying in is counted once its copy lands.
   const landed = $derived(cards.filter((card) => !motion.drawing.has(card.id)).length);
 
@@ -122,7 +125,6 @@
           aria-label="Cards in hand"
           data-carousel
           data-seat={seat}
-          data-area={area}
           bind:this={carousel}
           onscroll={findCentred}
         >
@@ -142,7 +144,7 @@
                 <CardFace
                   images={face?.images ?? []}
                   name={face?.name ?? ''}
-                  rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+                  rotated={isLandscape(face?.size ?? 'std')}
                 />
               </div>
             </li>
@@ -158,7 +160,9 @@
 
       <div class="actions">
         <button type="button" class="play" onclick={() => act(onplay)}>Play</button>
-        <button type="button" onclick={() => act(ondiscard)}>Discard</button>
+        {#if discardable}
+          <button type="button" onclick={() => act(ondiscard)}>Discard</button>
+        {/if}
       </div>
       <p class="hint">or drag a card up onto the table · swipe down to close</p>
     {/if}
@@ -285,8 +289,16 @@
     touch-action: pan-x;
   }
 
-  /* Its own stacking, dimmed or not: the shade stays with it, under its face, never under the sheet's own boxes. */
+  /*
+    Its own stacking, dimmed or not: the shade stays with it, under its face, never under the sheet's own boxes.
+    The card's shadow (.shade, tokens.css), cast from 2px inside its edge, under its face: it scales and dims with
+    the card, drawn once, where a drop-shadow filter would blur again on every frame of the carousel. The values
+    match a drop-shadow of 4px 8px 12px, whose blur Chrome takes as a standard deviation (half a box-shadow's blur);
+    the 2px spread brings it back to the card's outline. The slot is portrait, a landscape card turned a quarter in
+    it.
+  */
   .fan {
+    --shade-shadow: 4px 8px 24px 2px #000000c0;
     position: relative;
     isolation: isolate;
     width: 100%;
@@ -295,21 +307,6 @@
     transition:
       transform 0.2s,
       opacity 0.2s;
-  }
-
-  /*
-    The card's shadow, cast from 2px inside its edge, under its face: it scales and dims with the card, drawn once,
-    where a drop-shadow filter would blur again on every frame of the carousel. The values match a drop-shadow of
-    4px 8px 12px, whose blur Chrome takes as a standard deviation (half a box-shadow's blur); the 2px spread brings
-    it back to the card's outline. The slot is portrait, a landscape card turned a quarter in it.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: 4px 8px 24px 2px #000000c0;
-    pointer-events: none;
   }
 
   /* A drawn card shows once its copy, flying in over the sheet, lands, keeping its slot meanwhile. */
@@ -348,6 +345,11 @@
     grid-template-columns: 2fr 1fr;
     gap: 8px;
     margin-top: 8px;
+  }
+
+  /* Play alone, Discard left out: the whole width, as a lone button (buttonGrid.ts). */
+  .actions button:only-child {
+    grid-column: 1 / -1;
   }
 
   .body.landscape .actions {

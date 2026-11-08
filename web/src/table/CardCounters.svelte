@@ -13,15 +13,22 @@
   On a card of the stack that is not shown, they are a picture alone: the same
   elements, out of reach (inert), so that the card the sheet switches to keeps
   its tokens as they are, none drawn again nor fading in.
-
-  The look and the places mirror CardView.svelte's styles, which this file
-  cannot share without changing that component's output: a change to one is
-  made to the other.
 -->
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import { motionMs } from '../components/Sheet.svelte';
-  import { counterName, MAX_MODIFIER, MODIFIERS, STATUSES, withSign } from './actions';
+  import { motionMs } from '../lib/motion';
+  import {
+    CORNER_TOKENS,
+    counterName,
+    MAX_COUNT,
+    MODIFIERS,
+    statusCount,
+    STATUSES,
+    THREAT_TOKENS,
+    withSign,
+  } from './actions';
+  import CounterGlyph from './CounterGlyph.svelte';
+  import './counters.css';
   import type { SheetCounter } from './inspector';
   import { cardBox } from './layout';
 
@@ -40,12 +47,6 @@
     onstep?: (counter: SheetCounter, delta: -1 | 1) => void;
   } = $props();
 
-  // As CardView.svelte: the tokens pile up from the bottom right corner, damage first, counters on
-  // top; the threat, then the acceleration to its left, between them, or in the top right corner
-  // of a scheme.
-  const CORNER_TOKENS = ['dmg', 'gen'];
-  const THREAT_TOKENS = ['thr', 'acc'];
-
   /** How long a token takes to fade in or out, in ms. */
   const FADE_MS = 200;
   /** Room between the pill and its token, in px. */
@@ -61,7 +62,9 @@
   const zoom = $derived(layerWidth > 0 ? layerWidth / box.w : 1);
 
   const tokens = $derived(counters.filter((counter) => counter.kind === 'token'));
-  const cornerTokens = $derived(tokens.filter((counter) => CORNER_TOKENS.includes(counter.name)));
+  const cornerTokens = $derived(
+    CORNER_TOKENS.flatMap((name) => tokens.filter((counter) => counter.name === name)),
+  );
   const threatTokens = $derived(
     THREAT_TOKENS.flatMap((name) => tokens.filter((counter) => counter.name === name)),
   );
@@ -109,14 +112,6 @@
       return delta === 1 ? `Add one to the ${name}` : `Remove one from the ${name}`;
     }
     return delta === 1 ? `Add one ${name}` : `Remove one ${name}`;
-  }
-
-  /** The number a status tab shows after its label (CardView.svelte): none for one, "×2" for several. */
-  function statusCount(counter: SheetCounter): string | null {
-    if (counter.name === 'retaliate') {
-      return `${counter.value}`;
-    }
-    return counter.value > 1 ? `×${counter.value}` : null;
   }
 
   /** A tap on a token opens its pill, or closes it when already open; a picture has none. */
@@ -194,19 +189,13 @@
 <!-- What a chip shows, as CardView.svelte: a token's value, a tab's label, a badge's signed value. -->
 {#snippet chipFace(counter: SheetCounter)}
   {#if counter.kind === 'token'}
-    {#if counter.name === 'acc'}<svg class="chevrons" viewBox="0 0 8 8" aria-hidden="true"
-        ><path d="M1.5 7.25 4 4.75 6.5 7.25M1.5 3.25 4 0.75 6.5 3.25" /></svg
-      >{/if}{counter.value}
+    {#if counter.name === 'acc'}<CounterGlyph kind="acc" />{/if}{counter.value}
   {:else if counter.kind === 'status'}
-    {@const count = statusCount(counter)}
+    {@const count = statusCount(counter.name, counter.value)}
     <!-- The label, then its count after a space: "Tough ×2". -->
-    {#if counter.name === 'locked'}<svg class="lock" viewBox="0 0 10 10" aria-hidden="true"
-        ><rect x="1.5" y="4.5" width="7" height="5" rx="1" /><path
-          d="M3 4.5V3a2 2 0 0 1 4 0v1.5"
-        /></svg
-      >{/if}{count === null ? counter.label : `${counter.label} `}{#if count !== null}<span
-        class="n">{count}</span
-      >{/if}
+    {#if counter.name === 'locked'}<CounterGlyph kind="locked" />{/if}{count === null
+      ? counter.label
+      : `${counter.label} `}{#if count !== null}<span class="n">{count}</span>{/if}
   {:else}
     <span class="n">{withSign(counter.value)}</span> {counter.label}
   {/if}
@@ -220,7 +209,7 @@
   inert={onstep === undefined}
 >
   <div
-    class="card"
+    class="card counters"
     class:land={landscape}
     class:scheme
     style:width="{box.w}px"
@@ -286,7 +275,7 @@
         type="button"
         class="btn-ghost"
         aria-label={stepLabel(counter, -1)}
-        disabled={counter.signed && counter.value <= -MAX_MODIFIER}
+        disabled={counter.signed && counter.value <= -MAX_COUNT}
         onclick={() => onstep(counter, -1)}>−</button
       >
       <span class="value">{counter.signed ? withSign(counter.value) : counter.value}</span>
@@ -294,7 +283,7 @@
         type="button"
         class="btn-ghost"
         aria-label={stepLabel(counter, 1)}
-        disabled={counter.signed && counter.value >= MAX_MODIFIER}
+        disabled={counter.signed && counter.value >= MAX_COUNT}
         onclick={() => onstep(counter, 1)}>+</button
       >
     </div>
@@ -336,59 +325,6 @@
     transition: none;
   }
 
-  /* From here, as CardView.svelte draws them. */
-  .tokens {
-    position: absolute;
-    z-index: 4;
-    display: flex;
-    gap: 2px;
-  }
-
-  .tokens.bottom-right {
-    right: 5px;
-    bottom: 5px;
-    flex-direction: column-reverse;
-    align-items: flex-end;
-  }
-
-  .threat-row {
-    display: flex;
-    flex-direction: row-reverse;
-    gap: 2px;
-  }
-
-  .tokens.top-right {
-    right: 5px;
-    top: 5px;
-    flex-direction: row-reverse;
-  }
-
-  .tok {
-    --hi: #fff;
-    --base: #999;
-    --lo: #333;
-    --rim: #222;
-    --ink: #fff;
-    position: relative;
-    width: 21px;
-    height: 21px;
-    padding: 0;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font:
-      800 10.5px/1 system-ui,
-      sans-serif;
-    color: var(--ink);
-    text-shadow: 0 1px 1px #0008;
-    background: radial-gradient(circle at 34% 28%, var(--hi) 0%, var(--base) 48%, var(--lo) 100%);
-    border: 1.5px solid var(--rim);
-    box-shadow:
-      inset 0 1px 1px #ffffff80,
-      inset 0 -2px 3px #0000004d,
-      0 2px 4px #000000a0;
-  }
-
   /* Its pill open: the chip is ringed, as a hovered one on the table. */
   .tok.open {
     box-shadow:
@@ -402,204 +338,6 @@
     box-shadow:
       0 0 0 2px #fff,
       0 2px 4px #0009;
-  }
-
-  .tok::before {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    border-radius: 50%;
-    border: 1px solid #ffffff40;
-    pointer-events: none;
-  }
-
-  .tok.dmg {
-    --hi: #ff9b8c;
-    --base: #d8352b;
-    --lo: #7a1210;
-    --rim: #4e0b09;
-  }
-
-  .tok.thr {
-    --hi: #ffd59a;
-    --base: #e08a1e;
-    --lo: #8a4a07;
-    --rim: #5a2f02;
-  }
-
-  .tok.gen {
-    --hi: #9fe0b2;
-    --base: #1b8a4a;
-    --lo: #0a4723;
-    --rim: #052e16;
-  }
-
-  .tok.acc {
-    --hi: #ffab9f;
-    --base: #ff4438;
-    --lo: #901812;
-    --rim: #5c0e0b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-  }
-
-  .tok.acc .chevrons {
-    width: 6px;
-    height: 6px;
-    overflow: visible;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    filter: drop-shadow(0 1px 1px #0008);
-  }
-
-  .statuses {
-    position: absolute;
-    right: -6px;
-    bottom: 74px;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    gap: 2px;
-  }
-
-  .card.land .statuses {
-    top: 5px;
-    bottom: auto;
-    max-width: calc(100% + 1px);
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .card.scheme .statuses {
-    top: 5px;
-    right: auto;
-    bottom: auto;
-    left: -6px;
-    max-width: none;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .card.land.scheme .statuses {
-    max-height: 62px;
-    flex-wrap: wrap;
-  }
-
-  .card.scheme .st {
-    border-radius: 5px 3px 3px 5px;
-  }
-
-  .st {
-    font-stretch: 75%;
-    font-weight: 800;
-    font-size: 8px;
-    line-height: 1;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #fff;
-    padding: 2px 4px 2px 5px;
-    border-radius: 3px 5px 5px 3px;
-    border: 1px solid #0008;
-    box-shadow:
-      0 2px 4px #0009,
-      inset 0 1px 0 #ffffff40;
-    text-shadow: 0 1px 1px #0008;
-  }
-
-  .st.stunned {
-    background: linear-gradient(#25a058, #11683a);
-  }
-
-  .st.confused {
-    background: linear-gradient(#a274e6, #5c33a3);
-  }
-
-  .st.tough {
-    background: linear-gradient(#f0a53a, #a8600f);
-  }
-
-  .st.retaliate {
-    background: linear-gradient(#2bb0b5, #13696f);
-  }
-
-  .st.locked {
-    background: linear-gradient(#7d8aa8, #46506b);
-  }
-
-  .mods {
-    position: absolute;
-    bottom: 5px;
-    left: -6px;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    align-items: flex-start;
-    gap: 2px;
-    max-height: 78px;
-  }
-
-  .card.scheme .mods {
-    top: 30px;
-    bottom: auto;
-    left: auto;
-    right: -6px;
-    flex-wrap: wrap-reverse;
-    align-items: flex-start;
-  }
-
-  .card.land .mods {
-    top: auto;
-    right: auto;
-    bottom: 5px;
-    left: 5px;
-    max-width: calc(100% - 59px);
-    max-height: none;
-    justify-content: flex-start;
-    flex-direction: row;
-    flex-wrap: wrap-reverse;
-    align-items: flex-end;
-  }
-
-  .card.land.scheme .mods {
-    max-width: calc(100% - 36px);
-  }
-
-  .mod {
-    white-space: nowrap;
-    border-radius: 5px 3px 3px 5px;
-    background: linear-gradient(var(--line-strong), var(--panel-2));
-  }
-
-  .card.scheme .mod {
-    border-radius: 3px 5px 5px 3px;
-  }
-
-  .card.land .mod {
-    border-radius: 3px;
-  }
-
-  .mod.neg {
-    background: linear-gradient(var(--accent), var(--accent-deep));
-  }
-
-  .st .lock {
-    width: 6px;
-    height: 6px;
-    margin-right: 2px;
-    vertical-align: -1px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.4;
   }
 
   /* The pill: TokenPill.svelte's look, with buttons a finger can take (44 px). */

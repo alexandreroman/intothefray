@@ -6,6 +6,8 @@ import (
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // The tests in this file play twoDeckGame: Alex ("a") holds seats 0 and 1,
@@ -14,7 +16,7 @@ import (
 // multiDeckFixture returns twoDeckGame as a doFixture.
 func multiDeckFixture(t *testing.T) *doFixture {
 	t.Helper()
-	return &doFixture{g: twoDeckGame(t), cat: newCatalog(t)}
+	return &doFixture{g: twoDeckGame(t), cat: packstest.Catalog(t)}
 }
 
 // doAs performs a for the player holding token, credited to seat.

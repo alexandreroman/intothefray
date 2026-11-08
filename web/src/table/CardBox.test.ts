@@ -8,6 +8,7 @@ import { compareCardNumbers, pileLabel, tileActions, type TileAction } from './b
 import { DRAG_THRESHOLD } from './drag';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
+import type { Lang } from '../lib/lang';
 import { mockScreen, PHONE } from '../lib/screen.testing';
 import type { CardView as TableCard, PackFace, PileView, PrivateView, View } from '../lib/types';
 import {
@@ -18,7 +19,16 @@ import {
   pile,
   placed,
   playingView,
+  spectatorYou,
 } from './fixtures.testing';
+
+// The card language, as each test chooses: the table reads it once, as it opens.
+const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
+
+vi.mock('../lib/lang', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/lang')>()),
+  storedLang: () => cardLang.current,
+}));
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -29,9 +39,9 @@ vi.mock('../lib/catalog', async (importOriginal) => ({
 // The catalog of the fixture: code -> faces.
 const FACES: Record<string, Partial<PackFace>[]> = {
   '01001': [{ name: 'Spider-Man' }],
-  '01020': [{ name: 'Web-Shooter' }],
-  '01021': [{ name: 'Swinging Web Kick' }],
-  '01022': [{ name: 'Backflip' }],
+  '01020': [{ name: 'Web-Shooter', localized: { fr: { name: 'Lance-Toile' } } }],
+  '01021': [{ name: 'Swinging Web Kick', localized: { fr: { name: 'Écraser au vol' } } }],
+  '01022': [{ name: 'Backflip', localized: { fr: { name: 'Salto arrière' } } }],
   '01094': [{ name: 'Rhino', stage: 'I', type: 'villain' }],
   '01095': [{ name: 'Rhino', stage: 'II', type: 'villain' }],
   '01097': [
@@ -86,7 +96,7 @@ function makeView(extra: { private?: PrivateView; cards?: TableCard[] } = {}): V
 }
 
 function asSpectator(view: View): View {
-  return { ...view, you: { role: 'spectator', name: 'Kim', color: -1, host: false } };
+  return { ...view, you: spectatorYou() };
 }
 
 async function renderTable(view = makeView()) {
@@ -258,6 +268,29 @@ describe('CardBox', () => {
     expect(within(dialog).getByRole('button', { name: 'Shuffle & close' })).toBeTruthy();
   });
 
+  describe('in French', () => {
+    afterEach(() => {
+      cardLang.current = 'en';
+    });
+
+    async function filterBy(query: string): Promise<void> {
+      cardLang.current = 'fr';
+      await renderTable(makeView({ private: SEARCH }));
+      const filter = within(box()).getByRole('textbox', { name: 'Filter by name' });
+      await fireEvent.input(filter, { target: { value: query } });
+    }
+
+    it('finds a card whatever the case and accents of its shown name', async () => {
+      await filterBy('ECRASER');
+      expect(tileNames()).toEqual(['Écraser au vol']);
+    });
+
+    it('finds a card by its English name', async () => {
+      await filterBy('backflip');
+      expect(tileNames()).toEqual(['Salto arrière']);
+    });
+  });
+
   it('its filter field offers no autocomplete, spell check or saved searches', async () => {
     await renderTable(makeView({ private: SEARCH }));
 
@@ -338,6 +371,26 @@ describe('CardBox', () => {
     await fireEvent.click(close);
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'closeView' }, 0);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('moves the lifted card on translate and casts its shadow from a shade, never a filter', async () => {
+    await renderTable(makeView({ private: LOOK }));
+    layOutTiles();
+
+    const image = tile('c1').querySelector<HTMLElement>('.img') as HTMLElement;
+    await fireEvent.pointerDown(image, { clientX: 60, clientY: 150, button: 0 });
+    await fireEvent.pointerMove(window, { clientX: 400, clientY: 150, buttons: 1 });
+
+    // Grabbed 60 px right of and 50 px under the card's corner, at (0, 100).
+    const ghost = document.querySelector<HTMLElement>('.tile-ghost')!;
+    expect(ghost.style.translate).toBe('340px 100px');
+    expect(ghost.style.left).toBe('');
+    expect(ghost.style.top).toBe('');
+    // The shade wraps the card's art, contained in the tile, not the tile's box.
+    expect(ghost.querySelector('.face > .shade')).not.toBeNull();
+    const rule = boxRule('.tile-ghost');
+    expect(rule).not.toMatch(/filter/);
+    expect(rule).toContain('--shade-shadow: var(--held-card-shadow);');
   });
 
   it('look box reorder sends reorderTop', async () => {
@@ -1067,6 +1120,7 @@ describe('CardBox in dock mode', () => {
         box: { kind: 'pile', pile: shown, mode, cards: shown.cards ?? DECK_TOP },
         view,
         facesOf: (shownCard: TableCard) => faces(shownCard.code),
+        englishName: () => undefined,
         sizeOf: () => 'std',
         readOnly: false,
         selected: 0,
@@ -1114,6 +1168,45 @@ describe('CardBox in dock mode', () => {
     window.dispatchEvent(new Event('resize'));
     await tick();
     expect(dialog.style.width).toBe(`min(${816 + 16}px, 100%)`);
+  });
+
+  it('opens its grid two rows high on a short window, which the box shrinks to the room left', async () => {
+    vi.stubGlobal('innerHeight', 300);
+    // Laid out as the stylesheet says: the grid has room for its tiles inside its padding.
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('mgrid') ? 800 : 0;
+    });
+    const laidOut: Record<string | symbol, string> = {
+      columnGap: '14px',
+      paddingTop: '14px',
+      paddingBottom: '14px',
+      paddingLeft: '16px',
+      paddingRight: '16px',
+    };
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+      const style = getComputedStyle(element, pseudo);
+      if (!element.classList.contains('mgrid')) {
+        return style;
+      }
+      return new Proxy(style, {
+        get(target, name) {
+          const value: unknown = laidOut[name] ?? Reflect.get(target, name, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      });
+    });
+    const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
+    await tick();
+
+    // Four 185 px columns in jsdom's 1024 px window: two rows of 5:7 tiles, their gap and padding,
+    // whatever the window's height.
+    const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
+    expect(grid.style.height).toBe(`${2 * 185 * 1.4 + 14 + 2 * 14}px`);
+    // The box's column, 88vh at most, shrinks the scrolling grid to the room its header and footer leave.
+    expect(boxRule('.mgrid')).toMatch(/overflow-y: auto;/);
   });
 
   it('heads the box with one line: the title cut short, then the filter', () => {

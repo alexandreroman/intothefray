@@ -2,7 +2,7 @@ import type { Action, CardView, PileView, View } from '../lib/types';
 import { interaction } from './interaction.svelte';
 import { TABLE_LIMIT } from './layout';
 import { cardsInBand, dragUnits, groupAction, groupPileTargets, groupUnits } from './selection';
-import { card, pile, playingView, rect } from './fixtures.testing';
+import { card, pile, playingView, rect, VILLAIN_STAGE } from './fixtures.testing';
 import { dockLayout } from './dockLayout';
 import { rowPitch, spreadRows, tableMapOf } from './rows';
 
@@ -14,7 +14,7 @@ function makeView(cards: CardView[], piles: PileView[]): View {
       cards,
       piles,
       hands: { p0: [] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 0, y: 0 },
     },
   });

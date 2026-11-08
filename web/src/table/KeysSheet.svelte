@@ -1,5 +1,5 @@
 <!--
-  The keyboard shortcuts sheet (spec 5.10), opening upward from the keyboard
+  The keyboard shortcuts sheet, opening upward from the keyboard
   button of the zoom control. A dialog like any other (Dialog.svelte): the
   table is frozen under its backdrop. Its × button, ?, Escape or a click on
   the backdrop closes it.
@@ -53,10 +53,10 @@
     return row.keys.length > 0 ? ` + ${row.with}` : row.with;
   }
 
-  // Modifiers as the system writes them (spec 5.10).
+  // Modifiers as the system writes them.
   const MOD = /Mac|iPhone|iPad/.test(navigator.userAgent) ? '⌘' : 'Ctrl';
 
-  // The groups and rows of spec 5.10, worded as in the prototype's KEY_GROUPS.
+  // The groups of shortcuts, each row a thing to do and its keys.
   const GROUPS: [string, Row[]][] = [
     [
       'Card under the mouse',

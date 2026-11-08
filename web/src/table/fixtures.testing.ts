@@ -2,6 +2,7 @@
 // measured boxes, as most tests build them, and lookups on the drawn table.
 
 import type { CardInfo } from '../lib/catalog';
+import type { Rect } from '../lib/rect';
 import type {
   Action,
   Area,
@@ -12,10 +13,27 @@ import type {
   PlayerView,
   PresenceState,
   SessionError,
+  Stage,
   TableView,
   View,
+  YouView,
 } from '../lib/types';
-import type { Rect } from './drag';
+
+/** The villain's stage, its one card `v` showing. */
+export const VILLAIN_STAGE: Stage = {
+  key: 'villain',
+  label: 'Villain',
+  current: 'v',
+  cards: ['v'],
+};
+
+/**
+ * A spectator's view of themselves, as the server sends it: a spectator holds no seat, so no colour of
+ * their own, which leaves the field at 0 (YouView, internal/game/view.go).
+ */
+export function spectatorYou(name = 'Kim'): YouView {
+  return { role: 'spectator', name, color: 0, host: false };
+}
 
 /** A face-up Spider-Man of seat 0's, on the table at its origin. */
 export function card(id: string, extra: Partial<CardView> = {}): CardView {

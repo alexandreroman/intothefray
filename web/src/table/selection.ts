@@ -1,18 +1,14 @@
-// Several table cards selected with a rubber band and moved as a group (spec
-// 5.2): what the band selects, which cards a drag lifts, and the action a drop
+// Several table cards selected with a rubber band and moved as a group: what
+// the band selects, which cards a drag lifts, and the action a drop
 // sends. Pure helpers; Table.svelte draws the band and DragLayer.svelte drags
 // the group.
 
+import type { Rect } from '../lib/rect';
 import type { Action, CardView, Point, View } from '../lib/types';
-import { mainCardOf, pileTargets, sourceOf, type PileTarget, type Rect } from './drag';
+import { MAX_COUNT } from './actions';
+import { mainCardOf, pileTargets, sourceOf, type PileTarget } from './drag';
 import { TABLE_LIMIT } from './layout';
 import { ALL_TABLE, type TableMap } from './rows';
-
-/**
- * Mirrors maxCount in internal/game/action.go: the most cards one action
- * takes, and the most sub-actions a group holds (resolveGroup).
- */
-export const MAX_COUNT = 99;
 
 /** Whether the two boxes overlap, edges included: a band that grazes a card selects it. */
 function touches(a: Rect, b: Rect): boolean {

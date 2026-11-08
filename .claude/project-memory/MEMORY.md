@@ -32,7 +32,7 @@
 - [Moving card stacks](references/project_stack_moves.md) — chain down-right, first card on a scheme centred; a deck top dropped on a card joins it
 - [Optional Casper support](references/project_casper_optional.md) — wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
-- [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml is the only node/pnpm version source
+- [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml pins node/pnpm; package.json engines is a floor
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name in itf-name; 16 chars, no emoji
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword cards in play via sets.json; Dreadpool set aside; unlisted sets
 - [Cards excluded from a set](references/project_set_exclude.md) — sets.json `exclude` drops a source's misfiled card (Shang-Chi 10098)
@@ -61,9 +61,9 @@
 - [Campaign player card backs](references/project_campaign_card_backs.md) — faction campaign + player card type gets the player back
 - [Rise of Red Skull scenarios](references/project_red_skull_scenarios.md) — five villains curated; weapons and side-scheme decks; searches manual
 - [Scenario decks and several villains](references/project_scenario_decks.md) — deck cards out of the classic deck; several villains
-- [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; a deck takes any card of its owner
+- [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; any deck takes its owner's cards
 - [Stage change carry-over](references/project_stage_carry_over.md) — villain keeps all but damage, main scheme only acceleration
-- [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); not offered as modulars
+- [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); never modular
 - [Action menu organisation](references/project_action_bars.md) — click opens the menu; hand by drag and keys; chips; touch: inspector sheet
 - [Identity card stays on the table](references/project_identity_stays.md) — identity never leaves the table, like a stage card
 - [Compact top bar hides on scroll](references/project_top_bar_auto_hide.md) — ≤600px wide or ≤500px tall: hides on scroll down; not in dock mode
@@ -71,19 +71,19 @@
 - [Presence message budget](references/project_presence_budget.md) — none while alone; 150 ms throttle, 3-unit dead zone, events at once
 - [Deployment architecture](references/project_deployment.md) — Pages behind the Cloudflare proxy, VPS at api.intothefray.xyz; CI deploys all
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
-- [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json: Specialists, Linked player cards
+- [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json: the Linked player cards of a deck card
 - [Escape in fullscreen](references/project_escape_in_fullscreen.md) — Escape-closing layers preventDefault; lib/fullscreen locks Escape (Chromium)
 - [Deck load acknowledgement](references/project_deck_load_ack.md) — deckSet acks setDeck with a version; only it confirms a load; one load at a time
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC/HP per card; menu + pill, no keys; ±99
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
 - [Acceleration token](references/project_acceleration_token.md) — token "acc": menu and pill only; Fray red, upward double chevron, by the threat
 - [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview (tablet 65 %); card boxes alike, ≤ 220 px; resting 82 %
-- [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card box lists, lobby villain list: {@attach scrollFade}
+- [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card boxes, villain list, Add a set menu, What's new: scrollFade
 - [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
 - [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
-- [Revealed card is its deck's top card](references/project_deck_reveal.md) — encounter and own hidden decks reveal; top card; tokens; dragged landscape
+- [Revealed card is its deck's top card](references/project_deck_reveal.md) — encounter, scenario, own hidden decks reveal; top card; drags landscape
 - [No compatibility for games in progress](references/feedback_no_live_game_compat.md) — action changes ignore stored histories; simplest design
 - [Memory notes carry no dates](references/feedback_timeless_memory.md) — timeless notes: decisions and reasons, no dates
 - [Immutable views](references/project_view_immutable.md) — raw view, reused card objects, byId; one CardView redraw per moved card
@@ -92,9 +92,9 @@
 - [Documentation layout](references/project_docs_layout.md) — short README, DEVELOPMENT.md for contributors, CLAUDE.md essentials; details in notes
 - [Notes cite no local specs or plans](references/feedback_no_docs_references.md) — never point to docs/ specs or plans; state the decision
 - [README home page screenshot](references/project_readme_screenshot.md) — refresh .github/images/home.webp when the home page changes; recipe
-- [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; tested
-- [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written gameplay-only entries; no count
-- [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap home only
+- [Search fields offer no autocomplete](references/project_search_fields.md) — filters: autocomplete=off, spellcheck=false, no autosave; one matcher
+- [What's new](references/project_whats_new.md) — Home dialog, unread dot + one-time banner; hand-written player-facing entries; no count
+- [Share previews and SEO](references/project_share_previews.md) — build-written meta; invite /g/?id=<id> is a real page; og images; sitemap: home
 - [Table press releases focus](references/project_press_releases_focus.md) — press or shortcut blurs a button; pointerBlur on chrome; (hover: hover)
 - [Games in progress counter](references/project_games_in_progress.md) — game:<id>:info keys; /api/stats counts and lists live games; Home capsule
 - [The page is frozen under a dialog](references/project_dialog_scroll_lock.md) — openModal() (dialogs, modal sheets) locks html scroll; offset kept
@@ -102,4 +102,4 @@
 - [Touch and phone table](references/project_touch_phone_table.md) — inspector, hold, pinch; tablet inspector follows orientation; phone dock
 - [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector: .count-pill
 - [No button alone on a line](references/project_no_lone_button.md) — buttonGrid: 1 full, pairs, 3 in a row if ≥96 px, else default on top
-- [Full-bleed favicon](references/project_favicon.md) — one opaque icon for tabs and search; favicon.ico from favicon.svg
+- [Full-bleed favicon](references/project_favicon.md) — one opaque icon for tabs and search; favicon.ico (32x32) declared before favicon.svg

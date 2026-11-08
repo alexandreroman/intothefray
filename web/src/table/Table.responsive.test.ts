@@ -36,7 +36,7 @@ import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
 import surfaceSource from './Surface.svelte?raw';
 import handSource from './Hand.svelte?raw';
-import { card, fakeSession, pile, playingView, seated } from './fixtures.testing';
+import { card, fakeSession, pile, playingView, seated, spectatorYou } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -890,7 +890,7 @@ describe('Table on a small screen', () => {
   it('a phone held sideways is a small screen too; a spectator, with no hand, keeps the edge', () => {
     mockScreen(LANDSCAPE_PHONE);
     const view = makeView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     const { container } = render(Table, { session: fakeSession(), view });
 
     const app = container.querySelector<HTMLElement>('.app')!;

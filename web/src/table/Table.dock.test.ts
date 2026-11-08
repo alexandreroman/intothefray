@@ -28,6 +28,8 @@ import {
   placed,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -118,7 +120,7 @@ function makeView({
         pile('discard:p0', { kind: 'discard', owner: 0, x: 800 }),
       ],
       hands: twoDecks ? { p0: ['h1', 'h2'], p1: ['a1'] } : { p0: ['h1', 'h2'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
     log,
   });
@@ -207,10 +209,10 @@ describe('dock mode', () => {
     expect(screen.queryByRole('radiogroup')).toBeNull();
   });
 
-  it('has no hand button for a spectator, who has no hand (spectator_no_hand_button)', async () => {
+  it('has no hand button for a spectator, who has no hand', async () => {
     mockScreen(PHONE);
     const view = makeView();
-    view.you = { role: 'spectator', name: 'Kim', color: -1, host: false };
+    view.you = spectatorYou();
     await renderTable(view);
 
     expect(dock()!.querySelector('.handbtn')).toBeNull();
@@ -545,6 +547,19 @@ describe('the hand sheet', () => {
     expect(within(handSheet()!).queryByRole('button', { name: 'More…' })).toBeNull();
     expect(within(handSheet()!).getByRole('button', { name: 'Play' })).toBeTruthy();
     expect(within(handSheet()!).getByRole('button', { name: 'Discard' })).toBeTruthy();
+  });
+
+  it('leaves Discard out for a card whose deck has no discard pile', async () => {
+    mockScreen(PHONE);
+    const view = makeView();
+    const table = view.table!;
+    table.cards = table.cards.map((c) => (c.id === 'h1' ? { ...c, home: 'side:p0:0' } : c));
+    table.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, x: 1000, label: 'Sense' }));
+    await renderTable(view);
+    await fireEvent.click(handButton());
+
+    expect(within(handSheet()!).queryByRole('button', { name: 'Discard' })).toBeNull();
+    expect(within(handSheet()!).getByRole('button', { name: 'Play' })).toBeTruthy();
   });
 
   it('switches deck with the hero selector in its header, with two own decks', async () => {
@@ -1072,9 +1087,7 @@ describe('the compact, wrapped table in dock mode', () => {
   it("shows each owner line's avatar in place of its name, the full name kept to read", async () => {
     mockScreen(PHONE);
     const view = busyView();
-    view.table!.stages = [
-      { key: 'villain', label: 'Villain', current: 'v', cards: ['v'], villain: true },
-    ];
+    view.table!.stages = [{ ...VILLAIN_STAGE, villain: true }];
     await renderTable(view);
 
     const villain = document.querySelector<HTMLElement>('.ownerbox[data-owner="-1"]')!;
@@ -1349,6 +1362,56 @@ describe('the compact, wrapped table in dock mode', () => {
     }
   });
 
+  it("drops the shifts of a view that ends, and glides the ones the next view's first preview pushes", async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(busyView());
+    measureDrawn();
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    expectShift('c2', -364.8, 116.2);
+
+    // Another player's action: the preview, made on the view before, is dropped at once, its
+    // shifts jumping with the new view's cards.
+    await rerender({ session, view: busyView() });
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('');
+
+    // The drag goes on: the first preview made on the new view glides there.
+    await fireEvent.pointerMove(window, {
+      clientX: 160 * shownZoom(),
+      clientY: 350 * shownZoom(),
+      buttons: 1,
+    });
+    await nextFrame();
+    // Left of the identity: it and every played card a column right, c2 on the second line.
+    expectShift('c1', 91.2, 0);
+    expectShift('c7', -182.4, -116.2);
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('180ms');
+  });
+
+  it('opens the slot again on the next view, the pointer still', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(busyView());
+    measureDrawn();
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    expectShift('c2', -364.8, 116.2);
+
+    // Another player's action drops the preview made on the view before; the drag, over the same
+    // slot, feeds one made on the new view, which glides there.
+    await rerender({ session, view: busyView() });
+    await nextFrame();
+    expectShift('c2', -364.8, 116.2);
+    expectShift('c7', 0, -116.2);
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('180ms');
+  });
+
   it('lands a card where it was let go, the others kept aside in its slot until the server answers', async () => {
     mockScreen(PHONE);
     const { session } = await renderTable(busyView());
@@ -1370,6 +1433,31 @@ describe('the compact, wrapped table in dock mode', () => {
     const [x, y] = ghostCorner(ghost);
     expect(x).toBeCloseTo(345 - 33.6, 4);
     expect(y).toBeCloseTo(350 - 47.1, 4);
+  });
+
+  it('drops the shifts at once on the view that answers the drop, with no glide', async () => {
+    mockScreen(PHONE);
+    const { session, rerender } = await renderTable(busyView());
+    measureDrawn();
+    const surface = document.querySelector<HTMLElement>('.tablewrap .surface')!;
+
+    await holdMiddleAt('c7', 345, 350);
+    await nextFrame();
+    await fireEvent.pointerUp(window, { clientX: 345 * shownZoom(), clientY: 350 * shownZoom() });
+    await tick();
+    expectShift('c2', -364.8, 116.2);
+
+    // The answering view draws every card at its new place: a glide would play the old shift on top.
+    const answer = busyView();
+    answer.table!.cards = answer.table!.cards.map((c) =>
+      c.id === 'c7' ? { ...c, x: 540, y: 470 } : c,
+    );
+    await rerender({ session, view: answer });
+
+    for (const id of ['id', ...PLAYED]) {
+      expect(shiftOf(id)).toBeNull();
+    }
+    expect(surface.style.getPropertyValue('--shift-glide')).toBe('');
   });
 
   it('slides the dropped card from where it was let go into its slot once the server answers', async () => {
@@ -1804,7 +1892,12 @@ describe('a riffle in dock mode', () => {
 
     expect(copies.length).toBeGreaterThan(0);
     for (const copy of copies) {
-      expect(copy.querySelector<HTMLElement>('.art')!.style.zoom).toBe('var(--scale)');
+      // The pile's dock rule (.card.scaled .art, PileView.svelte) reaches the copy's art as its own:
+      // the same scoped classes, inside the scaled pile.
+      const art = copy.querySelector<HTMLElement>('.art')!;
+      const own = copy.parentElement!.querySelector<HTMLElement>(':scope > .art')!;
+      expect(art.className).toBe(own.className);
+      expect(art.matches('.card.scaled .art')).toBe(true);
     }
   });
 

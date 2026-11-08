@@ -1,8 +1,7 @@
 // Plays the animations of animate.ts on the table, with the Web Animations
-// API, as the prototype's animateFrom and playShuffles do: cards sliding to
-// their new place or out of a pile onto the table, copies of cards flying to
-// a pile, out of one into the hand, or between two piles, and copies going
-// into or out of a hand the viewer does not see. An out-of-play pile is not
+// API: cards sliding to their new place or out of a pile onto the table,
+// copies of cards flying to a pile, out of one into the hand, or between two
+// piles, and copies going into or out of a hand the viewer does not see. An out-of-play pile is not
 // drawn: the chip on its owner's frame stands for it, a card flying to it
 // fades out into it (CHIP_FADE_FROM), turning over first where it starts when
 // it turns (flipsFirst), and a card leaves it at a card's size
@@ -79,9 +78,9 @@ const TILT_MS = 180;
 /** A stage card just chosen turns in like a card being put down. */
 const TURN_IN_MS = 420;
 /** A card turned over: its old side turns away edge-on, then its new side turns in. */
-const FLIP_MS = 360;
+export const FLIP_MS = 360;
 /** The depth from which a card turning about its vertical axis is seen: turned over, or turning in. */
-const FLIP_PERSPECTIVE = 'perspective(700px)';
+export const FLIP_PERSPECTIVE = 'perspective(700px)';
 /** The soft flash on a card that just changed. */
 const GLOW_MS = 1100;
 /**
@@ -165,6 +164,23 @@ interface Placed {
   to: Measured;
   /** How much it is scaled on the screen (scaleOf): its translations are in its own units. */
   scale: number;
+}
+
+/** A copy's way from one place to another, on the screen: how far it goes, and how much it grows. */
+function wayTo(from: Measured, to: Measured): { dx: number; dy: number; scale: number } {
+  return { dx: to.cx - from.cx, dy: to.cy - from.cy, scale: from.w ? to.w / from.w : 1 };
+}
+
+/**
+ * An element's way back from where it showed to its new place (FLIP): how far off it starts, in its
+ * own units (table units on a zoomed surface), and how much larger.
+ */
+function wayFrom({ to, scale }: Placed, from: Measured): { dx: number; dy: number; size: number } {
+  return {
+    dx: (from.cx - to.cx) / scale,
+    dy: (from.cy - to.cy) / scale,
+    size: to.w ? from.w / to.w : 1,
+  };
 }
 
 /** What starts a motion measured beforehand: it writes to the page, and measures nothing. */
@@ -762,9 +778,7 @@ function playerColor(color: number): string {
  * from one side, then flat on the other.
  */
 function turningFrames(from: Measured, to: Measured, angle: number, turns: boolean): Keyframe[] {
-  const dx = to.cx - from.cx;
-  const dy = to.cy - from.cy;
-  const scale = from.w ? to.w / from.w : 1;
+  const { dx, dy, scale } = wayTo(from, to);
   // Part of the way there, turned about its vertical axis by turn degrees.
   const at = (progress: number, turn: number): Keyframe => ({
     transform:
@@ -867,9 +881,7 @@ const ARRIVE_FRAMES: Keyframe[] = [...DRAW_AWAY_FRAMES].reverse();
  * pile lay over it. The clip is in the copy's own box, before its scale.
  */
 function underFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
-  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  const { dx, dy, scale } = wayTo(flight.from, flight.to);
   return [
     { transform: 'translate(0, 0) scale(1)', clipPath: 'inset(0% 0 0 0)' },
     {
@@ -883,9 +895,7 @@ function underFrames(flight: PileFlight): Keyframe[] {
 }
 
 function toPileFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
-  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  const { dx, dy, scale } = wayTo(flight.from, flight.to);
   return [
     { transform: 'translate(0, 0) scale(1)' },
     { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
@@ -900,8 +910,8 @@ function toPileFrames(flight: PileFlight): Keyframe[] {
  * keyframes carry their own easing: the animation runs linear.
  */
 function quarterFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
+  const { dx, dy } = wayTo(flight.from, flight.to);
+  // Its long side ends as tall as the pile.
   const scale = flight.from.w ? flight.to.h / flight.from.w : 1;
   // Part of the way there, turned about the screen's vertical axis by turn degrees.
   const pose = (progress: number, turn: number): string =>
@@ -935,9 +945,7 @@ function flipsFirst(flight: PileFlight): boolean {
  * the chip. The keyframes carry their own easing: the animation runs linear.
  */
 function chipFlipFrames(flight: PileFlight): Keyframe[] {
-  const dx = flight.to.cx - flight.from.cx;
-  const dy = flight.to.cy - flight.from.cy;
-  const scale = flight.from.w ? flight.to.w / flight.from.w : 1;
+  const { dx, dy, scale } = wayTo(flight.from, flight.to);
   // Part of the way there, turned about its vertical axis by turn degrees, as turningFrames has it.
   const pose = (progress: number, turn: number): string =>
     `${FLIP_PERSPECTIVE} translate(${dx * progress}px, ${dy * progress}px)` +
@@ -1876,16 +1884,9 @@ class TableMotion {
    * comes back as the first step ends. Even a card already on its slot, the end of its own chain,
    * shifts out and back in.
    */
-  #tuck(
-    { element, to, scale }: Placed,
-    from: Measured,
-    subject: Subject,
-    tuck: Tuck,
-  ): Animation | null {
-    // Translations are in the element's own units: table units on a zoomed surface.
-    const dx = (from.cx - to.cx) / scale;
-    const dy = (from.cy - to.cy) / scale;
-    const size = to.w ? from.w / to.w : 1;
+  #tuck(placed: Placed, from: Measured, subject: Subject, tuck: Tuck): Animation | null {
+    const { element, to, scale } = placed;
+    const { dx, dy, size } = wayFrom(placed, from);
     const stagingX = (to.w / scale) * TUCK_STAGING;
     const stagingY = (to.h / scale) * TUCK_STAGING;
     const duration = TUCK_OUT_MS + TUCK_IN_MS;
@@ -1936,16 +1937,9 @@ class TableMotion {
   }
 
   /** Slides an element from where it showed to its new place, measured there (FLIP). */
-  #slide(
-    { element, to, scale }: Placed,
-    from: Measured,
-    subject: Subject,
-    moves: boolean,
-  ): Animation | null {
-    // Translations are in the element's own units: table units on a zoomed surface.
-    const dx = (from.cx - to.cx) / scale;
-    const dy = (from.cy - to.cy) / scale;
-    const size = to.w ? from.w / to.w : 1;
+  #slide(placed: Placed, from: Measured, subject: Subject, moves: boolean): Animation | null {
+    const { dx, dy, size } = wayFrom(placed, from);
+    const { element } = placed;
     if (Math.abs(dx) + Math.abs(dy) <= 1 && Math.abs(size - 1) <= 0.02) {
       return null;
     }
@@ -2171,13 +2165,10 @@ class TableMotion {
     if (!element || !from) {
       return () => null;
     }
-    const { to, scale } = placedAt(element, zoom);
+    const placed = placedAt(element, zoom);
     const shade = element.querySelector<HTMLElement>(':scope > .shade');
     return () => {
-      // Translations are in the element's own units: table units on a zoomed surface.
-      const dx = (from.cx - to.cx) / scale;
-      const dy = (from.cy - to.cy) / scale;
-      const size = to.w ? from.w / to.w : 1;
+      const { dx, dy, size } = wayFrom(placed, from);
       const settleMs = MOVE_MS * LAND_SETTLES_AT;
       const duration = settleMs + SETTLE_MS;
       const slid = MOVE_MS / duration;
@@ -2281,7 +2272,7 @@ class TableMotion {
   }
 
   /**
-   * The prototype's riffle: copies of the pile split left and right, then
+   * A riffle: copies of the pile split left and right, then
    * riffle back into it, after delay (ms): once the cards flying into it land.
    * Returns the animations it plays.
    */
@@ -2304,13 +2295,7 @@ class TableMotion {
         pointerEvents: 'none',
         visibility: 'hidden',
       });
-      const copiedArt = art.cloneNode(true) as HTMLElement;
-      // In dock mode the pile zooms its own art (PileView.svelte, .card.scaled > .art), a rule the
-      // copy's art, one level deeper, falls out of: it takes the pile's scale itself.
-      if (pile.classList.contains('scaled')) {
-        copiedArt.style.zoom = 'var(--scale)';
-      }
-      copy.append(copiedArt);
+      copy.append(art.cloneNode(true));
       pile.append(copy);
       this.#copies.set(copy, pileSubject(id));
       const side = i % 2 ? 1 : -1;

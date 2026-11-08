@@ -1,6 +1,6 @@
 ---
 name: "What's new"
-description: "Home-only news dialog, unread dot and one-time banner; hand-written gameplay-only entries; no unread count"
+description: "Home-only news dialog, unread dot and one-time banner; hand-written player-facing entries; no unread count"
 type: project
 ---
 
@@ -43,9 +43,9 @@ type: project
   an id `YYYY-MM-DD-slug`: ids sort as strings, and an entry is unread
   when its id is greater than the last seen one. A test enforces the id
   format, uniqueness and order.
-- Entries announce player-facing gameplay features only (scenarios,
-  table features, card languages); site pages such as About and
-  developer-facing changes get no entry.
+- Entries announce player-facing features: gameplay (scenarios, table
+  features, card languages) and features such as sharing a game by link.
+  Site pages (About) and developer-facing changes get no entry.
 - Per-visitor state lives in two preferences (`lib/newsState.svelte.ts`):
   `itf-news-seen` (newest entry seen) and `itf-news-banner` (newest entry
   whose banner was dismissed). A first visit stores the newest entry as
@@ -54,7 +54,10 @@ type: project
 
 **Why:** visitors are anonymous and return between games; a quiet signal
 on Home tells them what changed without interrupting play, and only news
-that matters to a player is worth their attention.
+that matters to a player is worth their attention: a feature they use
+around a game, such as a share link, matters as much as one on the
+table, while a site page or a change under the hood changes nothing they
+do.
 
 **How to apply:** a new entry goes at the top of `NEWS`, dated on the day
 its feature reaches `main`, written for players

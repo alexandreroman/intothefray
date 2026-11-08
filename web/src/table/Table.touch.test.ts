@@ -15,7 +15,16 @@ import {
 import { HAND_CARD_NARROW, HAND_REST_DROP, handRestDrop, smallHandDrop } from './layout';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+} from './fixtures.testing';
 import { storedZoom } from './zoom';
 import { stubImageDecode } from '../lib/decodeImage.testing';
 
@@ -52,7 +61,7 @@ function makeView(
       cards,
       piles: [pile('deck:p0', { owner: 0, x: 600 })],
       hands: { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
     },
   });
 }
@@ -408,7 +417,7 @@ describe('the inspector, revealing a card from a deck', () => {
           pile('enc', { kind: 'encounter', count: 20, x: 900 }),
         ],
         hands: { p0: [] },
-        stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+        stages: [VILLAIN_STAGE],
       },
     });
   }
@@ -606,7 +615,7 @@ describe('the inspector, flipping a card', () => {
         cards: [card('v', { code: '01002', owner: -1, back: 'villain' })],
         piles: [],
         hands: { p0: [] },
-        stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+        stages: [VILLAIN_STAGE],
       },
     });
     render(Table, { session, view });

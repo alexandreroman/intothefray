@@ -1,5 +1,5 @@
 <!--
-  A marker of the table (spec 5.8): the first player token (FirstPlayerArt.svelte)
+  A marker of the table: the first player token (FirstPlayerArt.svelte)
   or the active counter (ActiveCounterArt.svelte), placed in table units. It lies
   on the table, or in the drag layer while it is dragged or waits for the server
   after a drop, or in the presence layer while another player drags it. In dock
@@ -12,7 +12,7 @@
   import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import FirstPlayerArt from './FirstPlayerArt.svelte';
   import { interaction } from './interaction.svelte';
-  import { ACTIVE_COUNTER_BOX, FIRST_PLAYER_BOX } from './layout';
+  import { MARKER_BOXES } from './layout';
 
   let {
     name,
@@ -43,7 +43,7 @@
   // In dock mode the marker is drawn at DOCK_SCALE from its corner, which the table
   // hands already projected (dockLayout.ts), its art zoomed with it.
   const dock = dockMode();
-  const fullBox = $derived(name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX);
+  const fullBox = $derived(MARKER_BOXES[name]);
   const box = $derived(dock.current ? dockCardBox(fullBox) : fullBox);
   // A finger held it still long enough (touch mode): it is picked up in place, ready to be dragged.
   const armed = $derived(!ghost && interaction.isArmed({ kind: 'marker', name }));

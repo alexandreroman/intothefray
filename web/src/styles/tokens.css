@@ -26,6 +26,8 @@
   --warn: #f2b51d;
   /* The text of an error message, a pale red that reads on the ink. */
   --error-text: #ffb3c0;
+  /* The dim under every dialog and sheet, and over the resting hand. */
+  --scrim: #07090fa6;
 
   /* One colour per seat, indexed by the player colour 0..3: the four aspects of the game
      (Leadership, Aggression, Protection, Justice), tuned for the ink grounds. The red leans
@@ -541,11 +543,134 @@ a.btn-primary {
   font-style: italic;
 }
 
-/* Screens enter by rising into place. */
-@keyframes rise {
+/*
+  The screens around the table (Home, Options, About, the lobby): a page at least as tall as the
+  window, its parts in a column, on the empty table's colour.
+*/
+.screen-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--table-bg);
+}
+
+/*
+  A column of such a page, centred, at most --content-max wide, with --content-gutter at its sides:
+  the top bar shares both. Clear of the notch in landscape; env() is 0 on a desktop, where the gutter
+  alone shows.
+*/
+.screen-column {
+  width: 100%;
+  max-width: var(--content-max, none);
+  margin: 0 auto;
+  padding-inline: max(var(--content-gutter, 24px), env(safe-area-inset-left))
+    max(var(--content-gutter, 24px), env(safe-area-inset-right));
+}
+
+/* Options and About: a narrow column of sections in rows, rising into place. */
+.settings-page {
+  --content-max: 920px;
+  --content-gutter: 24px;
+}
+
+.settings-page > main {
+  flex: 1;
+  padding-block: 44px 56px;
+  display: flex;
+  flex-direction: column;
+  animation: rise 0.25s ease-out;
+}
+
+/* A phone: 16px gutters. */
+@media (max-width: 560px) {
+  .settings-page {
+    --content-gutter: 16px;
+  }
+
+  .settings-page > main {
+    padding-top: 32px;
+    padding-bottom: 40px;
+  }
+}
+
+/*
+  A section of Options or About: its title on the left (the side), its body on the right, or below
+  on a phone. The last row of its element type draws the bottom line: what follows the rows (the
+  Options footer) is of another type.
+*/
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  padding: 28px 0;
+  border-top: 1px solid var(--panel-2);
+}
+
+.settings-row:last-of-type {
+  border-bottom: 1px solid var(--panel-2);
+}
+
+.settings-side {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.settings-title {
+  font-stretch: 85%;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.settings-body {
+  flex: 999 1 420px;
+  min-width: 0;
+}
+
+/*
+  A link in the text, as there is no global link style: underlined, in --link-color (the soft text
+  by default), brighter on hover.
+*/
+.text-link {
+  color: var(--link-color, var(--text-soft));
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  transition:
+    color 0.12s,
+    text-decoration-color 0.12s;
+}
+
+@media (hover: hover) {
+  .text-link:hover {
+    color: var(--text);
+    text-decoration-color: currentColor;
+  }
+}
+
+.text-link:focus-visible {
+  outline: 2px solid var(--sel);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/*
+  Screens enter by rising into place (Home, About, Options). Under reduced motion the keyframes do not
+  exist, so every animation naming them does nothing and the content shows at once.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+/* Dialogs, sheets and tooltips fade in. */
+@keyframes fadein {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
 }
 
@@ -566,7 +691,7 @@ a.btn-primary {
   background-size: 10px 10px;
 }
 
-/* The empty table: dotted felt, shared by the screens outside a game and the theme previews. */
+/* The empty table: dotted felt, for the end screen (Ended) and the theme previews (Options). */
 .table-bg {
   background-color: var(--table-bg);
 }
@@ -586,6 +711,20 @@ a.btn-primary {
   height: 20px;
   margin: 0 2px;
   background: var(--line-strong);
+}
+
+/*
+  A card's shadow, cast from a shade 2px inside its edge, under its face, with the card's corners (see
+  --card-shadow). A card held up, in the hand, dragged from it or flying, casts the shorter one: its component
+  sets --shade-shadow to --held-card-shadow. A component's own rules, scoped, outrank this one.
+*/
+.shade {
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shade-shadow, var(--card-shadow));
+  pointer-events: none;
 }
 
 /*

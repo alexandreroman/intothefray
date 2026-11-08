@@ -145,7 +145,7 @@
       <button
         class="icon-button"
         aria-label="Back"
-        title="Back"
+        data-tip="Back"
         onclick={onback}
         {@attach pointerBlur}
       >
@@ -166,7 +166,7 @@
     <div class="actions">
       <!-- The spectator count leads the actions on every screen. -->
       {#if spectators > 0}
-        <span class="pill" role="img" aria-label={spectatorLabel} title={spectatorLabel}>
+        <span class="pill" role="img" aria-label={spectatorLabel} data-tip={spectatorLabel}>
           <Icon name="eye" />
           {spectators}
         </span>
@@ -199,7 +199,7 @@
           class="icon-button"
           class:active={fullscreen}
           aria-label={fullscreenLabel}
-          title={fullscreenLabel}
+          data-tip={fullscreenLabel}
           onclick={toggleFullscreen}
           {@attach pointerBlur}
         >
@@ -210,7 +210,7 @@
         <button
           class="icon-button"
           aria-label={endLabel}
-          title={endLabel}
+          data-tip={endLabel}
           onclick={() => (confirmingEnd = true)}
           {@attach pointerBlur}
         >

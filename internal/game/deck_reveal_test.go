@@ -4,6 +4,8 @@ import (
 	"errors"
 	"slices"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // revealTop reveals the top card of pile for token and returns its id.
@@ -60,7 +62,7 @@ func TestRevealOwnDeck(t *testing.T) {
 }
 
 func TestRevealFaceDownSideDeck(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	labor := f.sideDeckLabeled(t, "Labor")
 
 	id := f.revealTop(t, "h", labor, 1)
@@ -190,7 +192,7 @@ func TestDrawTakesTheRevealedCardFirst(t *testing.T) {
 }
 
 func TestDrawFromASideDeckTakesTheRevealedCardFirst(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	labor := f.sideDeckLabeled(t, "Labor")
 	id := f.revealTop(t, "h", labor, 1)
 
@@ -531,7 +533,7 @@ func TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+			f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 			labor := f.sideDeckLabeled(t, "Labor")
 			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
 			drawn := f.lastInHand("p0")
@@ -661,6 +663,63 @@ func TestFlipToAnotherFaceKeepsTheCardRevealed(t *testing.T) {
 	}
 	if got := table.Piles[PileEncounter].Cards; !slices.Equal(got, []string{"c8"}) {
 		t.Errorf("enc = %v, want [c8]", got)
+	}
+}
+
+func TestPlayOfARevealedCardKeepsItsFace(t *testing.T) {
+	table := newTestTable()
+	c7 := table.Cards["c7"]
+	c7.OnPile, c7.Faces = PileEncounter, 2
+	mustApply(t, table, Action{Kind: ActFlip, Card: "c7", Face: 1, FaceDown: new(false)})
+
+	mustApply(t, table, Action{Kind: ActPlay, Card: "c7", X: 400, Y: 200})
+
+	if c := table.Cards["c7"]; c.Zone != ZoneTable || c.OnPile != "" || c.Face != 1 || c.X != 400 || c.Y != 200 {
+		t.Errorf("c7 = %+v, want it played at (400,200) on its other face", c)
+	}
+}
+
+// TestPlayOfARevealedCardKeepsItsStack plays a card revealed on p0's deck,
+// with a card tucked under it: like a moved card, it takes that card along.
+func TestPlayOfARevealedCardKeepsItsStack(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// play plays the card id, revealed on p0's deck.
+		play func(f *doFixture, id string) Action
+		// main returns the main card of the stack the revealed card ends in.
+		main func(f *doFixture, id string) string
+	}{
+		{"play", func(_ *doFixture, id string) Action {
+			return Action{Kind: ActPlay, Card: id, X: 400, Y: 200}
+		}, func(_ *doFixture, id string) string { return id }},
+		{"play of the deck top", func(*doFixture, string) Action {
+			return Action{Kind: ActPlay, Pile: "deck:p0", X: 400, Y: 200}
+		}, func(_ *doFixture, id string) string { return id }},
+		{"play under a card", func(f *doFixture, id string) Action {
+			return Action{Kind: ActPlay, Card: id, Target: f.villain()}
+		}, func(f *doFixture, _ string) string { return f.villain() }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newDoFixture(t)
+			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+			tucked := f.lastInHand("p0")
+			id := f.revealTop(t, "h", "deck:p0", 2)
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: tucked, Target: id}, at(3))
+
+			f.mustDo(t, "h", tc.play(f, id), at(4))
+
+			table := f.g.Table
+			if c := table.Cards[id]; c.Zone != ZoneTable || c.OnPile != "" {
+				t.Errorf("revealed card = %+v, want it on the table, off its deck", c)
+			}
+			main := table.Cards[tc.main(f, id)]
+			if !slices.Contains(table.carried(main), table.Cards[tucked]) {
+				t.Errorf("tucked card = %+v, want it still in the stack of %s", table.Cards[tucked], main.ID)
+			}
+			checkIntegrity(t, table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
 	}
 }
 
@@ -877,7 +936,7 @@ func TestRevealedCardKeepsItsTokensOnTheTable(t *testing.T) {
 // TestLaborSideDeckCountsOnItsRevealedCard counts the labors of Hercules on
 // the card revealed on his Labor side deck, which keeps them once played.
 func TestLaborSideDeckCountsOnItsRevealedCard(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	labor := f.sideDeckLabeled(t, "Labor")
 	id := f.revealTop(t, "h", labor, 1)
 

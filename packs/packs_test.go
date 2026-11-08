@@ -15,13 +15,11 @@ import (
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
 	"github.com/alexandreroman/intothefray/packs"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 func TestEmbeddedCoreSet(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	t.Run("rhino scenario", func(t *testing.T) {
 		rhino, ok := catalog.Scenario("rhino")
@@ -160,19 +158,10 @@ func TestEmbeddedCoreSet(t *testing.T) {
 // TestEmbeddedFearNoEvil checks the pack that marvelcdb lists only partly and
 // mc4db completes.
 func TestEmbeddedFearNoEvil(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	t.Run("kingpin scenario", func(t *testing.T) {
-		index := slices.IndexFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool {
-			return ref.ID == "kingpin"
-		})
-		if index < 0 {
-			t.Fatal("scenario ref kingpin not found")
-		}
-		ref := catalog.Index().Scenarios[index]
+		ref := scenarioRef(t, catalog, "kingpin")
 		if !ref.Supported || ref.Pack != "fne" {
 			t.Errorf("kingpin ref = supported %t in pack %q, want supported in pack fne", ref.Supported, ref.Pack)
 		}
@@ -228,14 +217,7 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 			},
 		}
 		for _, tt := range tests {
-			index := slices.IndexFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool {
-				return ref.ID == tt.id
-			})
-			if index < 0 {
-				t.Errorf("scenario ref %s not found", tt.id)
-				continue
-			}
-			ref := catalog.Index().Scenarios[index]
+			ref := scenarioRef(t, catalog, tt.id)
 			if !ref.Supported || ref.Pack != "fne" || len(ref.Recommended) != 0 ||
 				!slices.Equal(ref.MainSchemes, mainSchemes) {
 				t.Errorf("%s ref = %+v, want supported in pack fne, no recommended set, main schemes %v",
@@ -306,21 +288,11 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 
 // TestEmbeddedGreenGoblin checks the two scenarios of The Green Goblin.
 func TestEmbeddedGreenGoblin(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	t.Run("scenario refs", func(t *testing.T) {
 		for _, id := range []string{"risky_business", "mutagen_formula"} {
-			index := slices.IndexFunc(catalog.Index().Scenarios, func(ref pack.ScenarioRef) bool {
-				return ref.ID == id
-			})
-			if index < 0 {
-				t.Errorf("scenario ref %s not found", id)
-				continue
-			}
-			ref := catalog.Index().Scenarios[index]
+			ref := scenarioRef(t, catalog, id)
 			if !ref.Supported || ref.Pack != "gob" {
 				t.Errorf("%s ref = supported %t in pack %q, want supported in pack gob", id, ref.Supported, ref.Pack)
 			}
@@ -383,10 +355,7 @@ func TestEmbeddedGreenGoblin(t *testing.T) {
 }
 
 func TestEmbeddedWreckingCrew(t *testing.T) {
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	cat := packstest.Catalog(t)
 
 	t.Run("index", func(t *testing.T) {
 		found := false
@@ -515,19 +484,11 @@ func TestEmbeddedWreckingCrew(t *testing.T) {
 // Skull: their scenario decks, set-aside and in-play cards, and the sets the
 // pack keeps out of the lobby or trims.
 func TestEmbeddedRiseOfRedSkull(t *testing.T) {
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	cat := packstest.Catalog(t)
 
 	t.Run("index", func(t *testing.T) {
 		for _, id := range []string{"crossbones", "absorbing_man", "taskmaster", "zola", "red_skull"} {
-			i := slices.IndexFunc(cat.Index().Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == id })
-			if i < 0 {
-				t.Errorf("scenario ref %s not found", id)
-				continue
-			}
-			if ref := cat.Index().Scenarios[i]; !ref.Supported || ref.SelfContained || ref.Pack != "trors" {
+			if ref := scenarioRef(t, cat, id); !ref.Supported || ref.SelfContained || ref.Pack != "trors" {
 				t.Errorf("%s ref = %+v, want supported, not self-contained, in pack trors", id, ref)
 			}
 		}
@@ -610,19 +571,7 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 				for _, code := range tt.setAside {
 					want[code] = []string{game.PileScenarioAside}
 				}
-				for _, setCode := range tt.encounterSets {
-					set, ok := cat.Set(setCode)
-					if !ok {
-						t.Fatalf("no set %q", setCode)
-					}
-					for _, code := range set.Cards {
-						card, _, err := cat.Card(code)
-						if err != nil {
-							t.Fatal(err)
-						}
-						want[card.Code] = slices.Repeat([]string{game.PileEncounter}, card.Quantity)
-					}
-				}
+				maps.Copy(want, encounterPlaces(t, cat, tt.encounterSets))
 				for code, places := range want {
 					if got := placesOf(table, code); !slices.Equal(got, places) {
 						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
@@ -644,20 +593,7 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 	for _, id := range []string{"crossbones", "absorbing_man", "taskmaster", "zola", "red_skull"} {
 		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
 			t.Run(id+"/"+string(difficulty)+"/copies", func(t *testing.T) {
-				cfg := game.DefaultConfig(cat, id)
-				cfg.Difficulty = difficulty
-				if difficulty == pack.Expert {
-					cfg.Expert = "expert"
-				}
-				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
-
-				scenario, _ := cat.Scenario(id)
-				setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, scenario.Sets...)
-				setCodes = append(setCodes, cfg.Modulars...)
-				for _, deck := range scenario.Decks {
-					setCodes = append(setCodes, deck.Sets...)
-				}
-				checkEmbeddedSetCopies(t, cat, table, setCodes)
+				table := checkLobbyCopies(t, cat, id, difficulty)
 				if got := placesOf(table, "10098"); len(got) != 0 {
 					t.Errorf("10098 lies in %v, want nowhere", got)
 				}
@@ -671,10 +607,7 @@ func TestEmbeddedRiseOfRedSkull(t *testing.T) {
 // encounter sets they require with those sets' Setup cards (the Milano, the
 // Power Stone), and the campaign sets the pack keeps out of the lobby.
 func TestEmbeddedGalaxysMostWanted(t *testing.T) {
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	cat := packstest.Catalog(t)
 
 	tests := []struct {
 		scenario string
@@ -749,12 +682,7 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 
 	t.Run("index", func(t *testing.T) {
 		for _, tt := range tests {
-			i := slices.IndexFunc(cat.Index().Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == tt.scenario })
-			if i < 0 {
-				t.Errorf("scenario ref %s not found", tt.scenario)
-				continue
-			}
-			ref := cat.Index().Scenarios[i]
+			ref := scenarioRef(t, cat, tt.scenario)
 			lobbySets := tt.sets
 			if tt.lobbySets != nil {
 				lobbySets = tt.lobbySets
@@ -808,20 +736,7 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 
 				// Each card lies in one place only: a card on the table or
 				// set aside is out of the encounter deck.
-				want := map[string][]string{}
-				for _, setCode := range tt.sets {
-					set, ok := cat.Set(setCode)
-					if !ok {
-						t.Fatalf("no set %q", setCode)
-					}
-					for _, code := range set.Cards {
-						card, _, err := cat.Card(code)
-						if err != nil {
-							t.Fatal(err)
-						}
-						want[card.Code] = slices.Repeat([]string{game.PileEncounter}, card.Quantity)
-					}
-				}
+				want := encounterPlaces(t, cat, tt.sets)
 				for _, code := range tt.table {
 					want[code] = []string{"table"}
 				}
@@ -848,20 +763,66 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 	for _, tt := range tests {
 		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
 			t.Run(tt.scenario+"/"+string(difficulty)+"/copies", func(t *testing.T) {
-				cfg := game.DefaultConfig(cat, tt.scenario)
-				cfg.Difficulty = difficulty
-				if difficulty == pack.Expert {
-					cfg.Expert = "expert"
-				}
-				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
-
-				scenario, _ := cat.Scenario(tt.scenario)
-				setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, scenario.Sets...)
-				setCodes = append(setCodes, cfg.Modulars...)
-				checkEmbeddedSetCopies(t, cat, table, setCodes)
+				checkLobbyCopies(t, cat, tt.scenario, difficulty)
 			})
 		}
 	}
+}
+
+// scenarioRef returns the index entry of the scenario id, and fails the test
+// when the index has none.
+func scenarioRef(t *testing.T, cat *pack.Catalog, id string) pack.ScenarioRef {
+	t.Helper()
+	i := slices.IndexFunc(cat.Index().Scenarios, func(ref pack.ScenarioRef) bool { return ref.ID == id })
+	if i < 0 {
+		t.Fatalf("scenario ref %s not found", id)
+	}
+	return cat.Index().Scenarios[i]
+}
+
+// checkLobbyCopies starts the scenario id at the given difficulty with the
+// sets a lobby would bring, and verifies that every card of its encounter sets
+// and of its decks' sets is on the table exactly as many times as printed. It
+// returns the table for further checks.
+func checkLobbyCopies(t *testing.T, cat *pack.Catalog, id string, difficulty pack.Difficulty) *game.Table {
+	t.Helper()
+	cfg := game.DefaultConfig(cat, id)
+	cfg.Difficulty = difficulty
+	if difficulty == pack.Expert {
+		cfg.Expert = "expert"
+	}
+	table := startEmbeddedGame(t, cat, cfg, "01001a").Table
+
+	scenario, _ := cat.Scenario(id)
+	setCodes := append([]string{scenario.VillainSet, cfg.Standard, cfg.Expert}, scenario.Sets...)
+	setCodes = append(setCodes, cfg.Modulars...)
+	for _, deck := range scenario.Decks {
+		setCodes = append(setCodes, deck.Sets...)
+	}
+	checkEmbeddedSetCopies(t, cat, table, setCodes)
+	return table
+}
+
+// encounterPlaces returns, for every card of the given sets, the places its
+// copies lie in when they all are in the encounter deck, as placesOf reports
+// them.
+func encounterPlaces(t *testing.T, cat *pack.Catalog, setCodes []string) map[string][]string {
+	t.Helper()
+	places := map[string][]string{}
+	for _, setCode := range setCodes {
+		set, ok := cat.Set(setCode)
+		if !ok {
+			t.Fatalf("no set %q", setCode)
+		}
+		for _, code := range set.Cards {
+			card, _, err := cat.Card(code)
+			if err != nil {
+				t.Fatal(err)
+			}
+			places[card.Code] = slices.Repeat([]string{game.PileEncounter}, card.Quantity)
+		}
+	}
+	return places
 }
 
 // checkEmbeddedSetCopies verifies that every card of the given sets is on the
@@ -940,13 +901,10 @@ func placesOf(table *game.Table, code string) []string {
 	return places
 }
 
-// loadPackFiles decodes every embedded English pack file.
+// loadPackFiles decodes every embedded pack file.
 func loadPackFiles(t *testing.T) []pack.PackFile {
 	t.Helper()
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 	var files []pack.PackFile
 	for _, ref := range catalog.Index().Packs {
 		data, err := fs.ReadFile(packs.FS, "dist/"+ref.File)
@@ -963,10 +921,7 @@ func loadPackFiles(t *testing.T) []pack.PackFile {
 }
 
 func TestEmbeddedDataInvariants(t *testing.T) {
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 	files := loadPackFiles(t)
 
 	setCards := make(map[string][]string)
@@ -1278,13 +1233,9 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 	t.Run("side deck backs", func(t *testing.T) {
 		// Protect Humanity (59004) comes with an encounter back from the
 		// sources: in a face-down Labor deck of player backs it would stand
-		// out. Every committed side deck has a printed back its cards share.
+		// out. Every card of a side deck shows the deck's shared back.
 		for _, set := range sets {
 			if set.Side == nil {
-				continue
-			}
-			if set.Side.Back == "" {
-				t.Errorf("side deck %s has no shared back", set.Code)
 				continue
 			}
 			for _, code := range set.Cards {
@@ -1385,10 +1336,7 @@ func TestEmbeddedImagesOnCDN(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	catalog, err := packs.Catalog()
-	if err != nil {
-		t.Fatalf("Catalog() error = %v", err)
-	}
+	catalog := packstest.Catalog(t)
 
 	type offender struct{ where, url string }
 	var offenders []offender

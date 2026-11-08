@@ -21,6 +21,7 @@ import (
 
 	"github.com/alexandreroman/intothefray/internal/decks"
 	"github.com/alexandreroman/intothefray/internal/game"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 const (
@@ -189,6 +190,22 @@ func TestHelloThenView(t *testing.T) {
 	}
 	if !view.View.You.Host || view.Version < 1 {
 		t.Errorf("view = %s, want the host's view with a version", view.raw)
+	}
+}
+
+func TestHelloWithKnownTokenResetsExpiry(t *testing.T) {
+	const idle = 40 * time.Minute // GAME_TTL is 1 h in tests
+
+	ts, mr := newTestServer(t)
+	created := createGame(t, ts, "Alex")
+	mr.FastForward(idle)
+
+	connect(t, ts, created.ID).hello(created.Token, "Alex")
+
+	for _, key := range []string{"game:" + created.ID, "game:" + created.ID + ":info"} {
+		if got := mr.TTL(key); got != time.Hour {
+			t.Errorf("TTL(%s) = %v after the hello, want 1h", key, got)
+		}
 	}
 }
 
@@ -434,7 +451,7 @@ func TestSetDeckAcknowledged(t *testing.T) {
 
 func TestStartThenAct(t *testing.T) {
 	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
-	cat := testCatalog(t)
+	cat := packstest.Catalog(t)
 	created := createGame(t, ts, "Alex")
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")
@@ -669,7 +686,7 @@ func drain(t *testing.T, ws *websocket.Conn) (int, error) {
 // configures Rhino and starts the game, then returns the view after the start.
 func startSolo(t *testing.T, host *testClient) received {
 	t.Helper()
-	return startSoloWith(t, host, game.DefaultConfig(testCatalog(t), "rhino"))
+	return startSoloWith(t, host, game.DefaultConfig(packstest.Catalog(t), "rhino"))
 }
 
 // startSoloWith starts the game like startSolo, configured with cfg.
@@ -759,7 +776,7 @@ func TestActionSeatAbsent(t *testing.T) {
 
 func TestActionSeatForeign(t *testing.T) {
 	ts, _ := newTestServerWith(t, func(s *Server) { s.deps.Decks = stubMarvelcdb(t, blackPantherDeck) })
-	cat := testCatalog(t)
+	cat := packstest.Catalog(t)
 	created := createGame(t, ts, "Alex")
 	host := connect(t, ts, created.ID)
 	host.hello(created.Token, "Alex")

@@ -16,7 +16,6 @@
   import { modal } from '../components/modal.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
-  import Tooltip from '../components/Tooltip.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
   import { byId } from '../lib/byId';
@@ -25,6 +24,7 @@
   import { localizedFace, localizedName } from '../lib/localize';
   import { playerColorVar } from '../lib/playerColor';
   import { getPref, setPref } from '../lib/prefs';
+  import type { Rect } from '../lib/rect';
   import { pointerBlur } from '../lib/releaseFocus';
   import {
     NARROW_SCREEN_QUERY,
@@ -88,7 +88,7 @@
     type DockPreview,
   } from './dockLayout';
   import { setDockMode } from './dockMode';
-  import { DRAG_THRESHOLD, intersect, sourceOf, takesHandDrop, type Rect } from './drag';
+  import { DRAG_THRESHOLD, intersect, sourceOf, takesHandDrop } from './drag';
   import Flights from './Flights.svelte';
   import { backCaption, isHidden, pileBack } from './face';
   import Hand from './Hand.svelte';
@@ -195,7 +195,7 @@
   // Card names and images in the language chosen in Options, a separate route: read once.
   const lang = storedLang();
 
-  // P5a-R2: the cards of the game are loaded once, then card sizes are looked up synchronously.
+  // The cards of the game are loaded once, then card sizes are looked up synchronously.
   // The table belongs to one game: its id never changes while it is shown.
   let catalog = $state<'loading' | 'ready' | 'failed'>('loading');
   loadGameCards(untrack(() => view.id)).then(
@@ -253,6 +253,14 @@
     return faces.map((face) => localizedFace(face, lang));
   }
 
+  /** The English name of a card's face, which a card box's filter matches too; none while the catalog loads. */
+  function englishName(card: TableCard, face: number): string | undefined {
+    if (catalog !== 'ready' || !card.code) {
+      return undefined;
+    }
+    return knownCard(card.code)?.card.faces[face]?.name;
+  }
+
   /** The name of the face a history line names, in the viewer's language; none while unknown. */
   function historyName(ref: FaceRef): string | undefined {
     if (catalog !== 'ready') {
@@ -295,7 +303,7 @@
 
   // ---- The viewer's decks ----
 
-  // The viewer's own seats, one per deck (spec 5); none for a spectator.
+  // The viewer's own seats, one per deck; none for a spectator.
   const own = $derived(ownSeats(view));
   // The deck picked in the hero selector, with Q or by dragging a card to its hand, kept while it is
   // still one of the viewer's.
@@ -448,26 +456,16 @@
   /** Picks the previous or next hero (Shift + ← / →): in the hero selector, else among own decks. */
   function stepHero(step: -1 | 1): void {
     if (focused && shownSeat !== null) {
-      stepSeat(shownSeat, step);
-    } else {
-      stepOwnDeck(step);
+      stepAmong(seats, shownSeat, step);
+    } else if (selected !== null) {
+      stepAmong(own, selected, step);
     }
   }
 
-  /** Picks the seat `step` seats after the current one, round the table. */
-  function stepSeat(current: number, step: number): void {
-    const choices = seatedDecks.map((deck) => deck.seat);
+  /** Selects the seat `step` choices after the current one, round the choices. */
+  function stepAmong(choices: readonly number[], current: number, step: number): void {
     const index = choices.indexOf(current);
     selectSeat(choices[(index + step + choices.length) % choices.length] ?? current);
-  }
-
-  /** Selects the viewer's deck `step` decks after the selected one, round their decks. */
-  function stepOwnDeck(step: number): void {
-    if (selected === null) {
-      return;
-    }
-    const index = own.indexOf(selected);
-    selectSeat(own[(index + step + own.length) % own.length] ?? selected);
   }
 
   // Out-of-play piles are not drawn: the chips on their owner's frame open them.
@@ -745,6 +743,8 @@
 
   /** The preview DragLayer last fed, with the view it was made on: a newer view shows no preview. */
   let fedPreview = $state.raw<{ preview: DockPreview; view: View } | null>(null);
+  /** The view the shifts drawn last were made on: kept once the preview ends, until the next one. */
+  let shiftsView = $state.raw<View | null>(null);
   const dockPreview = $derived(fedPreview?.view === view ? fedPreview.preview : null);
   const previewView: DockLayout | null = $derived(
     dockView !== null && dockPreview !== null
@@ -771,25 +771,23 @@
         )
       : NO_SHIFTS,
   );
-  // The shifts glide (a CSS transition) from one preview to the next of the same view. A new view
-  // draws every card at its new place at once, its own motions playing from where they showed
-  // (motion.svelte.ts): the shifts it drops jump with it, for the first frame it draws.
-  let shiftsGlide = $state(true);
-  let glideFrame = 0;
+  // The shifts glide (a CSS transition) from one preview to the next of the same view, and back
+  // when the drag ends on it. A new view draws every card at its new place at once, its own motions
+  // playing from where they showed (motion.svelte.ts): the shifts it drops jump with it, as the
+  // glide goes off in the same change. That holds for the view answering the viewer's own drop too,
+  // whose preview ends in the same change: so the glide follows the view the shifts were made on,
+  // not the preview still fed. A change of style transitions by its new transition values, so the
+  // first preview made on the new view glides again.
+  const shiftsGlide = $derived(shiftsView === null || shiftsView === view);
 
-  /** Lets the shifts jump for the next frame drawn, then glide again. */
-  function pauseGlide(): void {
-    cancelAnimationFrame(glideFrame);
-    shiftsGlide = false;
-    glideFrame = requestAnimationFrame(() => {
-      glideFrame = requestAnimationFrame(() => {
-        glideFrame = 0;
-        shiftsGlide = true;
-      });
-    });
+  function feedPreview(preview: DockPreview | null): void {
+    if (preview === null) {
+      fedPreview = null;
+      return;
+    }
+    fedPreview = { preview, view };
+    shiftsView = view;
   }
-
-  $effect(() => () => cancelAnimationFrame(glideFrame));
 
   // ---- The zoom ----
 
@@ -1162,9 +1160,6 @@
       if (prev === next) {
         return;
       }
-      if (fedPreview !== null) {
-        pauseGlide();
-      }
       // Back after a long gap: the table shows as it is now, nothing plays.
       if (session.viewGap > MAX_APART_MS) {
         motion.stop();
@@ -1207,10 +1202,10 @@
   }
 
   /**
-   * Hovers what a new view put under a pointer at rest, whoever acted (spec
-   * 5.8): the card or hand card there, or nothing once the hovered card went
-   * from under it. The ring, the preview and the keys follow. A hovered card
-   * turning over or in stays hovered: the pointer still rests on it, edge-on.
+   * Hovers what a new view put under a pointer at rest, whoever acted: the
+   * card or hand card there, or nothing once the hovered card went from under
+   * it. The ring, the preview and the keys follow. A hovered card turning over
+   * or in stays hovered: the pointer still rests on it, edge-on.
    */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
@@ -1262,7 +1257,7 @@
   }
 
   /**
-   * Sends an action, credited (spec 5) to the deck owning the card or pile it
+   * Sends an action, credited to the deck owning the card or pile it
    * touches when that deck is the viewer's, else to the selected deck.
    */
   function act(action: Action, target: TableElement | null = null): number | null {
@@ -1937,6 +1932,12 @@
     });
   });
 
+  /** Whether a hand card may be discarded: handActions offers its Discard and does not refuse it. */
+  function handCanDiscard(id: string): boolean {
+    const discard = handActions(id, view, sizeOf).find((item) => item.id === 'discard');
+    return discard !== undefined && !discard.disabled;
+  }
+
   /** Play or Discard on a card of the hand sheet (handActions): sends what its key sends (keys.ts). */
   function runHandAction(id: string, action: 'play' | 'discard'): void {
     const item = handActions(id, view, sizeOf).find((candidate) => candidate.id === action);
@@ -2045,7 +2046,7 @@
   // ---- The card boxes ----
 
   // Browse and the stage choice are the client's own; Look at top and Search
-  // are the server's private view (ruling P5c-R1), closed with closeView.
+  // are the server's private view, closed with closeView.
   let localBox = $state<LocalBox | null>(null);
   // The private view was closed here: its box is gone before the server's answer.
   let closingView = $state(false);
@@ -2211,7 +2212,7 @@
         return;
       }
     }
-    // Alt + click pings the spot (spec 5.8); spectators cannot ping.
+    // Alt + click pings the spot; spectators cannot ping.
     if (event.altKey && event.button === 0 && presenceLayer?.ping(event)) {
       event.preventDefault();
       event.stopPropagation();
@@ -2227,7 +2228,8 @@
     }
     if (isEmptySpot(target)) {
       interaction.release();
-      // Ruling P5c-R7: not with another button, nor while scrolling the table with its scrollbars.
+      // Not with another button, nor while scrolling the table with its scrollbars: the arrows a
+      // click clears cannot be brought back.
       if (event.button === 0 && !onScrollbar(event, target)) {
         emptyPress = {
           pointerId: event.pointerId,
@@ -2321,7 +2323,7 @@
   /**
    * A press on an empty spot let go: a band selects the cards it touches,
    * none when it touches nothing, and one Esc took away selects nothing; a
-   * plain click clears the group and, ruling P5c-R7, the viewer's own arrows.
+   * plain click clears the group and the viewer's own arrows.
    */
   function endEmptyPress(event: PointerEvent): void {
     const press = emptyPress;
@@ -2364,7 +2366,8 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
-    // Escape leaves select mode and keeps the group, which the table's Escape would clear.
+    // Escape leaves select mode and keeps the group, which the table's Escape would clear. Taking the key keeps
+    // fullscreen (see the "Escape in fullscreen" project memory note).
     if (selecting && event.key === 'Escape' && !modal.open) {
       event.preventDefault();
       leaveSelectMode();
@@ -2378,7 +2381,11 @@
       run: runItem,
       act: (action) => send(action, targetOfKey(action)),
       showKeys: showKeySheet,
-      selectNextDeck: () => stepOwnDeck(1),
+      selectNextDeck: () => {
+        if (selected !== null) {
+          stepAmong(own, selected, 1);
+        }
+      },
       canStepHero,
       stepHero,
       canReadyAll,
@@ -2794,7 +2801,6 @@
       canUndo={view.canUndo ?? false}
       dropActive={dockDropActive}
       landscape={dockRail}
-      showHand={selected !== null}
       onhand={openHandSheet}
       onundo={undo}
       onhistory={openHistory}
@@ -2809,9 +2815,9 @@
       cards={dockHand}
       {faceOf}
       seat={selected}
-      area={areaOf(selected)}
       landscape={dockRail}
       picker={deckPicker}
+      canDiscard={handCanDiscard}
       onplay={(id) => runHandAction(id, 'play')}
       ondiscard={(id) => runHandAction(id, 'discard')}
       onclose={closeHandSheet}
@@ -2842,7 +2848,7 @@
     act={(action, element) => act(action, element.kind === 'marker' ? null : element)}
     onhand={selectSeat}
     ondrag={(drag) => session.sendPresence({ drag })}
-    onpreview={(preview) => (fedPreview = preview === null ? null : { preview, view })}
+    onpreview={feedPreview}
     lastError={session.lastError}
   />
 
@@ -2913,6 +2919,7 @@
         box={shownBox}
         {view}
         {facesOf}
+        {englishName}
         {sizeOf}
         readOnly={view.you.role !== 'player'}
         {selected}
@@ -2934,8 +2941,6 @@
       oncancel={() => (asking = null)}
     />
   {/if}
-
-  <Tooltip />
 
   {#if sidePanel}
     <aside class="side" id="history-panel" aria-label="History">
@@ -3064,13 +3069,21 @@
   /*
     Rings drawn around the rounded card, for cards and piles alike, on the card's box rather than on its
     image: the white ring of the hovered element and of the cards of the hovered history line,
-    and the drop outlines.
+    and the drop outlines, then the rings the card draws itself. All lie on one box.
   */
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before,
   .table :global(.card.drop-target)::before,
   .table :global(.card.drop-pile)::before {
     content: '';
+  }
+
+  .table :global(.card.hovered)::before,
+  .table :global(.card.highlighted)::before,
+  .table :global(.card.drop-target)::before,
+  .table :global(.card.drop-pile)::before,
+  .table :global(.card > .rring),
+  .table :global(.card > .sring) {
     position: absolute;
     inset: 1%;
     border-radius: 6px;
@@ -3078,7 +3091,7 @@
     z-index: 1;
   }
 
-  /* The hovered card or pile, or the one whose context menu is open, has the prototype's white ring. */
+  /* The hovered card or pile, or the one whose context menu is open, has a white ring. */
   .table :global(.card.hovered)::before,
   .table :global(.card.highlighted)::before {
     box-shadow:
@@ -3091,11 +3104,6 @@
     itself (CardView, PileView), it moves, turns and tilts with it.
   */
   .table :global(.card > .rring) {
-    position: absolute;
-    inset: 1%;
-    border-radius: 6px;
-    pointer-events: none;
-    z-index: 1;
     box-shadow:
       0 0 0 2px var(--c),
       0 0 22px 6px color-mix(in srgb, var(--c) 22%, transparent);
@@ -3103,17 +3111,12 @@
 
   /* A card the rubber band selected: a ring and a halo, in the viewer's colour. */
   .table :global(.card > .sring) {
-    position: absolute;
-    inset: 1%;
-    border-radius: 6px;
-    pointer-events: none;
-    z-index: 1;
     box-shadow:
       0 0 0 2px var(--you),
       0 0 0 7px color-mix(in srgb, var(--you) 22%, transparent);
   }
 
-  /* Where a drop would go: under a card (the prototype's threat orange), or onto a pile. */
+  /* Where a drop would go: under a card (the threat orange), or onto a pile. */
   .table :global(.card.drop-target)::before {
     outline: 3px dashed var(--warn);
     outline-offset: 2px;
@@ -3442,9 +3445,9 @@
   /*
     The preview, in a corner of the play area that focus.ts chooses (chooseCorner): the bottom
     right, above the zoom control, unless it would hide the whole hovered element there, and
-    never the hero selector's corner. Still while the table scrolls under it. As the zoom control: over the table, under the other players' presence
-    (2500), the veil and the raised hand (2600). Never so tall that it leaves the table; the
-    pointer goes through it.
+    never the hero selector's corner. Still while the table scrolls under it. As the zoom
+    control: over the table, under the other players' presence (2500), the veil and the raised
+    hand (2600). Never so tall that it leaves the table; the pointer goes through it.
   */
   .peek {
     grid-area: table;

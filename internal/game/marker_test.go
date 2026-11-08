@@ -3,6 +3,8 @@ package game
 import (
 	"errors"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 func TestMarkerUnknownName(t *testing.T) {
@@ -41,7 +43,7 @@ func TestMarkerSnaps(t *testing.T) {
 // TestMarkerNoFirstPlayerForOneSeat checks that a lone hero cannot move the
 // first player token: the game has none.
 func TestMarkerNoFirstPlayerForOneSeat(t *testing.T) {
-	f := heroGame(t, spiderManDeck(t, newCatalog(t)))
+	f := heroGame(t, spiderManDeck(t, packstest.Catalog(t)))
 	before := len(f.g.History.Events)
 
 	err := f.do("h", Action{Kind: ActMarker, Name: MarkerFirstPlayer, X: 300, Y: 410}, at(1))

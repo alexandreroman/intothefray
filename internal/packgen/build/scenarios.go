@@ -25,8 +25,8 @@ type villainSet struct {
 }
 
 // buildScenarios lists a scenario for every villain, leader or underling set
-// and merges the curated definitions into the ones whose cards all exist, and
-// whose main scheme sets, if any, are main scheme sets. A definition
+// and merges the curated definitions into the ones whose cards and sets all
+// exist, and whose main scheme sets, if any, are main scheme sets. A definition
 // absorbs the sets it covers, and a curated set the villain sets it names:
 // they are not listed separately. A set without villain card takes its image
 // from the lowest-code villain card of the sets it absorbs; naming villain
@@ -234,7 +234,7 @@ func (v villainSet) sortKey() string {
 func firstVillainCard(set pack.Set, cardsByCode map[string]pack.Card) *pack.Card {
 	for _, code := range slices.Sorted(slices.Values(set.Cards)) {
 		card, found := cardsByCode[code]
-		if found && (card.Faces[0].Type == pack.FaceTypeVillain || card.Faces[0].Type == pack.FaceTypeLeader) {
+		if found && card.IsVillain() {
 			return &card
 		}
 	}

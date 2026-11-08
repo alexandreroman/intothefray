@@ -14,7 +14,7 @@ export const ART_TOP = 0.13;
 export const ART_BOTTOM = 0.54;
 
 /** Where the card image lies in its box, each value a fraction of the box's width or height. */
-export interface ArtFrame {
+interface ArtFrame {
   width: number;
   height: number;
   left: number;

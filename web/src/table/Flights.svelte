@@ -1,8 +1,8 @@
 <!--
   The copies of cards flying to and out of piles, above everything, the
   pointer passing through them: a card flying from where it was, from where
-  the viewer let it go, or from the pile it left, to the pile it went to
-  (spec 5.5: discards animate to the owner's pile), turning over on the way
+  the viewer let it go, or from the pile it left, to the pile it went to,
+  turning over on the way
   when it lands on another side: face up out of a face-down pile, face down
   into a deck. A landscape card going to a portrait pile turns a quarter on
   its way, as the pile draws it, and turns over once there. Then a card
@@ -26,7 +26,7 @@
   import { dockMode } from './dockMode';
   import { DOCK_SCALE } from './dockPiles';
   import { isHidden } from './face';
-  import { cardBox, isLandscape } from './layout';
+  import { isLandscape } from './layout';
   import { motion } from './motion.svelte';
 
   let {
@@ -57,7 +57,7 @@
   <CardFace
     images={face?.images ?? []}
     name={face?.name ?? ''}
-    rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+    rotated={isLandscape(face?.size ?? 'std')}
   />
 {/snippet}
 
@@ -143,25 +143,17 @@
 {/each}
 
 <style>
+  /*
+    Its shadow (.shade, tokens.css) is a hand card's (--held-card-shadow), under what it shows: it turns, shrinks and
+    fades with the copy, drawn once. Its corners are those of the copy's box, which is the card's as it was measured,
+    landscape for a landscape card lying on the table; a quarter turn on the way turns it along.
+  */
   .fly {
+    --shade-shadow: var(--held-card-shadow);
     position: fixed;
     z-index: 2900;
     pointer-events: none;
     transform-origin: center;
-  }
-
-  /*
-    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge, under what it shows: it
-    turns, shrinks and fades with the copy, drawn once. Its corners are those of the copy's box, which is the card's
-    as it was measured, landscape for a landscape card lying on the table; a quarter turn on the way turns it along.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--held-card-shadow);
-    pointer-events: none;
   }
 
   .fly.land .shade {

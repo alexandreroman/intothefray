@@ -24,8 +24,7 @@ const testTTL = 24 * time.Hour
 func newTestStore(t *testing.T) (*Store, *miniredis.Miniredis) {
 	t.Helper()
 	mr := miniredis.RunT(t)
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	return New(rdb, testTTL), mr
 }
 
@@ -234,6 +233,49 @@ func TestTouchEndedGameKeepsShortTTL(t *testing.T) {
 	mr.FastForward(30 * time.Minute)
 
 	if err := s.Touch(ctx, "abc"); err != nil {
+		t.Fatalf("Touch: %v", err)
+	}
+	assertTTL(t, mr, time.Hour, "game:abc", "game:abc:info")
+}
+
+// beforeExpire is a Redis hook that runs before once, as the first pipeline
+// holding an EXPIRE is about to reach Redis.
+type beforeExpire struct {
+	storetest.PassHook
+
+	once   sync.Once
+	before func()
+}
+
+func (h *beforeExpire) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		if slices.ContainsFunc(cmds, func(cmd redis.Cmder) bool { return cmd.Name() == "expire" }) {
+			h.once.Do(h.before)
+		}
+		return next(ctx, cmds)
+	}
+}
+
+func TestTouchDuringEndKeepsShortTTL(t *testing.T) {
+	s, mr := newTestStore(t)
+	ctx := t.Context()
+	if err := s.Create(ctx, newGame("abc")); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	// The game ends after Touch read its phase and before it sets the
+	// expiries.
+	hook := &beforeExpire{before: func() {
+		_, _, err := s.Update(ctx, "abc", func(g *game.Game) error {
+			g.Phase = game.PhaseEnded
+			return nil
+		})
+		if err != nil {
+			t.Errorf("Update: %v", err)
+		}
+	}}
+	touching := storetest.Client(t, mr, hook)
+
+	if err := New(touching, testTTL).Touch(ctx, "abc"); err != nil {
 		t.Fatalf("Touch: %v", err)
 	}
 	assertTTL(t, mr, time.Hour, "game:abc", "game:abc:info")
@@ -564,13 +606,11 @@ func TestTouchExtendsSummary(t *testing.T) {
 // pipelineRecorder is a Redis hook that records the commands of every
 // pipeline, MULTI and EXEC included, as their names.
 type pipelineRecorder struct {
+	storetest.PassHook
+
 	mu        sync.Mutex
 	pipelines [][]string
 }
-
-func (r *pipelineRecorder) DialHook(next redis.DialHook) redis.DialHook { return next }
-
-func (r *pipelineRecorder) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
 
 func (r *pipelineRecorder) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
@@ -587,8 +627,7 @@ func (r *pipelineRecorder) ProcessPipelineHook(next redis.ProcessPipelineHook) r
 
 func TestTouchExpiresBothKeysInOneTransaction(t *testing.T) {
 	mr := miniredis.RunT(t)
-	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	t.Cleanup(func() { _ = rdb.Close() })
+	rdb := storetest.Client(t, mr)
 	s := New(rdb, testTTL)
 	if err := s.Create(t.Context(), newGame("abc")); err != nil {
 		t.Fatalf("Create: %v", err)
@@ -611,26 +650,6 @@ func TestTouchExpiresBothKeysInOneTransaction(t *testing.T) {
 	want := [][]string{{"multi", "expire", "expire", "exec"}}
 	if !reflect.DeepEqual(expiring, want) {
 		t.Errorf("pipelines with an EXPIRE = %v, want %v", expiring, want)
-	}
-}
-
-func TestTouchGameWithoutSummary(t *testing.T) {
-	s, mr := newTestStore(t)
-	ctx := t.Context()
-	if err := s.Create(ctx, newGame("abc")); err != nil {
-		t.Fatalf("Create: %v", err)
-	}
-	mr.Del("game:abc:info")
-	mr.FastForward(time.Hour)
-
-	if err := s.Touch(ctx, "abc"); err != nil {
-		t.Fatalf("Touch: %v", err)
-	}
-	if ttl := mr.TTL("game:abc"); ttl != testTTL {
-		t.Errorf("game ttl = %v, want %v", ttl, testTTL)
-	}
-	if mr.Exists("game:abc:info") {
-		t.Error("Touch created a summary")
 	}
 }
 
@@ -664,18 +683,6 @@ func TestGameSummaries(t *testing.T) {
 		if want := []string{"klaw", "rhino", "ultron"}; !slices.Equal(scenarios, want) {
 			t.Errorf("scenarios = %v, want %v", scenarios, want)
 		}
-	})
-
-	t.Run("games without a summary are left out", func(t *testing.T) {
-		s, mr := newTestStore(t)
-		if err := s.Create(t.Context(), newGame("abc")); err != nil {
-			t.Fatalf("Create: %v", err)
-		}
-		if err := mr.Set(gameKey("old"), "{}"); err != nil {
-			t.Fatal(err)
-		}
-
-		assertSummaryCount(t, s, 1)
 	})
 
 	t.Run("undecodable summaries are left out", func(t *testing.T) {

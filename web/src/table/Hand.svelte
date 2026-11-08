@@ -25,13 +25,13 @@
   import { isHidden } from './face';
   import { interaction } from './interaction.svelte';
   import {
-    cardBox,
     fanExtent,
     filledFanPositions,
     HAND_CARD,
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
+    isLandscape,
     type FanSlot,
     type HandInsets,
     restingFanPositions,
@@ -818,7 +818,7 @@
             <CardFace
               images={face?.images ?? []}
               name={face?.name ?? ''}
-              rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+              rotated={isLandscape(face?.size ?? 'std')}
             />
           {/if}
         </div>
@@ -852,10 +852,7 @@
     align-self: end;
     position: relative;
     z-index: 20;
-    /*
-      Border box: the padding around one card. The prototype's min-heights (218 px, 180 px on a
-      narrow screen) are below this, so its hand grows to the same height around its card row.
-    */
+    /* Border box: the padding around one card, the hand's height around its card row. */
     min-height: calc(var(--pad-top) + var(--card-h) + var(--pad-bottom));
     margin: 0;
     padding: var(--pad-top) var(--pad-side) var(--pad-bottom);
@@ -1037,7 +1034,13 @@
     pointer-events: auto;
   }
 
+  /*
+    The card's shadow (.shade, tokens.css) is a hand card's (--held-card-shadow): it turns and pops with the card,
+    drawn once. The fan's transform gives it its own stacking, which keeps the shade under its face. The slot is
+    portrait, a landscape card turned a quarter in it: portrait corners.
+  */
   .fan {
+    --shade-shadow: var(--held-card-shadow);
     position: relative;
     width: 100%;
     height: 100%;
@@ -1045,20 +1048,6 @@
     transform-origin: 50% 110%;
     transform: translateY(var(--ty)) rotate(var(--rot));
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  /*
-    The card's shadow, cast from 2px inside its edge, under its face (see --held-card-shadow): it turns and pops with
-    the card, drawn once. The fan's transform gives it its own stacking, which keeps the shade under its face. The slot
-    is portrait, a landscape card turned a quarter in it: portrait corners.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--held-card-shadow);
-    pointer-events: none;
   }
 
   /*
@@ -1106,7 +1095,7 @@
     position: absolute;
     inset: 0;
     border-radius: 8px;
-    background: #07090fa6;
+    background: var(--scrim);
     clip-path: var(--card-cut);
     pointer-events: none;
     opacity: 1;

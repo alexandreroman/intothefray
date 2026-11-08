@@ -11,24 +11,22 @@ import galaxysMostWanted from '../assets/news/2026-11-05-galaxys-most-wanted.web
 /** One piece of news: a feature the players can use. */
 export interface NewsEntry {
   /**
-   * The entry's date and a slug, as "2026-11-01-red-skull": ids sort as their dates do, so an
-   * entry is unread when its id comes after the last one seen, whatever was removed or added.
+   * The day it came out, as YYYY-MM-DD, and a slug, as "2026-11-01-red-skull": ids sort as their
+   * dates do, so an entry is unread when its id comes after the last one seen, whatever was
+   * removed or added.
    */
   id: string;
-  /** The day it came out, as YYYY-MM-DD. */
-  date: string;
   title: string;
   /** A sentence or two, for the players. */
   text: string;
   /** A small 4:3 illustration, shown beside the text. */
-  image?: { src: string; alt: string };
+  image: { src: string; alt: string };
 }
 
 /** Every entry, newest first (news.test.ts checks it). */
 export const NEWS: NewsEntry[] = [
   {
     id: '2026-11-05-galaxys-most-wanted',
-    date: '2026-11-05',
     title: "The Galaxy's Most Wanted scenarios",
     text:
       'The Guardians are wanted across the galaxy: fight the Brotherhood of Badoon, break into and out of the ' +
@@ -37,7 +35,6 @@ export const NEWS: NewsEntry[] = [
   },
   {
     id: '2026-11-03-share-link',
-    date: '2026-11-03',
     title: 'Share a game by link',
     text:
       'Invite friends by sending them the game link: click Copy in the lobby and paste it in a chat or a post, ' +
@@ -46,7 +43,6 @@ export const NEWS: NewsEntry[] = [
   },
   {
     id: '2026-11-01-red-skull',
-    date: '2026-11-01',
     title: 'Rise of the Red Skull scenarios',
     text:
       'Take on Crossbones, Absorbing Man, Taskmaster, Zola and Red Skull, in Standard or Expert. ' +
@@ -55,7 +51,6 @@ export const NEWS: NewsEntry[] = [
   },
   {
     id: '2026-10-29-several-decks',
-    date: '2026-10-29',
     title: 'Up to four heroes for one player',
     text:
       'Load several decks and play up to four heroes on your own, or share the table with friends. ' +
@@ -67,7 +62,6 @@ export const NEWS: NewsEntry[] = [
   },
   {
     id: '2026-10-20-french-cards',
-    date: '2026-10-20',
     title: 'French cards',
     text: 'Prefer your cards in French? Choose French in Options to see French card names and images.',
     image: { src: frenchCards, alt: "The Absorbing Man villain card in French: L'Homme Absorbant" },

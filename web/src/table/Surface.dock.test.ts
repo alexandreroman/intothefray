@@ -235,7 +235,10 @@ describe('the chip lines and the avatars in dock mode', () => {
     // The room the name has: the frame's drawn width less the name's left inset (the frame's
     // border and 4px), the space before the chips and the chips; never below nothing.
     expect(surfaceSource).toMatch(
-      /:is\(\.ownerbox, \.chips\) \{\s*--name-fit: max\(\s*0px,\s*var\(--frame-w\) - 6px - var\(--chip-lead\) - var\(--chips\) \* var\(--chip-room\)\s*\);/,
+      new RegExp(
+        String.raw`:is\(\.ownerbox, \.chips\) \{\s*--name-fit: max\(\s*0px,` +
+          String.raw`\s*var\(--frame-w\) - 6px - var\(--chip-lead\) - var\(--chips\) \* var\(--chip-room\)\s*\);`,
+      ),
     );
     // The name, cut to that room on one line with an ellipsis, a tooltip while it is cut, and its
     // unseen copy, which the chips follow, cut the same.

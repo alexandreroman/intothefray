@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
-import type { Box } from '../../lib/dropdown';
+import type { Rect } from '../../lib/rect';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -87,7 +87,7 @@ function viewOf(config: LobbyConfig, you: YouView = asHost): View {
 }
 
 /** The room the Add a set menu stays within: the whole window. */
-function windowRoom(): Box {
+function windowRoom(): Rect {
   return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
 }
 
@@ -105,6 +105,17 @@ function renderPicker(config: LobbyConfig, you: YouView = asHost) {
 function setSelect(label: string): HTMLSelectElement {
   return screen.getByRole('combobox', { name: label }) as HTMLSelectElement;
 }
+
+describe('ScenarioPicker modular chips', () => {
+  it('marks a recommended set with a named star and its tooltip, no native title', () => {
+    renderPicker(rhino);
+
+    const star = screen.getByRole('img', { name: 'Recommended for this scenario' });
+    expect(star.textContent).toBe('★');
+    expect(star.dataset.tip).toBe('Recommended for this scenario');
+    expect(star.hasAttribute('title')).toBe(false);
+  });
+});
 
 describe('ScenarioPicker set dropdowns', () => {
   it('offers None first in both dropdowns', () => {
@@ -240,6 +251,50 @@ describe('ScenarioPicker in French', () => {
 
     expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
     expect(screen.queryByText('Klaw')).toBeNull();
+  });
+
+  async function filterScenarios(query: string) {
+    await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
+      target: { value: query },
+    });
+  }
+
+  it('finds a scenario whatever the case and accents', async () => {
+    renderFrench(rhino);
+
+    await filterScenarios('LE RHINOCEROS');
+
+    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
+    expect(screen.queryByText('Klaw')).toBeNull();
+  });
+
+  it('finds a scenario by its English name, and by its pack name, shown or English', async () => {
+    cardLang.current = 'fr';
+    render(ScenarioPicker, {
+      view: viewOf(rhino),
+      index: {
+        ...french,
+        scenarios: french.scenarios.map((s) =>
+          s.id === 'wrecking_crew' ? { ...s, localized: { fr: { name: 'Écraseurs' } } } : s,
+        ),
+      },
+      onconfigure: vi.fn(),
+      room: windowRoom,
+    });
+
+    await filterScenarios('ecraseurs');
+    expect(screen.getByText('Écraseurs')).toBeTruthy();
+    expect(screen.queryByText('Le Rhinocéros')).toBeNull();
+
+    await filterScenarios('wrecking');
+    expect(screen.getByText('Écraseurs')).toBeTruthy();
+    expect(screen.queryByText('Le Rhinocéros')).toBeNull();
+
+    for (const pack of ['core set', 'boite de base']) {
+      await filterScenarios(pack);
+      expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
+      expect(screen.getByText('Klaw')).toBeTruthy();
+    }
   });
 
   describe('Add a set menu filter', () => {

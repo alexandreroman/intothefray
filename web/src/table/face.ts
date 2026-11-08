@@ -2,6 +2,9 @@ import { byId } from '../lib/byId';
 import type { Back, CardView, PileView } from '../lib/types';
 import { sideLabel } from './actions';
 
+/** The types of the schemes, as isScheme (internal/game/setup.go) lists them. */
+export const SCHEME_TYPES: readonly string[] = ['main_scheme', 'side_scheme', 'player_side_scheme'];
+
 /** A face-down card, or one the viewer may not see (no code), shows only its back. */
 export function isHidden(card: CardView): boolean {
   return !!card.faceDown || !card.code;

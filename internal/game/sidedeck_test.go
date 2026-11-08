@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // Identities of heroes with side decks or set-aside cards.
@@ -53,28 +54,10 @@ func heroDeck(t *testing.T, cat *pack.Catalog, identity, name string, extra ...D
 	return deck
 }
 
-// heroGame returns a started Rhino game where "h" (Host) plays the first deck
-// at p0 and "b" (Bob) the second one, if any, at p1.
+// heroGame returns a started Rhino game of decks (see startedWith).
 func heroGame(t *testing.T, decks ...DeckChoice) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
-	g := mustNewGame(t, "g1", "h", "Host", testNow)
-	tokens := []string{"h", "b"}[:len(decks)]
-	if len(decks) > 1 {
-		if _, err := g.Join("b", "Bob"); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if err := g.Configure("h", rhinoConfig(), cat); err != nil {
-		t.Fatal(err)
-	}
-	for i, token := range tokens {
-		seatDeck(t, g, token, 0, decks[i], cat)
-	}
-	if err := g.Start("h", cat, testSeed, testNow); err != nil {
-		t.Fatal(err)
-	}
-	return &doFixture{g: g, cat: cat}
+	return startedWith(t, rhinoConfig(), decks...)
 }
 
 // sideDeckFixture is a started game where Host plays Doctor Strange (p0,
@@ -82,7 +65,7 @@ func heroGame(t *testing.T, decks ...DeckChoice) *doFixture {
 // the Sense deck and no discard pile).
 func sideDeckFixture(t *testing.T) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	return heroGame(t,
 		heroDeck(t, cat, doctorStrangeIdentity, "Doctor Strange"),
 		heroDeck(t, cat, daredevilIdentity, "Daredevil"))
@@ -157,7 +140,7 @@ func TestSetupSideDecks(t *testing.T) {
 }
 
 func TestSetupTwoSideDecks(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	table := f.g.Table
 	y := rowY(playerRow(0))
 
@@ -181,7 +164,7 @@ func TestSetupTwoSideDecks(t *testing.T) {
 }
 
 func TestSetupSetAsideHeroCards(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	tests := []struct {
 		name     string
 		deck     DeckChoice
@@ -220,8 +203,8 @@ func TestSetupSetAsideHeroCards(t *testing.T) {
 				t.Errorf("%s is in the deck", tt.code)
 			}
 			// No side piles: the identity keeps its place.
-			if identity := f.g.Table.Cards[identityOf(t, f.g, 0)]; identity.X != identityX {
-				t.Errorf("identity at x %d, want %d", identity.X, identityX)
+			if identity := f.g.Table.Cards[identityOf(t, f.g, 0)]; identity.X != 300 {
+				t.Errorf("identity at x %d, want 300", identity.X)
 			}
 			checkIntegrity(t, table)
 		})
@@ -504,7 +487,7 @@ func TestSideDeckViews(t *testing.T) {
 // "side:p0:0" without a discard pile) and a Sense card drawn into his hand.
 func tuckedSenseFixture(t *testing.T) (f *doFixture, sense string) {
 	t.Helper()
-	f = heroGame(t, heroDeck(t, newCatalog(t), daredevilIdentity, "Daredevil"))
+	f = heroGame(t, heroDeck(t, packstest.Catalog(t), daredevilIdentity, "Daredevil"))
 	return f, drawSide(t, f, "h", "side:p0:0", 1)
 }
 
@@ -587,7 +570,7 @@ func TestShuffleIntoSideDeckTakesTheTuckedSideCards(t *testing.T) {
 }
 
 func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	f := heroGame(t, heroDeck(t, cat, doctorStrangeIdentity, "Doctor Strange", DeckEntry{Code: "09032", Qty: 1}))
 	table := f.g.Table
 	if slices.Contains(codesOf(table, table.Piles["deck:p0"].Cards), "09032") {
@@ -599,7 +582,7 @@ func TestDeckListSideCardsStayInTheirSideDeck(t *testing.T) {
 }
 
 func TestFaceDownSideDeckShowsItsCountOnly(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	pile := f.g.Table.Piles[sideDeckID(0, 0)]
 	for _, token := range []string{"h", "nobody"} {
 		tv := f.g.ViewFor(token).Table
@@ -617,7 +600,7 @@ func TestFaceDownSideDeckShowsItsCountOnly(t *testing.T) {
 }
 
 func TestSideDeckSharedBacks(t *testing.T) {
-	f := heroGame(t, heroDeck(t, newCatalog(t), herculesIdentity, "Hercules"))
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
 	table := f.g.Table
 	wantBacks := map[string]pack.Back{"Labor": pack.BackPlayer, "Gift": pack.BackEncounter}
 

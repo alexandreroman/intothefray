@@ -15,8 +15,8 @@ type: project
   never sent to viewers. The store writes the summary with the game and
   gives it the game's TTL: `Create` sets both keys in one Lua script (SET
   NX on the game, then the summary), `Update` sets it in the game's MULTI,
-  `Touch` expires both keys in one MULTI. A game without a summary is not
-  counted.
+  and `Touch` reads the game's phase from its summary, under WATCH, and
+  expires both keys in one transaction.
 - `Store.GameSummaries` walks `game:*:info` with `SCAN ... COUNT 1000`,
   MGETs each batch and drops duplicate keys, so the figure is exact. It
   never reads a game value (30 KB to over 1 MB each). Expired or
@@ -32,7 +32,7 @@ type: project
     `games` is always there.
   - `playing` holds one anonymous entry per game in the playing phase:
     first its `ref`, which tells games apart from one call to the next
-    and never leads to the game (absent for a game without one); then
+    and never leads to the game; then
     English names from the embedded catalog: `heroes`, the identity
     card's hero face and alter-ego face (absent when it has none), sorted by
     hero then alter-ego; the scenario name; the difficulty as stored
@@ -41,9 +41,9 @@ type: project
     II) and the modular sets, sorted alphabetically. A set the game plays
     without, and any unknown code, is left out. A Fear No Evil game names
     its Underling as the scenario and its main scheme set among the sets.
-    Entries are sorted by `ref` (ref-less ones first, by their other
-    fields), so the reply is stable from one call to the next. Entries
-    carry no game id, player name, deck name, deck URL or token.
+    Entries are sorted by `ref`, so the reply is stable from one call to
+    the next. Entries carry no game id, player name, deck name, deck URL
+    or token.
   - `Cache-Control: public, max-age=60`. Each server instance caches the
     whole reply for 60 s under a mutex held during the scan, so an
     instance scans at most once a minute whatever the traffic. A failed
@@ -61,8 +61,10 @@ type: project
 **Why:** a cheap social signal for visitors, and a public view of what
 people play, with Redis expiry doing the bookkeeping. The summary keeps
 the scan away from the large game values, and one scan yields both the
-count and the list. Its prefix is not `game:` because a game id comes
-from the request path: no id must name another game's summary.
+count and the list. The summary sits beside its game under
+`game:<id>:info`; a game id from a request path reaches the store only
+when it has the format of a generated id, which holds no colon
+(`validGameID`), so no path id names another game's keys.
 
 **How to apply:** any new write path of a game key writes or expires its
 summary too. Keep the public reply aggregated and anonymous (see

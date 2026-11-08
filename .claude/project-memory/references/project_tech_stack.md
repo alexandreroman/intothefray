@@ -12,10 +12,8 @@ type: project
 - Frontend in TypeScript with Svelte 5 + Vite, built as a static SPA and
   served separately from the backend (GitHub Pages or equivalent), with
   History API path routes (`/`, `/options`, `/about`, `/g/?id=<id>`) under
-  the build's base path; an unknown path shows home. The build writes
-  `g/index.html` and `404.html` (see [[project_share_previews]]); GitHub
-  Pages serves `404.html` for `/options`, `/about` and any other deep
-  link. Caddy tries
+  the build's base path; an unknown path shows home. Static hosting serves
+  the routes through the files of [[project_share_previews]]. Caddy tries
   `{path}`, then `{path}/index.html`, then falls back to `index.html` for
   app routes, but not for `/api/*`, `/ws/*`, `/healthz`, `/assets/*` and
   `/packs/*`, where a missing file answers 404. The workflow takes the

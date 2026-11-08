@@ -10,8 +10,7 @@ import (
 // game at once. Besides codes, it holds only the game's StatsRef: nothing that
 // leads to the game or names its players.
 type Summary struct {
-	// Ref is the game's StatsRef, empty for a game created without one.
-	Ref      string `json:"ref,omitempty"`
+	Ref      string `json:"ref,omitempty"` // the game's StatsRef
 	Phase    Phase  `json:"phase"`
 	Scenario string `json:"scenario,omitempty"` // LobbyConfig.Scenario
 	// Difficulty, Standard and Expert are those of LobbyConfig; a set code is

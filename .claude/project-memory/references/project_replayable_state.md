@@ -13,8 +13,8 @@ undo. A snapshot of the board state is taken every 10 actions as a safety
 net. The seed and the resolved history stay on the server: they would
 reveal hidden information (deck orders). The history holds each action as
 resolve leaves it: resolve drops the client fields its kind does not read
-(`withoutUnreadFields` in internal/game) and fills the server-side ones
-(new ids, seats, resulting states) itself.
+(`withoutUnreadFields` in internal/game; `faceUp` stays on a play only)
+and fills the server-side ones (new ids, seats, resulting states) itself.
 
 **Why:** undo stays correct across players, and the long-term goal is a
 suite of replayable board-state tests (recorded setup + actions → expected

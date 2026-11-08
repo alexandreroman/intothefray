@@ -71,7 +71,7 @@ function groupsOf(element: HTMLElement): [string, string[]][] {
 }
 
 describe('KeysSheet', () => {
-  it('sheet lists the groups of spec 5.10', () => {
+  it('sheet lists the groups of shortcuts', () => {
     vi.stubGlobal('navigator', { ...navigator, userAgent: 'Mozilla/5.0 (X11; Linux x86_64)' });
     const anchor = document.body.appendChild(document.createElement('button'));
     render(KeysSheet, { props: { anchor, onclose: vi.fn() } });
@@ -188,7 +188,7 @@ describe('KeysSheet', () => {
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(400);
     render(KeysSheet, { props: { anchor, onclose: vi.fn() } });
 
-    // 14 px above the button, as in the prototype.
+    // 14 px above the button.
     expect(sheet()!.style.top).toBe('286px');
     expect(sheet()!.style.left).toBe('290px');
   });
@@ -253,7 +253,7 @@ describe('the sheet on the table', () => {
     expect(sheet()).toBeNull();
 
     const button = screen.getByRole('button', { name: 'Keyboard shortcuts' });
-    // Its tooltip names its key, as the prototype's does.
+    // Its tooltip names its key.
     expect(button.dataset).toMatchObject({ tip: 'Keyboard shortcuts', kbd: '?' });
     await fireEvent.click(button);
     expect(sheet()).not.toBeNull();

@@ -290,13 +290,7 @@ func recordGroupGame(t *testing.T, recording, golden string) {
 	f.mustDo(t, "h", Action{Kind: ActUndo}, at(14))
 	f.mustDo(t, "h", groupOf(ActToHand, "", "", host[1], host[2]), at(15))
 	checkReplay(t, f)
-
-	setup, err := f.g.ReplaySetup()
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeFile(t, recording, indentedJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events}))
-	writeFile(t, golden, indentedJSON(t, f.g.Table))
+	writeRecording(t, f, recording, golden)
 }
 
 // TestGroupDroppedWhole undoes the play of a card that Bob has since moved in

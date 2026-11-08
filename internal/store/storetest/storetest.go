@@ -44,3 +44,29 @@ func RestartableClient(t testing.TB, mr *miniredis.Miniredis) (*redis.Client, fu
 	}
 	return rdb, restart
 }
+
+// Client returns a client of mr with hooks added, closed when the test ends.
+func Client(t testing.TB, mr *miniredis.Miniredis, hooks ...redis.Hook) *redis.Client {
+	t.Helper()
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	for _, hook := range hooks {
+		rdb.AddHook(hook)
+	}
+	t.Cleanup(func() { _ = rdb.Close() })
+	return rdb
+}
+
+// PassHook is a redis.Hook that lets every dial, command and pipeline through
+// as it is. A test hook embeds it and overrides only the methods it needs.
+type PassHook struct{}
+
+// DialHook returns next.
+func (PassHook) DialHook(next redis.DialHook) redis.DialHook { return next }
+
+// ProcessHook returns next.
+func (PassHook) ProcessHook(next redis.ProcessHook) redis.ProcessHook { return next }
+
+// ProcessPipelineHook returns next.
+func (PassHook) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return next
+}

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 const (
@@ -50,7 +51,7 @@ type viewFixture struct {
 
 func newViewFixture(t *testing.T) *viewFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", hostToken, "Host", testNow)
 	if _, err := g.Join(bobToken, "Bob"); err != nil {
 		t.Fatal(err)
@@ -404,7 +405,7 @@ func TestViewIdentity(t *testing.T) {
 }
 
 func TestViewHandsOfOwnSeats(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoDeckGame(t)
 	// Alex draws into the hand of his first deck, Sam into his only one.
 	if err := g.Do("a", -1, Action{Kind: ActDraw, N: 1}, cat, at(1)); err != nil {
@@ -457,7 +458,7 @@ func TestViewHandsOfOwnSeats(t *testing.T) {
 }
 
 func TestPlayerReadyNeedsEverySlot(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := twoSlotLobby(t)
 	if err := g.SetDeck("a", 0, spiderManDeck(t, cat), cat); err != nil {
 		t.Fatal(err)
@@ -753,7 +754,7 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 	g := &Game{
 		ID:    "g1",
 		Phase: PhasePlaying,
-		Table: &Table{Stages: []*Stage{{Key: "villain"}}},
+		Table: &Table{},
 	}
 
 	data, err := json.Marshal(g.ViewFor("nobody"))
@@ -766,11 +767,6 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 		Config  struct {
 			Modulars *[]string `json:"modulars"`
 		} `json:"config"`
-		Table struct {
-			Stages []struct {
-				Cards *[]string `json:"cards"`
-			} `json:"stages"`
-		} `json:"table"`
 	}
 	if err := json.Unmarshal(data, &got); err != nil {
 		t.Fatalf("Unmarshal() error = %v", err)
@@ -781,7 +777,31 @@ func TestViewNeverEmitsNullLists(t *testing.T) {
 	if got.Config.Modulars == nil {
 		t.Errorf("config.modulars is null in %s", data)
 	}
-	if len(got.Table.Stages) != 1 || got.Table.Stages[0].Cards == nil {
-		t.Errorf("stage cards is null in %s", data)
+}
+
+// The web client reads every stage's cards as an array: a started game holds
+// each stage's current card there, so the list is never empty, let alone null.
+func TestViewListsTheCardsOfEveryStage(t *testing.T) {
+	f := newViewFixture(t)
+
+	var got struct {
+		Table struct {
+			Stages []struct {
+				Key   string    `json:"key"`
+				Cards *[]string `json:"cards"`
+			} `json:"stages"`
+		} `json:"table"`
+	}
+	data := viewJSON(t, f.g, specToken)
+	if err := json.Unmarshal([]byte(data), &got); err != nil {
+		t.Fatalf("Unmarshal() error = %v", err)
+	}
+	if len(got.Table.Stages) == 0 {
+		t.Fatalf("no stage in %s", data)
+	}
+	for _, stage := range got.Table.Stages {
+		if stage.Cards == nil || len(*stage.Cards) == 0 {
+			t.Errorf("stage %q: cards = %v, want a non-empty array", stage.Key, stage.Cards)
+		}
 	}
 }

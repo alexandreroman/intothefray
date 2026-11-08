@@ -9,7 +9,7 @@
 
 import { getPref, setPref } from '../lib/prefs';
 import type { PileView, Point } from '../lib/types';
-import { GRID } from './layout';
+import { floorTo, GRID } from './grid';
 
 /**
  * The height of the villain's row, in table units: it covers [0, 440), leaving
@@ -42,7 +42,7 @@ export function saveViewMode(mode: ViewMode): void {
 }
 
 /** Where heights of the table are drawn, in table units. */
-export interface RowMap {
+interface RowMap {
   /** Where a height of the table is drawn, or null when its row is not shown. */
   toDisplay(y: number): number | null;
   /** The height of the table drawn at a height of the surface. */
@@ -155,8 +155,7 @@ export function rowPitch(
   if (fittedRows === 2 && pitch < minVillain) {
     pitch = available - ROW_HEIGHT - minVillain;
   }
-  const onGrid = Math.floor(pitch / step) * step;
-  return Math.min(MAX_PITCH, Math.max(MIN_PITCH, onGrid));
+  return Math.min(MAX_PITCH, Math.max(MIN_PITCH, floorTo(pitch, step)));
 }
 
 /**
@@ -234,7 +233,7 @@ export function spreadRows(
   const bands: Band[] = rows.map((row, i) => ({
     row,
     tableTop: rowTop(row),
-    tableHeight: row === 0 ? VILLAIN_ROW_HEIGHT : ROW_HEIGHT,
+    tableHeight: rowHeight(row),
     top: i === 0 ? 0 : villain + pitch * (i - 1),
     height: i === 0 ? villain : pitch,
     content: row === 0 ? VILLAIN_CONTENT : ROW_CONTENT,

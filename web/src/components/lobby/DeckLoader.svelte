@@ -11,8 +11,9 @@
    * when the slot can be removed. `autofocus` focuses the deck link as the slot
    * mounts. `loading` tells that the slot's deck load is in flight: the form
    * then waits for its answer. `locked` tells that a deck load is in flight,
-   * this slot's or another's: meanwhile the slot can neither start a load nor
-   * be removed, and only the loading slot shows the load. `loaded` counts the
+   * this slot's or another's, so it is set whenever `loading` is: meanwhile
+   * the slot can neither start a load nor be removed, and only the loading
+   * slot shows the load. `loaded` counts the
    * loads the server confirmed while this slot is the one loading, and is
    * undefined for the other slots: each new one closes a Change in progress
    * and clears the field, which shows a reload of the same deck, whose view
@@ -54,7 +55,6 @@
   const changeLabel = $derived(slot === null ? 'Change deck' : `Change deck ${slot}`);
   const signature = $derived(JSON.stringify([deck.hero, deck.deckName]));
   const showForm = $derived(!deck.ready || changingFrom === signature);
-  const inFlight = $derived(loading || locked);
   const unsupportedCount = $derived(deckError?.reduce((sum, card) => sum + card.qty, 0) ?? 0);
   const unsupportedText = $derived(
     unsupportedCount === 1
@@ -82,13 +82,13 @@
   function load(event: SubmitEvent): void {
     event.preventDefault();
     const link = url.trim();
-    if (link !== '' && !inFlight) {
+    if (link !== '' && !locked) {
       onload(link);
     }
   }
 
   function removeSlot(): void {
-    if (!inFlight) {
+    if (!locked) {
       onremove?.();
     }
   }
@@ -112,7 +112,7 @@
         bind:this={input}
       />
       <!-- aria-disabled rather than disabled while a load is in flight: the button keeps the focus. -->
-      <button class="btn" type="submit" disabled={url.trim() === ''} aria-disabled={inFlight}>
+      <button class="btn" type="submit" disabled={url.trim() === ''} aria-disabled={locked}>
         <!-- Both labels share one cell, so that the button keeps its width. Hidden, the other label
              is left out of the button's name too. -->
         <span class="labels">
@@ -178,7 +178,7 @@
       class="btn-ghost tool remove"
       data-tip={removeLabel}
       aria-label={removeLabel}
-      aria-disabled={inFlight}
+      aria-disabled={locked}
       onclick={removeSlot}
     >
       <Icon name="cross" />

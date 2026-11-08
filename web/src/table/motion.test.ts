@@ -1,4 +1,4 @@
-// A card discarded or played from the viewer's hand in dock mode (spec 5.5): the hand is not
+// A card discarded or played from the viewer's hand in dock mode: the hand is not
 // drawn on the table, so the card does not fly across it. Where the viewer saw it (the hand sheet's
 // carousel, or else the dock's hand button), a copy rises and fades out; the pile
 // shows a discarded card at once.

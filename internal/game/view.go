@@ -288,7 +288,6 @@ func (t *Table) viewFor(seats []int, home int) *TableView {
 	stageKeys := map[string]string{}
 	for _, stage := range t.Stages {
 		copied := stage.clone()
-		copied.Cards = append([]string{}, stage.Cards...) // never null on the wire
 		tv.Stages = append(tv.Stages, copied)
 		stageKeys[stage.Current] = stage.Key
 		for _, id := range stage.Cards {

@@ -155,7 +155,7 @@ func isFaceCode(code string) bool {
 	return code[5] >= 'a' && code[5] <= 'z'
 }
 
-// Index returns the language index the catalog was loaded from.
+// Index returns the index the catalog was loaded from.
 func (c *Catalog) Index() Index {
 	return c.index
 }

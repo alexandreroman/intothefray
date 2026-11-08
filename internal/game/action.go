@@ -181,6 +181,9 @@ func withoutUnreadFields(a Action) Action {
 	if !namedKinds[a.Kind] {
 		a.Name = ""
 	}
+	if a.Kind != ActPlay {
+		a.FaceUp = false
+	}
 	a.Renames = nil
 	a.Seats = nil
 	a.Exhausted = nil

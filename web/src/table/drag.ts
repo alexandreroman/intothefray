@@ -1,8 +1,9 @@
-// Drag and drop on the table (spec 5.4): what can be dragged, where it can be
-// dropped, and the action a drop sends. Pure helpers; DragLayer.svelte follows
+// Drag and drop on the table: what can be dragged, where it can be dropped,
+// and the action a drop sends. Pure helpers; DragLayer.svelte follows
 // the pointer, measures the screen and calls them.
 
 import { byId } from '../lib/byId';
+import type { Rect } from '../lib/rect';
 import {
   markerPoint,
   type Action,
@@ -45,18 +46,10 @@ export function unknownTopId(pile: Pick<PileView, 'kind'>): string {
 /** A drop this close to a pile, in screen pixels, goes onto it. */
 const PILE_MARGIN = 20;
 
-/** The prototype's room around the hand cards where a hand card dropped slots back in. */
+/** The room around the hand cards where a hand card dropped slots back in. */
 const HAND_SIDE_ROOM = 140;
 const HAND_TOP_ROOM = 20;
 const EMPTY_HAND_ROOM = 140;
-
-/** A box on the screen. A DOMRect is one. */
-export interface Rect {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-}
 
 /**
  * What a drop onto a pile does: back on top of the deck, discarded, or put in
@@ -276,7 +269,7 @@ function onCard(drag: CardSource, card: string, dealTo: Area): Action | null {
       // card, which the client may not know, and chooses its facing, face down out of a main deck.
       return { kind: 'play', pile: drag.pile, target: card };
     case 'encounter':
-      // Dealt face down and tucked in one action (spec 5.5). The classic encounter deck is the
+      // Dealt face down and tucked in one action. The classic encounter deck is the
       // default: only a scenario deck names itself.
       return drag.pile === PILE_ENCOUNTER
         ? { kind: 'deal', area: dealTo, target: card }
@@ -455,9 +448,8 @@ export function sourceOf(element: Pressable, view: View, taken?: string): DragSo
 /**
  * The hand that takes the dragged card, or null when no hand does: a table
  * card of one of the viewer's own decks goes to that deck's hand, as Move to
- * ▾ Hand has it (ruling P5b-R10), unless it stays on the table, and the top
- * card of one of their decks is drawn into that deck's hand. The prototype
- * takes it from anywhere over the fan.
+ * ▾ Hand has it, unless it stays on the table, and the top card of one of
+ * their decks is drawn into that deck's hand.
  */
 export function handAreaOf(drag: DragSource, view: View): Area | null {
   const table = view.table;
@@ -628,7 +620,7 @@ export function mainCardOf(card: CardView, cards: readonly CardView[]): CardView
 }
 
 /**
- * Where a hand card dropped slots back into the hand, as in the prototype:
+ * Where a hand card dropped slots back into the hand:
  * around the hand cards with a card's width to spare on each side (the fan
  * narrows when a card leaves it), down to the bottom of the window; at the
  * middle of the table's bottom edge when the hand is empty.

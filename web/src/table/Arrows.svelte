@@ -1,5 +1,5 @@
 <!--
-  The arrows from card to card (spec 5.8): curved paths in their owner's
+  The arrows from card to card: curved paths in their owner's
   colour, drawn over the surface inside the table, so that they scroll with
   it. The paths are measured from the cards on the screen, again whenever the
   table scrolls or is resized, or the cards move. In arrow
@@ -90,7 +90,7 @@
     return Math.round(value * 10) / 10;
   }
 
-  /** A quadratic curve bent to the side, stopping just inside the target card's edge, as in the prototype. */
+  /** A quadratic curve bent to the side, stopping just inside the target card's edge. */
   function curve(a: End, b: End, toCard: boolean): string {
     const dx = b.x - a.x;
     const dy = b.y - a.y;

@@ -7,6 +7,49 @@ import (
 	"testing"
 )
 
+func TestCardFaceOfTypeAndHeroFace(t *testing.T) {
+	identity := Card{Faces: []Face{
+		{Name: "Peter Parker", Type: FaceTypeAlterEgo},
+		{Name: "Spider-Man", Type: FaceTypeHero},
+	}}
+	if got := identity.HeroFace().Name; got != "Spider-Man" {
+		t.Errorf("HeroFace = %q, want Spider-Man", got)
+	}
+	if got, ok := identity.FaceOfType(FaceTypeHero); !ok || got != 1 {
+		t.Errorf("FaceOfType(hero) = %d, %v; want 1", got, ok)
+	}
+	if got, ok := identity.FaceOfType(FaceTypeAlterEgo); !ok || got != 0 {
+		t.Errorf("FaceOfType(alter_ego) = %d, %v; want 0", got, ok)
+	}
+
+	plain := Card{Faces: []Face{{Name: "Plain Side", Type: "upgrade"}}}
+	if got := plain.HeroFace().Name; got != "Plain Side" {
+		t.Errorf("HeroFace without a hero face = %q, want the first face", got)
+	}
+	if got, ok := plain.FaceOfType(FaceTypeAlterEgo); ok || got != 0 {
+		t.Errorf("FaceOfType without an alter-ego face = %d, %v; want 0, false", got, ok)
+	}
+}
+
+func TestCardIsVillain(t *testing.T) {
+	tests := []struct {
+		name  string
+		faces []Face
+		want  bool
+	}{
+		{"villain", []Face{{Type: FaceTypeVillain}}, true},
+		{"leader", []Face{{Type: FaceTypeLeader}}, true},
+		{"main scheme", []Face{{Type: FaceTypeMainScheme}}, false},
+		{"villain on the second face only", []Face{{Type: "minion"}, {Type: FaceTypeVillain}}, false},
+		{"no face", nil, false},
+	}
+	for _, tt := range tests {
+		if got := (Card{Faces: tt.faces}).IsVillain(); got != tt.want {
+			t.Errorf("%s: IsVillain = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}
+
 func TestPackFileRoundTrip(t *testing.T) {
 	want := PackFile{
 		Code:     "core",
@@ -20,12 +63,12 @@ func TestPackFileRoundTrip(t *testing.T) {
 					Type:           "main_scheme",
 					Stage:          "1A",
 					Size:           SizeLand,
-					Images:         []string{"https://marvelcdb.com/bundles/cards/01097.png"},
+					Images:         []string{"https://img.intothefray.xyz/cards/en/01097a.0123456789ab.avif"},
 					StartingThreat: &Threat{Value: 0, PerPlayer: false},
 					Localized: map[string]Localized{
 						"fr": {
 							Name:   "Le Rhino",
-							Images: []string{"https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"},
+							Images: []string{"https://img.intothefray.xyz/cards/fr/01097a.0123456789ab.avif"},
 						},
 					},
 				},
@@ -34,7 +77,7 @@ func TestPackFileRoundTrip(t *testing.T) {
 					Type:   "main_scheme",
 					Stage:  "1B",
 					Size:   SizeLand,
-					Images: []string{"https://marvelcdb.com/bundles/cards/01097b.png"},
+					Images: []string{"https://img.intothefray.xyz/cards/en/01097b.0123456789ab.avif"},
 				},
 			},
 			Set:      "rhino",
@@ -77,7 +120,7 @@ func TestPackFileRoundTrip(t *testing.T) {
 		`{"code":"rhino","name":"Rhino","kind":"villain","cards":["01097"]}`,
 		// Empty overrides, such as the subname here, are left out.
 		`"localized":{"fr":{"name":"Le Rhino",` +
-			`"images":["https://mc4db.merlindumesnil.net/bundles/cards/FR/core/01097.webp"]}}`,
+			`"images":["https://img.intothefray.xyz/cards/fr/01097a.0123456789ab.avif"]}}`,
 		`"side":{"label":"Weather"}`,
 		`"setAside":["25002"]`,
 		`"sideDecks":["doctor_strange_invocation_deck"]`,

@@ -18,7 +18,7 @@
 // exhausted card turns its layout with it.
 
 import type { CardView } from '../lib/types';
-import { MODIFIERS, STATUSES, withSign, type TokenName } from './actions';
+import { MODIFIERS, statusCount, STATUSES, withSign, type TokenName } from './actions';
 
 /** The font size of every number, status initial and modifier: the readable floor on a phone. */
 const NUMBER_PX = 11;
@@ -54,22 +54,22 @@ export interface Box {
 }
 
 /** How wide a text shows at a font size, in px. */
-export type MeasureText = (text: string, px: number) => number;
+type MeasureText = (text: string, px: number) => number;
 
-export interface PlacedToken {
+interface PlacedToken {
   name: TokenName;
   count: number;
   box: Box;
 }
 
-export interface PlacedStatus {
+interface PlacedStatus {
   name: string;
   /** Its initial, with its value or count: "S", "R2", "T×2". */
   text: string;
   box: Box;
 }
 
-export interface PlacedModifier {
+interface PlacedModifier {
   name: string;
   /** Its signed value: "+1", "−2". The badge reads it, a space, then its stat: "+1 ATK". */
   value: string;
@@ -84,7 +84,7 @@ export interface More {
   box: Box;
 }
 
-export interface Group<T> {
+interface Group<T> {
   items: T[];
   more: More | null;
 }
@@ -95,7 +95,7 @@ export interface DockCounterLayout {
   modifiers: Group<PlacedModifier>;
 }
 
-export interface DockCounterInput {
+interface DockCounterInput {
   /** The card's drawn size, in screen px. */
   width: number;
   height: number;
@@ -168,11 +168,7 @@ function placeTokens(
 
 /** A status chip's text: its initial, then its value (Retaliate) or its count when above one. */
 function statusText(name: string, label: string, count: number): string {
-  const initial = label.charAt(0);
-  if (name === 'retaliate') {
-    return `${initial}${count}`;
-  }
-  return count > 1 ? `${initial}×${count}` : initial;
+  return label.charAt(0) + (statusCount(name, count) ?? '');
 }
 
 function placeStatuses(

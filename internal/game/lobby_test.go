@@ -9,19 +9,10 @@ import (
 	"time"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
-	"github.com/alexandreroman/intothefray/packs"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 var testNow = time.Date(2026, 10, 18, 12, 0, 0, 0, time.UTC)
-
-func newCatalog(t *testing.T) *pack.Catalog {
-	t.Helper()
-	cat, err := packs.Catalog()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return cat
-}
 
 // lobbyOfFour returns a game whose host is "h" and joiners are "b", "c", "d".
 func lobbyOfFour(t *testing.T) *Game {
@@ -236,7 +227,7 @@ func TestTakeSeat(t *testing.T) {
 }
 
 func TestConfigureValidates(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := lobbyOfFour(t)
 	valid := LobbyConfig{
 		Scenario: "rhino", Difficulty: pack.Standard, Standard: "standard", Modulars: []string{"bomb_scare"},
@@ -279,7 +270,7 @@ func TestConfigureValidates(t *testing.T) {
 }
 
 func TestConfigureNoStandard(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Standard, Standard: "", Modulars: []string{"bomb_scare"}}
@@ -292,7 +283,7 @@ func TestConfigureNoStandard(t *testing.T) {
 }
 
 func TestConfigureExpertWithoutExpertSet(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Expert, Standard: "standard", Modulars: []string{"bomb_scare"}}
@@ -305,7 +296,7 @@ func TestConfigureExpertWithoutExpertSet(t *testing.T) {
 }
 
 func TestConfigureNormalizesModulars(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	cfg := LobbyConfig{Scenario: "rhino", Difficulty: pack.Standard, Standard: "standard"}
@@ -318,7 +309,7 @@ func TestConfigureNormalizesModulars(t *testing.T) {
 }
 
 func TestDefaultConfigIsAccepted(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	cfg := DefaultConfig(cat, "rhino")
@@ -334,7 +325,7 @@ func TestDefaultConfigIsAccepted(t *testing.T) {
 }
 
 func TestSetDeckRejectsUnknownCodes(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := lobbyOfFour(t)
 
 	err := g.SetDeck("b", 0, DeckChoice{Name: "Bad", Cards: []DeckEntry{{Code: "99999", Qty: 1}}}, cat)
@@ -351,7 +342,7 @@ func TestSetDeckRejectsUnknownCodes(t *testing.T) {
 }
 
 func TestSetDeckRejectsQuantities(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	set, _ := cat.Set("standard")
 	code := set.Cards[0]
 
@@ -380,7 +371,7 @@ func TestSetDeckRejectsQuantities(t *testing.T) {
 }
 
 func TestSetDeckStoresDeck(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := lobbyOfFour(t)
 
 	set, _ := cat.Set("standard")
@@ -394,7 +385,7 @@ func TestSetDeckStoresDeck(t *testing.T) {
 }
 
 func TestSetDeckFillsHeroImage(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	spiderMan, _, err := cat.Card(spiderManIdentity)
 	if err != nil {
 		t.Fatal(err)
@@ -461,7 +452,7 @@ func TestAddDeck(t *testing.T) {
 }
 
 func TestAddDeckAfterStart(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := startedGame(t, rhinoConfig())
 
 	if err := g.AddDeck("h"); !errors.Is(err, ErrPhase) {
@@ -511,7 +502,7 @@ func TestRemoveLastDeckRefused(t *testing.T) {
 }
 
 func TestSetDeckBadIndex(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	for _, deck := range []int{-1, 1, 3} {
@@ -525,7 +516,7 @@ func TestSetDeckBadIndex(t *testing.T) {
 }
 
 func TestSetDeckFillsItsSlot(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if err := g.AddDeck("h"); err != nil {
 		t.Fatal(err)
@@ -541,7 +532,7 @@ func TestSetDeckFillsItsSlot(t *testing.T) {
 }
 
 func TestSetDeckRefusesTakenHero(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := lobbyOfFour(t)
 	if err := g.SetDeck("b", 0, DeckChoice{Name: "Bob's", Hero: spiderManIdentity}, cat); err != nil {
 		t.Fatal(err)
@@ -563,7 +554,7 @@ func TestSetDeckRefusesTakenHero(t *testing.T) {
 }
 
 func TestSetDeckRefusesOwnOtherSlotHero(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if err := g.AddDeck("h"); err != nil {
 		t.Fatal(err)
@@ -587,7 +578,7 @@ func TestSetDeckRefusesOwnOtherSlotHero(t *testing.T) {
 }
 
 func TestSetDeckSameSlotSameHero(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if err := g.SetDeck("h", 0, DeckChoice{Name: "Old", Hero: spiderManIdentity}, cat); err != nil {
 		t.Fatal(err)
@@ -602,7 +593,7 @@ func TestSetDeckSameSlotSameHero(t *testing.T) {
 }
 
 func TestSetDeckSameNameOtherSubname(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := lobbyOfFour(t)
 	if err := g.SetDeck("b", 0, DeckChoice{Name: "Peter", Hero: spiderManIdentity}, cat); err != nil {
 		t.Fatal(err)
@@ -643,7 +634,7 @@ func TestHeroTitleLabel(t *testing.T) {
 }
 
 func TestHeroImageFallsBackToFirstFace(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	set, _ := cat.Set("standard")
 	card, _, err := cat.Card(set.Cards[0])
 	if err != nil {

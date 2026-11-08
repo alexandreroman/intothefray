@@ -57,7 +57,7 @@ describe('PileView', () => {
   it('draws its count over its card and every ring the table draws on it', () => {
     const zOf = (rule: string | undefined) => Number(/z-index: (\d+);/.exec(rule ?? '')?.[1]);
     const count = zOf(/\n {2}\.count \{([^}]*)\}/.exec(pileSource)?.[1]);
-    const rings = zOf(/drop-pile\)::before \{([^}]*)\}/.exec(tableSource)?.[1]);
+    const rings = zOf(/drop-pile\)::before,[^{]*\{([^}]*)\}/.exec(tableSource)?.[1]);
     expect(rings).toBeGreaterThan(0);
     expect(count).toBeGreaterThan(rings);
   });
@@ -191,7 +191,7 @@ describe('PileView in dock mode (small piles)', () => {
     const rule = (selector: string) =>
       new RegExp(`\\n {2}${selector} \\{([^}]*)\\}`).exec(pileSource)?.[1];
     const inner = /\n {2}(\.card\.scaled > \.shade,[^{]*)\{([^}]*)\}/.exec(pileSource);
-    expect(inner?.[1]).toContain('.card.scaled > .art');
+    expect(inner?.[1]).toContain('.card.scaled .art');
     expect(inner?.[1]).toContain('.card.scaled > .slot');
     expect(inner?.[2]).toContain('zoom: var(--scale);');
     expect(rule('\\.card\\.scaled \\.count')).toMatch(

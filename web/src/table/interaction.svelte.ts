@@ -1,8 +1,8 @@
 import { modal } from '../components/modal.svelte';
+import type { Rect } from '../lib/rect';
 import { releaseFocus } from '../lib/releaseFocus';
 import type { CardView, MarkerName } from '../lib/types';
 import type { CounterKind, TableElement } from './actions';
-import type { Rect } from './drag';
 import { holdPhase, type HoldPhase } from './gestures';
 import { isFree } from './selection';
 
@@ -231,8 +231,8 @@ class TableInteraction {
    * follow it at once; null when no card is there any more, which drops a
    * hovered card (a hovered pile keeps its hover). Not while a dialog is
    * open, nor during a drag, nor while a selection, the context menu or the
-   * pill holds the hover: what they are for must not change under them
-   * (spec 5.8). Nor while a reordered hand card is kept: the neighbour
+   * pill holds the hover: what they are for must not change under them.
+   * Nor while a reordered hand card is kept: the neighbour
    * overlapping it under the pointer is not what the viewer points at.
    */
   rehover(element: TableElement | null, preview: PreviewChange = 'show'): void {

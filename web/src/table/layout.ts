@@ -1,9 +1,16 @@
 import { CARD_ASPECT } from '../lib/cardArt';
-import type { CardView, PileKind, PileView, Size, TableView } from '../lib/types';
+import {
+  MARKERS,
+  markerPoint,
+  type CardView,
+  type MarkerName,
+  type PileKind,
+  type PileView,
+  type Size,
+  type TableView,
+} from '../lib/types';
+import { ceilTo, GRID } from './grid';
 import { asideId, PILE_SCENARIO_ASIDE, PILE_VICTORY } from './seats';
-
-/** Table units are multiples of this. */
-export const GRID = 10;
 
 /** The farthest a card can lie on the table, both ways, in table units: the server's bound. */
 export const TABLE_LIMIT = 20000;
@@ -50,7 +57,7 @@ const SURFACE_LIMIT = TABLE_LIMIT + 224;
 
 const OUT_OF_PLAY_KINDS: readonly PileKind[] = ['scenarioArea', 'victory', 'aside'];
 
-// The prototype's fan (ruling P5a-R5), its lengths 40 % larger with the hand cards.
+// The hand's fan, its lengths sized for the 185 px hand cards.
 const FAN_RADIUS = 1260;
 const FAN_MAX_STEP_DEG = 5;
 const FAN_MAX_TOTAL_DEG = 44;
@@ -59,7 +66,7 @@ const FAN_OVERLAP = 40;
 // beyond it. The cards turn around a point below their bottom edge (Hand.svelte's
 // transform-origin 50% 110%), so at the full 22° the top corners of 185 × 259 outer cards reach
 // about 12 px past the width on each side. Reserving that overhang instead would pack a 10-card
-// hand tighter than the prototype does. The overhang grows with the card: a larger card keeps a
+// hand tighter. The overhang grows with the card: a larger card keeps a
 // room as much larger (fanPositions), and its corners as little past the width, in proportion.
 const FAN_SIDE_ROOM = 112;
 const FAN_TILT_ROOM = 0.35;
@@ -112,9 +119,9 @@ export const EXHAUST_DEGREES = 15;
 const EXHAUST_RADIANS = (EXHAUST_DEGREES * Math.PI) / 180;
 
 /**
- * The left, right and bottom edges an item shows, as the prototype's
- * visualBox: an exhausted card is turned, and its bounding box grows around
- * the same centre (w·cos + h·sin wide, w·sin + h·cos tall).
+ * The left, right and bottom edges an item shows: an exhausted card is
+ * turned, and its bounding box grows around the same centre (w·cos + h·sin
+ * wide, w·sin + h·cos tall).
  */
 export function visualBox(item: Footprint): { left: number; right: number; bottom: number } {
   if (!item.exhausted) {
@@ -323,7 +330,13 @@ export interface FanSlot {
 export const FIRST_PLAYER_BOX = { w: 84, h: 70 } as const;
 
 /** The active counter, in table units. */
-export const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
+const ACTIVE_COUNTER_BOX = { w: 70, h: 70 } as const;
+
+/** Each marker's box, in table units. */
+export const MARKER_BOXES: Record<MarkerName, { w: number; h: number }> = {
+  firstPlayer: FIRST_PLAYER_BOX,
+  active: ACTIVE_COUNTER_BOX,
+};
 
 /** A card in the hand: about two thirds larger than a card on the table at 100 % (112 × 157). */
 export const HAND_CARD = { w: 185, h: 259 } as const;
@@ -589,12 +602,12 @@ export function restingFanWidth(
 }
 
 /**
- * Lays out `n` cards of a resting hand (restingFanPositions), as the
- * prototype does: the cards overlap by 40, more when the row does not fit
- * `width` (keeping 112 plus a third of a card for the tilted outer cards, the
- * 112 growing with a card wider than 185), and turn 5 degrees apart, 44 at
- * most in total. Each card sags by how far a circle of radius 1260 falls away
- * from its top at that angle.
+ * Lays out `n` cards of a resting hand (restingFanPositions): the cards
+ * overlap by 40, more when the row does not fit `width` (keeping 112 plus a
+ * third of a card for the tilted outer cards, the 112 growing with a card
+ * wider than 185), and turn 5 degrees apart, 44 at most in total. Each card
+ * sags by how far a circle of radius 1260 falls away from its top at that
+ * angle.
  *
  * Coordinates are relative to the fan centre, the middle of the middle card:
  * `x` grows to the right, `y` grows downward (outer cards sit lower), `angle`
@@ -606,7 +619,7 @@ export function fanPositions(n: number, width: number, cardWidth: number = HAND_
   }
   const gaps = Math.max(1, n - 1);
   const roomy = cardWidth - FAN_OVERLAP;
-  // A card up to the desktop's keeps the prototype's room; a larger one keeps a room in proportion
+  // A card up to the desktop's keeps FAN_SIDE_ROOM; a larger one keeps a room in proportion
   // to its width, as its corners swing out in proportion.
   const sideRoom = FAN_SIDE_ROOM * Math.max(1, cardWidth / HAND_CARD.w);
   const fitted = (width - sideRoom - (1 + FAN_TILT_ROOM) * cardWidth) / gaps;
@@ -771,13 +784,12 @@ function slotInRow(
   table: SlotTable,
   sizeOf: (card: CardView) => Size,
 ): { x: number; y: number } {
-  const { cards, piles, firstPlayer, active } = table;
   const { y } = start;
-  const markers = [
-    ...(firstPlayer ? [{ id: 'firstPlayer', ...firstPlayer, ...FIRST_PLAYER_BOX }] : []),
-    ...(active ? [{ id: 'active', ...active, ...ACTIVE_COUNTER_BOX }] : []),
-  ];
-  const items = [...footprints(cards, piles, sizeOf), ...markers].filter(
+  const markers = MARKERS.flatMap((name) => {
+    const at = markerPoint(table, name);
+    return at ? [{ id: name, ...at, ...MARKER_BOXES[name] }] : [];
+  });
+  const items = [...footprints(table.cards, table.piles, sizeOf), ...markers].filter(
     (item) => item.y < y + SLOT_ROW_HEIGHT && visualBox(item).bottom > y,
   );
   const isFree = (x: number) =>
@@ -786,7 +798,7 @@ function slotInRow(
       return box.right <= x - SLOT_GAP || box.left >= x + width + SLOT_GAP;
     });
   const pastItems = items
-    .map((item) => Math.ceil((visualBox(item).right + SLOT_GAP) / GRID) * GRID)
+    .map((item) => ceilTo(visualBox(item).right + SLOT_GAP, GRID))
     .filter((x) => x >= start.x);
   const candidates = [start.x, ...pastItems].sort((a, b) => a - b);
   // The last spot lies past every item, so there is always a free one.

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import { cubicOut } from 'svelte/easing';
-  import { prefersReducedMotion } from 'svelte/motion';
   import { fade, slide, type TransitionConfig } from 'svelte/transition';
   import { createGame } from '../lib/api';
+  import { motionMs } from '../lib/motion';
   import { playerName } from '../lib/names';
   import { NewsState } from '../lib/newsState.svelte';
   import { setToken } from '../lib/prefs';
@@ -11,7 +11,6 @@
   import { fetchGamesInProgress } from '../lib/stats';
   import Icon from '../components/Icon.svelte';
   import Logo from '../components/Logo.svelte';
-  import Tooltip from '../components/Tooltip.svelte';
   import WhatsNewDialog from '../components/WhatsNewDialog.svelte';
   import { lastPressByPointer } from '../components/modal.svelte';
 
@@ -87,7 +86,7 @@
   /** The banner leaves by folding up as it fades out; at once under reduced motion. */
   function bannerLeave(node: Element): TransitionConfig {
     const folding = slide(node, {
-      duration: prefersReducedMotion.current ? 0 : BANNER_LEAVE_MS,
+      duration: motionMs(BANNER_LEAVE_MS),
       easing: cubicOut,
     });
     // The opacity follows the slide's styles, overriding the slide's own, which only fades at the
@@ -116,13 +115,13 @@
   }
 </script>
 
-<div class="home">
+<div class="home screen-page">
   <div class="halo"></div>
 
-  <main>
+  <main class="screen-column">
     <!-- Out of the flow, in the page's top padding: the page stays put when the count arrives. -->
     {#if showsGamesInProgress}
-      <p class="games" in:fade={{ duration: prefersReducedMotion.current ? 0 : GAMES_FADE_MS }}>
+      <p class="games" in:fade={{ duration: motionMs(GAMES_FADE_MS) }}>
         <span class="live" aria-hidden="true"></span>{gamesInProgressText}
       </p>
     {/if}
@@ -230,10 +229,10 @@
     </div>
   </main>
 
-  <footer>Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.</footer>
+  <footer class="screen-column">
+    Fan-made and unofficial. Not affiliated with Marvel or Fantasy Flight Games.
+  </footer>
 </div>
-
-<Tooltip />
 
 {#if shownUnread}
   <WhatsNewDialog entries={news.entries} unread={shownUnread} onclose={closeWhatsNew} />
@@ -241,14 +240,10 @@
 
 <style>
   .home {
-    /* The side gutter of main and the footer. */
-    --gutter: 24px;
+    /* The column of main and the footer: its width and side gutter. */
+    --content-max: 1240px;
+    --content-gutter: 24px;
     position: relative;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background: var(--table-bg);
     /* The fanned cards reach past a narrow screen: they are cut, never scrolled to. */
     overflow: hidden;
     /* Measured by the column layout's query (at the end): the page's width, without a scrollbar. */
@@ -272,13 +267,7 @@
   main {
     position: relative;
     flex: 1;
-    width: 100%;
-    max-width: 1240px;
-    margin: 0 auto;
     padding-block: 72px 40px;
-    /* Clear of the notch in landscape; env() is 0 on a desktop, where the gutter alone shows. */
-    padding-inline: max(var(--gutter), env(safe-area-inset-left))
-      max(var(--gutter), env(safe-area-inset-right));
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -774,13 +763,8 @@
 
   footer {
     position: relative;
-    width: 100%;
-    max-width: 1240px;
-    margin: 0 auto;
     /* The last line of the page stays clear of the home indicator. */
     padding-block: 20px max(28px, env(safe-area-inset-bottom));
-    padding-inline: max(var(--gutter), env(safe-area-inset-left))
-      max(var(--gutter), env(safe-area-inset-right));
     font-size: 12px;
     color: var(--faint);
   }
@@ -807,11 +791,11 @@
      column layout above. */
   @media (max-width: 640px) {
     .home {
-      --gutter: 16px;
+      --content-gutter: 16px;
     }
 
     main {
-      padding-block: 92px 24px;
+      padding-bottom: 24px;
     }
 
     footer {

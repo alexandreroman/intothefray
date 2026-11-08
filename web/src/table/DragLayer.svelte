@@ -1,5 +1,5 @@
 <!--
-  Drag and drop (spec 5.4). A press on a table card, a pile, a hand card or
+  Drag and drop. A press on a table card, a pile, a hand card or
   a marker (first player token, active counter) becomes a drag after 4 px (a
   finger pushing a hand card down swipes the hand away instead): what is dragged is drawn here,
   over the whole page at the table's zoom, outside the table's surface, so
@@ -18,6 +18,8 @@
 <script lang="ts">
   import { tick, untrack } from 'svelte';
   import { prefersReducedMotion } from 'svelte/motion';
+  import { byId } from '../lib/byId';
+  import type { Rect } from '../lib/rect';
   import type {
     Action,
     Area,
@@ -62,7 +64,6 @@
     type DropRect,
     type DropSpot,
     type PileDrop,
-    type Rect,
     type TableRect,
   } from './drag';
   import { dockMode } from './dockMode';
@@ -72,7 +73,7 @@
   import { HOLD_MS } from './gestures';
   import { FINE_GRID, type SnapGrid } from './grid';
   import { interaction, type DropOn, type Held, type Pressable } from './interaction.svelte';
-  import { ACTIVE_COUNTER_BOX, cardBox, FIRST_PLAYER_BOX, HAND_CARD, type Box } from './layout';
+  import { cardBox, HAND_CARD, isLandscape, MARKER_BOXES, type Box } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import { ALL_TABLE, drawnDelta, type TableMap } from './rows';
   import { surfaceRect, tableCard, tablePile, toScreen, toTable } from './screen';
@@ -105,13 +106,13 @@
     tableMap?: TableMap;
     /** The grid a drop on the table snaps to (grid.ts): the fine one unless given. */
     grid?: SnapGrid;
-    /** The viewer's selected deck (spec 5): an encounter card dealt above every row goes to it. */
+    /** The viewer's selected deck: an encounter card dealt above every row goes to it. */
     selected: number | null;
     /** Sends a drop's action, about what was pressed: its id, or null when it could not be sent. */
     act: (action: Action, element: Pressable) => number | null;
     /** A card went to the hand of one of the viewer's decks: that seat's hand is the one to show. */
     onhand: (seat: number) => void;
-    /** Tells the other players where the drag is, and null once it is over (spec 5.8). */
+    /** Tells the other players where the drag is, and null once it is over. */
     ondrag: (drag: PresenceDrag | null) => void;
     /**
      * Dock mode only: the drop on the table the rows show before it is let go, null once
@@ -195,18 +196,18 @@
 
   // The server relays no more cards in one drag: it mirrors maxDragCards in internal/server/presence.go.
   const MAX_DRAG_CARDS = 50;
-  // What the other players are told of a card hidden from them (ruling P5c-R9): its real id
-  // would let them follow it once it is played.
+  // What the other players are told of a card hidden from them: its real id would let them follow
+  // it once it is played.
   const HIDDEN_CARD = 'hidden-0';
 
-  // The prototype's arrows in front of the labels.
+  // The arrows in front of the labels.
   const PILE_GLYPHS: Record<PileDrop, string> = { top: '↑', discard: '✕', pile: '→', return: '↑' };
   const TUCK_GLYPH = '↓';
   const HAND_GLYPH = '↓';
 
   const cards = $derived(view.table?.cards ?? []);
   const tablePiles = $derived(view.table?.piles ?? []);
-  const cardsById = $derived(new Map(cards.map((card) => [card.id, card])));
+  const cardsById = $derived(byId(cards));
   /**
    * The ghosts of the last drop, set down where it landed (the cards, or the
    * marker's corner, in table units of the layer), the action
@@ -250,6 +251,18 @@
     if (held && !isStillThere(held, source)) {
       end();
     }
+  });
+
+  // The table drops a preview made on another view: a drag going on aims again on the new one, the
+  // pointer still, so that the rows open its slot again.
+  $effect(() => {
+    void view;
+    untrack(() => {
+      if (source && pointer) {
+        fedPreview = null;
+        aim();
+      }
+    });
   });
 
   // The next view shows where the last drop went (or that it went nowhere):
@@ -560,7 +573,7 @@
       }
       handSize = { w: HAND_CARD.w, h: HAND_CARD.h };
     }
-    // A pile's card is held by its middle, as in the prototype.
+    // A pile's card is held by its middle.
     return { x: 0.5, y: 0.5 };
   }
 
@@ -609,10 +622,7 @@
   /** The box of the dragged card or marker on the table, in table units, as its ghost is drawn. */
   function boxOf(from: DragSource): Box {
     if (from.kind === 'marker') {
-      return drawn({
-        ...(from.name === 'active' ? ACTIVE_COUNTER_BOX : FIRST_PLAYER_BOX),
-        rotated: false,
-      });
+      return drawn({ ...MARKER_BOXES[from.name], rotated: false });
     }
     return drawn(cardBoxOf(from));
   }
@@ -1041,7 +1051,7 @@
       return;
     }
     land(sent, pressed, from, action, at);
-    // The card went to the hand of one of the viewer's decks: that hand shows (spec 5).
+    // The card went to the hand of one of the viewer's decks: that hand shows.
     const handArea = found.target.kind === 'toHand' ? handAreaOf(from, view) : null;
     if (handArea) {
       onhand(seatOf(handArea));
@@ -1279,7 +1289,7 @@
         <CardFace
           images={face?.images ?? []}
           name={face?.name ?? ''}
-          rotated={cardBox(face?.size ?? 'std', { onPile: true }).rotated}
+          rotated={isLandscape(face?.size ?? 'std')}
         />
       {/if}
     </div>
@@ -1324,30 +1334,19 @@
   /*
     A hand card brought back over the hand, at its size in the hand; off the hand, a table card's
     ghost takes its place. Held up and swaying about its middle as a table card's ghost is
-    (CardView.svelte); out of the table, it keeps the hand's shadow. It follows the pointer on
-    translate, from the layer's corner: a pointer move lays nothing out again.
+    (CardView.svelte); out of the table, it keeps the hand's shadow (.shade, tokens.css). It follows
+    the pointer on translate, from the layer's corner: a pointer move lays nothing out again. Its
+    scale and rotate give it its own stacking, which keeps the shade under its face. The ghost is
+    portrait, a landscape card turned a quarter in it.
   */
   .hghost {
+    --shade-shadow: var(--held-card-shadow);
     position: absolute;
     left: 0;
     top: 0;
     scale: var(--lift-scale);
     rotate: var(--sway, 0deg);
     transition: scale 0.14s ease-out;
-  }
-
-  /*
-    Its shadow, as a hand card casts it (see --held-card-shadow), from 2px inside its edge. Its scale and rotate give
-    it its own stacking, which keeps the shade under its face. The ghost is portrait, a landscape card turned a
-    quarter in it.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--held-card-shadow);
-    pointer-events: none;
   }
 
   /* Picked up, it rises off the hand, as the drag's first ghost only. */
@@ -1381,7 +1380,7 @@
     white-space: nowrap;
   }
 
-  /* Tucking under a card: the prototype's threat orange. */
+  /* Tucking under a card: the threat orange. */
   .drop-hint.tuck {
     background: var(--warn);
     color: #2b1700;

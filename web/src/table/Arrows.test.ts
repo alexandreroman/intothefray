@@ -19,6 +19,8 @@ import {
   placed,
   playingView,
   seated,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -53,7 +55,7 @@ function makeView(
 ): View {
   return playingView({
     you: extra.spectator
-      ? { role: 'spectator', color: -1, host: false }
+      ? spectatorYou()
       : { role: 'player', name: 'Alex', color: 2, host: true, areas: ['p0'] },
     players: [
       seated('Alex', 2, [{ area: 'p0', handCount: 1 }], true),
@@ -62,7 +64,7 @@ function makeView(
     table: {
       cards: extra.cards ?? CARDS,
       hands: extra.spectator ? undefined : { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       arrows: extra.arrows,
     },
   });
@@ -415,7 +417,7 @@ describe('a click on an empty spot', () => {
 
     await fireEvent.pointerDown(surface(), { pointerType: 'touch' });
     expect(interaction.contextMenu).toBeNull();
-    // Ruling P5c-R7: once let go, as the press did not become a rubber band.
+    // Once let go, as the press did not become a rubber band.
     expect(session.act).not.toHaveBeenCalled();
     await fireEvent.pointerUp(window, { pointerType: 'touch' });
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'arrowClear' }, 0);

@@ -25,7 +25,7 @@ import {
 import { dockLayout, type DockItem } from './dockLayout';
 import { TABLET_GRID } from './grid';
 import { ALL_TABLE, spreadRows, tableMapOf } from './rows';
-import { card, pile, playingView, rect } from './fixtures.testing';
+import { card, pile, playingView, rect, VILLAIN_STAGE, spectatorYou } from './fixtures.testing';
 
 /** Alex (p0) is the viewer; Sam sits at p1. */
 function makeView(
@@ -38,14 +38,14 @@ function makeView(
 ): View {
   return playingView({
     you: extra.spectator
-      ? { role: 'spectator', color: -1, host: false }
+      ? spectatorYou()
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [],
     table: {
       cards: extra.cards ?? [],
       piles: extra.piles ?? [],
       hands: extra.hands ?? { p0: ['h1', 'h2', 'h3'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 0, y: 0 },
     },
   });

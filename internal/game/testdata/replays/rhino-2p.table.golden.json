@@ -371,9 +371,9 @@
       "owner": 1,
       "home": "deck:p1",
       "zone": "pile",
-      "x": 810,
-      "y": 210,
-      "z": 23,
+      "x": 0,
+      "y": 0,
+      "z": 0,
       "pile": "disc:p1",
       "shapes": [
         {
@@ -505,8 +505,8 @@
       "home": "enc",
       "zone": "pile",
       "x": 0,
-      "y": 30,
-      "z": 26,
+      "y": 0,
+      "z": 0,
       "pile": "encd",
       "shapes": [
         {
@@ -655,8 +655,8 @@
       "home": "enc",
       "zone": "pile",
       "x": 0,
-      "y": 30,
-      "z": 14,
+      "y": 0,
+      "z": 0,
       "pile": "enc",
       "shapes": [
         {
@@ -929,8 +929,8 @@
       "home": "enc",
       "zone": "pile",
       "x": 0,
-      "y": 30,
-      "z": 28,
+      "y": 0,
+      "z": 0,
       "pile": "enc",
       "shapes": [
         {
@@ -1325,9 +1325,9 @@
       "owner": 0,
       "home": "deck:p0",
       "zone": "pile",
-      "x": 800,
-      "y": 190,
-      "z": 24,
+      "x": 0,
+      "y": 0,
+      "z": 0,
       "pile": "vic",
       "shapes": [
         {

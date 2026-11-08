@@ -51,7 +51,7 @@
       type="button"
       aria-pressed={option.value === value}
       aria-label={option.icon ? option.label : undefined}
-      title={option.icon ? option.label : undefined}
+      data-tip={option.icon ? option.label : undefined}
       {disabled}
       onclick={() => choose(option.value)}
       {@attach pointerBlur}

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // underlingConfig returns the setup of an Underling scenario with the given
@@ -50,7 +51,7 @@ func stageCodes(table *Table, stage *Stage) []string {
 }
 
 func TestConfigureMainSchemes(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 
 	tests := []struct {
@@ -76,7 +77,7 @@ func TestConfigureMainSchemes(t *testing.T) {
 }
 
 func TestStartRequiresMainScheme(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	g := mustNewGame(t, "g1", "h", "Host", testNow)
 	if err := g.Configure("h", underlingConfig("bullseye", "cops"), cat); err != nil {
 		t.Fatal(err)
@@ -92,7 +93,7 @@ func TestStartRequiresMainScheme(t *testing.T) {
 }
 
 func TestSetupMainSchemeStage(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	table := startedGame(t, underlingConfig("bullseye", "art_museum_heist", "cops", "the_owl")).Table
 
 	villains := stageWithKey(t, table, "villain")
@@ -240,7 +241,7 @@ func TestStartUnderlingAtExpert(t *testing.T) {
 	if scheme := cardWithCode(t, table, "60121"); schemes.Current != scheme.ID || scheme.Face != 0 {
 		t.Errorf("Art Museum Heist = %+v, want the current scheme, face 0", scheme)
 	}
-	expert, ok := newCatalog(t).Set("expert")
+	expert, ok := packstest.Catalog(t).Set("expert")
 	if !ok {
 		t.Fatal("no set expert")
 	}
@@ -266,7 +267,7 @@ func recommendedWith(t *testing.T, cat *pack.Catalog, code string) []string {
 // card of the encounter sets is on the table exactly as many times as the set
 // holds it, each in one place.
 func TestSetupEveryUnderlingScenario(t *testing.T) {
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	var underlings []pack.ScenarioRef
 	for _, ref := range cat.Index().Scenarios {
 		if len(ref.MainSchemes) > 0 {

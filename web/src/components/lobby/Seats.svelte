@@ -72,7 +72,7 @@
 <section class="card-box">
   <div class="bhead">
     <h2>Players</h2>
-    <span class="aside">up to 4</span>
+    <span class="aside">up to {MAX_SEATS}</span>
   </div>
   <div class="sect">
     <label class="lbl" for={inviteId}>Invite link</label>

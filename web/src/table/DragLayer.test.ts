@@ -16,6 +16,8 @@ import {
   playingView,
   seated,
   tallTable,
+  VILLAIN_STAGE,
+  spectatorYou,
 } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -91,7 +93,7 @@ function makeView(
   const inPile = discarded.map((id) => card(id, { code: DISCARD_CODES[id], zone: 'pile' }));
   return playingView({
     you: extra.spectator
-      ? { role: 'spectator', color: -1, host: false }
+      ? spectatorYou()
       : { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0'] },
     players: [
       seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 3 }], true),
@@ -101,7 +103,7 @@ function makeView(
       cards: [...(extra.cards ?? CARDS), ...inPile],
       piles,
       hands: { p0: ['h1', 'h2', 'h3'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 860, y: extra.firstPlayerY ?? 340 },
       active: extra.active,
     },

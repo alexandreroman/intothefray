@@ -118,6 +118,34 @@ type Card struct {
 	SetAside []string `json:"setAside,omitempty"` // player card: cards a deck with it sets aside at setup
 }
 
+// FaceOfType returns the index of the first face of the card of the given
+// type (a FaceType constant), and false, with index 0, when it has none.
+func (c Card) FaceOfType(faceType string) (int, bool) {
+	for i, face := range c.Faces {
+		if face.Type == faceType {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+// HeroFace returns the hero face of an identity card, or its first face when
+// no face is a hero face. The card must have a face.
+func (c Card) HeroFace() Face {
+	i, _ := c.FaceOfType(FaceTypeHero)
+	return c.Faces[i]
+}
+
+// IsVillain reports whether the card is a villain the players face: its first
+// face is a villain, or a leader, as Civil War's Iron Man is.
+func (c Card) IsVillain() bool {
+	if len(c.Faces) == 0 {
+		return false
+	}
+	faceType := c.Faces[0].Type
+	return faceType == FaceTypeVillain || faceType == FaceTypeLeader
+}
+
 // Set kinds the code reads (Set.Kind, SetRef.Kind): marvelcdb
 // card_set_type_name_code values.
 const (
@@ -160,8 +188,7 @@ type SideDeck struct {
 	TopFaceUp bool        `json:"topFaceUp,omitempty"` // top card faceup for everyone
 	Discard   DiscardRule `json:"discard,omitempty"`   // where its cards are discarded
 	// Back is the printed back all the set's cards share, captioned with the
-	// deck's label, as Hercules' Labor deck has; empty for a side deck whose
-	// cards keep their own backs.
+	// deck's label, as Hercules' Labor deck has.
 	Back Back `json:"back,omitempty"`
 }
 

@@ -12,7 +12,7 @@
   import { DOCK_SCALE, dockCardBox } from './dockPiles';
   import { isHidden, pileBack, pileCaption } from './face';
   import { interaction, type PreviewChange } from './interaction.svelte';
-  import { cardBox, pileBox } from './layout';
+  import { isLandscape, pileBox } from './layout';
   import { LIFT_SCALE, LIFT_SHADE, motion } from './motion.svelte';
   import './countPill.css';
 
@@ -66,7 +66,7 @@
   );
   const shownTop = $derived(empty ? undefined : top);
   // A landscape top card is turned a quarter to fit the portrait slot.
-  const rotated = $derived(cardBox(face?.size ?? 'std', { onPile: true }).rotated);
+  const rotated = $derived(isLandscape(face?.size ?? 'std'));
   const highlighted = $derived(shownTop !== undefined && interaction.highlighted.has(shownTop.id));
   const element = $derived({ kind: 'pile', id: pile.id } as const);
   const hovered = $derived(interaction.isHovered(element));
@@ -173,21 +173,12 @@
       translate var(--shift-glide, 0s) ease-out;
   }
 
+  /*
+    Its shadow (.shade, tokens.css) keeps a card's portrait corners: a pile's slot is always portrait, a landscape
+    top card turned to fit it.
+  */
   :global(.app.touch) .card .shade {
     transition: translate 0.14s ease-out;
-  }
-
-  /*
-    The same 45° shadow as a card on the table, cast from 2px inside its edge, under its face (see --card-shadow). A
-    pile's slot is always portrait: a landscape top card is turned to fit it, and rounded with the portrait corners.
-  */
-  .shade {
-    position: absolute;
-    inset: 2px;
-    z-index: -1;
-    border-radius: var(--card-radius);
-    box-shadow: var(--card-shadow);
-    pointer-events: none;
   }
 
   .card.grab {
@@ -231,7 +222,6 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 9px;
-    padding: 0 6px;
     /* A quick fade out of the way of the cards an animation plays over the pile, and back once done. */
     transition: opacity 0.12s ease-out;
   }
@@ -244,10 +234,11 @@
     Dock mode: the element is the pile's drawn box. What it draws is zoomed by the same scale, so
     that the back's label and caption, the borders and the corners shrink with it; the percentages
     still fill the box. The count keeps 9 screen px of text however far the table zooms out (--z), as
-    the name lines do (Surface).
+    the name lines do (Surface). The art's rule also reaches a riffle's copies of it, one level deeper
+    (motion.svelte.ts).
   */
   .card.scaled > .shade,
-  .card.scaled > .art,
+  .card.scaled .art,
   .card.scaled > .slot {
     zoom: var(--scale);
   }
@@ -255,6 +246,5 @@
   .card.scaled .count {
     bottom: -0.8em;
     font-size: max(9px, 9px / var(--z, 1));
-    padding: 0 0.67em;
   }
 </style>

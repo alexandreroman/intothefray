@@ -1,28 +1,6 @@
+import { card, pile } from '../table/fixtures.testing';
 import { isSameData, reuseUnchanged } from './reuse';
-import type { CardView, PileView, TableView, View } from './types';
-
-const card = (id: string, extra: Partial<CardView> = {}): CardView => ({
-  id,
-  code: '01001',
-  face: 0,
-  back: 'player',
-  owner: 0,
-  zone: 'table',
-  x: 0,
-  y: 0,
-  z: 1,
-  ...extra,
-});
-
-const pile = (id: string, extra: Partial<PileView> = {}): PileView => ({
-  id,
-  kind: 'deck',
-  owner: 0,
-  x: 0,
-  y: 0,
-  count: 30,
-  ...extra,
-});
+import type { TableView, View } from './types';
 
 const view = (table?: Partial<TableView>): View => ({
   id: 'g1',

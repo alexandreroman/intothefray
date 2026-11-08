@@ -1,3 +1,4 @@
+import type { Point } from '../lib/types';
 import { dockItems, markerItemId, type DockTable } from './dockItems';
 import type { Placement } from './dockPiles';
 import {
@@ -7,7 +8,6 @@ import {
   dockShifts,
   type DockItem,
   type DockLayoutInput,
-  type Point,
 } from './dockLayout';
 import { card as fixtureCard } from './fixtures.testing';
 

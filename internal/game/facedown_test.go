@@ -4,6 +4,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // checkHiddenEverywhere fails when a view of the game, its owner's included,
@@ -54,7 +56,7 @@ func (f *doFixture) sideDeckLabeled(t *testing.T, label string) string {
 // hero's deck.
 func heroFixture(identity, name string) func(t *testing.T) *doFixture {
 	return func(t *testing.T) *doFixture {
-		return heroGame(t, heroDeck(t, newCatalog(t), identity, name))
+		return heroGame(t, heroDeck(t, packstest.Catalog(t), identity, name))
 	}
 }
 

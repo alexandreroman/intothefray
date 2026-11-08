@@ -4,7 +4,10 @@
   The preview of the hovered card floats over the table (Table.svelte).
 -->
 <script module lang="ts">
-  /** The Undo button's label, here and on the narrow table's top bar (Table.svelte). */
+  /**
+   * The Undo button's label: here, in the history sheet, in the dock, and on the narrow table's floating Undo
+   * (Table.svelte).
+   */
   export const UNDO_TIP = 'Undo last action';
   /** The tip of the Undo button when the viewer has nothing to undo. */
   export const NOTHING_TO_UNDO = 'Nothing of yours to undo';
@@ -13,11 +16,11 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import Icon from '../components/Icon.svelte';
-  import { playerColorVar } from '../lib/playerColor';
   import { pointerBlur } from '../lib/releaseFocus';
   import type { LogView } from '../lib/types';
   import { mergedLines } from './animate';
-  import { partsOf, timeOf, type LinePart, type NameOf } from './historyLines';
+  import { historyLines, type NameOf } from './historyLines';
+  import HistoryText from './HistoryText.svelte';
   import { interaction } from './interaction.svelte';
 
   let {
@@ -73,7 +76,7 @@
     seen = log.length;
   });
 
-  // A line that a later change merged into (counters, flips) bumps, as in the prototype.
+  // A line that a later change merged into (counters, flips) bumps.
   // From the empty end keyframe, the line goes back to its own background.
   const BUMP = [{ backgroundColor: '#2a3a66' }, {}];
   const BUMP_MS = 500;
@@ -90,17 +93,8 @@
     }
   });
 
-  // Keyed by their position from the oldest, which does not move when lines are added.
   const lines = $derived(
-    log
-      .map((entry, index) => ({
-        key: index,
-        entry,
-        parts: partsOf(entry, nameOf),
-        time: timeOf(entry.at),
-        isNew: index >= seen,
-      }))
-      .reverse(),
+    historyLines(log, nameOf).map((line) => ({ ...line, isNew: line.key >= seen })),
   );
 
   // The line under the pointer, and the one whose full text floats over the
@@ -128,13 +122,6 @@
     }
   });
 </script>
-
-{#snippet lineText(entry: LogView, parts: LinePart[])}
-  <!-- The line break between the name and the text renders as one space. -->
-  <span class="w" style:color={playerColorVar(entry.color)}>{entry.who}</span>
-  {#each parts as part, i (i)}{#if part.card}<b class="card" class:aside={part.aside}>{part.text}</b
-      >{:else if part.aside}<span class="aside">{part.text}</span>{:else}{part.text}{/if}{/each}
-{/snippet}
 
 {#snippet panelIcon()}
   <!-- The panel's edge, and a chevron pushing it to the right (drawn flipped to expand). -->
@@ -208,11 +195,11 @@
         onpointerleave={leaveLine}
       >
         <time class="t">{time}</time>
-        <span class="txt">{@render lineText(entry, parts)}</span>
+        <span class="txt"><HistoryText {entry} {parts} /></span>
         {#if expanded === key}
           <div class="full">
             <time class="t">{time}</time>
-            <span class="whole">{@render lineText(entry, parts)}</span>
+            <span class="whole"><HistoryText {entry} {parts} /></span>
           </div>
         {/if}
       </li>
@@ -368,18 +355,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .w {
-    font-weight: 700;
-  }
-
-  .card {
-    font-weight: 700;
-  }
-
-  .aside {
-    color: var(--faint);
   }
 
   .t {

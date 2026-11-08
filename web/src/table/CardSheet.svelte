@@ -32,7 +32,7 @@
   a swipe never changes the layout; a card turning over to the other
   orientation keeps the old layout until it is edge-on, as for its face.
   Buttons and rows are 44 px high, on a phone and a tablet alike.
-  Motion, short and eased out, none under reduced motion (Sheet.motionMs): a
+  Motion, short and eased out, none under reduced motion (motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
   back the other way; an entry that comes or goes after an update slides open
   or closed; a token fades in or out; a pressed button sinks. When the
@@ -76,7 +76,8 @@
   import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
   import { fade, fly, slide } from 'svelte/transition';
-  import Sheet, { motionMs } from '../components/Sheet.svelte';
+  import Sheet from '../components/Sheet.svelte';
+  import { motionMs } from '../lib/motion';
   import { buttonGrid } from '../lib/buttonGrid';
   import { decodeImage, type Decode } from '../lib/decodeImage';
   import { overflowTip } from '../lib/overflowTip';
@@ -84,7 +85,7 @@
   import CardCounters from './CardCounters.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
-  import { LIFT_SCALE } from './motion.svelte';
+  import { FLIP_MS, FLIP_PERSPECTIVE, LIFT_SCALE } from './motion.svelte';
   import type { ActionItem } from './actions';
   import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
   import { splitEntries, visibleEntries, type SheetCounter, type StackCard } from './inspector';
@@ -143,10 +144,6 @@
   const PAGE_MS = 220;
   /** How long a counter row or an entry takes to slide open or closed, in ms. */
   const ROW_MS = 200;
-  /** How long the card takes to turn over, edge-on half way: a table card's FLIP_MS (motion.svelte.ts). */
-  const TURN_MS = 360;
-  /** The perspective of a table card turning over (motion.svelte.ts FLIP_PERSPECTIVE). */
-  const TURN_PERSPECTIVE = 'perspective(700px)';
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
   /**
@@ -393,7 +390,7 @@
    * face and the rest just change.
    */
   function changeSide(from: Side, to: Side): void {
-    if (motionMs(TURN_MS) === 0 || faceElement === undefined || content === undefined) {
+    if (motionMs(FLIP_MS) === 0 || faceElement === undefined || content === undefined) {
       return;
     }
     turn?.cancel();
@@ -447,9 +444,9 @@
       return;
     }
     const element = faceElement;
-    const flat = { transform: `${TURN_PERSPECTIVE} rotateY(0deg)`, scale: '1' };
-    const edgeOn = { transform: `${TURN_PERSPECTIVE} rotateY(90deg)`, scale: `${LIFT_SCALE}` };
-    const half = TURN_MS / 2;
+    const flat = { transform: `${FLIP_PERSPECTIVE} rotateY(0deg)`, scale: '1' };
+    const edgeOn = { transform: `${FLIP_PERSPECTIVE} rotateY(90deg)`, scale: `${LIFT_SCALE}` };
+    const half = FLIP_MS / 2;
 
     // Held edge-on until the second half starts: the old side never shows flat again.
     const away = element.animate([flat, edgeOn], {

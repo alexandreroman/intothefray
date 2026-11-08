@@ -5,7 +5,17 @@ import { handleKey, type KeyTable } from './keys';
 import { openModal } from '../components/modal.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
 import type { CardView as TableCard, PackFace, View } from '../lib/types';
-import { card, fakeSession, infoFrom, pile, placed, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  fakeSession,
+  infoFrom,
+  pile,
+  placed,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+  spectatorYou,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -45,7 +55,7 @@ function makeView(extra: Partial<View> & { cards?: TableCard[] } = {}): View {
         pile('enc', { kind: 'encounter', x: 500, count: 20 }),
       ],
       hands: { p0: ['h'] },
-      stages: [{ key: 'villain', label: 'Villain', current: 'v', cards: ['v'] }],
+      stages: [VILLAIN_STAGE],
       firstPlayer: { x: 700, y: 40 },
     },
     ...rest,
@@ -468,26 +478,30 @@ describe('keys on the table', () => {
     );
   });
 
-  it('B sends a side card to the bottom of its side deck; X and Backspace leave it without a discard pile', async () => {
-    const cards = [
-      card('v', { code: '01094', owner: -1, back: 'villain' }),
-      card('sense', { x: 200, home: 'side:p0:0' }),
-    ];
-    const view = makeView({ cards });
-    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
-    const { session } = await renderTable(view);
-    await fireEvent.pointerEnter(placed('sense'));
+  it(
+    'B sends a side card to the bottom of its side deck; ' +
+      'X and Backspace leave it without a discard pile',
+    async () => {
+      const cards = [
+        card('v', { code: '01094', owner: -1, back: 'villain' }),
+        card('sense', { x: 200, home: 'side:p0:0' }),
+      ];
+      const view = makeView({ cards });
+      view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
+      const { session } = await renderTable(view);
+      await fireEvent.pointerEnter(placed('sense'));
 
-    await press('x');
-    await press('Backspace');
-    expect(session.act).not.toHaveBeenCalled();
-    await press('b');
-    // The server follows the card's home: the action names no pile.
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(
-      { kind: 'toDeck', card: 'sense', where: 'bottom' },
-      0,
-    );
-  });
+      await press('x');
+      await press('Backspace');
+      expect(session.act).not.toHaveBeenCalled();
+      await press('b');
+      // The server follows the card's home: the action names no pile.
+      expect(session.act).toHaveBeenCalledExactlyOnceWith(
+        { kind: 'toDeck', card: 'sense', where: 'bottom' },
+        0,
+      );
+    },
+  );
 
   it('B does nothing on an encounter card without an encounter deck to go back to', async () => {
     const cards = [
@@ -632,7 +646,7 @@ describe('keys on the table', () => {
 
   it('a spectator zooms with the keys, and nothing else', async () => {
     const view = makeView({
-      you: { role: 'spectator', name: 'Kim', color: -1, host: false },
+      you: spectatorYou(),
       canUndo: true,
     });
     const { session } = await renderTable(view);
@@ -950,7 +964,7 @@ describe('a player with two decks', () => {
     expect(single.selectNextDeck).not.toHaveBeenCalled();
 
     const spectating = twoDeckView();
-    spectating.you = { role: 'spectator', color: -1, host: false };
+    spectating.you = spectatorYou();
     const watcher = keyTable(spectating);
     handleKey(keyDown('q'), watcher);
     expect(watcher.selectNextDeck).not.toHaveBeenCalled();
@@ -974,7 +988,7 @@ describe('a player with two decks', () => {
 
   it('Shift + ← / → steps a spectator through the players too', () => {
     const spectating = twoDeckView();
-    spectating.you = { role: 'spectator', color: -1, host: false };
+    spectating.you = spectatorYou();
     const table = { ...keyTable(spectating), canStepHero: true };
     handleKey(keyDown('ArrowRight', { shiftKey: true }), table);
     expect(table.stepHero).toHaveBeenCalledExactlyOnceWith(1);

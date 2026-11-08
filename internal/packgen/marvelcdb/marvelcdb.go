@@ -49,8 +49,9 @@ type Pack struct {
 	Position int    `json:"position"`
 }
 
-// FetchCards returns the encounter cards of every pack from the marvelcdb site
-// at base, e.g. BaseURL, or FrenchBaseURL for the French names.
+// FetchCards returns the cards of every pack, encounter cards included, from
+// the marvelcdb site at base, e.g. BaseURL, or FrenchBaseURL for the French
+// names.
 func FetchCards(ctx context.Context, c *fetch.Client, base string) ([]Card, error) {
 	var cards []Card
 	if err := c.JSON(ctx, base+"/api/public/cards/?encounter=1", &cards); err != nil {

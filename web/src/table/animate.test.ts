@@ -1,6 +1,6 @@
 import type { Area, CardView, LogView, PileView, Point, PrivateView, View } from '../lib/types';
 import { type Anim, diffViews, dockMotions, mergedLines, type OwnDrop } from './animate';
-import { card, pile, playingView, seated } from './fixtures.testing';
+import { card, pile, playingView, seated, spectatorYou } from './fixtures.testing';
 
 /** A pile of seat 0's, 10 cards, right of the table's origin. */
 function seatPile(id: string, extra: Partial<PileView> = {}): PileView {
@@ -653,13 +653,33 @@ describe('diffViews', () => {
       const before = view({ cards: [mine, held], piles: [seatPile('deck:p0', { count: 10 })] });
       const after = view({
         piles: [seatPile('deck:p0', { count: 12 })],
-        log: [OLD_LINE, line('put 2 cards at the bottom of their deck', alex)],
+        log: [OLD_LINE, line('put 2 cards at the bottom of their deck (Spider-Man, a card)', alex)],
       });
 
       expect(diffViews(before, after)).toEqual([
         { kind: 'under', id: 'm', toPile: 'deck:p0' },
         { kind: 'under', id: 'h', toPile: 'deck:p0' },
       ]);
+    });
+
+    it('slips a group under a deck when a card it lists has brackets in its name', () => {
+      const mine = card('m', { code: '01001', x: 300 });
+      const held = card('h', { code: '01002', zone: 'hand' });
+      const before = view({ cards: [mine, held], piles: [seatPile('deck:p0', { count: 10 })] });
+      for (const text of [
+        'put 2 cards at the bottom of their deck (A.I.M. Interference ([energy]), a card)',
+        'put 2 cards at the bottom of their deck (a card, Kang (Immortus))',
+      ]) {
+        const after = view({
+          piles: [seatPile('deck:p0', { count: 12 })],
+          log: [OLD_LINE, line(text, alex)],
+        });
+
+        expect(diffViews(before, after)).toEqual([
+          { kind: 'under', id: 'm', toPile: 'deck:p0' },
+          { kind: 'under', id: 'h', toPile: 'deck:p0' },
+        ]);
+      }
     });
 
     it('does not slip under for a card put on top, nor for an undone line', () => {
@@ -1384,7 +1404,7 @@ describe('diffViews', () => {
           piles: [deck(decks[0]), seatPile('deck:p1', { owner: 1, count: decks[1] })],
           handCounts: counts,
         });
-        base.you = { role: 'spectator', color: -1, host: false };
+        base.you = spectatorYou();
         return base;
       };
 
@@ -1418,7 +1438,7 @@ describe('diffViews', () => {
     }
 
     // The server gives a card a new id when it goes into a hand or a deck out of a hand or face down
-    // off the table, so that the other players cannot follow it (freshID in internal/game/ids.go).
+    // off the table, so that the other players cannot follow it (renamedOnTheWay in internal/game/ids.go).
     describe('a card that gets a new id on its way', () => {
       it('taken face down into the hand moves there under its new id and turns face up', () => {
         const prev = view({ cards: [card('d', { faceDown: true, x: 100 })], hands: { p0: [] } });

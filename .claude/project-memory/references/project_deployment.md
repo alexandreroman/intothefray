@@ -36,8 +36,8 @@ type: project
   - `api` points at the VPS through the Cloudflare proxy (orange cloud):
     it hides the VPS address, compresses HTTP responses (the backend sends
     them uncompressed) and carries the WebSockets, which the backend
-    compresses (the server pings every 30 s, below Cloudflare's 100 s
-    idle timeout).
+    compresses (the server pings every 30 s, so an idle WebSocket never
+    goes silent long enough for Cloudflare to close it).
   - SSL mode Full (strict), with a Cloudflare Origin CA or DNS-01 Let's
     Encrypt certificate on the VPS; the VPS firewall accepts 443 from
     Cloudflare's addresses only.
@@ -47,8 +47,7 @@ type: project
   1. `publish` pushes the image to GHCR (see [[project_ci_scope]]); the
      GHCR package is public, so the VPS pulls without credentials.
   2. `pages` deploys the frontend that the `web` job built and uploaded
-     as the Pages artifact; a manual run of `ci.yml` on `main`
-     republishes it.
+     as the Pages artifact.
   3. `deploy-backend` sends `repository_dispatch` `deploy-app` with
      `client_payload.sha` to `intothefray-infra`, using the app secret
      `INFRA_DISPATCH_TOKEN` (fine-grained PAT on `intothefray-infra`,

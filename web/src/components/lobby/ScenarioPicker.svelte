@@ -5,12 +5,15 @@
   import { tick, untrack } from 'svelte';
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
+  import { fold, matchesQuery } from '../../lib/textFilter';
+  import { motionMs } from '../../lib/motion';
   import { overflowTip } from '../../lib/overflowTip';
   import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
   import Icon from '../Icon.svelte';
   import Segmented from '../Segmented.svelte';
-  import { placeUnder, type Box, type DropdownPlace } from '../../lib/dropdown';
+  import { placeUnder, type DropdownPlace } from '../../lib/dropdown';
+  import type { Rect } from '../../lib/rect';
   import {
     hostName,
     type Difficulty,
@@ -32,10 +35,10 @@
     index: Index;
     onconfigure: (config: LobbyConfig) => void;
     /** The part of the window the Add a set menu stays within, in viewport coordinates. */
-    room: () => Box;
+    room: () => Rect;
   } = $props();
 
-  // Version I of each set, the default (spec 4.3).
+  // Version I of the Standard and Expert sets is the default.
   const DEFAULT_STANDARD = 'standard';
   const DEFAULT_EXPERT = 'expert';
   const LEVELS: { value: Difficulty; label: string }[] = [
@@ -121,16 +124,11 @@
   // Each group of the menu is labelled by its pack's name.
   const uid = $props.id();
 
-  /** Text as a filter compares it: without accents, case or surrounding spaces. */
-  function fold(text: string): string {
-    return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-  }
-
   const setQuery = $derived(fold(setFilter));
 
   /** Whether the pack's or the set's name, shown or English, holds the Add a set menu's filter. */
   function matchesSetQuery(ref: PackRef | SetRef): boolean {
-    return fold(localizedName(ref, lang)).includes(setQuery) || fold(ref.name).includes(setQuery);
+    return matchesQuery(setQuery, [localizedName(ref, lang), ref.name]);
   }
 
   // A pack whose name matches keeps all its sets; another keeps those whose name matches.
@@ -153,15 +151,15 @@
     return setNames.get(code) ?? code;
   }
 
+  /** Whether the scenario's or its pack's name, shown or English, holds the filter. */
   function matchesFilter(scenario: ScenarioRef): boolean {
-    const query = filter.trim().toLowerCase();
-    if (query === '') {
-      return true;
-    }
-    return (
-      localizedName(scenario, lang).toLowerCase().includes(query) ||
-      packName(scenario.pack).toLowerCase().includes(query)
-    );
+    const englishPack = index.packs.find((p) => p.code === scenario.pack)?.name ?? scenario.pack;
+    return matchesQuery(filter, [
+      localizedName(scenario, lang),
+      scenario.name,
+      packName(scenario.pack),
+      englishPack,
+    ]);
   }
 
   // Guests only see the chosen scenario.
@@ -473,7 +471,7 @@
     <div
       class="sect settings"
       transition:slide={{
-        duration: prefersReducedMotion.current ? 0 : SETTINGS_SLIDE_MS,
+        duration: motionMs(SETTINGS_SLIDE_MS),
         easing: cubicOut,
       }}
       onintroend={revealChosen}
@@ -534,7 +532,12 @@
               <span class="chip" class:guest-chip={!isHost}>
                 {setName(code)}
                 {#if recommended.includes(code)}
-                  <span class="rec" title="Recommended for this scenario">★</span>
+                  <span
+                    class="rec"
+                    role="img"
+                    aria-label="Recommended for this scenario"
+                    data-tip="Recommended for this scenario">★</span
+                  >
                 {/if}
                 {#if code === chosenMainScheme?.code}
                   <span class="scheme">main scheme</span>

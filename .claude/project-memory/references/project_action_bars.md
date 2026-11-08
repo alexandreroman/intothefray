@@ -52,9 +52,10 @@ type: project
   cancels the drag: the deck is outlined as a target and nothing is sent.
   Dropped beside the deck, it is placed on the table; a card lying over
   the deck takes it instead.
-  A card dropped anywhere on its home deck (player deck, side deck or
-  encounter deck) goes on top of it, as Move to ▾ "Top of deck" does;
-  Bottom of deck is a Move to ▾ entry (B) only, never a drop target.
+  A card dropped on or near its home deck goes on top of it, as Move to ▾
+  "Top of deck" does; another deck of its owner takes it only right over
+  it (see [[project_discard_destinations]]). Bottom of deck is a Move to
+  ▾ entry (B) only, never a drop target.
   Labels are short; only a refused entry has a tooltip (its reason). The
   stage choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
@@ -67,9 +68,9 @@ type: project
   several faces too), X discard (Backspace too), H hand, B bottom of
   deck (a side card's side deck), V change card (villain / main
   scheme), A arrow; C stays Confused.
-  A card revealed on a deck has no Exhaust (E) and no token, status or
-  modifier entries; on an own deck, W draws it (see
-  [[project_deck_reveal]]).
+  A card revealed on a deck has no Exhaust (E) and no status or modifier
+  entries; it keeps the token submenu and keys; on an own deck, W draws it
+  (see [[project_deck_reveal]]).
 - Another player's deck or side deck shows "Belongs to …" in its menu
   instead of entries. A click on a selected card opens that card's menu
   and keeps the group selection.

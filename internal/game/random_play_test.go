@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 var (
@@ -330,7 +332,7 @@ func TestSameSeedSameGame(t *testing.T) {
 // included: their ten basic cards come three times each.
 func fourPlayerGame(t *testing.T) *doFixture {
 	t.Helper()
-	cat := newCatalog(t)
+	cat := packstest.Catalog(t)
 	deck := spiderManDeck(t, cat)
 	basics := deck.Cards[len(deck.Cards)-10:] // spiderManDeck lists them last
 	for i := range basics {
@@ -392,6 +394,18 @@ type recordedGame struct {
 	Events []Event     `json:"events"`
 }
 
+// writeRecording stores the setup and events of the game of f at recording,
+// and its live table at golden.
+func writeRecording(t *testing.T, f *doFixture, recording, golden string) {
+	t.Helper()
+	setup, err := f.g.ReplaySetup()
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, recording, indentedJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events}))
+	writeFile(t, golden, indentedJSON(t, f.g.Table))
+}
+
 // TestReplayRecordedGames replays each stored game and compares the table it
 // ends with to its golden one, byte for byte: a two-player Rhino game recorded
 // from random play, and a scripted one with group actions (replaced group
@@ -410,7 +424,7 @@ func TestReplayRecordedGames(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			recording := filepath.Join("testdata", "replays", tt.name+".json")
 			golden := filepath.Join("testdata", "replays", tt.name+".table.golden.json")
-			cat := newCatalog(t)
+			cat := packstest.Catalog(t)
 			if *recordGames {
 				tt.record(t, recording, golden)
 			}
@@ -450,12 +464,7 @@ func recordRandomGame(t *testing.T, recording, golden string) {
 	for range 120 {
 		play.step()
 	}
-	setup, err := f.g.ReplaySetup()
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeFile(t, recording, indentedJSON(t, recordedGame{Setup: setup, Events: f.g.History.Events}))
-	writeFile(t, golden, indentedJSON(t, f.g.Table))
+	writeRecording(t, f, recording, golden)
 }
 
 func indentedJSON(t *testing.T, v any) []byte {

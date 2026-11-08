@@ -11,7 +11,7 @@ import {
   resizeScreen,
   type TestScreen,
 } from '../lib/screen.testing';
-import { MAX_MODIFIER, type ActionItem } from './actions';
+import { MAX_COUNT, type ActionItem } from './actions';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
 import { stubImageDecode } from '../lib/decodeImage.testing';
@@ -330,20 +330,24 @@ describe('CardSheet', () => {
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a token' }));
   });
 
-  it("holds the main page's height in a submenu, which scrolls in it, and lets it go back on the main page", async () => {
-    renderSheet();
-    const pages = pagesOf(233);
+  it(
+    "holds the main page's height in a submenu, which scrolls in it, " +
+      'and lets it go back on the main page',
+    async () => {
+      renderSheet();
+      const pages = pagesOf(233);
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
-    expect(pages.style.height).toBe('233px');
-    expect(pages.classList).toContain('held');
-    expect(rule('.pages.held > .page')).toContain('overflow-y: auto;');
-    expect(rule('.pages')).toContain('flex: none;');
+      await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+      expect(pages.style.height).toBe('233px');
+      expect(pages.classList).toContain('held');
+      expect(rule('.pages.held > .page')).toContain('overflow-y: auto;');
+      expect(rule('.pages')).toContain('flex: none;');
 
-    await fireEvent.click(screen.getByRole('button', { name: /Back/ }));
-    expect(pages.style.height).toBe('');
-    expect(pages.classList).not.toContain('held');
-  });
+      await fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+      expect(pages.style.height).toBe('');
+      expect(pages.classList).not.toContain('held');
+    },
+  );
 
   it("holds the main page's height when a submenu entry runs and the sheet stays", async () => {
     renderSheet();
@@ -563,7 +567,7 @@ describe('CardSheet', () => {
     });
 
     it('shows a modifier with its sign, and stops it at its largest and smallest', async () => {
-      const { rerender } = renderSheet({ counters: [modifier(MAX_MODIFIER)] });
+      const { rerender } = renderSheet({ counters: [modifier(MAX_COUNT)] });
 
       await fireEvent.click(screen.getByRole('button', { name: 'DEF, +99' }));
       const add = () =>
@@ -575,7 +579,7 @@ describe('CardSheet', () => {
       expect(add().disabled).toBe(true);
       expect(remove().disabled).toBe(false);
 
-      await rerender({ counters: [modifier(-MAX_MODIFIER)] });
+      await rerender({ counters: [modifier(-MAX_COUNT)] });
       expect(screen.getByRole('button', { name: 'DEF, −99' })).toBeTruthy();
       expect(add().disabled).toBe(false);
       expect(remove().disabled).toBe(true);
@@ -1849,30 +1853,34 @@ describe('CardSheet', () => {
         expect(moved.filter((element) => !element.classList.contains('face'))).toEqual([]);
       });
 
-      it("turns a deck's back over to the card revealed on it, renamed at once, its counters once edge-on", async () => {
-        const { rerender } = renderSheet({ header: DECK_HEADER, cardId: undefined });
-        await rerender({ images: ['encounter-back.png'] });
-        await finishAnimations();
-        animate.mockClear();
-        expect(screen.getByRole('dialog', { name: 'Encounter deck, 29 cards' })).toBeTruthy();
+      it(
+        "turns a deck's back over to the card revealed on it, " +
+          'renamed at once, its counters once edge-on',
+        async () => {
+          const { rerender } = renderSheet({ header: DECK_HEADER, cardId: undefined });
+          await rerender({ images: ['encounter-back.png'] });
+          await finishAnimations();
+          animate.mockClear();
+          expect(screen.getByRole('dialog', { name: 'Encounter deck, 29 cards' })).toBeTruthy();
 
-        await rerender({
-          header: TURNED,
-          cardId: 'rhino',
-          images: ['rhino-2.png'],
-          counters: [DAMAGE],
-        });
+          await rerender({
+            header: TURNED,
+            cardId: 'rhino',
+            images: ['rhino-2.png'],
+            counters: [DAMAGE],
+          });
 
-        expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
-        expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
-        expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
-        expect(turns()).toHaveLength(1);
+          expect(faceImage().getAttribute('src')).toBe('encounter-back.png');
+          expect(screen.getByRole('dialog', { name: 'Rhino II, Villain, stage II' })).toBeTruthy();
+          expect(screen.queryByRole('button', { name: 'Damage, 3' })).toBeNull();
+          expect(turns()).toHaveLength(1);
 
-        await finishAnimations();
+          await finishAnimations();
 
-        expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
-        expect(screen.getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
-      });
+          expect(faceImage().getAttribute('src')).toBe('rhino-2.png');
+          expect(screen.getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
+        },
+      );
 
       it('renames the sheet at once as the card turns face down, the measured copy as its column', async () => {
         const measuredFirst: (string | undefined)[] = [];

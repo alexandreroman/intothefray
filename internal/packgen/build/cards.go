@@ -312,11 +312,7 @@ func recordImage(entry marvelcdb.Card) string {
 	if entry.ImageSrc == "" {
 		return ""
 	}
-	host := entry.ImageHost
-	if host == "" {
-		host = marvelcdb.BaseURL
-	}
-	return host + entry.ImageSrc
+	return cmp.Or(entry.ImageHost, marvelcdb.BaseURL) + entry.ImageSrc
 }
 
 // faceSize returns the size of a face: the curated one when set, else the one

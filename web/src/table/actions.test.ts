@@ -3,14 +3,22 @@ import {
   actionsFor,
   counterName,
   keyLabel,
-  MAX_MODIFIER,
+  MAX_COUNT,
   withSign,
   type ActionItem,
   type TableElement,
 } from './actions';
 import { knownCard } from '../lib/catalog';
 import type { Action, CardView, PackFace, PileView, View, YouView } from '../lib/types';
-import { card, infoFrom, pile, playingView, seated } from './fixtures.testing';
+import {
+  card,
+  infoFrom,
+  pile,
+  playingView,
+  seated,
+  VILLAIN_STAGE,
+  spectatorYou,
+} from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/catalog')>()),
@@ -76,10 +84,7 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
       cards,
       piles,
       hands: { p0: ['h'] },
-      stages: [
-        { key: 'villain', label: 'Villain', current: 'v', cards: ['v'] },
-        { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] },
-      ],
+      stages: [VILLAIN_STAGE, { key: 'main', label: 'Main scheme', current: 's', cards: ['s'] }],
     },
   });
 }
@@ -102,7 +107,7 @@ function villainStages(current: string): View {
 }
 
 /** Kim, watching the game. */
-const KIM: YouView = { role: 'spectator', name: 'Kim', color: -1, host: false };
+const KIM: YouView = spectatorYou();
 
 /** The items of el, for the viewer of the view, or for `you` when given. */
 function itemsFor(el: TableElement, view = makeView(), you?: YouView): ActionItem[] {
@@ -308,11 +313,11 @@ describe('actionsFor', () => {
       return modifiers.filter((it) => it.disabled).map((it) => ({ id: it.id, reason: it.reason }));
     };
 
-    expect(disabled({ atk: MAX_MODIFIER - 1, def: -(MAX_MODIFIER - 1) })).toEqual([]);
-    expect(disabled({ atk: MAX_MODIFIER })).toEqual([
+    expect(disabled({ atk: MAX_COUNT - 1, def: -(MAX_COUNT - 1) })).toEqual([]);
+    expect(disabled({ atk: MAX_COUNT })).toEqual([
       { id: 'atk+1', reason: 'The ATK modifier is already +99' },
     ]);
-    expect(disabled({ atk: -MAX_MODIFIER })).toEqual([
+    expect(disabled({ atk: -MAX_COUNT })).toEqual([
       { id: 'atk-1', reason: 'The ATK modifier is already \u221299' },
     ]);
   });
@@ -1049,7 +1054,7 @@ describe('actionsFor', () => {
     for (const id of ['disc:p0', 'encd']) {
       const items = itemsFor({ kind: 'pile', id }, view);
       expect(items[0]?.run?.()).toEqual({ local: 'browseBox', pile: id });
-      // Spectators have no game keys (P5b-R6): the menu shows none.
+      // Spectators have no game keys: the menu shows none.
       expect(items[0]?.key).toBeUndefined();
     }
   });

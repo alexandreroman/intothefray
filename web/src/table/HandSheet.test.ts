@@ -25,7 +25,12 @@ function faceOf(card: TableCard): PackFace | null {
 const CARDS = [handCard('h1', '01003'), handCard('h2', '01005'), handCard('h3', '01088')];
 
 function renderSheet(
-  props: { cards?: TableCard[]; withPicker?: boolean; landscape?: boolean } = {},
+  props: {
+    cards?: TableCard[];
+    withPicker?: boolean;
+    landscape?: boolean;
+    canDiscard?: (id: string) => boolean;
+  } = {},
 ) {
   const handlers = {
     onplay: vi.fn(),
@@ -40,8 +45,8 @@ function renderSheet(
       cards: props.cards ?? CARDS,
       faceOf,
       seat: 1,
-      area: 'p1',
       landscape: props.landscape ?? false,
+      canDiscard: props.canDiscard ?? (() => true),
       picker: props.withPicker ? picker : undefined,
       ...handlers,
     },
@@ -165,6 +170,19 @@ describe('HandSheet', () => {
 
     expect(onplay).toHaveBeenCalledWith('h2');
     expect(ondiscard).toHaveBeenCalledWith('h2');
+  });
+
+  it('leaves Discard out for a centred card that has no discard pile, Play then alone on its line', async () => {
+    renderSheet({ canDiscard: (id) => id !== 'h2' });
+
+    expect(screen.getByRole('button', { name: 'Discard' })).toBeTruthy();
+
+    layOut(212);
+    await fireEvent.scroll(carousel());
+    expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Play' })).toBeTruthy();
+    // A lone button takes the whole width, as buttonGrid lays one out.
+    expect(rule('.actions button:only-child')).toContain('grid-column: 1 / -1;');
   });
 
   it('marks the centred card and its dot', async () => {

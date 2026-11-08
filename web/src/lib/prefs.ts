@@ -3,6 +3,8 @@
 // they last for the page lifetime (a reconnection still finds its token).
 
 const TOKENS_KEY = 'itf-tokens';
+// The most games whose tokens a browser keeps.
+const MAX_TOKENS = 50;
 
 const memory = new Map<string, string>();
 
@@ -57,6 +59,14 @@ export function getToken(gameId: string): string | null {
   return readTokens()[gameId] ?? null;
 }
 
+/**
+ * Stores the token of a game, keeping only the MAX_TOKENS games stored last: a game expires after
+ * 24 h, so the table would otherwise only grow. The table lists its games oldest first, and a game
+ * stored again moves to the end. Its order is the order of the object's keys, which JSON keeps:
+ * game ids are letters, never integer-like keys, which an object would sort first.
+ */
 export function setToken(gameId: string, token: string): void {
-  setPref(TOKENS_KEY, JSON.stringify({ ...readTokens(), [gameId]: token }));
+  const others = Object.entries(readTokens()).filter(([id]) => id !== gameId);
+  const newest = [...others, [gameId, token]].slice(-MAX_TOKENS);
+  setPref(TOKENS_KEY, JSON.stringify(Object.fromEntries(newest)));
 }
