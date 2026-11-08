@@ -64,7 +64,8 @@ export type DropRect =
   | { kind: 'hand'; index: number; rect: Rect }
   /**
    * The hand as a whole, for a table card going back to it. In dock mode it is the dock's hand
-   * button, which also takes a hand card back: a drop there sends nothing.
+   * button, which also takes a hand card back: a drop there sends nothing. So does the room of a
+   * hand whose only card is dragged (ownHandTarget).
    */
   | { kind: 'toHand'; rect: Rect }
   /** The table itself, where it shows. */
@@ -656,6 +657,26 @@ export function isDownward(from: Point, to: Point): boolean {
 /** Where a card dragged at x slots in among the other hand cards, given their middles. */
 export function insertIndex(middles: number[], x: number): number {
   return middles.filter((middle) => middle < x).length;
+}
+
+/**
+ * Where a hand card dragged at x drops in its own hand, given the rects of the hand's other cards
+ * and `under`, the bottom of the table under the hand (see handBand). The only card of a hand has
+ * nowhere else to go in it: its empty hand's room only takes it back, sending nothing, and opens
+ * no slot for it.
+ */
+export function ownHandTarget(
+  others: Rect[],
+  x: number,
+  under: Rect,
+  windowBottom: number,
+): DropRect {
+  const rect = handBand(others, under, windowBottom);
+  if (others.length === 0) {
+    return { kind: 'toHand', rect };
+  }
+  const middles = others.map((other) => (other.left + other.right) / 2);
+  return { kind: 'hand', index: insertIndex(middles, x), rect };
 }
 
 /**

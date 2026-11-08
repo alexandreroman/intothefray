@@ -90,6 +90,12 @@ type: project
   table or a dialog lowers it.
   In dock mode the hand is a carousel sheet (see
   [[project_touch_phone_table]]).
+- A hand card dragged back over its own fan reorders the hand: the fan
+  rises, opens a dashed slot where the card would go and draws the card
+  at hand size. A hand's only card has no other place in it: the fan
+  opens no slot and stays down, and a drop over it sends nothing
+  (`ownHandTarget` in `drag.ts`). A hand card over its own hand is never
+  shown to the other players.
 - Tokens come from the submenus, the keys and the token pill.
 - Out-of-play piles (scenario areas, victory display, set-aside) are
   reached from chips
@@ -101,7 +107,9 @@ type: project
   offer them Browse… only.
 
 **Why:** a UX review against DragnCards and OCTGN; the user chose one
-complete, labelled menu per card, pile and box tile.
+complete, labelled menu per card, pile and box tile. A one-card hand has
+nothing to reorder, so its fan offers no place for its card (user
+decision).
 
 **How to apply:** new actions go into `actionsFor` (keys and menu read
 it).

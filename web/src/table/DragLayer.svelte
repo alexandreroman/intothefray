@@ -50,9 +50,9 @@
     goesToHand,
     handAreaOf,
     handBand,
-    insertIndex,
     isDownward,
     mainCardOf,
+    ownHandTarget,
     pileTargets,
     sourceOf,
     stackOf,
@@ -224,6 +224,12 @@
   // Read from the current view at every redraw: the drag follows its card by id.
   const source = $derived(held ? sourceOf(held.element, view, held.card ?? undefined) : null);
   const overHand = $derived(interaction.handGap !== null);
+  /**
+   * Whether the dragged hand card lies over its own hand's band, as aim last located it: with its
+   * hand's other cards (overHand) or as its hand's only card. Not in dock mode: there the hand
+   * button takes it back from wherever it lies.
+   */
+  let overOwnHand = false;
 
   const DECK_TOP: TableCard = { ...ENCOUNTER_TOP, id: DECK_TOP_ID, back: 'player' };
 
@@ -741,15 +747,11 @@
         targets.push(button);
       }
     } else if (from.kind === 'hand') {
-      // A hand card slots back into its own hand only, among its other cards.
+      // A hand card slots back into its own hand only, among its other cards; a hand's only card is just
+      // taken back.
       const hand = root.querySelector<HTMLElement>(`.hand[data-seat="${seatOf(from.area)}"]`);
       const others = cardRects(hand, from.card);
-      const middles = others.map((rect) => (rect.left + rect.right) / 2);
-      targets.push({
-        kind: 'hand',
-        index: insertIndex(middles, at.x),
-        rect: handBand(others, under(hand, table), window.innerHeight),
-      });
+      targets.push(ownHandTarget(others, at.x, under(hand, table), window.innerHeight));
     } else if (goesToHand(from, units, view)) {
       // Any hand shown takes it, for its owner's hand; with no hand shown, the bottom of the table.
       const hands = [...root.querySelectorAll<HTMLElement>('.hand')];
@@ -961,6 +963,8 @@
     const found = settledAt(source, pointer);
     feedPreview(previewOf(source, found));
     interaction.handGap = found?.target.kind === 'hand' ? found.target.index : null;
+    const kind = found?.target.kind;
+    overOwnHand = source.kind === 'hand' && !dock.current && (kind === 'hand' || kind === 'toHand');
     // Only what a drop would change is outlined: not the pile a card came from. A deck's top card
     // dropped back on its deck is the exception: that drop is a target, which cancels the drag.
     const returns = found?.target.kind === 'pile' && found.target.drop === 'return';
@@ -1095,6 +1099,7 @@
     dwellTimer = 0;
     steady.reset();
     units = [];
+    overOwnHand = false;
     pointer = null;
     hint = null;
     if (told) {
@@ -1139,12 +1144,12 @@
   /**
    * What the other players see of the drag: the cards it carries, or the
    * marker, and their corner, in table units, while it is over
-   * the table. Not a hand card over the hand, which is the viewer's own
+   * the table. Not a hand card over its own hand, which is the viewer's own
    * business.
    */
   function presenceOf(from: DragSource, at: Point): PresenceDrag | null {
     const table = root?.querySelector('.tablewrap')?.getBoundingClientRect();
-    if (!root || !table || overHand) {
+    if (!root || !table || overOwnHand) {
       return null;
     }
     const surface = surfaceRect(root);
