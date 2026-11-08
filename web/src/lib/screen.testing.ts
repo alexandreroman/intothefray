@@ -14,6 +14,8 @@ export interface TestScreen {
 function holds(feature: string, on: TestScreen): boolean {
   const [name = '', value = ''] = feature.split(':').map((part) => part.trim());
   switch (name) {
+    case 'min-width':
+      return on.width >= Number.parseFloat(value);
     case 'max-width':
       return on.width <= Number.parseFloat(value);
     case 'max-height':

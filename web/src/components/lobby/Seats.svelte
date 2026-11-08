@@ -1,24 +1,34 @@
 <!--
-  The Players area: one seat per deck, as at the table. A player's card spans as many seats as
-  they have decks, as far as a row holds, and free seats fill the rest up to MAX_SEATS. The
-  viewer's own decks are their deck slots, which the lobby renders through `ownSlot`, so that
-  their load state stays with it.
+  The Players area: one seat per deck, as at the table, two to a row at most. A player's card spans
+  as many seats as they have decks, as far as a row holds, and free seats make up the rest of
+  MAX_SEATS. The viewer's own decks are their deck slots, which the lobby renders through
+  `ownSlot`, so that their load state stays with it.
 -->
 <script lang="ts">
   import { onDestroy, tick, type Snippet } from 'svelte';
+  import { MediaQuery } from 'svelte/reactivity';
   import Icon from '../Icon.svelte';
   import { glide, pop, unfold } from '../../lib/motion';
   import { overflowTip } from '../../lib/overflowTip';
   import { playerColorVar } from '../../lib/playerColor';
   import { gamePath, href } from '../../lib/router.svelte';
+  import { layOutSeats } from '../../lib/seatLayout';
   import { nextSlotKeys, type SlotKeys, type SlotRemoval } from '../../lib/slotKeys';
   import { MAX_SEATS, seatCount, type DeckView, type PlayerView, type View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
-  type Seat =
-    | { kind: 'player'; key: string; player: PlayerView; slots: { key: number; deck: DeckView }[] }
-    | { kind: 'free'; key: string; color: number };
+  type PlayerSeat = {
+    kind: 'player';
+    key: string;
+    player: PlayerView;
+    slots: { key: number; deck: DeckView }[];
+    /** The seats the card spans: one per deck. */
+    span: number;
+    mine: boolean;
+  };
+  type FreeSeat = { kind: 'free'; key: string; color: number };
+  type Seat = PlayerSeat | FreeSeat;
 
   let {
     view,
@@ -57,20 +67,22 @@
   );
 
   // Each player's slots as last shown, by colour. A plain variable, not state: it only carries the
-  // slot keys from one view to the next, and `seats` alone writes it.
+  // slot keys from one view to the next, and `playerSeats` alone writes it.
   let lastSlotKeys = new Map<number, SlotKeys>();
 
+  // The grid's columns, as the styles below lay it out: one on a phone, two from 600px.
+  const twoColumns = new MediaQuery('(min-width: 600px)');
+  const columns = $derived(twoColumns.current ? 2 : 1);
+
   /*
-    The seats in grid order, players then free seats, in one keyed list: the grid is measured once
-    before a change, so every seat glides from where it was. A player's seat goes by their colour,
-    a free seat by the colour it offers.
+    A player's seat goes by their colour, a free seat by the colour it offers.
 
     A deck slot goes by a key of its own (lib/slotKeys), not by its index: once a slot is removed,
     the slots after it keep their nodes (the viewer's keep the links typed in them) and only the
     removed one closes; an added slot is the only one to open. The viewer's own removal names the
     slot that went, so that a link typed for it never stays in the slot that takes its place.
   */
-  const seats = $derived.by((): Seat[] => {
+  const playerSeats = $derived.by((): PlayerSeat[] => {
     const keyed = view.players.map((player) => {
       const removal = isMe(player) ? ownRemoval : null;
       return {
@@ -79,13 +91,30 @@
       };
     });
     lastSlotKeys = new Map(keyed.map(({ player, slotKeys }) => [player.color, slotKeys]));
-    const players: Seat[] = keyed.map(({ player, slotKeys }) => {
+    return keyed.map(({ player, slotKeys }) => {
       const slots = player.decks.map((deck, i) => ({ key: slotKeys.keys[i]!, deck }));
-      return { kind: 'player', key: `player-${player.color}`, player, slots };
+      return {
+        kind: 'player',
+        key: `player-${player.color}`,
+        player,
+        slots,
+        span: slots.length,
+        mine: isMe(player),
+      };
     });
-    const free: Seat[] = freeColors.map((color) => ({ kind: 'free', key: `free-${color}`, color }));
-    return [...players, ...free];
   });
+  const freeSeats = $derived(
+    freeColors.map((color): FreeSeat => ({ kind: 'free', key: `free-${color}`, color })),
+  );
+
+  /*
+    The seats in grid order, in one keyed list: the grid is measured once before a change, so every
+    seat glides from where it was. The order is laid out here rather than by the grid's dense
+    packing, which could move the viewer's card: theirs first and fixed, then the others in seat
+    order, then the free seats. A card over several seats that leaves a hole at the end of a row
+    has it filled by free seats, else by a later card that fits (lib/seatLayout).
+  */
+  const seats = $derived<Seat[]>(layOutSeats(playerSeats, freeSeats, columns));
 
   let copied = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
@@ -148,18 +177,15 @@
          first shows, nor inside a card that arrives or leaves. -->
     <div class="seats">
       {#each seats as seat (seat.key)}
-        {@const decks = seat.kind === 'player' ? seat.slots.length : 1}
         <div
           class="cell"
-          class:span2={decks === 2}
-          class:span3={decks === 3}
-          class:span4={decks === 4}
+          class:wide={seat.kind === 'player' && seat.span > 1}
           in:pop
           out:pop
           animate:glide
         >
           {#if seat.kind === 'player'}
-            {@render playerCard(seat.player, seat.slots)}
+            {@render playerCard(seat.player, seat.slots, seat.mine)}
           {:else}
             {@render freeSeat(seat.color)}
           {/if}
@@ -169,8 +195,7 @@
   </div>
 </section>
 
-{#snippet playerCard(player: PlayerView, slots: { key: number; deck: DeckView }[])}
-  {@const mine = isMe(player)}
+{#snippet playerCard(player: PlayerView, slots: { key: number; deck: DeckView }[], mine: boolean)}
   {@const status = player.online ? 'Online' : 'Offline'}
   <div class="seat" class:me={mine} style:--pc={playerColorVar(player.color)}>
     <div class="top">
@@ -273,9 +298,9 @@
 
 <style>
   /*
-    The widths follow the lobby's bands: a phone below 600px, then a tablet up to 1099px, then
-    wider. The seats' gap and a card's padding are variables, as a card over several seats spaces
-    its decks with them.
+    The widths follow the lobby's bands: a phone below 600px, then wider; the seats need no band
+    from 1100px. The seats' gap and a card's padding are variables, as a card over several seats
+    spaces its decks with them.
   */
   .players {
     --seat-gap: 10px;
@@ -320,12 +345,16 @@
     color: var(--text-soft);
   }
 
-  /* Dense, so that a card over two seats never leaves a hole behind a single one. */
+  /*
+    The grid places the seats in the order they come, without packing them densely: the script
+    orders them so that the viewer's card stays first and free seats, then later cards, fill the
+    holes (lib/seatLayout). It holds two seats to a row at most: one column on a phone, two from
+    600px, where a card over several decks takes the whole row.
+  */
   .seats {
     display: grid;
     gap: var(--seat-gap);
     grid-template-columns: minmax(0, 1fr);
-    grid-auto-flow: row dense;
   }
 
   @media (min-width: 600px) {
@@ -333,24 +362,8 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .span2,
-    .span3,
-    .span4 {
+    .wide {
       grid-column: span 2;
-    }
-  }
-
-  @media (min-width: 1100px) {
-    .seats {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .span3 {
-      grid-column: span 3;
-    }
-
-    .span4 {
-      grid-column: span 4;
     }
   }
 
@@ -531,9 +544,9 @@
   }
 
   /*
-    The decks of a card, side by side when it spans several seats, 16px apart when stacked. Side by
-    side, each deck starts where the next seat's content would: their gap is the seats' gap plus
-    both cards' padding and border.
+    The decks of a card, two to a row when it spans the row, 16px apart when stacked: three or four
+    decks wrap. Side by side, the second deck starts where the next seat's content would: their gap
+    is the seats' gap plus both cards' padding and border.
   */
   .decks {
     display: grid;
@@ -543,21 +556,9 @@
   }
 
   @media (min-width: 600px) {
-    .span2 .decks,
-    .span3 .decks,
-    .span4 .decks {
+    .wide .decks {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       column-gap: calc(var(--seat-gap) + 2 * (var(--seat-pad) + 1px));
-    }
-  }
-
-  @media (min-width: 1100px) {
-    .span3 .decks {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .span4 .decks {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 

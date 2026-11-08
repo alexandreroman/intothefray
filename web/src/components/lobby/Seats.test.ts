@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import Seats from './Seats.svelte';
 import { cutShort } from '../../lib/overflowTip.testing';
+import { mockScreen, type TestScreen } from '../../lib/screen.testing';
 import type { DeckView, PlayerView, View, YouView } from '../../lib/types';
 
 // Whether the viewer prefers reduced motion, as each test chooses.
@@ -104,6 +105,16 @@ function freeSeats(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.free')];
 }
 
+/** The grid's items in order: a player's name, or "free" for a free seat. */
+function gridOrder(): string[] {
+  return [...document.querySelectorAll('.seats > .cell')].map(
+    (gridCell) => gridCell.querySelector('.seat .nm b')?.textContent ?? 'free',
+  );
+}
+
+// Two seats to a row, from 600px wide.
+const TABLET: TestScreen = { width: 800, height: 1000 };
+
 describe('Seats', () => {
   describe('the seat grid', () => {
     it('always shows four seats: one card per player, then free seats', () => {
@@ -117,16 +128,16 @@ describe('Seats', () => {
     it("spans a player's card over their decks, and leaves as many fewer free seats", () => {
       renderSeats({ players: [alex, { ...sam, decks: [spiderMan, captainMarvel] }] });
 
-      expect(cell('Sam').classList.contains('span2')).toBe(true);
-      expect(cell('Alex').classList.contains('span2')).toBe(false);
+      expect(cell('Sam').classList.contains('wide')).toBe(true);
+      expect(cell('Alex').classList.contains('wide')).toBe(false);
       expect(freeSeats()).toHaveLength(1);
       expect(screen.getByText('3 of 4 seats')).toBeTruthy();
     });
 
-    it('spans a card over four seats for a player with four decks, and leaves no free seat', () => {
+    it('spans a whole row for a player with four decks, and leaves no free seat', () => {
       renderSeats({ players: [{ ...alex, decks: [noDeck, noDeck, noDeck, noDeck] }] });
 
-      expect(cell('Alex').classList.contains('span4')).toBe(true);
+      expect(cell('Alex').classList.contains('wide')).toBe(true);
       expect(freeSeats()).toHaveLength(0);
     });
 
@@ -139,6 +150,64 @@ describe('Seats', () => {
       ]);
       expect(freeSeats()[0]?.textContent).toContain('Free seat');
       expect(freeSeats()[0]?.textContent).toContain('share the invite link');
+    });
+
+    it("lays out the viewer's card first, then the other players in seat order", () => {
+      renderSeats({ you: asSam, players: [alex, sam, jo] });
+
+      expect(gridOrder()).toEqual(['Sam', 'Alex', 'Jo', 'free']);
+    });
+
+    it('lays out the players in seat order for a spectator', () => {
+      renderSeats({ you: asSpectator, players: [alex, sam, jo] });
+
+      expect(gridOrder()).toEqual(['Alex', 'Sam', 'Jo', 'free']);
+    });
+
+    describe('two to a row', () => {
+      afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+      });
+
+      it('fills the hole before a card over two seats with a free seat', () => {
+        mockScreen(TABLET);
+        renderSeats({ players: [alex, { ...sam, decks: [spiderMan, captainMarvel] }] });
+
+        expect(gridOrder()).toEqual(['Alex', 'free', 'Sam']);
+      });
+
+      it('fills the hole with a later one-deck player when no free seat is left', () => {
+        mockScreen(TABLET);
+        renderSeats({ players: [alex, { ...sam, decks: [spiderMan, captainMarvel] }, jo] });
+
+        expect(gridOrder()).toEqual(['Alex', 'Jo', 'Sam']);
+      });
+
+      it("keeps the viewer's card first when another player adds a deck", async () => {
+        mockScreen(TABLET);
+        const view: View = {
+          id: 'g1',
+          phase: 'lobby',
+          you: asSam,
+          players: [alex, sam],
+          spectators: 0,
+          config: { scenario: '', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+          log: [],
+        };
+        const handlers = {
+          onremove: vi.fn(),
+          onleave: vi.fn(),
+          ontakeseat: vi.fn(),
+          onadddeck: vi.fn(),
+        };
+        const { rerender } = render(Seats, { view, ...handlers, ownSlot });
+        expect(gridOrder()).toEqual(['Sam', 'Alex', 'free', 'free']);
+
+        await rerender({ view: { ...view, players: [{ ...alex, decks: [noDeck, noDeck] }, sam] } });
+
+        expect(gridOrder()).toEqual(['Sam', 'free', 'Alex']);
+      });
     });
 
     it("tints the viewer's own card", () => {
