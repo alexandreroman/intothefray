@@ -62,6 +62,11 @@ function makeView(extra: { cards?: CardView[]; piles?: PileView[] } = {}): View 
     card('v', { code: '01094', owner: -1, back: 'villain', stage: 'villain' }),
     card('s', { code: '01097', owner: -1, back: 'encounter', stage: 'main' }),
     card('h', { zone: 'hand' }),
+    // The cards of the public piles, which the server lists with the table's.
+    card('x', { zone: 'pile' }),
+    card('y', { zone: 'pile' }),
+    card('w', { zone: 'pile', owner: 1 }),
+    card('t', { code: '01100', zone: 'pile', owner: -1, back: 'encounter' }),
   ];
   const piles = extra.piles ?? [
     pile('deck:p0', { owner: 0, count: 30 }),
@@ -979,21 +984,78 @@ describe('actionsFor', () => {
     );
   });
 
-  it('discard pile items', () => {
+  it('own discard pile items: Take top card to hand by default, Search, Shuffle into deck', () => {
     const items = itemsFor({ kind: 'pile', id: 'disc:p0' });
 
-    expect(groups(items)).toEqual([['search'], ['shuffleBack']]);
+    expect(groups(items)).toEqual([['takeTop'], ['search'], ['shuffleBack']]);
+    const takeTop = item(items, 'takeTop');
+    expect(takeTop).toMatchObject({ label: 'Take top card to hand', key: 'H', default: true });
+    expect(takeTop.disabled).toBeFalsy();
+    // The pile lists its cards bottom to top: y is its top card.
+    expect(actionOf(takeTop)).toEqual({ kind: 'toHand', card: 'y' });
     const search = item(items, 'search');
     expect(search).toMatchObject({ label: 'Search', key: 'K' });
+    expect(search.default).toBeUndefined();
     expect(actionOf(search)).toEqual({ kind: 'search', pile: 'disc:p0' });
     const back = item(items, 'shuffleBack');
     expect(back.label).toBe('Shuffle into deck');
     expect(actionOf(back)).toEqual({ kind: 'shuffleBack', pile: 'disc:p0' });
-    expect(groups(itemsFor({ kind: 'pile', id: 'encd' }))).toEqual([['search'], ['shuffleBack']]);
+  });
+
+  it('the encounter discard pile is searched by default and shuffled back, its top card taken nowhere', () => {
+    const items = itemsFor({ kind: 'pile', id: 'encd' });
+
+    expect(groups(items)).toEqual([['search'], ['shuffleBack']]);
+    expect(item(items, 'search').default).toBe(true);
   });
 
   it("another player's discard pile can only be searched", () => {
-    expect(groups(itemsFor({ kind: 'pile', id: 'disc:p1' }))).toEqual([['search']]);
+    const items = itemsFor({ kind: 'pile', id: 'disc:p1' });
+
+    expect(groups(items)).toEqual([['search']]);
+    expect(item(items, 'search').default).toBe(true);
+  });
+
+  it('the top card of an own discard pile goes to no hand when it is an encounter card', () => {
+    const view = makeView({
+      cards: [card('enemy', { code: '01100', zone: 'pile', owner: -1, back: 'encounter' })],
+      piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 1, cards: ['enemy'] })],
+    });
+
+    expect(item(itemsFor({ kind: 'pile', id: 'disc:p0' }, view), 'takeTop')).toMatchObject({
+      disabled: true,
+      reason: 'Encounter cards go to no hand',
+    });
+  });
+
+  it("the top card of an own discard pile goes to no hand when it is another player's", () => {
+    const view = makeView({
+      cards: [card('sams', { zone: 'pile', owner: 1 })],
+      piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 1, cards: ['sams'] })],
+    });
+
+    expect(item(itemsFor({ kind: 'pile', id: 'disc:p0' }, view), 'takeTop')).toMatchObject({
+      disabled: true,
+      reason: 'This card belongs to another player',
+    });
+  });
+
+  it('an own discard pile whose top card the view lacks offers no Take top card to hand', () => {
+    const unknown = makeView({
+      cards: [],
+      piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 1, cards: ['gone'] })],
+    });
+    const unlisted = makeView({
+      cards: [card('y', { zone: 'pile' })],
+      piles: [pile('disc:p0', { kind: 'discard', owner: 0, count: 1 })],
+    });
+
+    for (const view of [unknown, unlisted]) {
+      expect(groups(itemsFor({ kind: 'pile', id: 'disc:p0' }, view))).toEqual([
+        ['search'],
+        ['shuffleBack'],
+      ]);
+    }
   });
 
   it('out-of-play piles have no actions: they are not drawn on the table', () => {
@@ -1148,6 +1210,19 @@ describe('a player with two decks', () => {
     });
   });
 
+  it("takes the top card of the second seat's discard pile to the hand", () => {
+    const view = twoDeckView([
+      pile('deck:p1', { owner: 1, count: 30 }),
+      pile('disc:p1', { kind: 'discard', owner: 1, count: 1, cards: ['used'] }),
+    ]);
+    view.table!.cards.push(card('used', { zone: 'pile', owner: 1 }));
+
+    const items = itemsFor({ kind: 'pile', id: 'disc:p1' }, view, TWO_DECKS);
+    expect(groups(items)).toEqual([['takeTop'], ['search'], ['shuffleBack']]);
+    // The server picks the hand by the card's owner: the action names the card alone.
+    expect(actionOf(item(items, 'takeTop'))).toEqual({ kind: 'toHand', card: 'used' });
+  });
+
   it("other player's deck belongs", () => {
     const view = twoDeckView([pile('deck:p2', { owner: 2, count: 30 })]);
     expect(actionsFor({ kind: 'pile', id: 'deck:p2' }, { ...view, you: TWO_DECKS }, 'en')).toEqual({
@@ -1202,6 +1277,9 @@ describe('side decks', () => {
     card('inv', { home: 'side:p0:0' }),
     card('sense', { home: 'side:p0:1' }),
     card('inv-top', { zone: 'pile', home: 'side:p0:0' }),
+    // The cards of the side discard piles, which the server lists with the table's.
+    card('u', { zone: 'pile', home: 'side:p0:0' }),
+    card('w', { zone: 'pile', owner: 1, home: 'side:p1:0' }),
   ];
   const view = () => makeView({ cards: sideCards, piles: sidePiles });
   const pileItems = (id: string) => itemsFor({ kind: 'pile', id }, view());
@@ -1276,13 +1354,23 @@ describe('side decks', () => {
     });
   });
 
+  it('an own side discard pile takes its top card to the hand by default, as a discard pile does', () => {
+    const items = pileItems('sided:p0:0');
+    expect(groups(items)).toEqual([['takeTop'], ['search'], ['shuffleBack']]);
+    const takeTop = item(items, 'takeTop');
+    expect(takeTop).toMatchObject({ label: 'Take top card to hand', key: 'H', default: true });
+    expect(actionOf(takeTop)).toEqual({ kind: 'toHand', card: 'u' });
+    expect(item(items, 'search').default).toBeUndefined();
+  });
+
   it('a side discard pile is searched by anyone, shuffled back by its owner', () => {
-    expect(groups(pileItems('sided:p0:0'))).toEqual([['search'], ['shuffleBack']]);
     expect(actionOf(item(pileItems('sided:p0:0'), 'shuffleBack'))).toEqual({
       kind: 'shuffleBack',
       pile: 'sided:p0:0',
     });
-    expect(groups(pileItems('sided:p1:0'))).toEqual([['search']]);
+    const theirs = pileItems('sided:p1:0');
+    expect(groups(theirs)).toEqual([['search']]);
+    expect(item(theirs, 'search').default).toBe(true);
   });
 
   it('a spectator browses a side discard pile, never the top card a side deck shows', () => {

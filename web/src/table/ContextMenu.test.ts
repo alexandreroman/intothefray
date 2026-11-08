@@ -886,7 +886,7 @@ describe('what the menu runs', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it("lists an own discard pile's Search, then Shuffle into deck", async () => {
+  it("lists an own discard pile's Take top card to hand, Search, then Shuffle into deck", async () => {
     const piles = [
       ...makeView().table!.piles,
       pile('disc:p0', { kind: 'discard', owner: 0, x: 750, count: 1, cards: ['gone'] }),
@@ -896,10 +896,19 @@ describe('what the menu runs', () => {
     const { session } = await renderTable(view);
 
     await click(placed('disc:p0'));
-    expect(labels(contextMenu()!)).toEqual(['Search', 'Shuffle into deck']);
-    expect(menuItem(contextMenu()!, 'Search').classList).toContain('default');
+    expect(labels(contextMenu()!)).toEqual([
+      'Take top card to hand',
+      'Search',
+      'Shuffle into deck',
+    ]);
+    expect(menuItem(contextMenu()!, 'Take top card to hand').classList).toContain('default');
+    expect(menuItem(contextMenu()!, 'Search').classList).not.toContain('default');
+    await fireEvent.click(menuItem(contextMenu()!, 'Take top card to hand'));
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'toHand', card: 'gone' }, 0);
+
+    await click(placed('disc:p0'));
     await fireEvent.click(menuItem(contextMenu()!, 'Shuffle into deck'));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'shuffleBack', pile: 'disc:p0' }, 0);
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'shuffleBack', pile: 'disc:p0' }, 0);
   });
 
   it("lists an own side deck's actions, which draw from it, on its pile and its faceup top card", async () => {

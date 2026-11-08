@@ -160,6 +160,16 @@ describe('a discard pile box', () => {
     expect(tiles[2]?.run()).toEqual({ kind: 'toDeck', card: 'd', where: 'shuffle' });
   });
 
+  it('takes a card of an own discard pile to the hand, not draws it', () => {
+    const view = viewWithDiscards();
+    const tiles = tileActions(pileCard('d', 1), discardOf('disc:p1'), contextOf(view));
+    expect(tiles[0]).toMatchObject({ id: 'draw', label: 'Take to hand' });
+    expect(tiles[0]?.run()).toEqual({ kind: 'toHand', card: 'd' });
+    // A deck's card is drawn.
+    const deck = tileActions(pileCard('c', 1), pileOf('deck:p1'), contextOf(view));
+    expect(deck[0]).toMatchObject({ id: 'draw', label: 'Draw' });
+  });
+
   it("does not shuffle another player's card", () => {
     const view = viewWithDiscards();
     const tiles = tileActions(pileCard('s', 2), discardOf('disc:p2'), contextOf(view));
@@ -244,6 +254,16 @@ describe('side decks', () => {
     const tiles = tileActions(used, sideOf('sided:p0:0'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'shuffle']);
     expect(tiles[2]?.run()).toEqual({ kind: 'toDeck', card: 'u', where: 'shuffle' });
+  });
+
+  it('takes a side discard card to the hand, and draws a side deck card', () => {
+    const view = viewWithSideDecks();
+    const used = sideCard('u', 0, 'side:p0:0');
+    const discarded = tileActions(used, sideOf('sided:p0:0'), contextOf(view));
+    expect(discarded[0]).toMatchObject({ id: 'draw', label: 'Take to hand' });
+    const invocation = sideCard('i', 0, 'side:p0:0');
+    const deck = tileActions(invocation, sideOf('side:p0:0'), contextOf(view));
+    expect(deck[0]).toMatchObject({ id: 'draw', label: 'Draw' });
   });
 
   it("keeps another player's side deck out", () => {

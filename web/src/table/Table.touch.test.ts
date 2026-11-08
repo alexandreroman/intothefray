@@ -219,6 +219,54 @@ describe('the inspector', () => {
     expect(sheet()).toBeNull();
   });
 
+  describe('on an own discard pile', () => {
+    /** Alex's discard pile, Web-Shooter on top of Spider-Man unless `top` says otherwise. */
+    function discardView(top = card('top', { code: '01003', zone: 'pile' })): View {
+      const used = card('used', { zone: 'pile' });
+      const discard = pile('disc:p0', {
+        kind: 'discard',
+        owner: 0,
+        x: 800,
+        count: 2,
+        cards: ['used', top.id],
+      });
+      return makeView([card('mine'), used, top, ...OTHERS], [discard]);
+    }
+
+    /** The entries of the inspector's main page, as their labels: its big buttons, then its rows. */
+    function entryLabels(): string[] {
+      const shown = sheet()!.querySelectorAll('.inspector:not(.measure) :is(.main, .row)');
+      return [...shown].map((entry) => entry.textContent?.trim() ?? '');
+    }
+
+    it('offers Take top card to hand first, as the primary big button, which takes it and closes', async () => {
+      mockScreen({ ...DESKTOP, touch: true });
+      const { session } = await renderTable(discardView());
+      await tap(placed('disc:p0'));
+
+      expect(entryLabels()).toEqual(['Take top card to hand', 'Search', 'Shuffle into deck']);
+      const takeTop = within(sheet()!).getByRole('button', { name: 'Take top card to hand' });
+      // The default entry is the primary big button, drawn in Fray red.
+      expect(takeTop.classList).toContain('main');
+      expect(takeTop.classList).toContain('default');
+
+      await fireEvent.click(takeTop);
+      expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'top' }, 0);
+      expect(sheet()).toBeNull();
+    });
+
+    it('leaves Take top card to hand out when the top card is an encounter card', async () => {
+      mockScreen({ ...DESKTOP, touch: true });
+      const enemy = card('enemy', { code: '01003', owner: -1, back: 'encounter', zone: 'pile' });
+      await renderTable(discardView(enemy));
+      await tap(placed('disc:p0'));
+
+      // Refused, so hidden: the inspector shows no reason, unlike the mouse menu.
+      expect(entryLabels()).toEqual(['Search', 'Shuffle into deck']);
+      expect(within(sheet()!).queryByRole('button', { name: 'Take top card to hand' })).toBeNull();
+    });
+  });
+
   it('opens on a tap on a token, with no pill, and steps its counters (token_tap_opens_sheet)', async () => {
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable();

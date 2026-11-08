@@ -322,6 +322,24 @@ describe('keys on the table', () => {
     expect(screen.getByRole('dialog', { name: 'Look at the top cards' })).toBeTruthy();
   });
 
+  it('H on the own discard pile takes its top card to the hand', async () => {
+    const view = makeView({
+      cards: [
+        card('v', { code: '01094', owner: -1, back: 'villain' }),
+        card('used', { zone: 'pile' }),
+        card('top', { zone: 'pile' }),
+      ],
+    });
+    view.table!.piles.push(
+      pile('disc:p0', { kind: 'discard', owner: 0, x: 140, count: 2, cards: ['used', 'top'] }),
+    );
+    const { session } = await renderTable(view);
+    await fireEvent.pointerEnter(placed('disc:p0'));
+
+    await press('h');
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'top' }, 0);
+  });
+
   it('W draws 1 from the own deck; Shift + W asks how many with Draw X', async () => {
     const { session } = await renderTable();
     await fireEvent.pointerEnter(placed('deck:p0'));
