@@ -61,10 +61,10 @@ describe('the web app manifest', () => {
   });
 });
 
-describe('the table page on a touch screen', () => {
-  // Read from the disk: Vitest hands a stylesheet over empty, even raw.
-  const tokensCss = readFileSync(path.join(import.meta.dirname, 'styles/tokens.css'), 'utf8');
+// Read from the disk: Vitest hands a stylesheet over empty, even raw.
+const tokensCss = readFileSync(path.join(import.meta.dirname, 'styles/tokens.css'), 'utf8');
 
+describe('the table page on a touch screen', () => {
   it('pans but never pinch-zooms: the table has its own zoom', () => {
     const touchRules = /@media \(hover: none\) and \(pointer: coarse\) \{([\s\S]*?)\n\}/.exec(
       tokensCss,
@@ -78,6 +78,13 @@ describe('the table page on a touch screen', () => {
     expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*\.btn-primary:hover/);
     // A rule outside any media query starts its line.
     expect(tokensCss).not.toMatch(/^\S*:hover/m);
+  });
+});
+
+describe('a switch on a touch screen', () => {
+  it('lays no square tap highlight over a tapped option: the sliding indicator is the feedback', () => {
+    const optionRule = /\n\[data-indicator\] ~ button \{([^}]*)\}/.exec(tokensCss)?.[1];
+    expect(optionRule).toContain('-webkit-tap-highlight-color: transparent;');
   });
 });
 

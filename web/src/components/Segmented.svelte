@@ -93,8 +93,6 @@
     font-size: 13px;
     font-weight: var(--segmented-weight, 700);
     line-height: 1;
-    /* The browser's tap highlight is square over the pill: the sliding indicator is the feedback. */
-    -webkit-tap-highlight-color: transparent;
   }
 
   button[aria-pressed='true'] {

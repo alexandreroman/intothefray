@@ -232,6 +232,8 @@
     color: var(--muted);
     /* A button centres its text: the name sits against its avatar, the room it leaves after it. */
     text-align: left;
+    /* The browser's tap highlight is square over the entry: the sliding ring is the feedback. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   .swatch {
