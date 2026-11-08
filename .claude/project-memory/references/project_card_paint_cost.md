@@ -54,6 +54,10 @@ type: project
   draw, the arrows read nothing of the page. What a pointer move or a frame
   writes is skipped when it equals what shows: the drop hint, the outlined
   drop target (`interaction.dropOn`), the arrow paths.
+- The shade and transform rules are for cards and piles. The two markers
+  (first player token, active counter, `MarkerToken.svelte`) are single
+  small elements: they move on `left` and `top` and cast their shadow
+  with a filter (`--token-shadow`).
 - Card images (CardFace, CardBack) round their corners with `border-radius`
   (`--card-radius`), never a `clip-path`.
 - The surface zooms with CSS `zoom` (`--z`): layout is a few percent of a
@@ -70,9 +74,11 @@ hand fan and drag and drop stutter when a moving card carries a filter (the
 GPU blurs it again on every frame, per card), when a move plays on a layout
 property (`left`, `top`: every frame or pointer move lays the page out
 again), or when a read follows a write within a frame (a forced layout).
+The markers are two small boxes, so their filter and their layout moves
+cost too little to matter.
 
-**How to apply:** give a new table element, or a card that moves, a
-box-shadow or a shade, not a filter; move it on transform-family
+**How to apply:** give a new card-like table element, or a card that
+moves, a box-shadow or a shade, not a filter; move it on transform-family
 properties; read the page before writing to it; round card art with a
 border radius. Measure paint changes in the real app (Chrome tracing:
 main-thread style, layout, paint, layerize, and GPU-process work), not with

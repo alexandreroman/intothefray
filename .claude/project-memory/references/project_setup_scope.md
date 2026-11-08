@@ -20,16 +20,24 @@ in play, place counters, draw their opening hand and mulligan. Any other
 card a Setup text names (Klaw's Defense Network, Mutagen Formula's Goblin
 Thralls) stays in the encounter deck.
 
+The faces' `handSize` and `startingThreat` stay in the packs as
+informational data: nothing reads them, since setup draws no hand and
+places no threat.
+
 **Why:** some heroes and cards change the opening draw, so drawing by hand
 is simpler and always correct; players resolving the printed 1A Setup
 keeps every scenario's setup faithful to the card text. Placing threat is a
 player action by project principle: the table is a sandbox with no rules
 automation. The Wrecking Crew insert places the side schemes before play
-begins.
+begins. `handSize` and `startingThreat` are printed card facts the
+generator takes from the card data with the rest of a face; they cost
+nothing in the packs, and dropping them would change the pack schema for
+no gain.
 
 **How to apply:** never add an automatic opening draw or automatic threat;
-the Draw… and token actions cover them, and the cards' `startingThreat`
-data is informational. A curated scenario starts its scheme on face 0 and
-lists only environments, side schemes and attachments laid out `with` a
-stage (Ronan's Universal Weapon) in `start.inPlay`; `packs/packs_test.go`
-checks both. See [[project_scenario_decks]].
+the Draw… and token actions cover them, and the cards' `handSize` and
+`startingThreat` data is informational. A curated scenario starts its
+scheme on face 0 and lists only environments, side schemes and
+attachments laid out `with` a stage (Ronan's Universal Weapon) in
+`start.inPlay`; `packs/packs_test.go` checks both. See
+[[project_scenario_decks]].
