@@ -300,18 +300,18 @@ describe('CardBox', () => {
     expect(filter.hasAttribute('autosave')).toBe(false);
   });
 
-  it('shows its cards as large as the raised hand fan, which a box keeps hidden', async () => {
+  it('shows its cards as large as the raised hand fan, at most 160 px, which a box keeps hidden', async () => {
     await renderTable(makeView({ private: SEARCH }));
 
     // jsdom's 1024 px window, less the backdrop's 16 px padding on each side: 992 px for the box,
-    // 958 inside its grid's padding and its border, room for four 185 px tiles (the raised card,
-    // the base card while the table is not laid out) and their 14 px gaps.
+    // 958 inside its grid's padding and its border, room for five 160 px tiles (the raised card,
+    // the 185 px base card while the table is not laid out, capped at 160 px) and their 14 px gaps.
     // Never past the backdrop either, should the window's width count a scrollbar of the page.
-    expect(box().style.width).toBe(`min(${4 * 185 + 3 * 14 + 2 * 16 + 2}px, 100%)`);
+    expect(box().style.width).toBe(`min(${5 * 160 + 4 * 14 + 2 * 16 + 2}px, 100%)`);
     const grid = box().querySelector<HTMLElement>('.mgrid')!;
     expect(grid.classList).toContain('fixed');
-    expect(grid.style.getPropertyValue('--tile')).toBe('185px');
-    expect(grid.style.getPropertyValue('--columns')).toBe('4');
+    expect(grid.style.getPropertyValue('--tile')).toBe('160px');
+    expect(grid.style.getPropertyValue('--columns')).toBe('5');
     // Fixed columns, which a classic scrollbar showing never drops one of.
     const fixed = boxRule('.mgrid.fixed');
     expect(fixed).toMatch(/grid-template-columns: repeat\(var\(--columns\), var\(--tile\)\);/);
@@ -1146,8 +1146,8 @@ describe('CardBox in dock mode', () => {
     const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
 
     expect(dialog.classList).not.toContain('fill');
-    // Four 185 px columns in jsdom's 1024 px window.
-    expect(dialog.style.width).toBe('min(816px, 100%)');
+    // Five columns of the 185 px card, capped at 160 px, in jsdom's 1024 px window.
+    expect(dialog.style.width).toBe('min(890px, 100%)');
   });
 
   it("widens by the grid's scrollbar gutter, measured again as the window resizes", async () => {
@@ -1160,14 +1160,14 @@ describe('CardBox in dock mode', () => {
     });
     const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
     await tick();
-    expect(dialog.style.width).toBe(`min(${816 + 15}px, 100%)`);
+    expect(dialog.style.width).toBe(`min(${890 + 15}px, 100%)`);
 
     // A page zoom changes both the window's width in CSS px and the scrollbar's.
     gutter = 16;
     vi.stubGlobal('innerWidth', 1000);
     window.dispatchEvent(new Event('resize'));
     await tick();
-    expect(dialog.style.width).toBe(`min(${816 + 16}px, 100%)`);
+    expect(dialog.style.width).toBe(`min(${890 + 16}px, 100%)`);
   });
 
   it('opens its grid two rows high on a short window, which the box shrinks to the room left', async () => {
@@ -1201,10 +1201,10 @@ describe('CardBox in dock mode', () => {
     const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
     await tick();
 
-    // Four 185 px columns in jsdom's 1024 px window: two rows of 5:7 tiles, their gap and padding,
+    // Five 160 px columns in jsdom's 1024 px window: two rows of 5:7 tiles, their gap and padding,
     // whatever the window's height.
     const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
-    expect(grid.style.height).toBe(`${2 * 185 * 1.4 + 14 + 2 * 14}px`);
+    expect(grid.style.height).toBe(`${2 * 160 * 1.4 + 14 + 2 * 14}px`);
     // The box's column, 88vh at most, shrinks the scrolling grid to the room its header and footer leave.
     expect(boxRule('.mgrid')).toMatch(/overflow-y: auto;/);
   });

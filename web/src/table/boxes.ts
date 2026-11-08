@@ -244,11 +244,11 @@ function playAction(
 const BOX_MAX_WIDTH = 1200;
 
 /**
- * A tile's widest, in px: about five columns in the widest box. The tiles follow the raised hand's
+ * A tile's widest, in px: six columns in the widest box. The tiles follow the raised hand's
  * card where it matters, on a small window; a large screen's raised card would make a box of few
  * oversized cards.
  */
-const BOX_TILE_MAX = 220;
+const BOX_TILE_MAX = 160;
 
 // The room around the box and inside it, in px. Keep in step with .backdrop's padding and .box's
 // border (Dialog.svelte), and with .mgrid's padding and gap (CardBox.svelte).
