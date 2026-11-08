@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
+import pickerSource from './ScenarioPicker.svelte?raw';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
 import type { Rect } from '../../lib/rect';
@@ -809,6 +810,13 @@ describe('ScenarioPicker villain list', () => {
 
     expect(screen.queryByRole('button', { name: /^Show all villains/ })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Show fewer' })).toBeNull();
+  });
+
+  it("lays no square tap highlight over a tapped row: the chosen row's outline and wash are the feedback", () => {
+    // jsdom applies no stylesheet: the rows' rule itself is checked.
+    const rowRule = /\n {2}\.vrow \{([^}]*)\}/.exec(pickerSource)?.[1] ?? '';
+
+    expect(rowRule).toContain('-webkit-tap-highlight-color: transparent;');
   });
 
   describe('folded', () => {

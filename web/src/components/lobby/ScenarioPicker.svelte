@@ -802,6 +802,8 @@
     font-size: 13px;
     font-weight: 600;
     text-align: left;
+    /* No square tap highlight: the chosen row's outline and wash are the feedback. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   .vrow + .vrow {
