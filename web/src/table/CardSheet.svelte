@@ -11,7 +11,14 @@
   A refused entry is not shown at all (inspector.visibleEntries): it would take
   room for nothing. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet, or keeps
-  it open for a token, status or modifier, which then shows on the card.
+  it open for a token, status or modifier, which then shows on the card, and
+  for a card's Exhaust or Ready, Flip, or a deck's Reveal.
+  An exhausted card is drawn tilted, as on the table, its counters with it; it
+  tilts or turns upright with the table's timing as the view exhausts or
+  readies it, and at once under reduced motion. A card that can tilt keeps the
+  room of its tilted bounds, so that neither the card nor its column moves as
+  it does: its face is the box of those bounds, the card drawn inside it at the
+  size that fills them.
   The tokens, status tabs and modifier badges lie on the face as the table
   draws them (CardCounters.svelte): a tap on one opens its − / + pill.
   In dock mode (a phone) the sheet uses the whole screen. Upright, the card is
@@ -88,7 +95,7 @@
   import CardCounters from './CardCounters.svelte';
   import CardFace from './CardFace.svelte';
   import { dockMode } from './dockMode';
-  import { FLIP_MS, FLIP_PERSPECTIVE, LIFT_SCALE } from './motion.svelte';
+  import { FLIP_MS, FLIP_PERSPECTIVE, LIFT_SCALE, MOVE_EASING, TILT_MS } from './motion.svelte';
   import type { ActionItem } from './actions';
   import type { ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
   import {
@@ -106,6 +113,8 @@
     images,
     nextImages = [],
     landscape = false,
+    exhausted = false,
+    tilts = false,
     counters,
     stack = [],
     cardId,
@@ -128,6 +137,13 @@
     nextImages?: string[];
     /** The face is a landscape card. */
     landscape?: boolean;
+    /** The card is exhausted: it is drawn tilted. */
+    exhausted?: boolean;
+    /**
+     * The card can tilt (actions.canExhaust): its face keeps the room of its tilted bounds. Never a
+     * pile's.
+     */
+    tilts?: boolean;
     /** The tokens, statuses and modifiers the card carries (inspector.countersFor). */
     counters: SheetCounter[];
     /** The stack the card belongs to, its main card first (inspector.stackCardsOf); none for a card on its own. */
@@ -167,17 +183,22 @@
    */
   const SWITCH_SLACK_PX = 12;
 
-  /** A side of the card: the face it shows, and the header, counters and entries that go with it. */
+  /**
+   * A side of the card: the face it shows, and the header, counters and entries that go with it.
+   * Whether it can tilt follows the face, as its orientation does; whether it is exhausted does not
+   * (the exhausted prop): the card tilts as soon as the view says so.
+   */
   type Side = {
     images: string[];
     landscape: boolean;
+    tilts: boolean;
     header: ContextHeader;
     counters: SheetCounter[];
     entries: ContextEntry[];
     cardId: string | undefined;
   };
 
-  const live = $derived<Side>({ images, landscape, header, counters, entries, cardId });
+  const live = $derived<Side>({ images, landscape, tilts, header, counters, entries, cardId });
   /**
    * The side the card turns away from, which its face shows until it is edge-on; null while it does
    * not turn. The column, its note and entries, shows the live side from the update that brings it.
@@ -229,6 +250,18 @@
       return ['tablet', 'beside'];
     }
     return sideways.current ? ['tablet', 'beside', 'land'] : ['tablet', 'column'];
+  }
+
+  /**
+   * Whether the main card of the stack can tilt, which the carousel is sized by (.visual.stacked):
+   * the main card shown follows the side, as in layoutOf.
+   */
+  function mainTilts(of: Side): boolean {
+    const main = stack[0];
+    if (main === undefined) {
+      return false;
+    }
+    return main.id === of.cardId ? of.tilts : main.tilts === true;
   }
 
   /** Whether the sheet is as wide as its content in a side's layout: a landscape card beside its column. */
@@ -724,7 +757,7 @@
 
 <!-- Room before the first card and after the last one, so that both can snap to the middle. -->
 {#snippet spacer(card: StackCard)}
-  <i class="spacer" class:land={card.landscape} aria-hidden="true"></i>
+  <i class="spacer" class:land={card.landscape} class:tilts={card.tilts} aria-hidden="true"></i>
 {/snippet}
 
 <!--
@@ -745,11 +778,13 @@
     {#each stack as card (card.id)}
       {@const shown = card.id === faceSide.cardId}
       {@const landscape = shown ? faceSide.landscape : card.landscape}
+      {@const cardTilts = shown ? faceSide.tilts : card.tilts === true}
       <!-- A neighbour is a button: its role is set as it peeks, which the check cannot follow. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
         class="slide"
         class:land={landscape}
+        class:tilts={cardTilts}
         class:dim={card.id !== cardId}
         data-id={card.id}
         aria-current={card.id === cardId ? 'true' : undefined}
@@ -762,20 +797,23 @@
         <div
           class="face"
           class:land={landscape}
+          class:tilts={cardTilts}
           aria-hidden={shown ? undefined : 'true'}
           {@attach shown && holdFace}
         >
-          <CardFace
-            images={shown ? faceSide.images : card.images}
-            name={shown ? faceSide.header.name : card.name}
-            {landscape}
-          />
-          <CardCounters
-            counters={shown ? faceSide.counters : (card.counters ?? [])}
-            {landscape}
-            scheme={(shown ? faceSide.header.scheme : card.scheme) ?? false}
-            onstep={shown ? onstep : undefined}
-          />
+          <div class="tilt" class:exhausted={shown ? exhausted : card.exhausted === true}>
+            <CardFace
+              images={shown ? faceSide.images : card.images}
+              name={shown ? faceSide.header.name : card.name}
+              {landscape}
+            />
+            <CardCounters
+              counters={shown ? faceSide.counters : (card.counters ?? [])}
+              {landscape}
+              scheme={(shown ? faceSide.header.scheme : card.scheme) ?? false}
+              onstep={shown ? onstep : undefined}
+            />
+          </div>
         </div>
       </div>
     {/each}
@@ -793,9 +831,11 @@
   <div class="carousel">
     {@render spacer(stack[0]!)}
     {#each stack as card (card.id)}
+      {@const shown = card.id === live.cardId}
       <div
         class="slide"
-        class:land={card.id === live.cardId ? live.landscape : card.landscape}
+        class:land={shown ? live.landscape : card.landscape}
+        class:tilts={shown ? live.tilts : card.tilts === true}
       ></div>
     {/each}
     {@render spacer(stack.at(-1)!)}
@@ -821,19 +861,31 @@
 {/snippet}
 
 <Sheet label={header.label} dock={dock.current} wide fit={fitsContent(faceSide)} {onclose}>
-  <div class={['inspector', layoutOf(faceSide)]} bind:this={content}>
+  <div
+    class={['inspector', layoutOf(faceSide)]}
+    style:--tilt-ms="{TILT_MS}ms"
+    style:--tilt-easing={MOVE_EASING}
+    bind:this={content}
+  >
     <div class="top">
-      <div class="visual" class:stacked={stack.length > 1}>
+      <div class="visual" class:stacked={stack.length > 1} class:tilts={mainTilts(faceSide)}>
         {#if stack.length > 1}
           {@render stackCarousel()}
         {:else}
-          <div class="face" class:land={faceSide.landscape} bind:this={faceElement}>
-            <CardFace
-              images={faceSide.images}
-              name={faceSide.header.name}
-              landscape={faceSide.landscape}
-            />
-            {@render faceCounters()}
+          <div
+            class="face"
+            class:land={faceSide.landscape}
+            class:tilts={faceSide.tilts}
+            bind:this={faceElement}
+          >
+            <div class="tilt" class:exhausted>
+              <CardFace
+                images={faceSide.images}
+                name={faceSide.header.name}
+                landscape={faceSide.landscape}
+              />
+              {@render faceCounters()}
+            </div>
           </div>
         {/if}
       </div>
@@ -853,11 +905,11 @@
       bind:this={measureElement}
     >
       <div class="top">
-        <div class="visual" class:stacked={stack.length > 1}>
+        <div class="visual" class:stacked={stack.length > 1} class:tilts={mainTilts(live)}>
           {#if stack.length > 1}
             {@render measuredCarousel()}
           {:else}
-            <div class="face" class:land={live.landscape}></div>
+            <div class="face" class:land={live.landscape} class:tilts={live.tilts}></div>
           {/if}
         </div>
         <div class="side">
@@ -887,6 +939,9 @@
     */
     --carousel-top: 10px;
     --carousel-chrome: 38px;
+    /* The cosine and sine of the exhausted tilt, which size the box of a card that can tilt. */
+    --tilt-cos: cos(var(--exhaust-angle));
+    --tilt-sin: sin(var(--exhaust-angle));
     display: flex;
     flex-direction: column;
     user-select: none;
@@ -928,24 +983,59 @@
   }
 
   /*
-    --face-ratio: its width over its height, which dock mode and the tablet's rules size it by. No
-    minimum size from its image: the face keeps the card's ratio whatever the scan's, as the copy
-    that measures a new side, drawn without an image, lays it out.
+    --card-ratio: the card's width over its height. --face-ratio: the face's, which dock mode and
+    the tablet's rules size it by: the card's, or the box of its tilted bounds for a card that can
+    tilt (see .tilts). The face is the box the layout sizes and a flip turns over (turnOver); the
+    card itself, which tilts, is drawn inside it (.tilt). No minimum size from its image: the face
+    keeps its ratio whatever the scan's, as the copy that measures a new side, drawn without an
+    image, lays it out.
   */
   .face {
-    --face-ratio: 5 / 7;
+    --card-ratio: 5 / 7;
+    --face-ratio: var(--card-ratio);
     position: relative;
     flex: none;
     min-width: 0;
     min-height: 0;
     aspect-ratio: var(--face-ratio);
+  }
+
+  .face.land {
+    --card-ratio: 7 / 5;
+  }
+
+  /*
+    The card in its face, centred: its image, its counters, its shadow and corners. It fills the
+    face of a card that cannot tilt.
+  */
+  .tilt {
+    position: absolute;
+    inset: 0;
+    margin: auto;
     border-radius: var(--card-radius);
     box-shadow: 4px 6px 16px #000c;
   }
 
-  .face.land {
-    --face-ratio: 7 / 5;
+  .face.land > .tilt {
     border-radius: var(--card-radius-land);
+  }
+
+  /*
+    In the face of a card that can tilt, the card is drawn at the size whose bounds, tilted, fill
+    the face: with r its ratio, c and s the tilt's cosine and sine, its bounds are r·c + s of its
+    height wide and c + r·s of it high.
+  */
+  .face.tilts > .tilt {
+    width: calc(100% * var(--card-ratio) / (var(--card-ratio) * var(--tilt-cos) + var(--tilt-sin)));
+    height: calc(100% / (var(--tilt-cos) + var(--card-ratio) * var(--tilt-sin)));
+  }
+
+  /*
+    Exhausted, it turns clockwise as on the table (CardView.svelte .card.exhausted), on the rotate
+    property: a flip turns the face on its transform and scale.
+  */
+  .tilt.exhausted {
+    rotate: var(--exhaust-angle);
   }
 
   /*
@@ -953,8 +1043,14 @@
     Padded above and below for the cards' shadows. --slide-h and --slide-max size the cards: the
     shown one is as large as a card alone would be, with room left for its neighbours to peek.
   */
+  /*
+    The ratio of the main card's portrait box, tilted when it can tilt, which the layout sizes the
+    carousel by: a landscape box's ratio is its inverse, as a landscape card's.
+  */
   .visual.stacked {
     --slide-max: 82%;
+    --card-ratio: 5 / 7;
+    --face-ratio: var(--card-ratio);
   }
 
   .carousel {
@@ -977,13 +1073,29 @@
   /* --slide-w: a card's width, set on each card (and spacer) for its own ratio. */
   .slide,
   .spacer {
-    --face-ratio: 5 / 7;
+    --card-ratio: 5 / 7;
+    --face-ratio: var(--card-ratio);
     --slide-w: min(var(--slide-max), calc(var(--slide-h) * var(--face-ratio)));
   }
 
   .slide.land,
   .spacer.land {
-    --face-ratio: 7 / 5;
+    --card-ratio: 7 / 5;
+  }
+
+  /*
+    A card that can tilt takes the box of its bounds tilted to --exhaust-angle, its face, its place
+    in the carousel and the carousel's width alike, so that its corners never run out of them: with
+    r its ratio, c and s the tilt's cosine and sine, (r·c + s) / (c + r·s).
+  */
+  .face.tilts,
+  .slide.tilts,
+  .spacer.tilts,
+  .visual.stacked.tilts {
+    --face-ratio: calc(
+      (var(--card-ratio) * var(--tilt-cos) + var(--tilt-sin)) /
+        (var(--tilt-cos) + var(--card-ratio) * var(--tilt-sin))
+    );
   }
 
   /* Flex items rather than padding: some browsers leave a scroller's end padding out of its scroll. */
@@ -1015,7 +1127,7 @@
   }
 
   /* A neighbour, smaller and dimmed, with a lighter shadow. */
-  .slide.dim > .face {
+  .slide.dim > .face > .tilt {
     box-shadow: 2px 4px 10px #000a;
   }
 
@@ -1076,6 +1188,11 @@
 
     .dots i {
       transition: width 0.2s;
+    }
+
+    /* A card exhausted or readied tilts as on the table (motion.svelte.ts TILT_MS, MOVE_EASING). */
+    .tilt {
+      transition: rotate var(--tilt-ms) var(--tilt-easing);
     }
   }
 
@@ -1311,7 +1428,7 @@
   */
   .inspector.beside .visual.stacked {
     --slide-h: calc(var(--card-room) - var(--carousel-chrome));
-    width: calc(var(--slide-h) * 5 / 7 + 88px);
+    width: calc(var(--slide-h) * var(--face-ratio) + 88px);
   }
 
   .inspector.beside .visual > .face {
@@ -1366,7 +1483,7 @@
   }
 
   .inspector.beside.land .visual.stacked {
-    --slide-h: calc(var(--sheet-room) * 5 / 7);
+    --slide-h: calc(var(--sheet-room) * var(--face-ratio));
     --slide-max: 100%;
     width: calc(var(--sheet-room) + 88px);
   }
@@ -1392,7 +1509,7 @@
   }
 
   .inspector.column .visual.stacked {
-    --slide-h: calc(var(--land-room) * 5 / 7);
+    --slide-h: calc(var(--land-room) * var(--face-ratio));
     align-items: stretch;
   }
 

@@ -2,14 +2,16 @@
   The tokens, status tabs and modifier badges of a card in the inspector
   (CardSheet.svelte), drawn on its face as the table draws them on the card
   (CardView.svelte): the same places, the same look, at the table card's size
-  zoomed to the face's. The exhausted tilt is left out: the face stays upright.
+  zoomed to the face's. On an exhausted card they tilt with it: the inspector
+  turns the card that holds them (CardSheet.svelte .tilt).
 
   On the shown card they are the controls: a tap on one opens a pill next to
   it, − value +, as the table's TokenPill.svelte, with 44 px buttons: a status
   steps as a token does, its tab showing its count ("Tough ×2"). The pill stays
   until a press lands outside it and its token, or on another token, and
   follows its token as the value changes; a counter stepped down to zero fades
-  out, its pill with it.
+  out, its pill with it. On a tilted card the pill tilts with it, placed by its
+  token in the card's own, untilted frame (untilt.ts).
   On a card of the stack that is not shown, they are a picture alone: the same
   elements, out of reach (inert), so that the card the sheet switches to keeps
   its tokens as they are, none drawn again nor fading in.
@@ -31,6 +33,7 @@
   import './counters.css';
   import type { SheetCounter } from './inspector';
   import { cardBox } from './layout';
+  import { rotateDegrees, untiltedBox } from './untilt';
 
   let {
     counters,
@@ -124,7 +127,8 @@
 
   /**
    * Over its token, centred on it, kept inside the face; under it when the face has no room above
-   * it (a token along the top edge).
+   * it (a token along the top edge). Worked out in the layer's own frame, which the pill is drawn
+   * in: on a tilted card, the screen's bounds of the layer and the token are turned back first.
    */
   function place(): void {
     const token = open && layer?.querySelector(`[data-counter="${keyOf(open)}"]`);
@@ -132,15 +136,34 @@
       pillAt = null;
       return;
     }
-    const room = layer.getBoundingClientRect();
-    const at = token.getBoundingClientRect();
-    const own = pill.getBoundingClientRect();
-    const centred = at.left - room.left + at.width / 2 - own.width / 2;
-    const above = at.top - room.top - own.height - GAP;
+    const room = { width: layer.offsetWidth, height: layer.offsetHeight };
+    const at = untiltedBox(
+      token.getBoundingClientRect(),
+      layer.getBoundingClientRect(),
+      room,
+      turnOf(layer),
+    );
+    const own = { width: pill.offsetWidth, height: pill.offsetHeight };
+    const centred = at.left + at.width / 2 - own.width / 2;
+    const above = at.top - own.height - GAP;
     pillAt = {
       x: Math.min(Math.max(0, centred), Math.max(0, room.width - own.width)),
-      y: above >= 0 ? above : at.bottom - room.top + GAP,
+      y: above >= 0 ? above : at.top + at.height + GAP,
     };
+  }
+
+  /**
+   * How far the element is turned on the screen, in degrees: the rotate of it and of every element
+   * around it, as it is now, part way through a tilt included. A transform's turn is not counted:
+   * the inspector tilts its card on rotate.
+   */
+  function turnOf(element: Element): number {
+    let degrees = 0;
+    for (let at: Element | null = element; at !== null; at = at.parentElement) {
+      // jsdom computes no rotate.
+      degrees += rotateDegrees(getComputedStyle(at).rotate ?? '');
+    }
+    return degrees;
   }
 
   // After every redraw that may move the token: its value, the zoom, the other counters.

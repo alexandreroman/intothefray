@@ -131,7 +131,9 @@ type: project
   `rotate` property, like the drag sway, apart from the `transform` the
   flip turns, the `translate` a move slides and the `scale` a lift or a
   settle plays on; a card never plays two motions on one property. A
-  card that comes onto the table exhausted lands tilted.
+  card that comes onto the table exhausted lands tilted. The touch
+  inspector turns its card with the same timing and easing, as a CSS
+  transition on `rotate` (see [[project_touch_phone_table]]).
 - A table pile's count steps aside while an animation plays on the pile,
   and comes back with the final count (see [[project_pile_count_hush]]).
 

@@ -42,6 +42,10 @@ export interface StackCard {
   counters?: SheetCounter[];
   /** It is a scheme, its tokens in a scheme's places (ContextHeader.scheme). */
   scheme?: boolean;
+  /** It is exhausted: the carousel draws it tilted. */
+  exhausted?: boolean;
+  /** It can tilt (actions.canExhaust): its place in the carousel keeps the room of its tilted bounds. */
+  tilts?: boolean;
 }
 
 const TOKEN_NAMES = TOKENS.map((token) => token.name);

@@ -52,7 +52,7 @@ const SETTLE_DIPS_AT = 0.55;
 const FLIGHT_LIFT_AT = 0.45;
 /** A card moving to its new place (FLIP). */
 const MOVE_MS = 250;
-const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
+export const MOVE_EASING = 'cubic-bezier(.2, .8, .2, 1)';
 /**
  * The viewer's own drop in dock mode slides from its ghost to its slot (MOVE_MS) and settles
  * (SETTLE_MS) as one motion: the settle starts this fraction of the way through the slide.
@@ -74,7 +74,7 @@ const TUCK_IN_EASING = 'ease-in-out';
  */
 const TUCK_STAGING = 0.5;
 /** A card exhausted or readied tilts to its new angle where it lies, briefly. */
-const TILT_MS = 180;
+export const TILT_MS = 180;
 /** A stage card just chosen turns in like a card being put down. */
 const TURN_IN_MS = 420;
 /** A card turned over: its old side turns away edge-on, then its new side turns in. */
