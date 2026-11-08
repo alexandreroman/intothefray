@@ -443,25 +443,26 @@ describe('touch zoom', () => {
 });
 
 describe('the inspector, adding tokens, statuses and modifiers', () => {
-  // A token entry keeps the submenu's page, to add the same token again; the others go back to the
-  // main page, which shows what they added.
+  // Each entry keeps the submenu's page, to add the same counter again.
   it.each([
-    ['tokens', /^Damage/, { kind: 'token', card: 'two', name: 'dmg', delta: 1 }, true],
-    ['statuses', /^Confused/, { kind: 'status', card: 'two', name: 'confused', delta: 1 }, false],
-    ['modifiers', /^\+1 ATK/, { kind: 'modifier', card: 'two', name: 'atk', delta: 1 }, false],
-  ])('stays open after an entry of the %s submenu runs', async (submenu, entry, action, onPage) => {
-    mockScreen({ ...DESKTOP, touch: true });
-    const { session } = await renderTable();
-    await tap(placed('two'));
+    ['tokens', /^Damage/, { kind: 'token', card: 'two', name: 'dmg', delta: 1 }],
+    ['statuses', /^Confused/, { kind: 'status', card: 'two', name: 'confused', delta: 1 }],
+    ['modifiers', /^\+1 ATK/, { kind: 'modifier', card: 'two', name: 'atk', delta: 1 }],
+  ])(
+    'stays open on the page of the %s submenu after an entry runs',
+    async (submenu, entry, action) => {
+      mockScreen({ ...DESKTOP, touch: true });
+      const { session } = await renderTable();
+      await tap(placed('two'));
 
-    await fireEvent.click(sheet()!.querySelector<HTMLElement>(`[data-submenu="${submenu}"]`)!);
-    await fireEvent.click(within(sheet()!).getByRole('button', { name: entry }));
+      await fireEvent.click(sheet()!.querySelector<HTMLElement>(`[data-submenu="${submenu}"]`)!);
+      await fireEvent.click(within(sheet()!).getByRole('button', { name: entry }));
 
-    expect(session.act).toHaveBeenCalledExactlyOnceWith(action, 0);
-    expect(sheet()).not.toBeNull();
-    const back = within(sheet()!).queryByRole('button', { name: /^Back/ });
-    expect(back !== null).toBe(onPage);
-  });
+      expect(session.act).toHaveBeenCalledExactlyOnceWith(action, 0);
+      expect(sheet()).not.toBeNull();
+      expect(within(sheet()!).queryByRole('button', { name: /^Back/ })).not.toBeNull();
+    },
+  );
 
   it('stays open after a step in a token pill, and closes after any other entry', async () => {
     mockScreen({ ...DESKTOP, touch: true });

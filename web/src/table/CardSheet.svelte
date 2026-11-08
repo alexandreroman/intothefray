@@ -611,9 +611,9 @@
     content?.querySelector<HTMLElement>('.back')?.focus();
   }
 
-  // A submenu entry that leaves the sheet open (a status, a modifier) is done with its submenu: the
-  // main page shows what it added. A token entry (`staysOpen`) keeps the submenu page, the focus on
-  // its tile, to add the same token again. One that closes the sheet needs nothing more.
+  // A counter entry (`staysOpen`: a token, a status, a modifier) keeps the submenu page, the focus on
+  // its tile, to add the same again. Any other entry is done with its submenu: should the sheet stay
+  // open, its main page shows what the entry did; one that closes the sheet needs nothing more.
   async function runFromSub(item: ActionItem): Promise<void> {
     onrun(item);
     if (!item.staysOpen) {

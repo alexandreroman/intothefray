@@ -399,30 +399,30 @@ describe('CardSheet', () => {
     expect(screen.queryByRole('button', { name: 'Hand' })).toBeNull();
   });
 
-  it('goes back to its main page once a submenu entry runs', async () => {
-    const stunned = item('stunned', { label: 'Stunned' });
+  it('goes back to its main page once a submenu entry that does not stay open runs', async () => {
+    const entry = item('entry', { label: 'Entry' });
     const { onrun, onclose } = renderSheet({
       entries: [
         { kind: 'action', item: EXHAUST },
         { kind: 'separator' },
         {
           kind: 'submenu',
-          id: 'statuses',
-          label: 'Add a status',
+          id: 'submenu',
+          label: 'Submenu',
           disabled: false,
-          entries: [{ kind: 'action', item: stunned }],
+          entries: [{ kind: 'action', item: entry }],
         },
       ],
     });
-    await fireEvent.click(screen.getByRole('button', { name: 'Add a status' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Submenu' }));
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Stunned' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Entry' }));
 
-    expect(onrun).toHaveBeenCalledExactlyOnceWith(stunned);
+    expect(onrun).toHaveBeenCalledExactlyOnceWith(entry);
     expect(onclose).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
     expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a status' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Submenu' }));
   });
 
   it('stays on the submenu page after an entry that stays open, to choose it again', async () => {
