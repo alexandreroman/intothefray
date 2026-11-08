@@ -419,23 +419,20 @@
 
 {#snippet recap(scenario: ScenarioRef)}
   <div class="recap" class:ro={!isHost}>
-    <!-- The zone is the container its layout queries: a query never styles its own container. -->
-    <div class="villain">
-      <div class="vhead">
-        <div class="vart">
-          {#if scenario.image}
-            <CardArt src={scenario.image} aspect={4 / 3} />
-          {/if}
-        </div>
-        <div class="vtitle">
-          <h3 class="vname" use:overflowTip>{localizedName(scenario, lang)}</h3>
-          <div class="vfrom" use:overflowTip>{packName(scenario.pack)}</div>
-        </div>
+    <div class="vhead">
+      <div class="vart">
+        {#if scenario.image}
+          <CardArt src={scenario.image} aspect={4 / 3} />
+        {/if}
+      </div>
+      <div class="vtitle">
+        <h3 class="vname" use:overflowTip>{localizedName(scenario, lang)}</h3>
+        <div class="vfrom" use:overflowTip>{packName(scenario.pack)}</div>
       </div>
     </div>
 
     <div class="settings">
-      <!-- The zone is the container its layout queries. -->
+      <!-- The column is the container its layout queries: a query never styles its own container. -->
       <div class="difficulty">
         <div class="lbl">Difficulty</div>
         {#if isHost}
@@ -446,7 +443,7 @@
               onchange={chooseDifficulty}
               label="Difficulty"
             />
-            <!-- The selects carry their names in a tooltip: a visible label would not fit the zone. -->
+            <!-- The selects carry their names in a tooltip: a visible label would not fit the column. -->
             {#if showStandardSet || showExpertSet}
               <div class="sets">
                 {#if showStandardSet}
@@ -489,10 +486,11 @@
         {/if}
       </div>
 
-      {#if selfContained}
-        <p class="own-cards">This scenario uses only its own cards.</p>
-      {:else}
-        <div class="modulars">
+      <div class="modulars">
+        {#if selfContained}
+          <!-- No label: the note sits on the line of the difficulty's first control. -->
+          <p class="own-cards">This scenario uses only its own cards.</p>
+        {:else}
           <div class="lbl">Modular sets</div>
           <div class="line chips">
             {#each config.modulars as code (code)}
@@ -590,8 +588,8 @@
               {/if}
             </p>
           {/if}
-        </div>
-      {/if}
+        {/if}
+      </div>
     </div>
   </div>
 {/snippet}
@@ -886,23 +884,35 @@
     margin-top: 18px;
   }
 
-  /* S: the art and the name in a row, the settings under them. The villain zone leaves the art and
-     the name to the recap's grid. */
+  /*
+    The recap, two rows: the villain's header (the art, the name and the pack beside it), then, under
+    a rule, the settings in two columns of equal width, Difficulty and Modular sets, so that neither
+    resizes as its content changes. The columns start level: their labels share one line, and so do
+    their first controls, all --ctl tall. On S the host's settings stack, Difficulty first; a guest's
+    stay side by side, their chips being short.
+  */
   .recap {
-    display: grid;
-    grid-template-columns: 88px minmax(0, 1fr);
-    gap: 14px 20px;
-    align-items: start;
+    --lbl-line: 16px;
+    --lbl-gap: 14px;
+    --col-gap: 16px;
   }
 
-  .villain,
+  @media (min-width: 600px) {
+    .recap {
+      --col-gap: 24px;
+    }
+  }
+
   .vhead {
-    display: contents;
+    display: flex;
+    align-items: center;
+    gap: 14px;
   }
 
   /* 4:3, the aspect given to its CardArt too. */
   .vart {
     position: relative;
+    flex: none;
     width: 88px;
     height: 66px;
     overflow: hidden;
@@ -912,8 +922,16 @@
   }
 
   .vtitle {
-    align-self: center;
+    flex: 1;
     min-width: 0;
+  }
+
+  /* One line each, cut with an ellipsis; the taller line keeps the descenders inside the cut. */
+  .vname,
+  .vfrom {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .vname {
@@ -922,118 +940,70 @@
     font-stretch: 85%;
     font-weight: 900;
     font-style: italic;
-    line-height: 1;
+    line-height: 1.2;
   }
 
   .vfrom {
-    margin-top: 4px;
+    margin-top: 2px;
     color: var(--muted);
     font-size: 13px;
     line-height: 1.4;
   }
 
-  .settings {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-  }
-
-  /* Read only, the two settings take the art's and the name's columns, so they line up with them:
-     the column gap stays the recap's. */
-  .ro .settings {
-    grid-template-columns: subgrid;
-    column-gap: normal;
-  }
-
-  /*
-    M and L: one row of three zones of equal width, the villain, the difficulty and the modular sets,
-    so that no zone resizes as its content changes: controls that outgrow their zone wrap inside it.
-    Each zone takes the row's height, its content centred, so the vertical rules before the
-    difficulty and the sets run the row's full height.
-  */
   @media (min-width: 600px) {
-    .recap {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      align-items: stretch;
-    }
-
-    /* The villain zone has no rule to stretch: it is centred itself. */
-    .villain {
-      display: block;
-      container: villain / inline-size;
-      align-self: center;
-      min-width: 0;
-    }
-
-    .vhead {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
     .vart {
-      flex: none;
       width: 120px;
       height: 90px;
     }
 
-    .vtitle {
-      flex: 1;
-    }
-
-    /* One line each, cut with an ellipsis; the taller line keeps the descenders inside the cut. */
-    .vname,
-    .vfrom {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
     .vname {
       font-size: 28px;
-      line-height: 1.2;
-    }
-
-    /* The difficulty and the sets, or the self-contained note, are the recap's zones themselves. */
-    .settings {
-      display: contents;
-    }
-
-    .difficulty,
-    .modulars,
-    .own-cards {
-      align-self: stretch;
-      padding-left: 20px;
-      border-left: 1px solid var(--panel-2);
-    }
-
-    .difficulty,
-    .modulars {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
   }
 
-  /* A villain zone too narrow for the art and a readable name beside it puts the name under the
-     art, which keeps its size on the left. */
-  @container villain (width < 300px) {
-    .vhead {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-    }
+  /* The columns stretch to the row's height, so the rule between them runs its full height; their
+     content starts at their top. */
+  .settings {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px var(--col-gap);
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--panel-2);
+  }
 
-    .vtitle {
-      flex: none;
-      align-self: stretch;
-    }
+  /* The same label line and gap in both columns, which keeps their first controls level. The extra
+     classes outrank the lobby's shared label rule (.lobby :global(.lbl)): Svelte scopes only the
+     first class's specificity, the others in :where(). */
+  .recap .settings .lbl {
+    line-height: var(--lbl-line);
+    margin-bottom: var(--lbl-gap);
   }
 
   .difficulty,
   .modulars {
     min-width: 0;
+  }
+
+  /* Two columns: a guest's at every width, the host's from M. The second one carries the rule. */
+  .ro .settings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ro .modulars {
+    padding-left: var(--col-gap);
+    border-left: 1px solid var(--panel-2);
+  }
+
+  @media (min-width: 600px) {
+    .settings {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .modulars {
+      padding-left: var(--col-gap);
+      border-left: 1px solid var(--panel-2);
+    }
   }
 
   .line {
@@ -1065,8 +1035,8 @@
     min-width: 0;
   }
 
-  /* A zone too narrow for the switch (164px), the gap and a usable select (110px) beside it puts
-     the selects under the switch, at the zone's width. */
+  /* A column too narrow for the switch (164px), the gap and a usable select (110px) beside it puts
+     the selects under the switch, at the column's width. */
   @container difficulty (width < 282px) {
     .levels {
       grid-template-columns: minmax(0, 1fr);
@@ -1089,15 +1059,24 @@
     text-overflow: ellipsis;
   }
 
-  /* In the place of the sets: level with the difficulty's controls on S, centred in its zone on M
-     and L. */
+  /* In the place of the sets, with no label: beside the difficulty, it sits on the line of its
+     first control. */
   .own-cards {
-    align-self: end;
     display: flex;
     align-items: center;
     min-height: var(--ctl);
     margin: 0;
     color: var(--muted);
+  }
+
+  .ro .own-cards {
+    margin-top: calc(var(--lbl-line) + var(--lbl-gap));
+  }
+
+  @media (min-width: 600px) {
+    .own-cards {
+      margin-top: calc(var(--lbl-line) + var(--lbl-gap));
+    }
   }
 
   /* The extra class outranks the lobby's shared hint rule (.lobby :global(.hint)). */
