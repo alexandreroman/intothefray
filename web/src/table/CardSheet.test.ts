@@ -399,8 +399,34 @@ describe('CardSheet', () => {
     expect(screen.queryByRole('button', { name: 'Hand' })).toBeNull();
   });
 
-  it('goes back to its main page once a submenu entry runs', async () => {
-    const dmg = item('dmg', { label: 'Damage' });
+  it('goes back to its main page once a submenu entry that does not stay open runs', async () => {
+    const entry = item('entry', { label: 'Entry' });
+    const { onrun, onclose } = renderSheet({
+      entries: [
+        { kind: 'action', item: EXHAUST },
+        { kind: 'separator' },
+        {
+          kind: 'submenu',
+          id: 'submenu',
+          label: 'Submenu',
+          disabled: false,
+          entries: [{ kind: 'action', item: entry }],
+        },
+      ],
+    });
+    await fireEvent.click(screen.getByRole('button', { name: 'Submenu' }));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Entry' }));
+
+    expect(onrun).toHaveBeenCalledExactlyOnceWith(entry);
+    expect(onclose).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Submenu' }));
+  });
+
+  it('stays on the submenu page after an entry that stays open, to choose it again', async () => {
+    const dmg = item('dmg', { label: 'Damage', staysOpen: true });
     const { onrun, onclose } = renderSheet({
       entries: [
         { kind: 'action', item: EXHAUST },
@@ -415,14 +441,18 @@ describe('CardSheet', () => {
       ],
     });
     await fireEvent.click(screen.getByRole('button', { name: 'Add a token' }));
+    const damage = screen.getByRole('button', { name: 'Damage' });
+    damage.focus();
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Damage' }));
+    await fireEvent.click(damage);
+    await fireEvent.click(damage);
 
-    expect(onrun).toHaveBeenCalledExactlyOnceWith(dmg);
+    expect(onrun.mock.calls).toEqual([[dmg], [dmg]]);
     expect(onclose).not.toHaveBeenCalled();
-    expect(screen.queryByRole('button', { name: /Back/ })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Exhaust' })).toBeTruthy();
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a token' }));
+    expect(screen.getByRole('button', { name: /Back/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Exhaust' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Damage' })).toBe(damage);
+    expect(document.activeElement).toBe(damage);
   });
 
   it(

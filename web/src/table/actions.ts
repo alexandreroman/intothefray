@@ -92,6 +92,12 @@ export interface ActionItem {
   group: number;
   /** The items of a submenu; a separator is an item with the id 'sep'. */
   menu?: ActionItem[];
+  /**
+   * Chosen from a menu (the desktop action menu, the inspector's submenu page), it leaves that menu
+   * open where it is, to be chosen again: a token, status or modifier entry, as a card often takes
+   * several at once.
+   */
+  staysOpen?: true;
   run?: () => Action | { ask: CountQuestion } | LocalAction;
 }
 
@@ -565,7 +571,9 @@ function detachItem(card: CardView, table: TableView, sizeOf: TouchOptions['size
 
 /**
  * "Add a token" or "Add a status": a submenu whose items each add one of
- * their counter, its current count in brackets. Acceleration has no key.
+ * their counter, its current count in brackets. Acceleration has no key. An
+ * entry leaves its menu open, to add the same counter again: damage and threat
+ * often come several at a time, Retaliate takes its value one at a time.
  */
 function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
   const counters = kind === 'token' ? TOKENS : STATUSES;
@@ -577,6 +585,7 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
       label: count > 0 ? `${counter.label} (${count})` : counter.label,
       key: counter.key,
       group: 0,
+      staysOpen: true,
       run: () => ({ kind, card: card.id, name: counter.name, delta: 1 }),
     };
   });
@@ -590,8 +599,10 @@ function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
 
 /**
  * "Add a modifier": a submenu that gives the card +1 to a stat, then, past a
- * separator, −1. Unlike most token and status items, these have no keys. A
- * step past ±MAX_COUNT is greyed: the server would change nothing.
+ * separator, −1. Unlike most token and status items, these have no keys. An
+ * entry leaves its menu open, as a token entry does, to step the same stat
+ * again. A step past ±MAX_COUNT is greyed: the server would change nothing;
+ * as the menu follows the view, an entry greys while it stays open.
  */
 function modifierMenu(card: CardView): ActionItem {
   const step = (delta: 1 | -1) =>
@@ -606,6 +617,7 @@ function modifierMenu(card: CardView): ActionItem {
           ? `The ${name.toUpperCase()} modifier is already ${withSign(limit)}`
           : undefined,
         group: 0,
+        staysOpen: true,
         run: () => ({ kind: 'modifier', card: card.id, name, delta }),
       };
     });

@@ -270,6 +270,23 @@ describe('actionsFor', () => {
     });
   });
 
+  it('leaves the menu open on a token, status or modifier entry only, to add the same again', () => {
+    const items = itemsFor({ kind: 'card', id: 'mine' });
+    const counterMenus = ['tokens', 'statuses', 'modifiers'];
+
+    for (const id of counterMenus) {
+      const entries = menuOf(items, id).filter((it) => it.id !== 'sep');
+      expect(entries.length).toBeGreaterThan(0);
+      expect(entries.every((it) => it.staysOpen)).toBe(true);
+    }
+    expect(menuOf(items, 'modifiers').find((it) => it.id === 'sep')?.staysOpen).toBeUndefined();
+    // Neither the submenu rows themselves nor any other entry, in a submenu or not.
+    expect(items.some((it) => it.staysOpen)).toBe(false);
+    const otherSubmenus = items.filter((it) => it.menu && !counterMenus.includes(it.id));
+    expect(otherSubmenus.map((it) => it.id)).toContain('moveTo');
+    expect(otherSubmenus.flatMap((it) => it.menu ?? []).some((it) => it.staysOpen)).toBe(false);
+  });
+
   it('the modifier submenu gives +1 then, past a separator, −1 to each stat, without keys', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 

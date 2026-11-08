@@ -43,7 +43,10 @@ type: project
     kind and count. It keeps
     its size across submenus: the entries area keeps the main page's
     height. Token, status and modifier entries, the pills, and Exhaust /
-    Ready keep it open; every other entry closes it. An exhausted card
+    Ready keep it open; every other entry closes it. A token, status or
+    modifier tile keeps its submenu's page, to add the same counter
+    again, the card above showing each one as it lands. An
+    exhausted card
     lies turned 15° in it as on the table, its tokens, tabs, badges and
     pill turning with it, and turns to its new angle as the view says so
     (the table's tilt: `TILT_MS`, `MOVE_EASING`; at once under reduced

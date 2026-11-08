@@ -1531,10 +1531,16 @@
     event.preventDefault();
   }
 
-  /** A chosen entry runs on the menu's element, once the menu is closed. */
+  /**
+   * A chosen entry runs on the menu's element, once the menu is closed. A counter entry (`staysOpen`:
+   * a token, a status, a modifier) leaves the menu open, its submenu too, to add the same again: the
+   * entry relabels, or greys at the modifier limit, as the view answers ("Damage (7)").
+   */
   function runContextItem(item: ActionItem): void {
     const element = interaction.contextMenu?.element ?? null;
-    interaction.closeContextMenu();
+    if (!item.staysOpen) {
+      interaction.closeContextMenu();
+    }
     runItem(item, element);
   }
 
@@ -1765,7 +1771,8 @@
   }
 
   // The submenus of actionsFor whose entries add to a card's counters: the inspector stays open on
-  // them, and shows the new counter with its steppers.
+  // them, on the submenu's page (`staysOpen`); back on its main page, it shows the new counter with
+  // its steppers.
   const COUNTER_SUBMENUS: readonly string[] = ['tokens', 'statuses', 'modifiers'];
 
   /** Whether the item is an entry of the inspector's token, status or modifier submenu. */
