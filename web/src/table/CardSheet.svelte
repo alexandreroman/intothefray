@@ -4,10 +4,12 @@
   card's face large, its counters drawn on it, and a column with the same
   entries as the menu (contextItems.ts), with no title line: the sheet's
   accessible name says what the element is (its header's label: a card's
-  name, type and owner, a pile's kind and count). The first group shows as
-  large buttons, the default one in Fray red, the others as rows; a submenu
-  opens in the sheet, with a Back row. A refused entry is not shown at all (inspector.visibleEntries):
-  it would take room for nothing. No key hints: a touch screen has no keyboard to press them on.
+  name, type and owner, a pile's kind and count). Every entry is a tile, all
+  alike, none set apart from the others, in the menu's order: each group of the
+  menu a grid of its own (lib/buttonGrid.ts), a thin line between groups. A
+  submenu opens in the sheet, with a Back row over its own entries, tiles too.
+  A refused entry is not shown at all (inspector.visibleEntries): it would take
+  room for nothing. No key hints: a touch screen has no keyboard to press them on.
   A chosen entry runs as the menu's does: the caller closes the sheet, or keeps
   it open for a token, status or modifier, which then shows on the card.
   The tokens, status tabs and modifier badges lie on the face as the table
@@ -31,11 +33,12 @@
   sheet out again. A stack follows its main card, so that
   a swipe never changes the layout; a card turning over to the other
   orientation keeps the old layout until it is edge-on, as for its face.
-  Buttons and rows are 44 px high, on a phone and a tablet alike.
+  Tiles and the Back row are 44 px high, on a phone and a tablet alike.
   Motion, short and eased out, none under reduced motion (motionMs): a
   submenu slides in from the right as the main page leaves to the left, and
-  back the other way; an entry that comes or goes after an update slides open
-  or closed; a token fades in or out; a pressed button sinks. When the
+  back the other way; an entry that comes or goes after an update fades in or
+  out, a whole group slides open or closed; a token fades in or out; a pressed
+  tile lights up and sinks. When the
   face the card shows changes (a flip, a stage turned, a card turned face
   down or up, a deck's back giving way to the card revealed on it), the card
   turns over as a table card does, in place: the sheet's name and the
@@ -61,7 +64,7 @@
   The card a swipe brings past the midpoint to the middle, as the finger
   moves, or a tapped neighbour, at once, is asked of the caller (onpick): the
   same sheet then shows it, the carousel gliding on to it,
-  its column switching at once, its rows neither sliding nor fading, never
+  its column switching at once, its entries neither sliding nor fading, never
   turning. Under the card, its page keeps its height as through a submenu;
   beside it, the card sets the sheet's height, and the page takes what the
   new card's entries need, up to the room. The carousel
@@ -87,8 +90,14 @@
   import { dockMode } from './dockMode';
   import { FLIP_MS, FLIP_PERSPECTIVE, LIFT_SCALE } from './motion.svelte';
   import type { ActionItem } from './actions';
-  import type { ContextAction, ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
-  import { splitEntries, visibleEntries, type SheetCounter, type StackCard } from './inspector';
+  import type { ContextEntry, ContextHeader, ContextSubmenu } from './contextItems';
+  import {
+    entryGroups,
+    visibleEntries,
+    type GroupEntry,
+    type SheetCounter,
+    type StackCard,
+  } from './inspector';
 
   let {
     header,
@@ -142,8 +151,8 @@
 
   /** How long a page takes to slide in as the other one leaves, in ms. */
   const PAGE_MS = 220;
-  /** How long a counter row or an entry takes to slide open or closed, in ms. */
-  const ROW_MS = 200;
+  /** How long an entry takes to fade in or out, or a group of them to slide open or closed, in ms. */
+  const ENTRY_MS = 200;
   /** How long the sheet takes to ease to the size of the new side, before the card turns, in ms. */
   const RESIZE_MS = 200;
   /**
@@ -360,7 +369,7 @@
 
   /**
    * Shows another card of the stack at once: the page goes back to the main page, and the column
-   * changes in place, its rows neither sliding nor fading (atOnce). A fade would dip the column to
+   * changes in place, its entries neither sliding nor fading (atOnce). A fade would dip the column to
    * nothing between the two cards; the carousel gliding to the new one is motion enough. Its faces
    * stay as they are, the shown one's counters coming to life. Under the card, the page keeps its
    * height, so that the sheet does not jump nor the card move; beside it, the card keeps the sheet's
@@ -377,12 +386,12 @@
     atOnce = true;
     pageStep = -1;
     openId = null;
-    // The rows and pages that come or go with this update take their transitions at its end.
+    // The entries and pages that come or go with this update take their transitions at its end.
     void tick().then(() => (atOnce = false));
   }
 
   /**
-   * Shows the card's new side: the column changes at once, its rows neither sliding nor fading
+   * Shows the card's new side: the column changes at once, its entries neither sliding nor fading
    * (atOnce), while the face keeps the old side until it is edge-on (turnOver) and the hidden copy
    * measures the new one. Run before the update is drawn: the content's height is still the old
    * side's, which the sheet eases from. The new side's image starts decoding there and then, so
@@ -401,7 +410,7 @@
     leaving = from;
     measureWidth = content.offsetWidth;
     atOnce = true;
-    // The rows and pages that come or go with this update take their transitions at its end.
+    // The entries and pages that come or go with this update take their transitions at its end.
     void tick().then(() => (atOnce = false));
   }
 
@@ -496,7 +505,6 @@
   }
 
   const shown = $derived(visibleEntries(live.entries));
-  const split = $derived(splitEntries(shown));
 
   let openId = $state<string | null>(null);
   let content = $state<HTMLElement>();
@@ -517,7 +525,7 @@
    */
   let heldForStack = false;
   /**
-   * The pages and rows of this update come and go at once: a switch to another card of the stack,
+   * The pages and entries of this update come and go at once: a switch to another card of the stack,
    * or the column of a card that turns over: both sides' entries in the column together would mix
    * in its grid and overlap.
    */
@@ -554,13 +562,13 @@
     };
   }
 
-  // Found again in every redraw's entries: a submenu whose row went, or got refused, closes.
+  // Found again in every redraw's entries: a submenu whose tile went, or got refused, closes.
   const openSubmenu = $derived(
     shown.find((entry): entry is ContextSubmenu => entry.kind === 'submenu' && entry.id === openId),
   );
 
-  // The row the focus was on goes as the list changes: the focus moves to the Back row, or back to
-  // the submenu's row, rather than falling out of the sheet.
+  // The tile the focus was on goes as the list changes: the focus moves to the Back row, or back to
+  // the submenu's tile, rather than falling out of the sheet.
   async function openSub(entry: ContextSubmenu): Promise<void> {
     // Measured before the switch, on the main page; already held while it is still sliding back.
     heldHeight ??= pagesElement?.offsetHeight ?? null;
@@ -587,26 +595,27 @@
     }
   }
 
-  /**
-   * Tells the entries apart in an each block. A separator has no id: it goes by the entry before
-   * it, so that it stays put, rather than sliding out and in again, when an entry above it leaves.
-   */
-  function keyOf(entry: ContextEntry, i: number, list: readonly ContextEntry[]): string {
-    switch (entry.kind) {
-      case 'action':
-        return entry.item.id;
-      case 'submenu':
-        return `sub:${entry.id}`;
-      case 'separator': {
-        const before = list[i - 1];
-        return before === undefined ? 'sep:' : `sep:${keyOf(before, i - 1, list)}`;
-      }
+  /** Tells the entries of a group apart in an each block. */
+  function keyOf(entry: GroupEntry): string {
+    return entry.kind === 'action' ? entry.item.id : `sub:${entry.id}`;
+  }
+
+  function labelOf(entry: GroupEntry): string {
+    return entry.kind === 'action' ? entry.item.label : entry.label;
+  }
+
+  /** Runs a chosen tile: its item, or its submenu opened in the sheet. */
+  function choose(entry: GroupEntry, run: (item: ActionItem) => void): void {
+    if (entry.kind === 'action') {
+      run(entry.item);
+    } else {
+      void openSub(entry);
     }
   }
 
-  /** The slide of a row that comes or goes after an update. */
-  function rowSlide(): { duration: number; easing: (t: number) => number } {
-    return { duration: atOnce ? 0 : motionMs(ROW_MS), easing: cubicOut };
+  /** The fade of a tile, or the slide of a whole group, that comes or goes after an update. */
+  function entryMotion(): { duration: number; easing: (t: number) => number } {
+    return { duration: atOnce ? 0 : motionMs(ENTRY_MS), easing: cubicOut };
   }
 
   /** A page slides in from the side it is reached from, and out to the other: right for a submenu. */
@@ -630,59 +639,37 @@
   }
 </script>
 
-{#snippet actionRow(entry: ContextAction, run: (item: ActionItem) => void)}
-  <button
-    type="button"
-    class="row btn-ghost"
-    class:default={entry.item.default}
-    onclick={() => run(entry.item)}><span class="label">{entry.item.label}</span></button
-  >
-{/snippet}
-
-{#snippet separator()}
-  <div class="sep" role="separator"></div>
-{/snippet}
-
-<!-- The main page of the entries: the first group as large buttons, the others as rows. -->
-{#snippet mainPage(parts: ReturnType<typeof splitEntries>)}
-  {#if parts.main.length > 0}
-    <div class="main-grid" {@attach buttonGrid}>
-      {#each parts.main as entry (entry.item.id)}
-        <button
-          type="button"
-          class="main"
-          class:default={entry.item.default}
-          onclick={() => onrun(entry.item)}
-          transition:fade={rowSlide()}
-          ><span class="label" use:overflowTip>{entry.item.label}</span></button
-        >
-      {/each}
-    </div>
-  {/if}
-  {#if parts.rest.length > 0}
-    <div class="rows">
-      {#each parts.rest as entry, i (keyOf(entry, i, parts.rest))}
-        <!-- The slide is on the entry's own block: one inside an if block would not play. -->
-        <div class="entry" transition:slide={rowSlide()}>
-          {#if entry.kind === 'separator'}
-            {@render separator()}
-          {:else if entry.kind === 'submenu'}
+<!--
+  Entries as tiles, group by group: each group a grid of its own (lib/buttonGrid.ts), a thin line
+  above every group but the first. A tile fades in or out in its cell; a whole group slides open or
+  closed. Groups go by their place in the list, their tiles by their own keys: a tile that comes or
+  goes after an update leaves the other groups as they are.
+-->
+{#snippet tileGroups(list: readonly ContextEntry[], run: (item: ActionItem) => void)}
+  <div class="groups">
+    {#each entryGroups(list) as group, i (i)}
+      <div class="group" transition:slide={entryMotion()}>
+        {#if i > 0}
+          <div class="sep" role="separator"></div>
+        {/if}
+        <div class="tiles" {@attach buttonGrid}>
+          {#each group as entry (keyOf(entry))}
+            <!-- The fade is on the each block's own element: one inside an if block would not play. -->
             <button
               type="button"
-              class="row btn-ghost"
-              data-submenu={entry.id}
-              onclick={() => openSub(entry)}
-              ><span class="label">{entry.label}</span><span class="opens" aria-hidden="true"
-                >›</span
-              ></button
+              class="tile"
+              data-submenu={entry.kind === 'submenu' ? entry.id : undefined}
+              onclick={() => choose(entry, run)}
+              transition:fade={entryMotion()}
+              ><span class="label" use:overflowTip>{labelOf(entry)}</span
+              >{#if entry.kind === 'submenu'}<span class="opens" aria-hidden="true">›</span
+                >{/if}</button
             >
-          {:else}
-            {@render actionRow(entry, onrun)}
-          {/if}
+          {/each}
         </div>
-      {/each}
-    </div>
-  {/if}
+      </div>
+    {/each}
+  </div>
 {/snippet}
 
 <!-- The note or the entries, in the card's column. -->
@@ -710,24 +697,14 @@
           onoutrostart={onPageOutro}
         >
           {#if openSubmenu}
-            <div class="rows">
-              <button type="button" class="row back btn-ghost" onclick={closeSub}
-                ><span class="label"><span aria-hidden="true">‹ </span>Back</span><span
-                  class="where">{openSubmenu.label}</span
-                ></button
-              >
-              {#each openSubmenu.entries as entry, i (keyOf(entry, i, openSubmenu.entries))}
-                <div class="entry" transition:slide={rowSlide()}>
-                  {#if entry.kind === 'separator'}
-                    {@render separator()}
-                  {:else}
-                    {@render actionRow(entry, runFromSub)}
-                  {/if}
-                </div>
-              {/each}
-            </div>
+            <button type="button" class="row back btn-ghost" onclick={closeSub}
+              ><span class="label"><span aria-hidden="true">‹ </span>Back</span><span class="where"
+                >{openSubmenu.label}</span
+              ></button
+            >
+            {@render tileGroups(openSubmenu.entries, runFromSub)}
           {:else}
-            {@render mainPage(split)}
+            {@render tileGroups(shown, onrun)}
           {/if}
         </div>
       {/key}
@@ -838,7 +815,7 @@
       class:held={heldHeight !== null}
       style:height={heldHeight === null ? undefined : `${heldHeight}px`}
     >
-      <div class="page">{@render mainPage(splitEntries(measured))}</div>
+      <div class="page">{@render tileGroups(measured, onrun)}</div>
     </div>
   {/if}
 {/snippet}
@@ -1072,9 +1049,8 @@
   }
 
   /*
-    The column's width tells the main buttons how many go side by side (see .main-grid). Beside the
-    card, its content is centred on the card's height, or starts level with its top when it is the
-    taller (see .inspector.beside .side).
+    Beside the card, the column's content is centred on the card's height, or starts level with its
+    top when it is the taller (see .inspector.beside .side).
   */
   .side {
     flex: 1;
@@ -1082,7 +1058,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    container-type: inline-size;
   }
 
   .note {
@@ -1091,93 +1066,7 @@
     font-size: 14px;
   }
 
-  /*
-    The first group: large buttons, the default one in Fray red. One per row in a narrow column,
-    two in a wide one, never one alone on the last line (lib/buttonGrid.ts): a lone button the
-    whole width, three in a row when they fit there, or else the first one, the default
-    (inspector.splitEntries), the whole width on top.
-  */
-  .main-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
-  }
-
-  @container (min-width: 260px) {
-    .main-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .main-grid:global([data-layout='single']) {
-      grid-template-columns: minmax(0, 1fr);
-    }
-
-    .main-grid:global([data-layout='row']) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  .main-grid:global([data-layout='lead']) > .main:first-child {
-    grid-column: 1 / -1;
-  }
-
-  .main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-height: 44px;
-    padding: 4px 8px;
-    border: 0;
-    border-radius: 10px;
-    background: var(--panel-2);
-    font-size: 14px;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  /* A label stays on one line, cut short if it must: as wide as its text, so that its overflow
-     tells the grid a row is too narrow for it (lib/buttonGrid.ts). */
-  .main .label {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .main.default {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  @media (hover: hover) {
-    .main.default:hover {
-      background: var(--accent-hover);
-    }
-  }
-
-  /* A press reads as taken before the sheet closes: the default button darkens as the primary
-     button's panel does, a row lights up; both sink below, with motion. */
-  .main.default:active {
-    background: var(--accent-deep);
-  }
-
-  .row:active:not(:disabled) {
-    background-color: var(--hover);
-  }
-
   @media (prefers-reduced-motion: no-preference) {
-    .main {
-      transition:
-        background-color 0.12s,
-        transform 0.08s ease-out;
-    }
-
-    .main:active {
-      transform: scale(0.96);
-    }
-
     /* The carousel's cards and dots, as the centred card changes. */
     .slide {
       transition:
@@ -1217,12 +1106,89 @@
     min-width: 0;
   }
 
-  /* The other groups: full-width rows. */
-  .rows {
+  /*
+    A group of entries: the thin line above it, but for the first one, and its grid of tiles. A
+    flex column, so that the line's margins stay inside it as it slides open or closed.
+  */
+  .group {
     display: flex;
     flex-direction: column;
   }
 
+  /*
+    The tiles of a group, laid out by lib/buttonGrid.ts (data-layout): a lone tile the whole width,
+    three in a row when each has room for its label, an even count two by two, three without room
+    for a row and five or more two by two, the last one the whole width; one per line when two
+    labels do not fit side by side, and until the group is laid out.
+  */
+  .tiles {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .tiles:global([data-layout='pairs']) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tiles:global([data-layout='pairs-last']) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tiles:global([data-layout='pairs-last']) > .tile:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .tiles:global([data-layout='row']) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Every tile alike, the default entry's too: its label centred, a submenu's followed by its ›. */
+  .tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 44px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--panel-2);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /*
+    A label stays on one line, cut short only if it must: as wide as its text, so that its overflow
+    tells the grid its tiles are too narrow side by side (lib/buttonGrid.ts).
+  */
+  .tile .label {
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  /*
+    A press reads as taken before the sheet closes: the tile lights up, and sinks, with motion. Its
+    hover, under a real hover only, is every button's (tokens.css).
+  */
+  .tile:active {
+    background-color: var(--hover);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tile {
+      transition:
+        background-color 0.12s,
+        transform 0.08s ease-out;
+    }
+
+    .tile:active {
+      transform: scale(0.96);
+    }
+  }
+
+  /* The Back row of a submenu's page, the whole width over its tiles. */
   .row {
     display: flex;
     flex-wrap: wrap;
@@ -1239,8 +1205,9 @@
     text-align: left;
   }
 
-  .row.default .label {
-    font-weight: 800;
+  /* A press lights the row up. */
+  .row:active:not(:disabled) {
+    background-color: var(--hover);
   }
 
   .label {
@@ -1258,8 +1225,9 @@
   }
 
   .sep {
+    flex: none;
     height: 1px;
-    margin: 2px 0;
+    margin: 8px 0;
     background: var(--line-strong);
   }
 

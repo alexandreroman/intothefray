@@ -161,7 +161,7 @@ describe('the inspector', () => {
     mockScreen({ ...DESKTOP, touch: true });
     const hidden = card('hidden', { code: '01003', faceDown: true, x: 400 });
     await renderTable(makeView([card('mine'), hidden, ...OTHERS]));
-    /** The column starts with the main buttons: no title line above them. */
+    /** The column starts with the entries: no title line above them. */
     const columnStart = () => sheet()!.querySelector('.side')?.firstElementChild?.classList;
 
     await tap(placed('two'));
@@ -233,22 +233,36 @@ describe('the inspector', () => {
       return makeView([card('mine'), used, top, ...OTHERS], [discard]);
     }
 
-    /** The entries of the inspector's main page, as their labels: its big buttons, then its rows. */
+    /** The entries of the inspector's main page, as their labels: its tiles, in order. */
     function entryLabels(): string[] {
-      const shown = sheet()!.querySelectorAll('.inspector:not(.measure) :is(.main, .row)');
+      const shown = sheet()!.querySelectorAll('.inspector:not(.measure) .page .tile');
       return [...shown].map((entry) => entry.textContent?.trim() ?? '');
     }
 
-    it('offers Take top card to hand first, as the primary big button, which takes it and closes', async () => {
+    /** The groups of the inspector's main page, as the labels of their tiles. */
+    function entryGroups(): string[][] {
+      const grids = sheet()!.querySelectorAll('.inspector:not(.measure) .page .tiles');
+      return [...grids].map((grid) => [...grid.children].map((tile) => tile.textContent ?? ''));
+    }
+
+    it('offers Take top card to hand first, as a plain tile, which takes it and closes', async () => {
       mockScreen({ ...DESKTOP, touch: true });
       const { session } = await renderTable(discardView());
       await tap(placed('disc:p0'));
 
       expect(entryLabels()).toEqual(['Take top card to hand', 'Search', 'Shuffle into deck']);
+      // Each group a grid of its own, a thin line between them.
+      expect(entryGroups()).toEqual([['Take top card to hand'], ['Search'], ['Shuffle into deck']]);
+      expect(sheet()!.querySelectorAll('.inspector:not(.measure) .page .sep')).toHaveLength(
+        entryGroups().length - 1,
+      );
       const takeTop = within(sheet()!).getByRole('button', { name: 'Take top card to hand' });
-      // The default entry is the primary big button, drawn in Fray red.
-      expect(takeTop.classList).toContain('main');
-      expect(takeTop.classList).toContain('default');
+      // The default entry is a plain tile like any other, with no special look.
+      expect(takeTop.classList).toContain('tile');
+      expect(takeTop.classList).not.toContain('default');
+      expect(takeTop.className).toBe(
+        within(sheet()!).getByRole('button', { name: 'Search' }).className,
+      );
 
       await fireEvent.click(takeTop);
       expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'toHand', card: 'top' }, 0);

@@ -198,23 +198,6 @@ function rule(selector: string, indent = 2): string {
   return pattern.exec(sheetSource)?.[1] ?? '';
 }
 
-/** The block of the sheet's stylesheet under an at-rule, such as '@media (max-height: 500px)'. */
-function block(atRule: string): string {
-  const start = sheetSource.indexOf(`\n  ${atRule} {`);
-  if (start === -1) {
-    return '';
-  }
-  const end = sheetSource.indexOf('\n  }\n', start);
-  return sheetSource.slice(start, end);
-}
-
-/** The declarations of a rule inside a block of the stylesheet (block), at four spaces. */
-function ruleIn(source: string, selector: string): string {
-  const escaped = selector.replace(/[.()[\]*+]/g, (c) => `\\${c}`);
-  const pattern = new RegExp(`\\n {4}${escaped} \\{([^}]*)\\}`);
-  return pattern.exec(source)?.[1] ?? '';
-}
-
 /** The pages of the entries, as high as given: jsdom lays nothing out. */
 function pagesOf(height: number): HTMLElement {
   const pages = document.querySelector<HTMLElement>('.inspector .pages')!;
@@ -242,7 +225,7 @@ describe('CardSheet', () => {
       expect(within(sheet).queryByText(header.name)).toBeNull();
       expect(within(sheet).queryByText(header.eyebrow)).toBeNull();
       expect(within(sheet).queryByText('29')).toBeNull();
-      // The column starts with the main buttons.
+      // The column starts with the entries.
       expect(side().firstElementChild?.classList).toContain('pages');
     },
   );
@@ -254,7 +237,7 @@ describe('CardSheet', () => {
     expect(within(sheet).getByRole('img', { name: 'Rhino' }).getAttribute('src')).toBe('rhino.png');
   });
 
-  it('runs a main action without closing itself', async () => {
+  it('runs an action without closing itself', async () => {
     const { onrun, onclose } = renderSheet();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Flip' }));
@@ -263,17 +246,119 @@ describe('CardSheet', () => {
     expect(onclose).not.toHaveBeenCalled();
   });
 
-  it('draws the first group as large buttons, the default one marked', () => {
+  /** The tiles of the page shown, not those of the hidden copy that measures the sheet. */
+  function shownTiles(): HTMLElement[] {
+    return [...document.querySelectorAll<HTMLElement>('.inspector:not(.measure) .page .tile')];
+  }
+
+  /** The groups of the page shown: a grid of tiles each, the lines between them as 'sep'. */
+  function shownGroups(): (string | string[])[] {
+    const groups = document.querySelectorAll('.inspector:not(.measure) .page .group');
+    return [...groups].flatMap((group) => {
+      const tiles = [...group.querySelectorAll('.tiles > .tile')].map((tile) => tile.textContent);
+      return group.querySelector(':scope > .sep') === null ? [tiles] : ['sep', tiles];
+    });
+  }
+
+  it('draws every entry as a tile, in the order of the menu', () => {
+    renderSheet();
+
+    expect(document.querySelector('.inspector:not(.measure) .row')).toBeNull();
+    expect(shownTiles().map((tile) => tile.textContent)).toEqual([
+      'Exhaust',
+      'Flip',
+      'Discard',
+      'Move to…›',
+    ]);
+    expect(shownTiles().every((tile) => tile.localName === 'button')).toBe(true);
+  });
+
+  it('keeps the order of the menu with the default entry in the middle of its group', () => {
+    const ready = item('ready', { default: true });
+    renderSheet({
+      entries: [
+        { kind: 'action', item: FLIP },
+        { kind: 'action', item: ready },
+        { kind: 'separator' },
+        { kind: 'action', item: DISCARD },
+      ],
+    });
+
+    expect(shownTiles().map((tile) => tile.textContent)).toEqual(['Flip', 'Ready', 'Discard']);
+  });
+
+  it('lays each group out as a grid of its own, a thin line between groups', () => {
+    renderSheet();
+
+    expect(shownGroups()).toEqual([['Exhaust', 'Flip'], 'sep', ['Discard', 'Move to…›']]);
+    expect(rule('.sep')).toContain('height: 1px;');
+    expect(rule('.tiles')).toContain('display: grid;');
+    const grids = document.querySelectorAll<HTMLElement>('.inspector:not(.measure) .page .tiles');
+    // jsdom lays nothing out: two tiles go two by two.
+    expect([...grids].map((grid) => grid.dataset.layout)).toEqual(['pairs', 'pairs']);
+  });
+
+  it('lays out the tiles of a group as lib/buttonGrid.ts names their layout', () => {
+    expect(rule('.tiles')).toContain('grid-template-columns: minmax(0, 1fr);');
+    expect(rule(".tiles:global([data-layout='pairs'])")).toContain(
+      'grid-template-columns: repeat(2, minmax(0, 1fr));',
+    );
+    expect(rule(".tiles:global([data-layout='pairs-last'])")).toContain(
+      'grid-template-columns: repeat(2, minmax(0, 1fr));',
+    );
+    expect(rule(".tiles:global([data-layout='pairs-last']) > .tile:last-child")).toContain(
+      'grid-column: 1 / -1;',
+    );
+    expect(rule(".tiles:global([data-layout='row'])")).toContain(
+      'grid-template-columns: repeat(3, minmax(0, 1fr));',
+    );
+  });
+
+  it('gives the last of three tiles that have no room for a row the whole width, not the default', () => {
+    renderSheet({
+      entries: [
+        { kind: 'action', item: EXHAUST },
+        { kind: 'action', item: FLIP },
+        { kind: 'action', item: item('ready') },
+      ],
+    });
+
+    const grid = document.querySelector<HTMLElement>('.inspector:not(.measure) .page .tiles')!;
+    expect(grid.dataset.layout).toBe('pairs-last');
+    expect(grid.lastElementChild?.textContent).toBe('Ready');
+  });
+
+  it('draws tiles 44 px high, their labels centred on one line', () => {
+    const tile = rule('.tile');
+    expect(tile).toContain('min-height: 44px;');
+    expect(tile).toContain('justify-content: center;');
+    expect(tile).toContain('background: var(--panel-2);');
+    expect(tile).toContain('border-radius: 10px;');
+    const label = rule('.tile .label');
+    expect(label).toContain('white-space: nowrap;');
+    expect(rule('.label')).toContain('text-overflow: ellipsis;');
+  });
+
+  it('sets no entry apart: the default one is a tile like the others', () => {
     renderSheet();
 
     const exhaust = screen.getByRole('button', { name: 'Exhaust' });
-    expect(exhaust.classList.contains('main')).toBe(true);
-    expect(exhaust.classList.contains('default')).toBe(true);
-    expect(screen.getByRole('button', { name: 'Flip' }).classList.contains('default')).toBe(false);
-    expect(screen.getByRole('button', { name: 'Discard' }).classList.contains('main')).toBe(false);
+    expect(exhaust.className).toBe(screen.getByRole('button', { name: 'Flip' }).className);
+    expect(exhaust.classList.contains('default')).toBe(false);
+    expect(sheetSource).not.toContain('.default');
+    expect(sheetSource).not.toContain('var(--accent');
   });
 
-  it('runs a row', async () => {
+  it('draws a submenu as a tile, its label followed by a ›', () => {
+    renderSheet();
+
+    const moveTo = screen.getByRole('button', { name: 'Move to…' });
+    expect(moveTo.classList).toContain('tile');
+    expect(moveTo.dataset.submenu).toBe('moveTo');
+    expect(moveTo.querySelector('.opens')?.textContent).toBe('›');
+  });
+
+  it('runs a tile', async () => {
     const { onrun } = renderSheet();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
@@ -293,6 +378,11 @@ describe('CardSheet', () => {
     renderSheet();
 
     await fireEvent.click(screen.getByRole('button', { name: 'Move to…' }));
+    const back = screen.getByRole('button', { name: /Back/ });
+    expect(back.classList).toContain('row');
+    // The Back row, the whole width, over the submenu's own tiles.
+    expect(back.nextElementSibling?.classList).toContain('groups');
+    expect(screen.getByRole('button', { name: 'Hand' }).classList).toContain('tile');
 
     expect(screen.queryByRole('button', { name: 'Exhaust' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
@@ -370,7 +460,7 @@ describe('CardSheet', () => {
     expect(document.querySelector('.sep')).toBeNull();
   });
 
-  it('hides a refused main action, row and submenu', () => {
+  it('hides a refused action and submenu', () => {
     const tapped = item('exhaust', { default: true, disabled: true, reason: 'Locked' });
     const discard = item('discard', { disabled: true, reason: 'This card has no discard pile' });
     renderSheet({
@@ -390,7 +480,7 @@ describe('CardSheet', () => {
       ],
     });
 
-    expect(screen.getByRole('button', { name: 'Flip' }).classList.contains('main')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Flip' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Exhaust' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Move to…' })).toBeNull();
@@ -702,7 +792,6 @@ describe('CardSheet', () => {
     it('upright, lays the header, the counters and the entries full width under the card', () => {
       const column = rule('.inspector.dock .side');
       expect(column).toContain('align-self: stretch;');
-      expect(rule('.side')).toContain('container-type: inline-size;');
       // The whole sheet scrolls (Sheet.svelte), not the column.
       expect(column).not.toContain('overflow-y');
     });
@@ -724,12 +813,11 @@ describe('CardSheet', () => {
       expect(column).toContain('overflow-y: auto;');
     });
 
-    it('makes every entry 44 px high, the main ones two per row in a wide column', () => {
-      expect(rule('.main')).toContain('min-height: 44px;');
-      expect(rule('.row')).toContain('min-height: 44px;');
-      expect(rule('.main-grid')).toContain('grid-template-columns: minmax(0, 1fr);');
-      expect(rule('.main-grid', 4)).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
-      expect(sheetSource).toMatch(/@container \(min-width: \d+px\)/);
+    it('makes every tile 44 px high, and the Back row the whole width', () => {
+      expect(rule('.tile')).toContain('min-height: 44px;');
+      const row = rule('.row');
+      expect(row).toContain('min-height: 44px;');
+      expect(row).toContain('width: 100%;');
     });
   });
 
@@ -908,7 +996,6 @@ describe('CardSheet', () => {
       expect(column).toContain('max-height: var(--card-room);');
       expect(column).toContain('overflow-y: auto;');
       expect(column).toContain('overscroll-behavior: contain;');
-      expect(rule('.side')).toContain('container-type: inline-size;');
     });
 
     it("centres the column's content on the card beside it, its auto margins sharing the room", () => {
@@ -965,75 +1052,10 @@ describe('CardSheet', () => {
       expect(column).not.toContain('overflow-y');
     });
 
-    it('lays the main buttons out as on a phone', () => {
-      renderSheet({
-        dock: false,
-        entries: [
-          { kind: 'action', item: EXHAUST },
-          { kind: 'action', item: FLIP },
-          { kind: 'action', item: item('ready') },
-        ],
-      });
+    it('draws every entry as a tile, group by group, as on a phone', () => {
+      renderSheet({ dock: false });
 
-      const grid = document.querySelector<HTMLElement>('.inspector:not(.measure) .main-grid')!;
-      expect(grid.dataset.layout).toBe('lead');
-    });
-  });
-
-  describe('the main buttons on a phone: never one alone on the last line', () => {
-    /** The first group of `count` actions, the second one the default. */
-    function mainEntries(count: number): ContextEntry[] {
-      return Array.from({ length: count }, (_, i) => ({
-        kind: 'action',
-        item: item(`action${i}`, { default: i === 1 ? true : undefined }),
-      }));
-    }
-
-    /** The grid of the main buttons shown, not the hidden copy that measures the sheet. */
-    function mainGrid(): HTMLElement {
-      return document.querySelector<HTMLElement>('.inspector:not(.measure) .main-grid')!;
-    }
-
-    it.each([
-      [1, 'single'],
-      [2, 'pairs'],
-      [3, 'lead'],
-      [4, 'pairs'],
-    ])('lays %i buttons out as %s on a narrow phone', (count, layout) => {
-      renderSheet({ dock: true, entries: mainEntries(count) });
-
-      expect(mainGrid().dataset.layout).toBe(layout);
-    });
-
-    it('puts the default button on top of three that have no room for a row', () => {
-      renderSheet({ dock: true, entries: mainEntries(3) });
-
-      const buttons = within(mainGrid()).getAllByRole('button');
-      expect(buttons.map((button) => button.textContent)).toEqual([
-        'Action1',
-        'Action0',
-        'Action2',
-      ]);
-      expect(buttons[0]!.classList).toContain('default');
-      expect(rule(".main-grid:global([data-layout='lead']) > .main:first-child")).toContain(
-        'grid-column: 1 / -1;',
-      );
-    });
-
-    it('gives a lone button the whole width, and three in a row a third each', () => {
-      expect(rule(".main-grid:global([data-layout='single'])", 4)).toContain(
-        'grid-template-columns: minmax(0, 1fr);',
-      );
-      expect(rule(".main-grid:global([data-layout='row'])", 4)).toContain(
-        'grid-template-columns: repeat(3, minmax(0, 1fr));',
-      );
-    });
-
-    it('keeps a label on one line, cut short if it must', () => {
-      const label = rule('.main .label');
-      expect(label).toContain('white-space: nowrap;');
-      expect(label).toContain('text-overflow: ellipsis;');
-      expect(label).toContain('overflow: hidden;');
+      expect(shownGroups()).toEqual([['Exhaust', 'Flip'], 'sep', ['Discard', 'Move to…›']]);
     });
   });
 
@@ -1474,7 +1496,7 @@ describe('CardSheet', () => {
       expect(animationsOf(200).some(({ element }) => element.classList.contains('tok'))).toBe(true);
     });
 
-    it('slides an entry that leaves after an update closed', async () => {
+    it('fades out an entry that leaves after an update', async () => {
       const { rerender } = renderSheet();
 
       await rerender({ entries: ENTRIES.filter((entry) => entry !== ENTRIES[3]) });
@@ -1482,20 +1504,36 @@ describe('CardSheet', () => {
       await finishAnimations();
 
       expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
-      expect(
-        animationsOf(200).some(({ element }) => element.textContent?.trim() === 'Discard'),
-      ).toBe(true);
+      const fade = animationsOf(200).find(({ element }) => element.textContent === 'Discard');
+      expect(fade?.element.classList).toContain('tile');
+      expect(fade?.keyframes[0]).toHaveProperty('opacity');
     });
 
-    it('sinks a pressed button, darkens the default one, and lights a pressed row', () => {
-      const moving = block('@media (prefers-reduced-motion: no-preference)');
-      expect(ruleIn(moving, '.main:active')).toContain('transform: scale(0.96);');
-      expect(rule('.main.default:active')).toContain('background: var(--accent-deep);');
+    it('slides closed a whole group that leaves after an update', async () => {
+      const { rerender } = renderSheet();
+
+      await rerender({ entries: ENTRIES.slice(0, 2) });
+      expect(screen.getByRole('button', { name: 'Discard' })).toBeTruthy();
+      await finishAnimations();
+
+      expect(screen.queryByRole('button', { name: 'Discard' })).toBeNull();
+      expect(shownGroups()).toEqual([['Exhaust', 'Flip']]);
+      expect(animationsOf(200).some(({ element }) => element.classList.contains('group'))).toBe(
+        true,
+      );
+    });
+
+    it('lights a pressed tile up and sinks it, and lights a pressed row up', () => {
+      expect(rule('.tile:active')).toContain('background-color: var(--hover);');
+      expect(rule('.tile:active', 4)).toContain('transform: scale(0.96);');
+      expect(sheetSource).toMatch(
+        /@media \(prefers-reduced-motion: no-preference\) \{\n {4}\.tile \{/,
+      );
       expect(rule('.row:active:not(:disabled)')).toContain('background-color: var(--hover);');
     });
 
     describe('switching to another card of the stack', () => {
-      /** The other card's entries: Discard gone, so that a row leaves as the sheet switches. */
+      /** The other card's entries: Discard gone, so that an entry leaves as the sheet switches. */
       const ARMOR_ENTRIES = ENTRIES.filter((entry) => entry !== ENTRIES[3]);
 
       async function switchToArmor(
@@ -1509,7 +1547,7 @@ describe('CardSheet', () => {
         });
       }
 
-      it('switches the column at once: no fade, no turn, no row sliding, never an empty column', async () => {
+      it('switches the column at once: no fade, no turn, no entry sliding, never an empty column', async () => {
         const { rerender } = renderSheet({ stack: STACK, cardId: 'rhino' });
 
         await switchToArmor(rerender);
@@ -1679,7 +1717,12 @@ describe('CardSheet', () => {
       ])(
         'measures the new side with its entries in the column, as %s lays them',
         async (_, dock) => {
-          const measured: { tablet: boolean; dock: boolean; inColumn: boolean }[] = [];
+          const measured: {
+            tablet: boolean;
+            dock: boolean;
+            inColumn: boolean;
+            layouts: (string | undefined)[];
+          }[] = [];
           const heights = vi
             .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
             .mockImplementation(function (this: HTMLElement) {
@@ -1687,7 +1730,10 @@ describe('CardSheet', () => {
                 measured.push({
                   tablet: this.classList.contains('tablet'),
                   dock: this.classList.contains('dock'),
-                  inColumn: this.querySelector('.side .pages .main-grid') !== null,
+                  inColumn: this.querySelector('.side .pages .tile') !== null,
+                  layouts: [...this.querySelectorAll<HTMLElement>('.tiles')].map(
+                    (grid) => grid.dataset.layout,
+                  ),
                 });
                 return 300;
               }
@@ -1699,7 +1745,10 @@ describe('CardSheet', () => {
             await rerender({ images: ['rhino-2.png'], header: TURNED, entries: TURNED_ENTRIES });
             await tick();
 
-            expect(measured).toEqual([{ tablet: !dock, dock, inColumn: true }]);
+            // Its groups laid out as the live ones are, by the time the copy is measured.
+            expect(measured).toEqual([
+              { tablet: !dock, dock, inColumn: true, layouts: ['pairs', 'pairs-last'] },
+            ]);
           } finally {
             heights.mockRestore();
           }
@@ -1901,7 +1950,7 @@ describe('CardSheet', () => {
           await tick();
 
           // The old face turns away; the sheet already names the new side, its column starting
-          // with the main buttons, as the copy that measured it.
+          // with the entries, as the copy that measured it.
           expect(faceImage().getAttribute('src')).toBe('rhino.png');
           expect(screen.getByRole('dialog', { name: 'Face-down card' })).toBeTruthy();
           expect(side().firstElementChild?.classList).toContain('pages');

@@ -21,7 +21,7 @@ type: project
     A card of a stack shows the whole stack as a carousel on the card's
     line, the neighbours peeking at its sides, each card with its own
     tokens; a swipe or a tap on a neighbour switches the sheet to it.
-    The switch changes the column at once (no fade, no row slides). Where
+    The switch changes the column at once (no fade, no slide). Where
     the column lies beside the card (a tablet's portrait card, every card
     on a tablet on its side, a phone on its side) it takes what the shown
     card's entries need, up to the card's height; where it lies under
@@ -30,9 +30,13 @@ type: project
     elements mounted, so nothing reloads. A swipe switches as the middle
     passes the midpoint (6 px slack), not at scroll end; a tap switches
     at once.
-    The first menu group shows as big buttons (default in Fray red; laid
-    out as [[project_no_lone_button]] says), the rest as rows, submenus as
-    drill-down; the action menu's entries without key hints, refused
+    Every entry is a tile (neutral panel, 44 px, label centred on one
+    line), in the menu's order, all alike: no Fray red, no bold default.
+    Each group is its own grid, laid out as [[project_no_lone_button]]
+    says; groups are split by a thin divider, as in the desktop menu.
+    Submenus are tiles with a ›, drilling down to a page with a
+    full-width Back row and the submenu's tiles in the same grids.
+    These are the action menu's entries without key hints, refused
     entries left out (`visibleEntries`), and no arrows: arrows are drawn
     with a mouse or a pen only. The inspector has no title line: the
     sheet's accessible name gives the name, type and owner, a pile's
@@ -44,7 +48,7 @@ type: project
     and switches it to the revealed card once the table shows it: the
     sheet first eases to the new size, then the card turns; a refused
     reveal leaves it on the deck. In a turn, the name and the entries show
-    the new side from the start, at once (no button fades, no row slides):
+    the new side from the start, at once (no fade, no slide):
     a revealed card's actions replace the deck's as the reveal lands; only
     the face turns, and the layout follows it once edge-on. Its opening,
     closing, drill-down, counters and presses animate (none under reduced
@@ -89,8 +93,8 @@ type: project
   - The inspector follows the screen's orientation (`SIDEWAYS_QUERY`,
     `(orientation: landscape)`; turning the tablet lays it out again).
     A portrait card lies beside its actions either way, as on a phone on
-    its side: the card `min(460px, 70dvh)` high on the left, the main
-    buttons and rows (44 px) in one column on its right, the only part
+    its side: the card `min(460px, 70dvh)` high on the left, the tiles
+    (44 px) in one column on its right, the only part
     that scrolls, at most as high as the card, in a sheet at most 760 px
     wide (`Sheet` `wide`, other sheets 480 px).
   - On a tablet on its side every card lies beside its actions, a scheme
@@ -234,7 +238,10 @@ mouse, trackpad or pen on a touch screen gets no mode of its own (a pen's
 hover moving the hand and a pen tap lifting nothing are accepted); the
 dock zoom ignores owner lines, a simple fit over a slot more in view;
 the "+N" counter opens the inspector like the rest of the card, which
-already shows every counter.
+already shows every counter. The inspector's entries sit in tile grids
+to save height (a deck's eight entries take 227 px, one per line
+367 px), and no entry is set apart: the default action is found by its
+place, first in its group (user decision).
 
 **How to apply:** gate every touch behaviour on touch mode and every
 phone layout on dock mode, never on width alone; a new card action
