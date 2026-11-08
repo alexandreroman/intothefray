@@ -292,17 +292,22 @@
 <style>
   /*
     The widths follow the lobby's bands: a phone below 600px, then wider; the seats need no band
-    from 1100px. The seats' gap and a card's padding are variables, as a card over several seats
-    spaces its decks with them.
+    from 1100px. The seats' gap and a card's padding, on its sides (--seat-pad) and at its top and
+    bottom (--seat-pad-y), are variables, as a card over several seats spaces its decks with them.
+    On a phone, the left padding clears the colour band by --seat-pad.
   */
   .players {
     --seat-gap: 10px;
-    --seat-pad: 14px;
+    --seat-pad: 16px;
+    --seat-pad-y: 14px;
+    --seat-band: 5px;
   }
 
   @media (min-width: 600px) {
     .players {
       --seat-gap: 12px;
+      --seat-pad: 18px;
+      --seat-pad-y: 18px;
     }
   }
 
@@ -375,7 +380,8 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 10px 12px 12px 17px;
+    padding: var(--seat-pad-y) var(--seat-pad);
+    padding-left: calc(var(--seat-band) + var(--seat-pad));
     border: 1px solid var(--line);
     border-radius: 12px;
     background: var(--panel);
@@ -387,13 +393,14 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 5px;
+    width: var(--seat-band);
     background: var(--pc);
   }
 
+  /* Wider, the band runs along the top, inside the padding: every side is padded alike. */
   @media (min-width: 600px) {
     .seat {
-      padding: var(--seat-pad);
+      padding-left: var(--seat-pad);
     }
 
     .seat::before {
@@ -576,13 +583,13 @@
     font-weight: 600;
   }
 
-  /* A free seat: a dashed card with the colour the next newcomer gets. */
+  /* A free seat: a dashed card with the colour the next newcomer gets, padded as a seat. */
   .free {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 12px 14px;
+    padding: var(--seat-pad-y) var(--seat-pad);
     border: 1.5px dashed var(--line-strong);
     border-radius: 12px;
     background: none;
