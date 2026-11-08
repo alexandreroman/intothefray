@@ -1,8 +1,8 @@
 // A card the viewer draws into their own hand in dock mode (a phone): the hand is not drawn on the
 // table, so its copy flies from its pile to the dock's hand button (the card's mini card, or the
-// avatar of the rail), or to the hero selector entry of another of the viewer's decks, and the
-// avatar pulses as it lands. With the hand sheet open on that hand, it flies into its carousel
-// slot, over the sheet. A table card taken back into the hand flies to the dock the same way, face
+// avatar of the rail; the avatar alone for another of the viewer's decks), and the avatar pulses as
+// it lands. With the hand sheet open on that hand, it flies into its carousel slot, over the sheet;
+// open on another deck's hand, to that deck's entry in its hero selector. A table card taken back into the hand flies to the dock the same way, face
 // up. Out of dock mode, and under reduced motion, nothing changes.
 import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
@@ -291,28 +291,44 @@ describe('a card drawn into the hand in dock mode, the hand sheet shut', () => {
     ]);
   });
 
-  it("flies to another own deck's hero selector entry, fading out, when the dock shows another hand", async () => {
+  it("flies to the dock's avatar, fading out, when the dock shows another own deck's hand", async () => {
     const app = page();
-    dockBar(app, 1, ['a1']);
+    const button = dockBar(app, 1, ['a1']);
+    // A hero selector on the page, as in "Villain + player", is no place to land.
     heroSelector(app, [0, 1]);
 
     await draw(app, ['d']);
 
-    const swatch = app.querySelector('.item[data-seat="0"] .swatch');
     expect(motion.flights).toMatchObject([
       {
         kind: 'draw',
-        to: portraitOn({ left: 10, top: 600, width: 30, height: 30 }),
-        dock: { fades: true, pulse: swatch },
+        to: portraitOn({ left: 20, top: 710, width: 40, height: 40 }),
+        dock: { fades: true, pulse: button.querySelector('.avatar') },
         overSheet: false,
       },
     ]);
     expect(motion.drawing.has('d')).toBe(true);
   });
 
-  it('leaves its pile out of sight when nothing on the screen shows its hand', async () => {
+  it("flies to the rail's avatar, fading out, when the rail shows another own deck's hand", async () => {
     const app = page();
-    dockBar(app, 1, ['a1']);
+    const button = dockRail(app, 1);
+
+    await draw(app, ['d']);
+
+    expect(motion.flights).toMatchObject([
+      {
+        kind: 'draw',
+        to: portraitOn({ left: 12, top: 12, width: 40, height: 40 }),
+        dock: { fades: true, pulse: button.querySelector('.avatar') },
+        overSheet: false,
+      },
+    ]);
+  });
+
+  it('leaves its pile out of sight when nothing on the screen shows a hand', async () => {
+    const app = page();
+    heroSelector(app, [0, 1]);
 
     await draw(app, ['d']);
 
@@ -320,16 +336,22 @@ describe('a card drawn into the hand in dock mode, the hand sheet shut', () => {
     expect(motion.drawing.size).toBe(0);
   });
 
-  it('leaves its pile out of sight while the hand button is a drop target, with no avatar', async () => {
-    const app = page();
-    const button = dockBar(app, 0, ['d']);
-    button.replaceChildren(box('drop-label', { left: 20, top: 710, width: 200, height: 20 }));
+  it.each([
+    ['its own', 0],
+    ["another own deck's", 1],
+  ])(
+    'leaves its pile out of sight while the hand button showing %s hand is a drop target, with no avatar',
+    async (_name, seat) => {
+      const app = page();
+      const button = dockBar(app, seat, ['d']);
+      button.replaceChildren(box('drop-label', { left: 20, top: 710, width: 200, height: 20 }));
 
-    await draw(app, ['d']);
+      await draw(app, ['d']);
 
-    expect(motion.flights).toMatchObject([{ kind: 'drawAway', pile: 'deck:p0' }]);
-    expect(motion.drawing.size).toBe(0);
-  });
+      expect(motion.flights).toMatchObject([{ kind: 'drawAway', pile: 'deck:p0' }]);
+      expect(motion.drawing.size).toBe(0);
+    },
+  );
 
   it('ends when an undo takes the card out of the hand before it lands', async () => {
     const app = page();
@@ -488,9 +510,9 @@ describe("a drawn card's copy flying to the dock", () => {
     expect(pulses[0]?.keyframes.flatMap((frame) => Object.keys(frame))).not.toContain('filter');
   });
 
-  it("pulses the hero selector entry's avatar as it lands there", async () => {
+  it("pulses the dock's avatar as it lands there for another own deck", async () => {
     const app = page();
-    dockBar(app, 1, ['a1']);
+    const button = dockBar(app, 1, ['a1']);
     heroSelector(app, [0, 1]);
     renderFlights(app);
     await draw(app, ['d']);
@@ -500,9 +522,10 @@ describe("a drawn card's copy flying to the dock", () => {
     await tick();
     await tick();
 
-    expect(animationsOf('.swatch').map(({ element }) => element)).toEqual([
-      app.querySelector('.item[data-seat="0"] .swatch'),
+    expect(animationsOf('.avatar').map(({ element }) => element)).toEqual([
+      button.querySelector('.avatar'),
     ]);
+    expect(animationsOf('.swatch')).toEqual([]);
   });
 
   it('pulses nothing when stopped before it lands', async () => {
@@ -603,10 +626,9 @@ describe('a card drawn into the hand in dock mode, the hand sheet sliding away',
     ]);
   });
 
-  it("flies to the floating hero selector's entry, not the leaving sheet's", async () => {
+  it("flies to the dock's avatar for another own deck, not to the leaving sheet's entry", async () => {
     const app = page();
-    dockBar(app, 1, ['a1']);
-    heroSelector(app, [0, 1]);
+    const button = dockBar(app, 1, ['a1']);
     handSheet(app, ['a1'], [0, 1]).setAttribute('inert', '');
 
     await draw(app, ['d']);
@@ -614,7 +636,8 @@ describe('a card drawn into the hand in dock mode, the hand sheet sliding away',
     expect(motion.flights).toMatchObject([
       {
         kind: 'draw',
-        dock: { pulse: app.querySelector(':scope > .picker .item[data-seat="0"] .swatch') },
+        to: portraitOn({ left: 20, top: 710, width: 40, height: 40 }),
+        dock: { fades: true, pulse: button.querySelector('.avatar') },
         overSheet: false,
       },
     ]);

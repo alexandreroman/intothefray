@@ -421,9 +421,10 @@
 
   // The hero selector at the bottom left (HeroPicker): in "Villain + player", every seat, its entry
   // picking the row shown; in "All", the viewer's own decks, its entry picking the hand shown. It
-  // shows only with two entries or more: a single hero leaves nothing to pick. In dock mode, a card
-  // drawn into a deck's hand flies to its entry when no hand shows it: its badge counts it once the
-  // card has landed (motion.drawing), as the dock does.
+  // shows only with two entries or more: a single hero leaves nothing to pick. In dock mode it
+  // floats in "Villain + player" alone, the hand sheet's selector (ownEntries) picking the deck in
+  // "All", and a badge of either counts a card drawn into its hand once the card has landed
+  // (motion.drawing), as the dock does.
   const pickerEntries = $derived<HeroEntry[]>(
     seatedDecks
       .filter(({ seat }) => focused || own.includes(seat))
@@ -446,7 +447,6 @@
     return hand.filter((id) => motion.drawing.has(id)).length;
   }
   const pickerCurrent = $derived(focused ? shownSeat : selected);
-  const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null);
   // The selector's width in px while it shows, bound out of HeroPicker: on a wide screen, the hands
   // keep to the room right of it. Stale once it is gone.
   let pickerWidth = $state(0);
@@ -548,8 +548,8 @@
 
   // Dock mode, a phone held either way on a touch screen: the dock (Dock.svelte) stands in
   // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the
-  // history in bottom sheets; the hero selector floats beside it. A mouse or a pen never sees it, at
-  // any width.
+  // history in bottom sheets; in "Villain + player" the hero selector floats beside it. A mouse or a
+  // pen never sees it, at any width.
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
@@ -562,6 +562,11 @@
   // button beside the floating Undo opens the history sheet dock mode uses, as a finger
   // has no other way to read the history. A mouse window keeps its corner as it is.
   const historySheetMode = $derived(tablet && narrow.current);
+  // Whether the hero selector floats on the table: with two entries or more, and in dock mode in
+  // "Villain + player" alone.
+  const pickerShown = $derived(
+    pickerEntries.length > 1 && pickerCurrent !== null && (focused || !dockMode),
+  );
   // The cards and piles below read it too: small cards and small piles.
   setDockMode({
     get current() {
@@ -2778,8 +2783,8 @@
   {/if}
 
   <!--
-    In dock mode too, compact, floating above the dock or right of the rail: there it is the only way
-    to pick the player shown in "Villain + player", and to switch decks without opening the hand.
+    In dock mode, in "Villain + player" alone, compact, floating above the dock or right of the rail:
+    there it is the only way to pick the player shown.
   -->
   {#if pickerShown && pickerCurrent !== null}
     <div class="seatpick">
@@ -3314,8 +3319,8 @@
   }
 
   /*
-    Dock mode: just above the dock's bar (--table-bottom, its room above the safe area), on its left
-    edge. As the dock, under the top bar and the sheets.
+    Dock mode ("Villain + player"): just above the dock's bar (--table-bottom, its room above the
+    safe area), on its left edge. As the dock, under the top bar and the sheets.
   */
   .app.dock-mode .seatpick {
     z-index: 30;

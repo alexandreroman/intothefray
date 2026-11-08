@@ -9,7 +9,9 @@
 
   A card drawn into the hand shown, or taken back into it off the table, flies to its mini card,
   or to the avatar on the rail (motion.svelte.ts, dockLanding): until its copy lands, its mini is
-  hidden in its place and the size leaves it out, so that each steps up as its card lands.
+  hidden in its place and the size leaves it out, so that each steps up as its card lands. One
+  drawn into another of the viewer's hands flies into the avatar, or with the hand sheet open, to
+  that hand's entry in its hero selector.
 -->
 <script module lang="ts">
   /** A card of the hand, as the dock shows it. */

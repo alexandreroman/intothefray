@@ -14,10 +14,10 @@
   from the viewer's hand rises and fades out where it was seen: drawn as the
   hand sheet draws it (a landscape card turned a quarter), at the table's
   zoom from the dock's hand button. A card drawn into the viewer's hand, or
-  taken back into it off the table, flies to the dock's hand button or to its
-  deck's hero selector entry when no hand sheet shows its hand, and over the
-  hand sheet into its carousel slot when one does (into the sheet's hand
-  size when that slot lies out of sight).
+  taken back into it off the table, flies to the dock's hand button, or over
+  the hand sheet to its deck's entry in the sheet's hero selector, when no
+  hand sheet shows its hand, and over the hand sheet into its carousel slot
+  when one does (into the sheet's hand size when that slot lies out of sight).
 -->
 <script lang="ts">
   import type { PackFace, CardView as TableCard } from '../lib/types';
