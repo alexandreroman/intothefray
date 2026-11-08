@@ -25,6 +25,9 @@ type: project
   it lists every seat and shows the picked seat's row, and another
   player's seat shows their row and no hand, shared-card actions staying
   credited to the last own deck. It shows only with 2 entries or more.
+  In dock mode (phones) it floats in "Villain + player" only; in "All"
+  the hand sheet's header holds the selector of the player's own decks
+  (see [[project_touch_phone_table]]).
   The Q key and a card dragged to an own hand select that deck; Shift +
   ← / → steps through the selector's entries, round them.
 - A player with exactly 2 decks on a wide screen sees both hands side by
