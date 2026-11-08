@@ -748,6 +748,20 @@ describe('CardSheet', () => {
       expect(card.classList).not.toContain('exhausted');
     });
 
+    it('reads Ready on the same Exhaust tile as the card tilts', async () => {
+      const { rerender } = renderSheet({ tilts: true });
+      const tile = screen.getByRole('button', { name: 'Exhaust' });
+
+      const READY = { ...EXHAUST, label: 'Ready' };
+      await rerender({
+        exhausted: true,
+        entries: [{ kind: 'action', item: READY }, ...ENTRIES.slice(1)],
+      });
+
+      expect(screen.getByRole('button', { name: 'Ready' })).toBe(tile);
+      expect(tilt().classList).toContain('exhausted');
+    });
+
     it('turns the face and its counters together', () => {
       renderSheet({ exhausted: true, tilts: true, counters: [DAMAGE, STUNNED] });
 
@@ -779,9 +793,10 @@ describe('CardSheet', () => {
       const inspector = document.querySelector<HTMLElement>('.inspector:not(.measure)')!;
       expect(inspector.style.getPropertyValue('--tilt-ms')).toBe(`${TILT_MS}ms`);
       expect(inspector.style.getPropertyValue('--tilt-easing')).toBe(MOVE_EASING);
-      const motion = block('@media (prefers-reduced-motion: no-preference)');
-      expect(ruleIn(motion, '.tilt')).toContain(
-        'transition: rotate var(--tilt-ms) var(--tilt-easing);',
+      expect(rule('.tilt', 4)).toContain('transition: rotate var(--tilt-ms) var(--tilt-easing);');
+      // Inside the block: its lines are indented by four spaces at least, up to its closing brace.
+      expect(sheetSource).toMatch(
+        /@media \(prefers-reduced-motion: no-preference\) \{(?:\n {4}.*|\n)*?\n {4}\.tilt \{\n {6}transition: rotate/,
       );
     });
 
