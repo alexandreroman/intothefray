@@ -939,7 +939,7 @@
   // The raised hand's cards, 80 % of the preview's, 65 % on a tablet (touch mode outside dock
   // mode). At rest, Hand.svelte draws them at the size of the base card at HAND_REST_SCALE, on the
   // base card's fan, and they drop so that as tall a part of them shows as of the base card
-  // dropped by baseHandDrop. The card boxes show their tiles at its width, at most 220 px, outside
+  // dropped by baseHandDrop. The card boxes show their tiles at its width, at most 160 px, outside
   // dock mode: as large as a raised hand's cards before a full hand shrinks them (raisedCardOf).
   const raisedCard = $derived(
     raisedHandCard(

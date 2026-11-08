@@ -2,7 +2,7 @@
   The card box: Search, Look at top, Browse and the stage choice share one
   fixed-size box, two rows of 5:7 tiles with the rest scrolling, a name filter
   and a footer. Its tiles are as wide as the raised hand's cards, at most
-  220 px (`tileWidth`, boxGrid), in as many columns as the window holds, and
+  160 px (`tileWidth`, boxGrid), in as many columns as the window holds, and
   the box is as wide as those columns. A click, a tap or a right click on a pile tile opens
   its context menu at the pointer, over the box; in Look at top, tiles are
   reordered by dragging, with a live preview. The stage choice and the
@@ -83,7 +83,7 @@
     /** Closes the box; `shuffle` asks to shuffle the searched deck. */
     onclose: (shuffle: boolean) => void;
     /**
-     * The tiles' width, in px: the raised hand's card, which boxGrid caps at 220 px. Unused in
+     * The tiles' width, in px: the raised hand's card, which boxGrid caps at 160 px. Unused in
      * dock mode, where the hand is no fan: the tiles then fill the screen's width.
      */
     tileWidth: number;
@@ -363,7 +363,7 @@
   // scrollbars, and in jsdom.
   let gutter = $state(0);
 
-  /** The grid's tiles, the raised hand's card at most 220 px wide, in the columns that fit; none in dock mode. */
+  /** The grid's tiles, the raised hand's card at most 160 px wide, in the columns that fit; none in dock mode. */
   const fitted = $derived(dock.current ? null : boxGrid(tileWidth, windowWidth, gutter));
 
   /**
@@ -888,7 +888,7 @@
   }
 
   /*
-    Outside dock mode, the tiles are the raised hand's cards, at most 220 px (--tile), in the
+    Outside dock mode, the tiles are the raised hand's cards, at most 160 px (--tile), in the
     columns that fit (--columns, boxGrid): the box is as wide as they are. The scrollbar's room is
     kept, so that a classic one showing never drops a column; a gutter of a fraction of a px (a page
     zoom), which its measure rounds, never scrolls the grid across.

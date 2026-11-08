@@ -258,16 +258,20 @@ describe('boxGrid', () => {
   const FRAME = 2 * 16 + 2 * 1;
 
   it('fits as many tiles of the raised card as the box has room for', () => {
-    // A small window's raised card, under 220 px: 2 × 184 and a 14 px gap in the 494 px inside.
-    expect(boxGrid(184, 560, 0)).toEqual({ columns: 2, tile: 184, width: 2 * 184 + 14 + FRAME });
+    // A small window's raised card, under 160 px: 3 × 150 and two 14 px gaps in the 494 px inside.
+    expect(boxGrid(150, 560, 0)).toEqual({
+      columns: 3,
+      tile: 150,
+      width: 3 * 150 + 2 * 14 + FRAME,
+    });
   });
 
-  it('keeps its tiles at 220 px at most on a large screen', () => {
-    // 1200 px at most: 5 × 220 and four 14 px gaps fill 1156 px of the 1166 px inside.
+  it('keeps its tiles at 160 px at most on a large screen', () => {
+    // 1200 px at most: 6 × 160 and five 14 px gaps fill 1030 px of the 1166 px inside.
     expect(boxGrid(286, 1440, 0)).toEqual({
-      columns: 5,
-      tile: 220,
-      width: 5 * 220 + 4 * 14 + FRAME,
+      columns: 6,
+      tile: 160,
+      width: 6 * 160 + 5 * 14 + FRAME,
     });
   });
 
@@ -278,30 +282,31 @@ describe('boxGrid', () => {
   it('keeps the backdrop padding off a smaller window', () => {
     // 1000 px less the backdrop's 16 px on each side: 934 px inside.
     expect(boxGrid(227, 1000, 0)).toEqual({
-      columns: 4,
-      tile: 220,
-      width: 4 * 220 + 3 * 14 + FRAME,
+      columns: 5,
+      tile: 160,
+      width: 5 * 160 + 4 * 14 + FRAME,
     });
     // A tablet's raised card, 233 px wide, at 1180 px; 226 px upright, at 820 px.
     expect(boxGrid(233, 1180, 0)).toEqual({
-      columns: 4,
-      tile: 220,
-      width: 4 * 220 + 3 * 14 + FRAME,
+      columns: 6,
+      tile: 160,
+      width: 6 * 160 + 5 * 14 + FRAME,
     });
     expect(boxGrid(226, 820, 0)).toEqual({
-      columns: 3,
-      tile: 220,
-      width: 3 * 220 + 2 * 14 + FRAME,
+      columns: 4,
+      tile: 160,
+      width: 4 * 160 + 3 * 14 + FRAME,
     });
   });
 
   it('counts the scrollbar gutter, which the box widens by', () => {
-    expect(boxGrid(220, 1000, 0).columns).toBe(4);
+    // 864 px inside, room for 5 × 160 and four 14 px gaps (856 px).
+    expect(boxGrid(160, 930, 0).columns).toBe(5);
     // 15 px less room inside: one column fewer.
-    expect(boxGrid(220, 1000, 15)).toEqual({
-      columns: 3,
-      tile: 220,
-      width: 3 * 220 + 2 * 14 + FRAME + 15,
+    expect(boxGrid(160, 930, 15)).toEqual({
+      columns: 4,
+      tile: 160,
+      width: 4 * 160 + 3 * 14 + FRAME + 15,
     });
   });
 
