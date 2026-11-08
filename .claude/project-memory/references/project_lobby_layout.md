@@ -30,13 +30,16 @@ type: project
   `Change deck` (pencil), `Remove deck` (trash). The cross icon closes
   things only (the top bar's Close the lobby, dialogs, a set chip's remove).
 - **Scenario**, host (`ScenarioPicker.svelte`): the `Villain` filter, then
-  every scenario as a compact row (40×30 art icon, name), grouped by pack in
-  release order, packs in 2 / 3 / 4 CSS columns, never split. The chosen
-  row is outlined in signal blue with a check; an unsupported one is greyed,
-  `aria-disabled`, tip `Not supported yet`. Under the list, once a scenario
-  is chosen, the recap: art 120×90, name and pack, Difficulty and Modular
-  sets (side by side from 1100px). Every settings control is `--ctl` (34px)
-  tall.
+  the scenarios as compact rows (40×30 art icon, name), grouped by pack in
+  release order, packs in 2 / 3 / 4 CSS columns, never split. The list
+  opens on whole packs up to 16 scenarios (`FOLDED_MIN_SCENARIOS`) plus the
+  chosen scenario's pack; `Show all villains (N more)` unfolds it for the
+  rest of the visit and goes away; a filter query searches every scenario.
+  The chosen row is outlined in signal blue with a check; an unsupported one
+  is greyed, `aria-disabled`, tip `Not supported yet`. Under the list, once
+  a scenario is chosen, the recap: art 120×90, name and pack, Difficulty and
+  Modular sets (side by side from 1100px). Every settings control is `--ctl`
+  (34px) tall.
 - **Scenario**, guest or spectator: no box until the host has chosen; then
   the box shows the recap read only (difficulty as a chip). On a phone its
   two settings sit in the art's and the name's columns (subgrid).
@@ -47,12 +50,11 @@ type: project
 - **Start**: a box at the end of the column with the readiness line and,
   for the host, `Set up the table` (full width on a phone).
 
-**Why:** designed with the user from mockups
-(`docs/superpowers/prototypes/lobby-redesign.html`): the players come
-first so their connection shows at a glance; the host picks the villain in
-the page from a full list rather than a dialog or a scrolling box; the page
-works the same on phones, tablets and desktops; what does not apply yet
-does not show.
+**Why:** user decisions: the players come first so their connection
+shows at a glance; the host picks the villain in the page rather than in a
+dialog or a scrolling box, from a short list that opens in full on demand;
+the page works the same on phones, tablets and desktops; what does not
+apply yet does not show.
 
 **How to apply:** a new lobby setting goes in the recap and uses `--ctl`
 controls; a new lobby box uses the shared box padding; a new seat action is

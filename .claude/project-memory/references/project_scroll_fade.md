@@ -24,8 +24,8 @@ type: project
   `mask-image` driven by `@property` lengths that transition (none under
   `prefers-reduced-motion`).
 - The mask covers everything inside the list, sticky headers included (the
-  Add a set menu's sticky pack names, `.mpk`); the dragged tile and the tile context menu of a card box sit
-  outside the list, out of the mask.
+  Add a set menu's sticky pack names, `.mpk`); the dragged tile and the tile
+  context menu of a card box sit outside the list, out of the mask.
 
 **Why:** user decision, so items come and go with a fade as a
 list scrolls.
