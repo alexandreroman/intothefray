@@ -851,6 +851,32 @@ describe('ScenarioPicker villain list', () => {
       return screen.getByRole('button', { name: /^Show all villains/ });
     }
 
+    describe('in motion', () => {
+      mockAnimations();
+
+      it('fades in the packs Show all villains brings', async () => {
+        const { container } = renderLong();
+
+        await fireEvent.click(showAll());
+
+        const revealed = [...container.querySelectorAll('.vpack')].slice(2);
+        expect(revealed).toHaveLength(3);
+        await vi.waitFor(() => expect(animated(200)).toEqual(revealed));
+      });
+
+      it('shows the packs a filter brings at once', async () => {
+        const { container } = renderLong();
+
+        await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
+          target: { value: 'Villain 4' },
+        });
+        await settle();
+
+        expect(shownPacks(container)).toEqual(['Pack 4']);
+        expect(animate).not.toHaveBeenCalled();
+      });
+    });
+
     it('shows whole packs in release order until 16 scenarios, unsupported ones counted', () => {
       const { container } = renderLong();
 
@@ -968,6 +994,51 @@ async function settle(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve));
 }
 
+/** The elements that played an animation of the given length, in the order they started. */
+function animated(duration: number): Element[] {
+  return animate.mock.calls.flatMap((call: unknown[], i) => {
+    const options = call[1] as KeyframeAnimationOptions | undefined;
+    return options?.duration === duration ? [animate.mock.contexts[i] as Element] : [];
+  });
+}
+
+describe('ScenarioPicker set chips in motion', () => {
+  mockAnimations();
+
+  function chip(name: string): Element {
+    return screen.getByText(name, { selector: '.chip' });
+  }
+
+  it('pops a set in as the host adds it, and only that one', async () => {
+    const { rerender } = renderPicker(rhino);
+
+    await rerender({ view: viewOf({ ...rhino, modulars: ['bomb_scare', 'ambush'] }) });
+
+    await vi.waitFor(() => expect(animated(200)).toEqual([chip('ambush')]));
+  });
+
+  it('pops a set out as the host removes it', async () => {
+    const { rerender } = renderPicker({ ...rhino, modulars: ['bomb_scare', 'ambush'] });
+    const leaving = chip('ambush');
+
+    await rerender({ view: viewOf(rhino) });
+
+    await vi.waitFor(() => expect(animated(200)).toEqual([leaving]));
+  });
+
+  it('adds and removes sets at once under reduced motion', async () => {
+    motion.reduced = true;
+    const { rerender } = renderPicker(rhino);
+
+    await rerender({ view: viewOf({ ...rhino, modulars: ['ambush'] }) });
+    await settle();
+
+    expect(screen.queryByText('Bomb Scare')).toBeNull();
+    expect(chip('ambush')).toBeTruthy();
+    expect(animate).not.toHaveBeenCalled();
+  });
+});
+
 describe('ScenarioPicker recap', () => {
   const noScenario: LobbyConfig = { ...rhino, scenario: '', standard: '', modulars: [] };
 
@@ -1001,7 +1072,7 @@ describe('ScenarioPicker recap', () => {
     await settle();
 
     expect(screen.getByRole('heading', { level: 3, name: 'Klaw' })).toBeTruthy();
-    expect(animate).not.toHaveBeenCalled();
+    expect(slid()).toBe(false);
   });
 
   it('opens at once under reduced motion', async () => {

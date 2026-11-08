@@ -9,6 +9,7 @@
   import type { GameSession } from '../lib/session.svelte';
   import { hostName, type DeckView, type Index, type View } from '../lib/types';
   import type { Rect } from '../lib/rect';
+  import type { SlotRemoval } from '../lib/slotKeys';
 
   let { session, view }: { session: GameSession; view: View } = $props();
 
@@ -106,17 +107,21 @@
   }
 
   // The own slot count when the viewer asked for one more deck. The view that shows that many plus
-  // one has the new slot last, and its deck link takes the focus as it mounts. The slots remount
-  // only when their count changes, so the value can stay once the slot is there.
+  // one has the new slot last, and its deck link takes the focus as it mounts. Only a new slot
+  // mounts, so the value can stay once the slot is there.
   let addingFrom = $state<number | null>(null);
+  // The own slot the viewer asked to remove, with their slot count then: the view that shows one
+  // fewer drops that slot, and the seats keep the others as they are (Seats).
+  let removing = $state<SlotRemoval | null>(null);
   const focusSlot = $derived(
     addingFrom !== null && me?.decks.length === addingFrom + 1 ? addingFrom : null,
   );
 
-  // A failed Add a deck brings no new slot.
+  // A failed Add a deck brings no new slot, nor a failed Remove deck one fewer.
   $effect(() => {
     if (session.lastError !== null) {
       addingFrom = null;
+      removing = null;
     }
   });
 
@@ -128,6 +133,7 @@
     }
     if (me && session.lobby('addDeck')) {
       addingFrom = me.decks.length;
+      removing = null;
     }
   }
 
@@ -148,6 +154,7 @@
   function removeDeck(slot: number): void {
     addingFrom = null;
     loadingSlot = null;
+    removing = me ? { slot, from: me.decks.length } : null;
     session.lobby('removeDeck', { deck: slot });
   }
 </script>
@@ -176,6 +183,7 @@
       ontakeseat={() => session.lobby('takeSeat')}
       onadddeck={addDeck}
       addLocked={session.deckLoading}
+      ownRemoval={removing}
       {ownSlot}
     />
 
@@ -218,22 +226,20 @@
 <!-- One of the viewer's deck slots, inside their player card. -->
 {#snippet ownSlot(deck: DeckView, slot: number)}
   {@const several = (me?.decks.length ?? 0) > 1}
-  <!-- The slots have no identity but their index: a new slot count remounts them, so that a link
-       typed for a removed deck does not stay in the slot that takes its place. -->
-  {#key me?.decks.length}
-    <DeckLoader
-      {deck}
-      slot={several ? slot + 1 : null}
-      deckError={slot === (loadingSlot ?? 0) ? session.deckError : null}
-      error={slot === (loadingSlot ?? 0) ? deckLoadError : null}
-      loading={session.deckLoading && slot === loadingSlot}
-      locked={session.deckLoading}
-      loaded={slot === loadingSlot ? session.deckLoaded : undefined}
-      onload={(url) => loadDeck(slot, url)}
-      onremove={several ? () => removeDeck(slot) : undefined}
-      autofocus={slot === focusSlot}
-    />
-  {/key}
+  <!-- The seats key each slot (Seats): a slot keeps its DeckLoader as long as it stays, under a
+       new index once an earlier one is removed, and the removed slot's goes with it. -->
+  <DeckLoader
+    {deck}
+    number={several ? slot + 1 : null}
+    deckError={slot === (loadingSlot ?? 0) ? session.deckError : null}
+    error={slot === (loadingSlot ?? 0) ? deckLoadError : null}
+    loading={session.deckLoading && slot === loadingSlot}
+    locked={session.deckLoading}
+    loaded={slot === loadingSlot ? session.deckLoaded : undefined}
+    onload={(url) => loadDeck(slot, url)}
+    onremove={several ? () => removeDeck(slot) : undefined}
+    autofocus={slot === focusSlot}
+  />
 {/snippet}
 
 <style>

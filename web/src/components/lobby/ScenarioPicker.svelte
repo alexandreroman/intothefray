@@ -1,12 +1,12 @@
 <script lang="ts">
   import { cubicOut } from 'svelte/easing';
   import { MediaQuery } from 'svelte/reactivity';
-  import { slide } from 'svelte/transition';
+  import { fade, slide, type TransitionConfig } from 'svelte/transition';
   import { tick, untrack } from 'svelte';
   import { storedLang } from '../../lib/lang';
   import { localizedName } from '../../lib/localize';
   import { fold, matchesQuery } from '../../lib/textFilter';
-  import { motionMs } from '../../lib/motion';
+  import { glide, motionMs, pop } from '../../lib/motion';
   import { overflowTip } from '../../lib/overflowTip';
   import { scrollFade } from '../../lib/scrollFade';
   import CardArt from '../CardArt.svelte';
@@ -48,6 +48,7 @@
     { value: 'expert', label: 'Expert' },
   ];
   const SLIDE_MS = 250;
+  const REVEAL_MS = 200;
   // The Add a set menu's gap under its button, and its height cap: it scrolls inside beyond it.
   const MENU_GAP = 4;
   const MENU_MAX_HEIGHT = 320;
@@ -216,8 +217,10 @@
    */
   async function unfold(): Promise<void> {
     const firstShown = hiddenGroups[0]?.scenarios[0];
+    revealing = true;
     unfolded = true;
     await tick();
+    revealing = false;
     const rows = villainList?.querySelectorAll<HTMLElement>('.vrow') ?? [];
     const row = [...rows].find((r) => r.dataset.scenario === firstShown?.id);
     row?.focus();
@@ -392,6 +395,14 @@
   // Svelte plays a local intro only when its own block opens: a component mounted with a scenario
   // already chosen shows it at once, and a recap or box that opens later slides in.
   const slideIn = $derived({ duration: motionMs(SLIDE_MS), easing: cubicOut });
+
+  // Whether Show all villains is bringing the rest of the packs, which then fade in. A plain
+  // variable, read as each intro starts: a filter shows and hides packs at once.
+  let revealing = false;
+
+  function revealPack(node: Element): TransitionConfig {
+    return fade(node, { duration: revealing ? motionMs(REVEAL_MS) : 0, easing: cubicOut });
+  }
 </script>
 
 <svelte:window
@@ -473,7 +484,7 @@
           <div class="lbl">Modular sets</div>
           <div class="line chips">
             {#each config.modulars as code (code)}
-              <span class="chip" class:guest-chip={!isHost}>
+              <span class="chip" class:guest-chip={!isHost} in:pop out:pop animate:glide>
                 {setName(code)}
                 {#if recommended.includes(code)}
                   <span
@@ -596,7 +607,7 @@
       <!-- Packs flow in columns, a pack never split; the page scrolls, not the list. -->
       <div class="vlist" id="{uid}-villains" bind:this={villainList}>
         {#each groups as group (group.pack.code)}
-          <div class="vpack">
+          <div class="vpack" in:revealPack>
             <div class="pk"><span use:overflowTip>{localizedName(group.pack, lang)}</span></div>
             {#each group.scenarios as scenario (scenario.id)}
               {@const selected = scenario.id === config.scenario}

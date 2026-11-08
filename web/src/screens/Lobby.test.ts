@@ -849,6 +849,30 @@ describe('Lobby', () => {
     expect(screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck 1 link' }).value).toBe('');
   });
 
+  it('keeps the other slots, with their typed links, as a slot between them is removed', async () => {
+    const live = renderLive();
+    await live.receive({
+      type: 'view',
+      version: 2,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck, noDeck] }, sam]),
+    });
+    const first = screen.getByRole('textbox', { name: 'Deck 1 link' });
+    const third = screen.getByRole('textbox', { name: 'Deck 3 link' });
+    await fireEvent.input(third, { target: { value: 'https://example.com/deck/3' } });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 2' }));
+    await live.receive({
+      type: 'view',
+      version: 3,
+      view: lobbyView([{ ...alex, decks: [noDeck, noDeck] }, sam]),
+    });
+
+    // The same nodes, so that neither replays its opening: the former deck 3 is deck 2 now.
+    expect(screen.getByRole('textbox', { name: 'Deck 1 link' })).toBe(first);
+    expect(screen.getByRole('textbox', { name: 'Deck 2 link' })).toBe(third);
+    expect((third as HTMLInputElement).value).toBe('https://example.com/deck/3');
+  });
+
   it('shows no failed deck load under another slot once a slot is removed', async () => {
     const live = renderLive();
     await live.receive({

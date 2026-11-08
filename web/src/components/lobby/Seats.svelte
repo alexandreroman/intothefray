@@ -7,12 +7,18 @@
 <script lang="ts">
   import { onDestroy, tick, type Snippet } from 'svelte';
   import Icon from '../Icon.svelte';
+  import { glide, pop, unfold } from '../../lib/motion';
   import { overflowTip } from '../../lib/overflowTip';
   import { playerColorVar } from '../../lib/playerColor';
   import { gamePath, href } from '../../lib/router.svelte';
+  import { nextSlotKeys, type SlotKeys, type SlotRemoval } from '../../lib/slotKeys';
   import { MAX_SEATS, seatCount, type DeckView, type PlayerView, type View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
+
+  type Seat =
+    | { kind: 'player'; key: string; player: PlayerView; slots: { key: number; deck: DeckView }[] }
+    | { kind: 'free'; key: string; color: number };
 
   let {
     view,
@@ -21,6 +27,7 @@
     ontakeseat,
     onadddeck,
     addLocked = false,
+    ownRemoval = null,
     ownSlot,
   }: {
     view: View;
@@ -30,6 +37,8 @@
     onadddeck: () => void;
     /** Add a deck is blocked, as while a deck load is in flight; the button keeps its place. */
     addLocked?: boolean;
+    /** The removal of one of the viewer's slots they asked for, until another change of theirs. */
+    ownRemoval?: SlotRemoval | null;
     /** One of the viewer's deck slots, from its deck and its 0-based index. */
     ownSlot: Snippet<[DeckView, number]>;
   } = $props();
@@ -46,6 +55,37 @@
       .filter((c) => !view.players.some((p) => p.color === c))
       .slice(0, Math.max(0, MAX_SEATS - seatsTaken)),
   );
+
+  // Each player's slots as last shown, by colour. A plain variable, not state: it only carries the
+  // slot keys from one view to the next, and `seats` alone writes it.
+  let lastSlotKeys = new Map<number, SlotKeys>();
+
+  /*
+    The seats in grid order, players then free seats, in one keyed list: the grid is measured once
+    before a change, so every seat glides from where it was. A player's seat goes by their colour,
+    a free seat by the colour it offers.
+
+    A deck slot goes by a key of its own (lib/slotKeys), not by its index: once a slot is removed,
+    the slots after it keep their nodes (the viewer's keep the links typed in them) and only the
+    removed one closes; an added slot is the only one to open. The viewer's own removal names the
+    slot that went, so that a link typed for it never stays in the slot that takes its place.
+  */
+  const seats = $derived.by((): Seat[] => {
+    const keyed = view.players.map((player) => {
+      const removal = isMe(player) ? ownRemoval : null;
+      return {
+        player,
+        slotKeys: nextSlotKeys(lastSlotKeys.get(player.color), player.decks, removal),
+      };
+    });
+    lastSlotKeys = new Map(keyed.map(({ player, slotKeys }) => [player.color, slotKeys]));
+    const players: Seat[] = keyed.map(({ player, slotKeys }) => {
+      const slots = player.decks.map((deck, i) => ({ key: slotKeys.keys[i]!, deck }));
+      return { kind: 'player', key: `player-${player.color}`, player, slots };
+    });
+    const free: Seat[] = freeColors.map((color) => ({ kind: 'free', key: `free-${color}`, color }));
+    return [...players, ...free];
+  });
 
   let copied = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
@@ -103,72 +143,91 @@
         bind:this={linkInput}
       />
     {/if}
+    <!-- A seat arrives and leaves with a pop, and the others glide to their new places. Svelte
+         plays a local transition only when its own list changes: nothing moves as the lobby
+         first shows, nor inside a card that arrives or leaves. -->
     <div class="seats">
-      {#each view.players as player (player.color)}
-        {@const mine = isMe(player)}
-        {@const status = player.online ? 'Online' : 'Offline'}
-        {@const decks = player.decks.length}
+      {#each seats as seat (seat.key)}
+        {@const decks = seat.kind === 'player' ? seat.slots.length : 1}
         <div
-          class="seat"
-          class:me={mine}
+          class="cell"
           class:span2={decks === 2}
           class:span3={decks === 3}
           class:span4={decks === 4}
-          style:--pc={playerColorVar(player.color)}
+          in:pop
+          out:pop
+          animate:glide
         >
-          <div class="top">
-            <div class="who">
-              <div class="nm">
-                <b use:overflowTip>{player.name}</b>
-                <!-- On a phone, the roles and the online dot follow the name; wider, the status
-                     line below says it all. -->
-                {#if mine}<span class="tag">you</span>{/if}
-                {#if player.host}<span class="tag">host</span>{/if}
-                <span class="dot" class:off={!player.online} data-tip={status}>
-                  <span class="sr-only">{status}</span>
-                </span>
-              </div>
-              <span class="status" class:off={!player.online}>
-                <i></i>{status}
-                {#if mine}<span class="role">· you</span>{/if}
-                {#if player.host}<span class="role">· host</span>{/if}
-              </span>
-            </div>
-            {@render tools(player, mine)}
-          </div>
-          <div class="decks">
-            {#each player.decks as deck, slot (slot)}
-              {#if mine}
-                {@render ownSlot(deck, slot)}
-              {:else}
-                <div class="deck">
-                  <HeroThumb image={deck.heroImage} name={deck.heroName} />
-                  {#if deck.ready}
-                    <DeckNames heroName={deck.heroName ?? '?'} deckName={deck.deckName ?? ''} />
-                  {:else}
-                    <div class="wait">Waiting for a deck</div>
-                  {/if}
-                </div>
-              {/if}
-            {/each}
-          </div>
+          {#if seat.kind === 'player'}
+            {@render playerCard(seat.player, seat.slots)}
+          {:else}
+            {@render freeSeat(seat.color)}
+          {/if}
         </div>
-      {/each}
-      {#each freeColors as color (color)}
-        {#if isSpectator}
-          <button class="free" style:--pc={playerColorVar(color)} onclick={ontakeseat}>
-            <i></i><b>Take this seat</b>
-          </button>
-        {:else}
-          <div class="free" style:--pc={playerColorVar(color)}>
-            <i></i>
-            <span><b>Free seat</b><br />share the invite link</span>
-          </div>
-        {/if}
       {/each}
     </div>
   </div>
 </section>
+
+{#snippet playerCard(player: PlayerView, slots: { key: number; deck: DeckView }[])}
+  {@const mine = isMe(player)}
+  {@const status = player.online ? 'Online' : 'Offline'}
+  <div class="seat" class:me={mine} style:--pc={playerColorVar(player.color)}>
+    <div class="top">
+      <div class="who">
+        <div class="nm">
+          <b use:overflowTip>{player.name}</b>
+          <!-- On a phone, the roles and the online dot follow the name; wider, the status line
+               below says it all. -->
+          {#if mine}<span class="tag">you</span>{/if}
+          {#if player.host}<span class="tag">host</span>{/if}
+          <span class="dot" class:off={!player.online} data-tip={status}>
+            <span class="sr-only">{status}</span>
+          </span>
+        </div>
+        <span class="status" class:off={!player.online}>
+          <i></i>{status}
+          {#if mine}<span class="role">· you</span>{/if}
+          {#if player.host}<span class="role">· host</span>{/if}
+        </span>
+      </div>
+      {@render tools(player, mine)}
+    </div>
+    <!-- A slot opens or closes alone; the slots after a removed one glide back. The glide also
+         takes a closing slot out of the flow, so the card's narrower grid never wraps it. -->
+    <div class="decks">
+      {#each slots as { key, deck }, slot (key)}
+        <div class="deck-cell" transition:unfold animate:glide>
+          {#if mine}
+            {@render ownSlot(deck, slot)}
+          {:else}
+            <div class="deck">
+              <HeroThumb image={deck.heroImage} name={deck.heroName} />
+              {#if deck.ready}
+                <DeckNames heroName={deck.heroName ?? '?'} deckName={deck.deckName ?? ''} />
+              {:else}
+                <div class="wait">Waiting for a deck</div>
+              {/if}
+            </div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  </div>
+{/snippet}
+
+{#snippet freeSeat(color: number)}
+  {#if isSpectator}
+    <button class="free" style:--pc={playerColorVar(color)} onclick={ontakeseat}>
+      <i></i><b>Take this seat</b>
+    </button>
+  {:else}
+    <div class="free" style:--pc={playerColorVar(color)}>
+      <i></i>
+      <span><b>Free seat</b><br />share the invite link</span>
+    </div>
+  {/if}
+{/snippet}
 
 {#snippet tools(player: PlayerView, mine: boolean)}
   {@const canAdd = mine && seatsTaken < MAX_SEATS}
@@ -293,6 +352,13 @@
     .span4 {
       grid-column: span 4;
     }
+  }
+
+  /* A cell of the grid holds one seat, which fills it. */
+  .cell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
   }
 
   /* On a phone, the player's colour runs down the card's left edge; wider, along its top. */
@@ -493,6 +559,10 @@
     .span4 .decks {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+  }
+
+  .deck-cell {
+    min-width: 0;
   }
 
   .deck {

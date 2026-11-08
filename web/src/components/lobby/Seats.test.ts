@@ -4,6 +4,18 @@ import Seats from './Seats.svelte';
 import { cutShort } from '../../lib/overflowTip.testing';
 import type { DeckView, PlayerView, View, YouView } from '../../lib/types';
 
+// Whether the viewer prefers reduced motion, as each test chooses.
+const motion = vi.hoisted(() => ({ reduced: false }));
+
+vi.mock('svelte/motion', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('svelte/motion')>()),
+  prefersReducedMotion: {
+    get current() {
+      return motion.reduced;
+    },
+  },
+}));
+
 const noDeck: DeckView = { ready: false, handCount: 0 };
 const spiderMan: DeckView = {
   ready: true,
@@ -81,6 +93,13 @@ function card(playerName: string): HTMLElement {
   return seat;
 }
 
+/** The grid cell of a player's card, which spans their seats. */
+function cell(playerName: string): HTMLElement {
+  const gridCell = card(playerName).parentElement;
+  if (!gridCell) throw new Error(`no cell for ${playerName}`);
+  return gridCell;
+}
+
 function freeSeats(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.free')];
 }
@@ -98,8 +117,8 @@ describe('Seats', () => {
     it("spans a player's card over their decks, and leaves as many fewer free seats", () => {
       renderSeats({ players: [alex, { ...sam, decks: [spiderMan, captainMarvel] }] });
 
-      expect(card('Sam').classList.contains('span2')).toBe(true);
-      expect(card('Alex').classList.contains('span2')).toBe(false);
+      expect(cell('Sam').classList.contains('span2')).toBe(true);
+      expect(cell('Alex').classList.contains('span2')).toBe(false);
       expect(freeSeats()).toHaveLength(1);
       expect(screen.getByText('3 of 4 seats')).toBeTruthy();
     });
@@ -107,7 +126,7 @@ describe('Seats', () => {
     it('spans a card over four seats for a player with four decks, and leaves no free seat', () => {
       renderSeats({ players: [{ ...alex, decks: [noDeck, noDeck, noDeck, noDeck] }] });
 
-      expect(card('Alex').classList.contains('span4')).toBe(true);
+      expect(cell('Alex').classList.contains('span4')).toBe(true);
       expect(freeSeats()).toHaveLength(0);
     });
 
@@ -313,5 +332,113 @@ describe('Seats', () => {
       expect([field.selectionStart, field.selectionEnd]).toEqual([0, field.value.length]);
       expect(screen.queryByRole('button', { name: 'Copied' })).toBeNull();
     });
+  });
+});
+
+describe('Seats in motion', () => {
+  // jsdom has no Web Animations: each animation finishes on the next task.
+  const animate = vi.fn(() => {
+    const animation = { onfinish: null as (() => void) | null, cancel: () => {}, effect: null };
+    setTimeout(() => animation.onfinish?.());
+    return animation as unknown as Animation;
+  });
+  const originalAnimate = Element.prototype.animate;
+
+  beforeEach(() => {
+    Element.prototype.animate = animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = originalAnimate;
+    animate.mockClear();
+    motion.reduced = false;
+  });
+
+  function viewOf(players: PlayerView[]): View {
+    return {
+      id: 'g1',
+      phase: 'lobby',
+      you: asAlex,
+      players,
+      spectators: 0,
+      config: { scenario: '', difficulty: 'standard', standard: '', expert: '', modulars: [] },
+      log: [],
+    };
+  }
+
+  function renderView(players: PlayerView[]) {
+    const handlers = {
+      onremove: vi.fn(),
+      onleave: vi.fn(),
+      ontakeseat: vi.fn(),
+      onadddeck: vi.fn(),
+    };
+    return render(Seats, { view: viewOf(players), ...handlers, ownSlot });
+  }
+
+  /** The elements that played an animation of the given length, in the order they started. */
+  function animated(duration: number): Element[] {
+    return animate.mock.calls.flatMap((call: unknown[], i) => {
+      const options = call[1] as KeyframeAnimationOptions | undefined;
+      return options?.duration === duration ? [animate.mock.contexts[i] as Element] : [];
+    });
+  }
+
+  /** Lets every pending intro start, so that one that did not shows as such. */
+  async function settle(): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve));
+  }
+
+  function deckCells(playerName: string): Element[] {
+    return [...card(playerName).querySelectorAll('.deck-cell')];
+  }
+
+  it('plays nothing as the seats first show', async () => {
+    renderView([alex, sam]);
+    await settle();
+
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('pops in the card of a player who arrives, and pops out the free seat they take', async () => {
+    const { rerender } = renderView([alex, sam]);
+    const taken = freeSeats()[0]?.parentElement;
+
+    await rerender({ view: viewOf([alex, sam, jo]) });
+
+    await vi.waitFor(() => expect(new Set(animated(200))).toEqual(new Set([cell('Jo'), taken])));
+  });
+
+  it("opens only the slot added to another player's card", async () => {
+    const { rerender } = renderView([alex, sam]);
+
+    await rerender({ view: viewOf([alex, { ...sam, decks: [spiderMan, noDeck] }]) });
+
+    const [kept, added] = deckCells('Sam');
+    await vi.waitFor(() => expect(animated(250)).toContain(added));
+    expect(animated(250)).not.toContain(kept);
+  });
+
+  it('closes only the slot removed from a card, keeping the others', async () => {
+    const { rerender } = renderView([alex, { ...sam, decks: [spiderMan, captainMarvel, noDeck] }]);
+    const [first, removed, last] = deckCells('Sam');
+
+    await rerender({ view: viewOf([alex, { ...sam, decks: [spiderMan, noDeck] }]) });
+
+    await vi.waitFor(() => expect(animated(250)).toContain(removed));
+    expect(animated(250)).not.toContain(first);
+    expect(animated(250)).not.toContain(last);
+    expect(deckCells('Sam')).toEqual([first, last]);
+  });
+
+  it('changes the seats at once under reduced motion', async () => {
+    motion.reduced = true;
+    const { rerender } = renderView([alex, sam]);
+
+    await rerender({ view: viewOf([alex, { ...sam, decks: [spiderMan, noDeck] }, jo]) });
+    await settle();
+
+    expect(document.querySelectorAll('.seat')).toHaveLength(3);
+    expect(animate).not.toHaveBeenCalled();
   });
 });

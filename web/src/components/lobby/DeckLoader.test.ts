@@ -19,7 +19,7 @@ function renderLoader(
   const onload = vi.fn();
   const { rerender } = render(DeckLoader, {
     deck,
-    slot: fields.slot ?? null,
+    number: fields.slot ?? null,
     deckError: null,
     error: null,
     onload,
@@ -336,5 +336,51 @@ describe('DeckLoader', () => {
 
       expect(onload).toHaveBeenCalledWith('https://example.com/deck/1');
     });
+  });
+});
+
+describe('DeckLoader in motion', () => {
+  // jsdom has no Web Animations: each animation finishes on the next task.
+  const animate = vi.fn(() => {
+    const animation = { onfinish: null as (() => void) | null, cancel: () => {}, effect: null };
+    setTimeout(() => animation.onfinish?.());
+    return animation as unknown as Animation;
+  });
+  const originalAnimate = Element.prototype.animate;
+
+  beforeEach(() => {
+    Element.prototype.animate = animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = originalAnimate;
+    animate.mockClear();
+  });
+
+  /** The elements that played a 200 ms animation. */
+  function faded(): Element[] {
+    return animate.mock.calls.flatMap((call: unknown[], i) => {
+      const options = call[1] as KeyframeAnimationOptions | undefined;
+      return options?.duration === 200 ? [animate.mock.contexts[i] as Element] : [];
+    });
+  }
+
+  it('shows its first state at once', async () => {
+    renderLoader(ready);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('cross-fades the loaded deck into the form on Change, in the same place', async () => {
+    renderLoader(ready);
+    const loaded = document.querySelector('.loaded');
+    const slot = loaded?.parentElement;
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Change deck' }));
+
+    const form = screen.getByRole('textbox', { name: 'Deck link' }).closest('.pane');
+    await vi.waitFor(() => expect(new Set(faded())).toEqual(new Set([loaded, form])));
+    expect(form?.parentElement).toBe(slot);
   });
 });
