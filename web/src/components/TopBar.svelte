@@ -60,8 +60,8 @@
   } = $props();
 
   const VIEW_MODES = [
-    { value: 'all', label: 'All', icon: 'rows-all' },
-    { value: 'focus', label: 'Villain + player', icon: 'rows-focus' },
+    { value: 'all', label: 'All', icon: 'villain-players' },
+    { value: 'focus', label: 'Villain + player', icon: 'villain-player' },
   ] as const;
 
   const spectatorLabel = $derived(`${spectators} ${spectators === 1 ? 'spectator' : 'spectators'}`);

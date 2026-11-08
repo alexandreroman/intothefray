@@ -76,7 +76,7 @@ describe('Segmented', () => {
   it('names an option with an icon in its tooltip too, since its label may be hidden', () => {
     render(Segmented<'all'>, {
       props: {
-        options: [{ value: 'all', label: 'All', icon: 'rows-all' }],
+        options: [{ value: 'all', label: 'All', icon: 'villain-players' }],
         value: 'all',
         onchange: vi.fn(),
         label: 'Table view',
