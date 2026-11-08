@@ -27,7 +27,11 @@ type: project
   520 px for a landscape card), within 45 % of the table and the
   window's height.
 - Under a mouse or a pen, a hovered hand card pops at `scale(1.3)`, 31 px
-  up; the pop and the preview's own size are independent of the hand.
+  up from its slot; the pop and the preview's own size are independent of
+  the hand. A sagging or tilted end card rises and moves in as far as it
+  takes for the whole card to show within the fan's room and above the
+  window's bottom edge (`hoverPop` in `web/src/table/layout.ts`), as a
+  tablet's selected card does (`touchPop`).
 - On a tablet, a finger hovers nothing: no hovered card pops, only the card
   selected by a tap, at `TOUCH_POP_SCALE` (1.15). It leaves its sag on the
   arc: its lowest corner rests on the hand's bottom padding line, and a
