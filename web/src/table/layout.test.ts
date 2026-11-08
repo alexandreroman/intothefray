@@ -18,6 +18,9 @@ import {
   fanOffsets,
   HANDS_GAP,
   handRestScale,
+  HOVER_POP_RISE,
+  HOVER_POP_SCALE,
+  hoverPop,
   isOutOfPlay,
   outOfPlayChips,
   ownerFrames,
@@ -654,6 +657,43 @@ describe('the raised hand', () => {
   });
 });
 
+interface Edges {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * Where a popped card of a raised hand across the whole table is drawn, in the table's px, as
+ * Hand.svelte draws it: the hand's bottom edge on the window's, its card turned and scaled by
+ * `scale` about a point a tenth of its height below its bottom edge, then moved by `pop`.
+ */
+function popDrawnBox(
+  slot: FanSlot,
+  card: { w: number; h: number },
+  table: { w: number; h: number },
+  pop: { x: number; y: number },
+  scale: number,
+): Edges {
+  const pivot = {
+    x: table.w / 2 + slot.x + pop.x,
+    y: table.h - HAND_PADDING.bottom + 0.1 * card.h + pop.y,
+  };
+  const angle = (slot.angle * Math.PI) / 180;
+  const corners = [-0.5, 0.5].flatMap((x) =>
+    [-1.1, -0.1].map((y) => ({ x: x * card.w * scale, y: y * card.h * scale })),
+  );
+  const xs = corners.map((c) => pivot.x + c.x * Math.cos(angle) - c.y * Math.sin(angle));
+  const ys = corners.map((c) => pivot.y + c.x * Math.sin(angle) + c.y * Math.cos(angle));
+  return {
+    left: Math.min(...xs),
+    top: Math.min(...ys),
+    right: Math.max(...xs),
+    bottom: Math.max(...ys),
+  };
+}
+
 describe("a tablet's selected hand card", () => {
   // Tablets, either way up: iPad, iPad Pro 12.9" and iPad mini.
   const TABLETS = [
@@ -667,36 +707,18 @@ describe("a tablet's selected hand card", () => {
 
   /**
    * Where a selected card of a raised hand across the whole window is drawn, popped, in the
-   * window's px, as Hand.svelte draws it: the hand's bottom edge on the window's, its card turned
-   * and scaled about a point a tenth of its height below its bottom edge, then moved by touchPop.
+   * window's px, as Hand.svelte draws it, moved by touchPop.
    */
   function poppedBox(
     slot: FanSlot,
     card: { w: number; h: number },
     window: { w: number; h: number },
-  ): { left: number; top: number; right: number; bottom: number } {
+  ): Edges {
     const room = {
       left: HAND_PADDING.side - window.w / 2,
       right: window.w / 2 - HAND_PADDING.side,
     };
-    const pop = touchPop(slot, card, room);
-    const pivot = {
-      x: window.w / 2 + slot.x + pop.x,
-      y: window.h - HAND_PADDING.bottom + 0.1 * card.h + pop.y,
-    };
-    const angle = (slot.angle * Math.PI) / 180;
-    const s = TOUCH_POP_SCALE;
-    const corners = [-0.5, 0.5].flatMap((x) =>
-      [-1.1, -0.1].map((y) => ({ x: x * card.w * s, y: y * card.h * s })),
-    );
-    const xs = corners.map((c) => pivot.x + c.x * Math.cos(angle) - c.y * Math.sin(angle));
-    const ys = corners.map((c) => pivot.y + c.x * Math.sin(angle) + c.y * Math.cos(angle));
-    return {
-      left: Math.min(...xs),
-      top: Math.min(...ys),
-      right: Math.max(...xs),
-      bottom: Math.max(...ys),
-    };
+    return popDrawnBox(slot, card, window, touchPop(slot, card, room), TOUCH_POP_SCALE);
   }
 
   it('pops less than a hovered card under a mouse', () => {
@@ -758,6 +780,77 @@ describe("a tablet's selected hand card", () => {
     expect(last.x).toBeCloseTo(-first.x);
     // A card in the middle has room to spare.
     expect(touchPop(slots[2]!, card, room).x).toBe(0);
+  });
+});
+
+describe('a hovered hand card', () => {
+  // Desktop windows, from a large screen down to the narrowest that keeps the desktop's card, and
+  // just under it.
+  const WINDOWS = [
+    { w: 1920, h: 1080 },
+    { w: 1440, h: 900 },
+    { w: 1280, h: 800 },
+    { w: 1024, h: 768 },
+    { w: 1366, h: 600 },
+    { w: 901, h: 700 },
+    { w: 900, h: 700 },
+  ];
+  // The table beside the history column, beside it collapsed, and with no column at all.
+  const COLUMNS = [320, 44, 0];
+
+  it('pops 1.3 times as large, 31 px up from its slot', () => {
+    expect(HOVER_POP_SCALE).toBe(1.3);
+    expect(HOVER_POP_RISE).toBe(31);
+  });
+
+  it('keeps the middle card 31 px up from its slot, on it across', () => {
+    const room = { left: -1000, right: 1000 };
+    expect(hoverPop({ x: 0, y: 0, angle: 0 }, { w: 286, h: 400 }, room)).toEqual({ x: 0, y: -31 });
+  });
+
+  it("shows whole within the fan's room and the window, below the top bar, at any slot", () => {
+    for (const window of WINDOWS) {
+      const base = window.w > 900 ? HAND_CARD : HAND_CARD_NARROW;
+      for (const column of COLUMNS) {
+        const table = { w: window.w - column, h: window.h };
+        const raised = raisedHandCard(base, table, { small: false, tablet: false });
+        const fanWidth = table.w - 2 * HAND_PADDING.side;
+        const room = { left: -fanWidth / 2, right: fanWidth / 2 };
+        for (let n = 1; n <= 20; n++) {
+          const card = filledHandCard(raised, base, n, fanWidth);
+          for (const slot of filledFanPositions(n, fanWidth, card)) {
+            const pop = hoverPop(slot, card, room);
+            const box = popDrawnBox(slot, card, table, pop, HOVER_POP_SCALE);
+            const where = `${window.w}x${window.h} less ${column}, ${n} cards, slot ${slot.x}`;
+            expect(box.left, where).toBeGreaterThanOrEqual(HAND_PADDING.side - 1e-9);
+            expect(box.right, where).toBeLessThanOrEqual(table.w - HAND_PADDING.side + 1e-9);
+            expect(box.bottom, where).toBeLessThanOrEqual(table.h - HAND_PADDING.bottom + 1e-9);
+            expect(box.top, where).toBeGreaterThanOrEqual(TOP_BAR_HEIGHT);
+          }
+        }
+      }
+    }
+  });
+
+  it('lifts a sagging end card higher than 31 px up from its slot', () => {
+    const card = { w: 286, h: 400 };
+    const room = { left: -1000, right: 1000 };
+    // The end card of 8 sags by 58 px at 17.5°: popped 31 px up, its lowest corner would show
+    // below the window's bottom edge.
+    const [end] = filledFanPositions(8, 1144, card);
+    expect(hoverPop(end!, card, room).y).toBeLessThan(end!.y - HOVER_POP_RISE);
+  });
+
+  it('moves a tilted end card in, as far as it takes to keep within the room', () => {
+    const card = { w: 286, h: 400 };
+    const slots = filledFanPositions(6, 824, card);
+    const room = { left: -412, right: 412 };
+    const first = hoverPop(slots[0]!, card, room);
+    const last = hoverPop(slots[5]!, card, room);
+    expect(first.x).toBeGreaterThan(0);
+    expect(last.x).toBeCloseTo(-first.x);
+    // A card in the middle has room to spare.
+    expect(hoverPop(slots[2]!, card, room).x).toBe(0);
   });
 });
 

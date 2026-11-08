@@ -442,8 +442,8 @@ export function previewCardWidth(area: { w: number; h: number }): number {
  * mode), never smaller than the base card the resting hand shows, and on a
  * small screen never so tall that the raised hand takes more than half the
  * window's height. The preview's card, kept 200 px shorter than the window,
- * leaves room enough for a tablet's selected card to pop whole in the window
- * (touchPop).
+ * leaves room enough for a tablet's selected card, or a card a mouse or a pen
+ * hovers, to pop whole in the window (touchPop, hoverPop).
  */
 export function raisedHandCard(
   base: { w: number; h: number },
@@ -464,9 +464,23 @@ export function raisedHandCard(
 /**
  * How much larger a hand card selected on a tablet pops: Hand.svelte draws it
  * at this scale. A finger hovers nothing, so only that card pops; a mouse or a
- * pen pops the hovered card at 1.3.
+ * pen pops the hovered card at HOVER_POP_SCALE.
  */
 export const TOUCH_POP_SCALE = 1.15;
+
+/**
+ * How much larger the hand card a mouse or a pen hovers pops: Hand.svelte
+ * draws it at this scale, and so a card kept up after a reorder, or selected
+ * outside a tablet.
+ */
+export const HOVER_POP_SCALE = 1.3;
+
+/**
+ * How far the hand card a mouse or a pen hovers rises from its slot as it
+ * pops, in px, unless it takes more to show whole above the window's bottom
+ * edge (hoverPop).
+ */
+export const HOVER_POP_RISE = 31;
 
 /**
  * Where a hand card selected on a tablet pops to, in px: the translation
@@ -483,22 +497,69 @@ export function touchPop(
   card: { w: number; h: number },
   room: { left: number; right: number },
 ): { x: number; y: number } {
+  return {
+    x: popShift(slot, card, TOUCH_POP_SCALE, room),
+    y: restingPopY(slot, card, TOUCH_POP_SCALE),
+  };
+}
+
+/**
+ * Where a hand card a mouse or a pen hovers pops to, in px: the translation
+ * Hand.svelte draws it at, popped at HOVER_POP_SCALE and tilted as on `slot`,
+ * in place of its sag on the arc; and so a card kept up after a reorder, or
+ * selected outside a tablet. It rises HOVER_POP_RISE from its slot, but a
+ * sagging end card rises as far as it takes for its lowest corner to rest on
+ * the hand's bottom padding line, as touchPop's does: the whole card shows
+ * above the window's bottom edge. Across, it moves only as far as it takes to
+ * keep within `room`, the raised fan's (as touchPop's).
+ */
+export function hoverPop(
+  slot: FanSlot,
+  card: { w: number; h: number },
+  room: { left: number; right: number },
+): { x: number; y: number } {
+  const risen = slot.y - HOVER_POP_RISE;
+  return {
+    x: popShift(slot, card, HOVER_POP_SCALE, room),
+    y: Math.min(risen, restingPopY(slot, card, HOVER_POP_SCALE)),
+  };
+}
+
+/**
+ * How far a hand card popped at `scale` and tilted as on `slot` moves across,
+ * in px, to keep within `room`: not at all unless it reaches past it.
+ */
+function popShift(
+  slot: FanSlot,
+  card: { w: number; h: number },
+  scale: number,
+  room: { left: number; right: number },
+): number {
+  // Scaled about its pivot, the popped card is drawn as a larger card on the same slot would be.
+  const popped = { w: scale * card.w, h: scale * card.h };
+  const reach = fanExtent([slot], popped);
+  if (reach.left < room.left) {
+    return room.left - reach.left;
+  }
+  if (reach.right > room.right) {
+    return room.right - reach.right;
+  }
+  return 0;
+}
+
+/**
+ * The translation down, in px, that rests the lowest corner of a hand card
+ * popped at `scale` and tilted as on `slot` on the hand's bottom padding line,
+ * where the bottom edge of the middle card at rest lies.
+ */
+function restingPopY(slot: FanSlot, card: { w: number; h: number }, scale: number): number {
   const angle = toRadians(slot.angle);
   // The card turns and scales about a point this far below its bottom edge (FAN_PIVOT).
   const pivotDrop = (FAN_PIVOT - 1) * card.h;
   // Popped and tilted, its lowest corner, a bottom one, lies this far below that point.
   const lowestCorner =
-    TOUCH_POP_SCALE * ((card.w / 2) * Math.abs(Math.sin(angle)) - pivotDrop * Math.cos(angle));
-  // Scaled about its pivot, the popped card is drawn as a larger card on the same slot would be.
-  const popped = { w: TOUCH_POP_SCALE * card.w, h: TOUCH_POP_SCALE * card.h };
-  const reach = fanExtent([slot], popped);
-  let x = 0;
-  if (reach.left < room.left) {
-    x = room.left - reach.left;
-  } else if (reach.right > room.right) {
-    x = room.right - reach.right;
-  }
-  return { x, y: -pivotDrop - lowestCorner };
+    scale * ((card.w / 2) * Math.abs(Math.sin(angle)) - pivotDrop * Math.cos(angle));
+  return -pivotDrop - lowestCorner;
 }
 
 /**
