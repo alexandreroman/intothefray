@@ -47,6 +47,15 @@ type: project
   (Svelte `slide`, 250 ms, `cubicOut`; at once under reduced motion) and
   stay while the host picks others; a viewer who arrives with a scenario
   chosen sees it at once.
+- Every later change of the lobby animates, 200 to 250 ms with `cubicOut`,
+  instant under reduced motion (`motionMs`) and never as the lobby first
+  shows (Svelte's local transitions): a seat card pops in or out (scale
+  from 0.96 and fade) while the others glide (`glide` in `lib/motion.ts`,
+  a translate-only flip, so a card that changes span never stretches); a
+  deck slot unfolds or folds alone, the slots keyed by `lib/slotKeys`
+  rather than by index; a slot's form and loaded deck cross-fade in place;
+  a set chip pops in or out and the others glide; the packs `Show all
+  villains` brings fade in, while a filter shows packs at once.
 - **Start**: a box at the end of the column with the readiness line and,
   for the host, `Set up the table` (full width on a phone).
 
