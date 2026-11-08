@@ -42,8 +42,18 @@ type: project
     sheet's accessible name gives the name, type and owner, a pile's
     kind and count. It keeps
     its size across submenus: the entries area keeps the main page's
-    height. Token, status and modifier entries and the pills keep it
-    open; every other entry closes it. Flip keeps it open and turns the
+    height. Token, status and modifier entries, the pills, and Exhaust /
+    Ready keep it open; every other entry closes it. An exhausted card
+    lies turned 15° in it as on the table, its tokens, tabs, badges and
+    pill turning with it, and turns to its new angle as the view says so
+    (the table's tilt: `TILT_MS`, `MOVE_EASING`; at once under reduced
+    motion), whoever exhausts or readies it; opened on an exhausted card,
+    it shows it turned at once. Each card of a stack shows its own tilt.
+    A card that can exhaust (`canExhaust`) keeps room for its tilted
+    corners: its box has the tilted card's bounds and the card is drawn
+    to fill them turned, so a tilt moves neither the column nor the
+    sheet, nor clips; a villain, a scheme or a pile keeps its full size.
+    Flip keeps it open and turns the
     card over in it (360 ms). Reveal from a deck's inspector keeps it open
     and switches it to the revealed card once the table shows it: the
     sheet first eases to the new size, then the card turns; a refused
