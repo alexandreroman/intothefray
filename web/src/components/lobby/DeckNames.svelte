@@ -28,12 +28,12 @@
   }
 
   b {
-    font-size: 17px;
+    font-size: 15px;
+    font-stretch: 90%;
   }
 
   span {
-    margin-top: 2px;
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
   }
 </style>

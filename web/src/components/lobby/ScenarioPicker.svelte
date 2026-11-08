@@ -1,6 +1,5 @@
 <script lang="ts">
   import { cubicOut } from 'svelte/easing';
-  import { prefersReducedMotion } from 'svelte/motion';
   import { MediaQuery } from 'svelte/reactivity';
   import { slide } from 'svelte/transition';
   import { tick, untrack } from 'svelte';
@@ -48,7 +47,7 @@
     { value: 'standard', label: 'Standard' },
     { value: 'expert', label: 'Expert' },
   ];
-  const SETTINGS_SLIDE_MS = 250;
+  const SLIDE_MS = 250;
   // The Add a set menu's gap under its button, and its height cap: it scrolls inside beyond it.
   const MENU_GAP = 4;
   const MENU_MAX_HEIGHT = 320;
@@ -65,6 +64,7 @@
   const config = $derived(view.config);
   const chosen = $derived(index.scenarios.find((s) => s.id === config.scenario));
   const difficulty = $derived<Difficulty>(config.difficulty === 'expert' ? 'expert' : 'standard');
+  const difficultyLabel = $derived(LEVELS.find((level) => level.value === difficulty)?.label);
   // An empty set means none, as some scenarios allow. The defaults only fill in a config that
   // has no scenario yet, or no expert set because the difficulty is Standard.
   const standardSet = $derived(config.scenario === '' ? DEFAULT_STANDARD : config.standard);
@@ -97,8 +97,6 @@
     ...(chosen?.recommended ?? []),
     ...(chosenMainScheme?.recommended ?? []),
   ]);
-  // Guests see the chosen level only, read only.
-  const levels = $derived(isHost ? LEVELS : LEVELS.filter((level) => level.value === difficulty));
 
   /**
    * Whether the Add a set menu offers the set: a modular set that does not come with the scenario,
@@ -165,79 +163,15 @@
     ]);
   }
 
-  // Guests only see the chosen scenario.
+  // The host's list: every scenario the filter keeps, under its pack, packs in release order.
   const groups = $derived(
     index.packs
       .map((pack) => ({
         pack,
-        scenarios: index.scenarios.filter(
-          (s) => s.pack === pack.code && (isHost ? matchesFilter(s) : s.id === config.scenario),
-        ),
+        scenarios: index.scenarios.filter((s) => s.pack === pack.code && matchesFilter(s)),
       }))
       .filter((group) => group.scenarios.length > 0),
   );
-
-  // The host's list never gets shorter than the first pack's name and a few rows of tiles (see
-  // .villains in the styles): both heights are measured here.
-  let villains = $state<HTMLElement>();
-  let listSizes = $state<{ packName: number; tile: number } | null>(null);
-
-  /** The heights of the list's first pack name and first tile, null while nothing is laid out. */
-  function measureList(list: HTMLElement): { packName: number; tile: number } | null {
-    const packName = list.querySelector('.pkname');
-    const tile = list.querySelector('.vil');
-    if (!packName || !tile) {
-      return null;
-    }
-    const tileHeight = tile.getBoundingClientRect().height;
-    if (tileHeight === 0) {
-      return null;
-    }
-    return { packName: packName.getBoundingClientRect().height, tile: tileHeight };
-  }
-
-  // A tile's height follows its width: measured again whenever the first tile or pack name is
-  // resized. The sizes set the list's height, so the list itself is not observed, and they are
-  // applied in the next frame: resizing the list while the observers are notified, scrollFade's
-  // among them, would be a ResizeObserver loop. A filter that matches nothing leaves no tile to
-  // measure: the last sizes stay.
-  $effect(() => {
-    const list = villains;
-    if (!list || !isHost) {
-      return;
-    }
-    // Read so that a new filter, with another first pack, observes its name and tile.
-    void groups;
-    let frame = 0;
-    const observer = new ResizeObserver(() => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        listSizes = measureList(list) ?? listSizes;
-      });
-    });
-    const packName = list.querySelector('.pkname');
-    const tile = list.querySelector('.vil');
-    if (packName && tile) {
-      observer.observe(packName);
-      observer.observe(tile);
-    }
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  });
-
-  // The settings take their room from the list: the villain the host just chose may have slipped
-  // out of its view. A guest's list holds that villain alone, and scrolling it could move the page.
-  function revealChosen(): void {
-    if (!isHost) {
-      return;
-    }
-    villains?.querySelector('.vil.on')?.scrollIntoView({
-      block: 'nearest',
-      behavior: prefersReducedMotion.current ? 'instant' : 'smooth',
-    });
-  }
 
   function configure(changes: Partial<LobbyConfig>): void {
     onconfigure({
@@ -404,6 +338,10 @@
     }
     menuOpen = false;
   }
+
+  // Svelte plays a local intro only when its own block opens: a component mounted with a scenario
+  // already chosen shows it at once, and a recap or box that opens later slides in.
+  const slideIn = $derived({ duration: motionMs(SLIDE_MS), easing: cubicOut });
 </script>
 
 <svelte:window
@@ -418,103 +356,36 @@
   }}
 />
 
-<section class="card-box" class:guest={!isHost}>
-  <div class="bhead">
-    <h2>Scenario</h2>
-    {#if !isHost}
-      <span class="aside">chosen by {hostName(view)} (host)</span>
-    {/if}
-  </div>
-
-  <div class="sect villain">
-    <div class="lbl">Villain</div>
-    {#if isHost}
-      <input
-        type="text"
-        class="filter"
-        aria-label="Filter by scenario or pack"
-        placeholder="Filter by scenario or pack…"
-        autocomplete="off"
-        spellcheck="false"
-        bind:value={filter}
-      />
-    {/if}
-    <div
-      class="villains"
-      bind:this={villains}
-      style:--pack-name-height={listSizes ? `${listSizes.packName}px` : undefined}
-      style:--tile-height={listSizes ? `${listSizes.tile}px` : undefined}
-      {@attach scrollFade}
-    >
-      {#each groups as group (group.pack.code)}
-        <div class="pack">
-          <div class="pkname">{localizedName(group.pack, lang)}</div>
-          <div class="vgrid">
-            {#each group.scenarios as scenario (scenario.id)}
-              {@const selected = scenario.id === config.scenario}
-              <button
-                class="vil"
-                class:on={selected}
-                class:unsupported={!scenario.supported}
-                aria-pressed={selected}
-                disabled={!isHost || !scenario.supported}
-                onclick={() => chooseScenario(scenario)}
-              >
-                {#if scenario.image}
-                  <CardArt src={scenario.image} aspect={4 / 3} loading="lazy" />
-                {/if}
-                {#if selected}
-                  <span class="check">
-                    <Icon name="check" />
-                  </span>
-                {/if}
-                {#if !scenario.supported}
-                  <span class="soon">Not supported yet</span>
-                {/if}
-                <span class="nm" use:overflowTip>{localizedName(scenario, lang)}</span>
-              </button>
-            {/each}
-          </div>
-        </div>
-      {:else}
-        <div class="none">
-          {isHost ? 'No scenario matches.' : `${hostName(view)} has not chosen a scenario yet.`}
-        </div>
-      {/each}
+{#snippet recap(scenario: ScenarioRef)}
+  <div class="recap" class:ro={!isHost}>
+    <div class="vart">
+      {#if scenario.image}
+        <CardArt src={scenario.image} aspect={4 / 3} />
+      {/if}
     </div>
-  </div>
+    <div class="vtitle">
+      <h3 class="vname">{localizedName(scenario, lang)}</h3>
+      <div class="vfrom">{packName(scenario.pack)}</div>
+    </div>
 
-  <!-- Opens once a first scenario is chosen, and stays as the host picks others. -->
-  {#if chosen}
-    <div
-      class="sect settings"
-      transition:slide={{
-        duration: motionMs(SETTINGS_SLIDE_MS),
-        easing: cubicOut,
-      }}
-      onintroend={revealChosen}
-    >
-      <div class="difficulty" class:self-contained={selfContained}>
+    <div class="settings">
+      <div class="difficulty">
         <div class="lbl">Difficulty</div>
-        <div class="switch-row">
-          <Segmented
-            options={levels}
-            value={difficulty}
-            onchange={chooseDifficulty}
-            label="Difficulty"
-            disabled={!isHost}
-          />
-          {#if selfContained}
-            <p class="own-cards">This scenario uses only its own cards.</p>
-          {/if}
-        </div>
-        {#if showStandardSet || showExpertSet}
-          <div class="sets">
+        <div class="line">
+          {#if isHost}
+            <Segmented
+              options={LEVELS}
+              value={difficulty}
+              onchange={chooseDifficulty}
+              label="Difficulty"
+            />
+            <!-- The selects carry their names in a tooltip: a visible label would not fit the line. -->
             {#if showStandardSet}
               <label class="set">
-                <span>Standard set</span>
+                <span class="sr-only">Standard set</span>
                 <select
                   value={standardSet}
+                  data-tip="Standard set"
                   onchange={(e) => configure({ standard: e.currentTarget.value })}
                 >
                   <option value="">None</option>
@@ -526,9 +397,10 @@
             {/if}
             {#if showExpertSet}
               <label class="set">
-                <span>Expert set</span>
+                <span class="sr-only">Expert set</span>
                 <select
                   value={expertSet}
+                  data-tip="Expert set"
                   onchange={(e) => configure({ expert: e.currentTarget.value })}
                 >
                   <option value="">None</option>
@@ -538,14 +410,18 @@
                 </select>
               </label>
             {/if}
-          </div>
-        {/if}
+          {:else}
+            <span class="chip guest-chip">{difficultyLabel}</span>
+          {/if}
+        </div>
       </div>
 
-      {#if !selfContained}
+      {#if selfContained}
+        <p class="own-cards">This scenario uses only its own cards.</p>
+      {:else}
         <div class="modulars">
           <div class="lbl">Modular sets</div>
-          <div class="chips">
+          <div class="line chips">
             {#each config.modulars as code (code)}
               <span class="chip" class:guest-chip={!isHost}>
                 {setName(code)}
@@ -572,13 +448,13 @@
               </span>
             {:else}
               {#if !isHost}
-                <span class="aside">None</span>
+                <span class="aside none-set">None</span>
               {/if}
             {/each}
             {#if isHost}
               <span class="add-wrap" bind:this={addWrap}>
                 <button
-                  class="add"
+                  class="btn-ghost add"
                   aria-expanded={menuOpen}
                   bind:this={addButton}
                   onclick={toggleMenu}>+ Add a set</button
@@ -644,168 +520,256 @@
         </div>
       {/if}
     </div>
-  {/if}
-</section>
+  </div>
+{/snippet}
+
+{#if isHost}
+  <section class="card-box scenario">
+    <div class="bhead">
+      <h2>Scenario</h2>
+    </div>
+
+    <div class="body">
+      <div class="lhead">
+        <div class="lbl">Villain</div>
+        <input
+          type="text"
+          class="filter"
+          aria-label="Filter by scenario or pack"
+          placeholder="Filter by scenario or pack…"
+          autocomplete="off"
+          spellcheck="false"
+          bind:value={filter}
+        />
+      </div>
+
+      <!-- Packs flow in columns, a pack never split; the page scrolls, not the list. -->
+      <div class="vlist">
+        {#each groups as group (group.pack.code)}
+          <div class="vpack">
+            <div class="pk"><span use:overflowTip>{localizedName(group.pack, lang)}</span></div>
+            {#each group.scenarios as scenario (scenario.id)}
+              {@const selected = scenario.id === config.scenario}
+              <!-- aria-disabled rather than disabled keeps the tooltip: some browsers fire no
+                   pointer events on a disabled button. -->
+              <button
+                class="btn-ghost vrow"
+                class:on={selected}
+                class:unsupported={!scenario.supported}
+                aria-pressed={selected}
+                aria-disabled={!scenario.supported}
+                data-tip={scenario.supported ? undefined : 'Not supported yet'}
+                onclick={() => chooseScenario(scenario)}
+              >
+                <span class="ico">
+                  {#if scenario.image}
+                    <CardArt src={scenario.image} aspect={4 / 3} loading="lazy" />
+                  {/if}
+                </span>
+                <span class="vn" use:overflowTip>{localizedName(scenario, lang)}</span>
+                {#if !scenario.supported}
+                  <span class="sr-only">Not supported yet</span>
+                {/if}
+                {#if selected}
+                  <span class="ck" aria-hidden="true"><Icon name="check" /></span>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {:else}
+          <div class="none">No scenario matches.</div>
+        {/each}
+      </div>
+
+      <!-- Opens once a first scenario is chosen, and stays as the host picks others. -->
+      {#if chosen}
+        <div class="recap-pane" in:slide={slideIn}>
+          {@render recap(chosen)}
+        </div>
+      {/if}
+    </div>
+  </section>
+{:else if chosen}
+  <section class="card-box scenario" in:slide={slideIn}>
+    <div class="bhead">
+      <h2>Scenario</h2>
+      <span class="aside">chosen by {hostName(view)} (host)</span>
+    </div>
+    <div class="body">
+      {@render recap(chosen)}
+    </div>
+  </section>
+{/if}
 
 <style>
-  /* The lobby may stretch the box to its row: the villain section takes the height left. */
-  .card-box {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .villain {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .filter {
-    margin-bottom: 4px;
-  }
-
   /*
-    The whole range scrolls in the room the box has left. The zero basis keeps the tiles from making
-    the box taller, down to a floor: the first pack's name and --villain-rows rows of tiles, the
-    count the lobby sets for its layout. The fallback sizes hold until the list is measured.
+    Widths: S below 600px (the base rules), M from 600px, L from 1100px. Every settings control is
+    --ctl tall, so a row of them, or the two settings side by side, line up.
   */
-  .villains {
-    --tile-gap: 12px;
-    flex: 1 1 0;
-    min-height: calc(
-      var(--pack-name-height, 41px) + var(--villain-rows, 2) * var(--tile-height, 112px) +
-        (var(--villain-rows, 2) - 1) * var(--tile-gap)
-    );
-    overflow-y: auto;
-    margin-right: -10px;
-    padding-right: 10px;
+  .scenario {
+    --ctl: 34px;
+    --segmented-height: var(--ctl);
   }
 
-  /* A guest's list holds the chosen scenario alone: it shows whole, and fills a stretched box. */
-  .guest .villains {
-    flex: 1 0 auto;
-    min-height: 0;
+  .body {
+    padding: 16px var(--box-pad) 22px;
   }
 
-  /* The pack's name, then a rule to the edge. */
-  .pkname {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+  /* The label and the filter on one line; stacked, the field full width, on S. */
+  .lhead {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .lhead .lbl {
+    flex: none;
+    margin: 0;
+  }
+
+  @media (min-width: 600px) {
+    .lhead {
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lhead .filter {
+      max-width: 360px;
+    }
+  }
+
+  .vlist {
+    column-count: 2;
+    column-gap: 10px;
+  }
+
+  @media (min-width: 600px) {
+    .vlist {
+      column-count: 3;
+      column-gap: 20px;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .vlist {
+      column-count: 4;
+    }
+  }
+
+  .vpack {
+    break-inside: avoid;
+    padding-bottom: 12px;
+  }
+
+  /* The pack's name, then a rule to the column's edge. */
+  .pk {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 0 10px;
-    background: var(--bg);
-    color: var(--text-soft);
-    font-size: 13px;
+    gap: 8px;
+    margin: 0 0 6px;
+    color: var(--muted);
     font-weight: 700;
+    font-size: 12px;
   }
 
-  .pkname::after {
+  .pk span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pk::after {
     content: '';
-    flex: 1;
+    flex: 1 0 12px;
     height: 1px;
     background: var(--panel-2);
   }
 
-  .guest .pkname {
-    position: static;
-  }
-
-  .vgrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: var(--tile-gap);
-  }
-
-  /* The aspect given to its CardArt too. */
-  .vil {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    padding: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    background: var(--panel);
+  .vrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 36px;
+    padding: 0 8px 0 4px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
     text-align: left;
   }
 
-  /* Disabled tiles (a guest's read-only ones, unsupported ones) skip the global
-     disabled fade: unsupported tiles get their own dimming below. */
-  .vil:disabled {
-    opacity: 1;
+  /* The aspect given to its CardArt too. */
+  .ico {
+    position: relative;
+    flex: none;
+    width: 34px;
+    height: 26px;
+    overflow: hidden;
+    border-radius: 5px;
+    background: var(--panel-2);
   }
 
-  /* A tile the host can pick zooms in on its art; read-only and unsupported tiles stay still. */
-  @media (prefers-reduced-motion: no-preference) {
-    .vil:enabled:focus-visible {
-      --art-zoom: 1.07;
+  @media (min-width: 600px) {
+    .vrow {
+      gap: 10px;
+      height: 38px;
+    }
+
+    .ico {
+      width: 40px;
+      height: 30px;
     }
   }
 
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .vil:enabled:hover {
-      --art-zoom: 1.07;
-    }
-  }
-
-  .vil .nm {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 22px 12px 10px;
-    background: linear-gradient(transparent, #07090feb);
-    font-stretch: 85%;
-    font-weight: 800;
-    font-size: 16px;
+  .vn {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .vil.on {
-    border: 2px solid var(--sel);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--sel) 16%, transparent);
+  /* The chosen row keeps its outline and wash, a little brighter under the pointer. */
+  .vrow.on {
+    background: color-mix(in srgb, var(--sel) 14%, transparent);
+    border-color: var(--sel);
   }
 
-  .vil.unsupported {
-    opacity: 0.45;
+  @media (hover: hover) {
+    .vrow.on:hover {
+      background: color-mix(in srgb, var(--sel) 22%, transparent);
+      border-color: var(--sel);
+    }
   }
 
-  .vil.unsupported :global(img) {
-    filter: grayscale(1);
-  }
-
-  .check {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
+  .ck {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: var(--sel);
     color: var(--table-bg);
-    display: grid;
-    place-items: center;
   }
 
-  .check :global(svg) {
-    width: 14px;
-    height: 14px;
+  .ck :global(svg) {
+    width: 12px;
+    height: 12px;
     stroke-width: 3;
   }
 
-  .soon {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: var(--table-bg);
-    color: var(--text-soft);
-    font-size: 11px;
-    font-weight: 700;
+  .vrow.unsupported {
+    opacity: 0.45;
+  }
+
+  .vrow.unsupported .ico {
+    filter: grayscale(1);
   }
 
   .none {
@@ -814,106 +778,157 @@
     padding: 30px 0;
   }
 
-  /* The set row and the modulars hint share one height, so they centre on each other whatever
-     the select's native height (it differs between browsers); it fits the tallest of them. */
-  .settings {
-    --set-row-height: 28px;
-    --set-row-top: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px 40px;
+  /* 12px under the last pack's rows, then 6px: 18px down to the rule. */
+  .recap-pane {
+    margin-top: 6px;
+    padding-top: 18px;
+    border-top: 1px solid var(--panel-2);
   }
 
-  /* No gap here: the label keeps the lobby's own spacing below it, as in .modulars, so the
-     switch lines up with the first row of chips. */
-  .difficulty {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  /* The own-cards note shares the switch's row so it centres on the switch, and drops below it
-     when the row is too narrow; the column then fills the settings row to make room for it. */
-  .difficulty.self-contained {
-    flex: 1;
-  }
-
-  .switch-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 40px;
-  }
-
-  .self-contained .switch-row {
-    align-self: stretch;
-  }
-
-  /* One grid for both set rows so their selects share a left edge whatever the label widths;
-     each label flattens into the grid but still wraps its select for accessibility. */
-  .sets {
-    margin-top: var(--set-row-top);
+  /* S: the art and the name in a row, the settings under them. */
+  .recap {
     display: grid;
-    grid-template-columns: auto auto;
-    grid-auto-rows: minmax(var(--set-row-height), auto);
-    justify-content: start;
-    align-items: center;
-    gap: 2px 8px;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 14px 20px;
+    align-items: start;
+  }
+
+  /* 4:3, the aspect given to its CardArt too. */
+  .vart {
+    position: relative;
+    width: 88px;
+    height: 66px;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--panel-2);
+  }
+
+  .vtitle {
+    align-self: center;
+    min-width: 0;
+  }
+
+  .vname {
+    margin: 0;
+    font-size: 22px;
+    font-stretch: 85%;
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+  }
+
+  .vfrom {
+    margin-top: 4px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.4;
   }
 
-  .set {
-    display: contents;
+  .settings {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
   }
 
-  /* The side padding goes through --select-pad, so the drawn arrow keeps the same inset. */
+  /* Read only, the two settings take the art's and the name's columns, so they line up with them. */
+  .ro .settings {
+    grid-template-columns: subgrid;
+  }
+
+  /* M and L: one row, the art, the name, then the settings after a vertical rule. */
+  @media (min-width: 600px) {
+    .recap {
+      grid-template-columns: 120px minmax(140px, 200px) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .vart {
+      width: 120px;
+      height: 90px;
+    }
+
+    .vname {
+      font-size: 28px;
+    }
+
+    .settings,
+    .ro .settings {
+      grid-column: auto;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      padding-left: 20px;
+      border-left: 1px solid var(--panel-2);
+    }
+  }
+
+  /* L: Difficulty takes what its controls need, on one line; the sets the rest. */
+  @media (min-width: 1100px) {
+    .settings,
+    .ro .settings {
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: 32px;
+    }
+
+    .difficulty .line {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .difficulty,
+  .modulars {
+    min-width: 0;
+  }
+
+  .line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Only the block padding goes: the side padding (--select-pad) also places the drawn arrow. */
   .set select {
-    --select-pad: 8px;
     width: auto;
-    padding-block: 4px;
+    height: var(--ctl);
+    padding-block: 0;
     font-size: 13px;
   }
 
+  /* In the place of the sets, level with the difficulty's controls. */
   .own-cards {
-    flex: 1;
-    min-width: 240px;
+    align-self: end;
+    display: flex;
+    align-items: center;
+    min-height: var(--ctl);
     margin: 0;
     color: var(--muted);
   }
 
-  .modulars {
-    flex: 1;
-    min-width: 240px;
+  /* The extra class outranks the lobby's shared hint rule (.lobby :global(.hint)). */
+  .modulars .hint {
+    margin: 10px 0 0;
   }
 
-  /* Centred on the first set row: same top and height as that row. The extra .settings class
-     outranks the lobby's shared hint rule (.lobby :global(.hint)), which would else win on order. */
-  .settings .modulars .hint {
-    display: flex;
+  .none-set {
+    display: inline-flex;
     align-items: center;
-    min-height: var(--set-row-height);
-    margin-top: var(--set-row-top);
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
+    height: var(--ctl);
   }
 
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 6px 0 12px;
+    gap: 6px;
+    height: var(--ctl);
+    padding: 0 4px 0 12px;
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     background: var(--panel);
     font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .chip.guest-chip {
@@ -948,12 +963,12 @@
   }
 
   .add {
-    height: 34px;
-    padding: 0 14px;
-    border-style: dashed;
+    height: var(--ctl);
+    padding: 0 8px;
     border-radius: 999px;
-    background: transparent;
+    color: var(--sel);
     font-size: 13px;
+    font-weight: 700;
   }
 
   /* Measured before it is placed: unseen until then. The field stays on top; the list under it

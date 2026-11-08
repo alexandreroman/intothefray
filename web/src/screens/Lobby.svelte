@@ -6,9 +6,8 @@
   import Seats from '../components/lobby/Seats.svelte';
   import TopBar from '../components/TopBar.svelte';
   import { loadIndex } from '../lib/catalog';
-  import { playerColorVar } from '../lib/playerColor';
   import type { GameSession } from '../lib/session.svelte';
-  import { hostName, MAX_SEATS, seatCount, type Index, type View } from '../lib/types';
+  import { hostName, type DeckView, type Index, type View } from '../lib/types';
   import type { Rect } from '../lib/rect';
 
   let { session, view }: { session: GameSession; view: View } = $props();
@@ -94,17 +93,7 @@
       : `Everyone is ready: waiting for ${hostName(view)} to set up the table.`;
   });
 
-  const intro = $derived.by(() => {
-    if (view.you.host) {
-      return 'You are the host: you choose the scenario, and everyone sees it. Each player brings their own deck.';
-    }
-    if (view.you.role === 'spectator') {
-      return `You are watching: ${hostName(view)} chooses the scenario, and each player brings their own deck.`;
-    }
-    return `${hostName(view)} is the host: they choose the scenario, and everyone sees it. Bring your own deck.`;
-  });
-
-  // A failed deck import shows under the field of the slot it was loading; anything else in the start bar.
+  // A failed deck import shows under the field of the slot it was loading; anything else in the start area.
   const deckLoadError = $derived(session.deckLoadError?.message ?? null);
   const otherError = $derived(session.lastError?.message ?? null);
   // The slot whose load is under way or failed, null before any load. A removal shifts the slots,
@@ -143,18 +132,16 @@
   }
 
   let topBar = $state<HTMLElement>();
-  let startBar = $state<HTMLElement>();
 
   // The room the scenario's Add a set menu stays within: the window, less what the top bar covers
-  // at the top (nothing once it is slid or scrolled away) and the start bar at the bottom.
+  // at the top (nothing once it is slid or scrolled away).
   function menuRoom(): Rect {
     const topBarBottom = topBar?.firstElementChild?.getBoundingClientRect().bottom ?? 0;
-    const startBarTop = startBar?.getBoundingClientRect().top ?? window.innerHeight;
     return {
       left: 0,
       top: Math.max(0, topBarBottom),
       right: window.innerWidth,
-      bottom: Math.min(window.innerHeight, startBarTop),
+      bottom: window.innerHeight,
     };
   }
 
@@ -177,82 +164,42 @@
   </div>
 
   <main class="lobby screen-column">
-    <header class="intro">
-      <div class="heading">
-        <span class="caption">Lobby</span>
-        <h1 class="display">ASSEMBLE YOUR TEAM</h1>
-      </div>
-      <p>{intro}</p>
+    <header class="heading">
+      <span class="caption">Lobby</span>
+      <h1 class="display">ASSEMBLE YOUR TEAM</h1>
     </header>
 
-    <div class="columns">
-      <div class="wide">
-        {#if index}
-          <ScenarioPicker
-            {view}
-            {index}
-            onconfigure={(config) => session.lobby('configure', { config })}
-            room={menuRoom}
-          />
-        {:else}
-          <section class="card-box">
-            <div class="bhead"><h2>Scenario</h2></div>
-            <div class="sect">
-              <p class="aside">
-                {indexError
-                  ? 'The scenarios could not be loaded. Reload the page.'
-                  : 'Loading scenarios…'}
-              </p>
-            </div>
-          </section>
-        {/if}
-      </div>
+    <Seats
+      {view}
+      onremove={(color) => session.lobby('removePlayer', { color })}
+      onleave={() => session.lobby('leave')}
+      ontakeseat={() => session.lobby('takeSeat')}
+      onadddeck={addDeck}
+      addLocked={session.deckLoading}
+      {ownSlot}
+    />
 
-      <div class="narrow">
-        <Seats
-          {view}
-          onremove={(color) => session.lobby('removePlayer', { color })}
-          onleave={() => session.lobby('leave')}
-          ontakeseat={() => session.lobby('takeSeat')}
-        />
-        {#if me}
-          {@const several = me.decks.length > 1}
-          <section class="card-box decks" style:--pc={playerColorVar(me.color)}>
-            <div class="bhead"><h2>Your decks</h2></div>
-            <!-- The slots have no identity but their index: a new slot count remounts them, so that
-                 a link typed for a removed deck does not stay in the slot that takes its place. -->
-            {#key me.decks.length}
-              {#each me.decks as deck, slot (slot)}
-                <DeckLoader
-                  {deck}
-                  slot={several ? slot + 1 : null}
-                  deckError={slot === (loadingSlot ?? 0) ? session.deckError : null}
-                  error={slot === (loadingSlot ?? 0) ? deckLoadError : null}
-                  loading={session.deckLoading && slot === loadingSlot}
-                  locked={session.deckLoading}
-                  loaded={slot === loadingSlot ? session.deckLoaded : undefined}
-                  onload={(url) => loadDeck(slot, url)}
-                  onremove={several ? () => removeDeck(slot) : undefined}
-                  autofocus={slot === focusSlot}
-                />
-              {/each}
-            {/key}
-            {#if seatCount(view) < MAX_SEATS}
-              <div class="sect add-deck">
-                <button class="btn add" aria-disabled={session.deckLoading} onclick={addDeck}>
-                  <Icon name="plus" />
-                  Add a deck
-                </button>
-              </div>
-            {/if}
-          </section>
-        {/if}
-      </div>
-    </div>
-  </main>
+    {#if index}
+      <ScenarioPicker
+        {view}
+        {index}
+        onconfigure={(config) => session.lobby('configure', { config })}
+        room={menuRoom}
+      />
+    {:else}
+      <section class="card-box">
+        <div class="bhead"><h2>Scenario</h2></div>
+        <div class="sect">
+          <p class="aside">
+            {indexError
+              ? 'The scenarios could not be loaded. Reload the page.'
+              : 'Loading scenarios…'}
+          </p>
+        </div>
+      </section>
+    {/if}
 
-  <div class="startbar" bind:this={startBar}>
-    <div class="startbar-inner screen-column">
+    <div class="start">
       {#if otherError}
         <span class="why error" role="alert">{otherError}</span>
       {:else}
@@ -265,17 +212,53 @@
         </button>
       {/if}
     </div>
-  </div>
+  </main>
 </div>
+
+<!-- One of the viewer's deck slots, inside their player card. -->
+{#snippet ownSlot(deck: DeckView, slot: number)}
+  {@const several = (me?.decks.length ?? 0) > 1}
+  <!-- The slots have no identity but their index: a new slot count remounts them, so that a link
+       typed for a removed deck does not stay in the slot that takes its place. -->
+  {#key me?.decks.length}
+    <DeckLoader
+      {deck}
+      slot={several ? slot + 1 : null}
+      deckError={slot === (loadingSlot ?? 0) ? session.deckError : null}
+      error={slot === (loadingSlot ?? 0) ? deckLoadError : null}
+      loading={session.deckLoading && slot === loadingSlot}
+      locked={session.deckLoading}
+      loaded={slot === loadingSlot ? session.deckLoaded : undefined}
+      onload={(url) => loadDeck(slot, url)}
+      onremove={several ? () => removeDeck(slot) : undefined}
+      autofocus={slot === focusSlot}
+    />
+  {/key}
+{/snippet}
 
 <style>
   /*
-    The start bar sticks to the bottom of the window, at the end of a full-height column. The
-    column's width and gutter are shared with the top bar.
+    One column of areas, its width and gutter shared with the top bar: the whole window with 16px
+    gutters on a phone, 860px with 24px from a 600px window, 1120px with 32px from 1100px. The page
+    scrolls as a whole.
   */
   .screen {
-    --content-max: 1200px;
-    --content-gutter: 24px;
+    --content-max: 100%;
+    --content-gutter: 16px;
+  }
+
+  @media (min-width: 600px) {
+    .screen {
+      --content-max: 860px;
+      --content-gutter: 24px;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .screen {
+      --content-max: 1120px;
+      --content-gutter: 32px;
+    }
   }
 
   /* Holds the top bar only to reach its box: it has none of its own, so the bar stays sticky to
@@ -284,84 +267,42 @@
     display: contents;
   }
 
+  /* The last area stays clear of the home indicator. Every box pads its sides by --box-pad, so a
+     box's title, its controls and its content share one left and one right edge. */
   .lobby {
+    --box-pad: 18px;
     flex: 1;
-    padding-block: 36px 48px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 14px;
+    padding-block: 16px max(24px, env(safe-area-inset-bottom));
   }
 
-  .intro {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px 32px;
+  @media (min-width: 600px) {
+    .lobby {
+      --box-pad: 22px;
+      gap: 18px;
+      padding-block: 24px max(28px, env(safe-area-inset-bottom));
+    }
   }
 
   .heading {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 14px;
   }
 
-  .intro p {
-    max-width: 420px;
-    color: var(--muted);
-    line-height: 1.5;
+  .heading .caption {
+    flex: none;
   }
 
-  /*
-    One column on a narrow window. Two side by side once the content is 944px wide (560px for the
-    scenario, the gap, 360px for the players), that is from a 992px window with its gutters: both
-    stretch to the taller one, the scenario box fills its column, and its villain list takes the
-    room left. The list shows at least --villain-rows rows of tiles (ScenarioPicker): two when
-    stacked, which is then its height, one side by side. One media query sets both the layout and
-    the row count, so they always agree.
-  */
-  .columns {
-    --villain-rows: 2;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+  h1 {
+    font-size: 28px;
   }
 
-  @media (min-width: 992px) {
-    .columns {
-      --villain-rows: 1;
-      grid-template-columns: minmax(0, 1fr) 360px;
-    }
-  }
-
-  .wide {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .wide > :global(.card-box) {
-    flex-grow: 1;
-  }
-
-  .narrow {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  @media (max-width: 600px) {
-    .screen {
-      --content-gutter: 16px;
-    }
-
-    .lobby {
-      padding-top: 24px;
-      padding-bottom: 32px;
-    }
-
+  @media (min-width: 600px) {
     h1 {
-      font-size: 44px;
+      font-size: 36px;
     }
   }
 
@@ -369,22 +310,23 @@
   .lobby :global(.card-box) {
     background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: 16px;
   }
 
   .lobby :global(.bhead) {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 20px 22px 0;
+    min-height: 50px;
+    padding: 14px var(--box-pad) 0;
   }
 
   .lobby :global(.bhead h2) {
     margin: 0;
     font-stretch: 85%;
     font-weight: 800;
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .lobby :global(.aside) {
@@ -394,34 +336,26 @@
   }
 
   .lobby :global(.sect) {
-    padding: 16px 22px 22px;
+    padding: 12px var(--box-pad) 18px;
+  }
+
+  @media (min-width: 600px) {
+    .lobby :global(.bhead) {
+      padding: 16px var(--box-pad) 0;
+    }
+
+    .lobby :global(.sect) {
+      padding: 14px var(--box-pad) 22px;
+    }
   }
 
   .lobby :global(.sect + .sect) {
     border-top: 1px solid var(--panel-2);
   }
 
-  /*
-    Deck slots sit closer together than plain sections. The first slot keeps the section's top
-    padding under the heading, a last slot its bottom padding at the foot of the box, and the
-    Add a deck section its own top padding, so the button stands a little apart from the slots.
-    That section draws no line above it: the button belongs to the slots it adds to.
-  */
-  .decks :global(.slot + .slot) {
-    padding-top: 9px;
-  }
-
-  .decks :global(.slot:not(:last-child)) {
-    padding-bottom: 9px;
-  }
-
-  .decks .sect.add-deck {
-    border-top: 0;
-  }
-
   .lobby :global(.lbl) {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: var(--muted);
     font-stretch: 75%;
     font-weight: 800;
@@ -456,22 +390,26 @@
     margin: 0;
   }
 
-  .startbar {
-    position: sticky;
-    bottom: 0;
-    background: color-mix(in srgb, var(--bg) 92%, transparent);
-    border-top: 1px solid var(--panel-2);
-    backdrop-filter: blur(10px);
+  /* The start area ends the column: the readiness line, and the host's button beside it, or
+     under it on a phone, as wide as the box. */
+  .start {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px 20px;
+    padding: 14px var(--box-pad);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--bg);
   }
 
-  .startbar-inner {
-    /* Its button stays clear of the home indicator, as the bar sticks to the window's bottom. */
-    padding-block: 14px max(14px, env(safe-area-inset-bottom));
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px 24px;
+  @media (min-width: 600px) {
+    .start {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px var(--box-pad);
+    }
   }
 
   .why {
@@ -497,15 +435,11 @@
     color: var(--error-text);
   }
 
-  .add :global(svg) {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2;
-  }
-
   .go {
+    flex: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
   }
 

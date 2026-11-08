@@ -82,13 +82,19 @@ describe('DeckLoader', () => {
     }
   });
 
-  it('changes the deck from an icon button named in its tooltip', () => {
+  it('changes the deck from a pencil icon button named in its tooltip', () => {
     renderLoader(ready);
 
     const change = screen.getByRole('button', { name: 'Change deck' });
     expect(change.dataset.tip).toBe('Change deck');
     expect(change.textContent?.trim()).toBe('');
-    expect(change.querySelector('svg')).toBeTruthy();
+    expect(change.querySelector('svg')?.dataset.icon).toBe('pencil');
+  });
+
+  it('shows no Ready status beside a loaded deck: its hero tells it', () => {
+    renderLoader(ready);
+
+    expect(screen.queryByText(/Ready|Waiting/)).toBeNull();
   });
 
   it('numbers the change button of one of several decks', () => {
@@ -107,18 +113,44 @@ describe('DeckLoader', () => {
     expect(screen.queryByRole('textbox', { name: 'Deck link' })).toBeNull();
   });
 
-  it('numbers the slot of one of several decks', () => {
+  it('numbers the slot of one of several decks, in a label it shows', () => {
     renderLoader(waiting, { slot: 2 });
 
     expect(screen.getByRole('textbox', { name: 'Deck 2 link' })).toBeTruthy();
+    expect(screen.getByText('Deck 2 link').classList.contains('sr-only')).toBe(false);
   });
 
-  it('removes the slot from its remove button', async () => {
+  it('names the field of a single slot for screen readers only', () => {
+    renderLoader(waiting);
+
+    expect(screen.getByText('Deck link').classList.contains('sr-only')).toBe(true);
+  });
+
+  it('removes the slot from its trash icon button, named in its tooltip', async () => {
     const onremove = vi.fn();
     renderLoader(ready, { slot: 2, onremove });
 
+    const remove = screen.getByRole('button', { name: 'Remove deck 2' });
+    expect(remove.dataset.tip).toBe('Remove deck 2');
+    expect(remove.querySelector('svg')?.dataset.icon).toBe('trash');
+    await fireEvent.click(remove);
+    expect(onremove).toHaveBeenCalledOnce();
+  });
+
+  it('removes an empty slot from its trash icon button too', async () => {
+    const onremove = vi.fn();
+    renderLoader(waiting, { slot: 2, onremove });
+
     await fireEvent.click(screen.getByRole('button', { name: 'Remove deck 2' }));
     expect(onremove).toHaveBeenCalledOnce();
+  });
+
+  it('never shows the cross, which closes things only', async () => {
+    renderLoader(ready, { slot: 2, onremove: vi.fn() });
+    expect(document.querySelector('[data-icon="cross"]')).toBeNull();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Change deck 2' }));
+    expect(document.querySelector('[data-icon="cross"]')).toBeNull();
   });
 
   it('has no remove button without onremove', () => {

@@ -233,26 +233,21 @@ describe('ScenarioPicker in French', () => {
     });
   }
 
+  /** The host's list row of a scenario: the recap repeats the chosen one's name, as no button. */
+  function row(name: string): HTMLElement | null {
+    return screen.queryByRole('button', { name });
+  }
+
   it('shows the pack, scenario and set names in French, else in English', () => {
     renderFrench(rhino);
 
-    expect(screen.getByText('Boîte de base')).toBeTruthy();
-    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
-    expect(screen.getByText('Klaw')).toBeTruthy();
+    expect(row('Le Rhinocéros')).toBeTruthy();
+    expect(row('Klaw')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Le Rhinocéros' })).toBeTruthy();
+    expect(screen.getAllByText('Boîte de base')).toHaveLength(2);
     expect(screen.getByText('Alerte à la bombe')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Remove Alerte à la bombe' })).toBeTruthy();
     expect(screen.queryByText('Core Set')).toBeNull();
-  });
-
-  it('filters on the French names', async () => {
-    renderFrench(rhino);
-
-    await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
-      target: { value: 'rhinocéros' },
-    });
-
-    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
-    expect(screen.queryByText('Klaw')).toBeNull();
   });
 
   async function filterScenarios(query: string) {
@@ -261,13 +256,22 @@ describe('ScenarioPicker in French', () => {
     });
   }
 
+  it('filters on the French names', async () => {
+    renderFrench(rhino);
+
+    await filterScenarios('rhinocéros');
+
+    expect(row('Le Rhinocéros')).toBeTruthy();
+    expect(row('Klaw')).toBeNull();
+  });
+
   it('finds a scenario whatever the case and accents', async () => {
     renderFrench(rhino);
 
     await filterScenarios('LE RHINOCEROS');
 
-    expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
-    expect(screen.queryByText('Klaw')).toBeNull();
+    expect(row('Le Rhinocéros')).toBeTruthy();
+    expect(row('Klaw')).toBeNull();
   });
 
   it('finds a scenario by its English name, and by its pack name, shown or English', async () => {
@@ -285,17 +289,17 @@ describe('ScenarioPicker in French', () => {
     });
 
     await filterScenarios('ecraseurs');
-    expect(screen.getByText('Écraseurs')).toBeTruthy();
-    expect(screen.queryByText('Le Rhinocéros')).toBeNull();
+    expect(row('Écraseurs')).toBeTruthy();
+    expect(row('Le Rhinocéros')).toBeNull();
 
     await filterScenarios('wrecking');
-    expect(screen.getByText('Écraseurs')).toBeTruthy();
-    expect(screen.queryByText('Le Rhinocéros')).toBeNull();
+    expect(row('Écraseurs')).toBeTruthy();
+    expect(row('Le Rhinocéros')).toBeNull();
 
     for (const pack of ['core set', 'boite de base']) {
       await filterScenarios(pack);
-      expect(screen.getByText('Le Rhinocéros')).toBeTruthy();
-      expect(screen.getByText('Klaw')).toBeTruthy();
+      expect(row('Le Rhinocéros')).toBeTruthy();
+      expect(row('Klaw')).toBeTruthy();
     }
   });
 
@@ -680,83 +684,257 @@ describe('ScenarioPicker Add a set menu groups', () => {
   });
 });
 
-describe('ScenarioPicker settings', () => {
-  const noScenario: LobbyConfig = { ...rhino, scenario: '', standard: '', modulars: [] };
-
-  // jsdom has neither Web Animations nor scrolling: each animation finishes on the next task.
-  const animate = vi.fn(() => {
-    const animation = { onfinish: null as (() => void) | null, cancel: () => {}, effect: null };
-    setTimeout(() => animation.onfinish?.());
-    return animation as unknown as Animation;
-  });
-  const scrollIntoView = vi.fn();
-  const originals = {
-    animate: Element.prototype.animate,
-    scrollIntoView: Element.prototype.scrollIntoView,
+describe('ScenarioPicker villain list', () => {
+  // Two packs, scenarios listed out of pack order, one of them not supported yet.
+  const listed: Index = {
+    ...index,
+    packs: [
+      { code: 'core', name: 'Core Set', file: 'core.json', position: 1 },
+      { code: 'gob', name: 'Green Goblin', file: 'gob.json', position: 2 },
+      { code: 'spw', name: 'Spider-Woman', file: 'spw.json', position: 3 },
+    ],
+    scenarios: [
+      {
+        id: 'risky_business',
+        name: 'Risky Business',
+        pack: 'gob',
+        image: '',
+        supported: false,
+        recommended: [],
+      },
+      ...index.scenarios,
+      {
+        id: 'mutagen_formula',
+        name: 'Mutagen Formula',
+        pack: 'gob',
+        image: 'https://img.intothefray.xyz/mutagen.avif',
+        supported: true,
+        recommended: [],
+      },
+    ],
   };
 
-  beforeEach(() => {
-    Element.prototype.animate = animate;
-    Element.prototype.scrollIntoView = scrollIntoView;
+  function renderList(config: LobbyConfig) {
+    const onconfigure = vi.fn();
+    const result = render(ScenarioPicker, {
+      view: viewOf(config),
+      index: listed,
+      onconfigure,
+      room: windowRoom,
+    });
+    return { onconfigure, ...result };
+  }
+
+  /** Each pack of the list, in the order shown, with its scenarios' names. */
+  function packs(container: HTMLElement): { pack: string; scenarios: string[] }[] {
+    return [...container.querySelectorAll<HTMLElement>('.vpack')].map((pack) => ({
+      pack: pack.querySelector('.pk')?.textContent ?? '',
+      scenarios: [...pack.querySelectorAll('.vn')].map((name) => name.textContent ?? ''),
+    }));
+  }
+
+  it('shows the host every scenario under its pack, packs in release order, and the filter', () => {
+    const { container } = renderList({ ...rhino, scenario: '' });
+
+    expect(screen.getByLabelText('Filter by scenario or pack')).toBeTruthy();
+    expect(packs(container)).toEqual([
+      { pack: 'Core Set', scenarios: ['Rhino', 'Klaw', 'Wrecking Crew'] },
+      { pack: 'Green Goblin', scenarios: ['Risky Business', 'Mutagen Formula'] },
+    ]);
   });
 
-  afterEach(() => {
-    Element.prototype.animate = originals.animate;
-    Element.prototype.scrollIntoView = originals.scrollIntoView;
-    animate.mockClear();
-    scrollIntoView.mockClear();
-    motion.reduced = false;
-  });
+  it("draws a scenario's art as its icon", () => {
+    renderList({ ...rhino, scenario: '' });
 
-  it('slide open once a first scenario is chosen, then bring the chosen villain into view', async () => {
-    const { rerender } = renderPicker(noScenario);
-    expect(screen.queryByText('Modular sets')).toBeNull();
-
-    await rerender({ view: viewOf(rhino) });
-
-    expect(screen.getByText('Modular sets')).toBeTruthy();
-    await vi.waitFor(() => expect(scrollIntoView).toHaveBeenCalledOnce());
-    expect(animate).toHaveBeenCalledWith(
-      expect.any(Array),
-      expect.objectContaining({ duration: 250 }),
+    const row = screen.getByRole('button', { name: 'Mutagen Formula' });
+    expect(row.querySelector('.ico img')?.getAttribute('src')).toBe(
+      'https://img.intothefray.xyz/mutagen.avif',
     );
-    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
-    expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole('button', { name: /Rhino/ }));
   });
 
-  it('stay open, without sliding again, when the host chooses another scenario', async () => {
-    const { rerender } = renderPicker(rhino);
+  it('greys out an unsupported scenario: disabled, with its tooltip and a name that says so', async () => {
+    const { onconfigure } = renderList({ ...rhino, scenario: '' });
 
-    await rerender({ view: viewOf({ ...rhino, scenario: 'klaw', modulars: [] }) });
-    await new Promise((resolve) => setTimeout(resolve));
+    const row = screen.getByRole('button', { name: 'Risky Business Not supported yet' });
+    expect(row.getAttribute('aria-disabled')).toBe('true');
+    expect(row.dataset.tip).toBe('Not supported yet');
+    expect(row.hasAttribute('title')).toBe(false);
 
-    expect(screen.getByText('Modular sets')).toBeTruthy();
-    expect(animate).not.toHaveBeenCalled();
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    await fireEvent.click(row);
+
+    expect(onconfigure).not.toHaveBeenCalled();
   });
 
-  it('open at once, and bring the villain into view at once, under reduced motion', async () => {
-    motion.reduced = true;
-    const { rerender } = renderPicker(noScenario);
+  it('leaves a supported scenario enabled, without a tooltip', () => {
+    renderList({ ...rhino, scenario: '' });
 
-    await rerender({ view: viewOf(rhino) });
+    const row = screen.getByRole('button', { name: 'Klaw' });
+    expect(row.getAttribute('aria-disabled')).toBe('false');
+    expect(row.hasAttribute('data-tip')).toBe(false);
+  });
 
-    expect(screen.getByText('Modular sets')).toBeTruthy();
-    expect(animate).not.toHaveBeenCalled();
-    expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({
-      block: 'nearest',
-      behavior: 'instant',
+  it('marks the chosen scenario pressed, and it alone', () => {
+    renderList(rhino);
+
+    expect(screen.getByRole('button', { name: 'Rhino' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Klaw' }).getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it("resets the modular sets to the new villain's recommendations", async () => {
+    const klaw: LobbyConfig = { ...rhino, scenario: 'klaw', modulars: ['bomb_scare', 'other'] };
+    const { onconfigure } = renderList(klaw);
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Rhino' }));
+
+    expect(onconfigure).toHaveBeenCalledWith({
+      ...klaw,
+      scenario: 'rhino',
+      modulars: ['bomb_scare'],
     });
   });
 
-  it("leave a guest's list and page where they are", async () => {
+  it('says so when the filter leaves no scenario', async () => {
+    const { container } = renderList(rhino);
+
+    await fireEvent.input(screen.getByLabelText('Filter by scenario or pack'), {
+      target: { value: 'nobody' },
+    });
+
+    expect(packs(container)).toEqual([]);
+    expect(screen.getByText('No scenario matches.')).toBeTruthy();
+  });
+});
+
+// jsdom has no Web Animations: each animation finishes on the next task.
+const animate = vi.fn(() => {
+  const animation = { onfinish: null as (() => void) | null, cancel: () => {}, effect: null };
+  setTimeout(() => animation.onfinish?.());
+  return animation as unknown as Animation;
+});
+
+/** Plays every animation of the calling describe's tests through the animate mock. */
+function mockAnimations(): void {
+  const originalAnimate = Element.prototype.animate;
+
+  beforeEach(() => {
+    Element.prototype.animate = animate;
+  });
+
+  afterEach(() => {
+    Element.prototype.animate = originalAnimate;
+    animate.mockClear();
+    motion.reduced = false;
+  });
+}
+
+/** Whether a 250 ms slide played. Svelte starts an intro a microtask after the DOM update. */
+function slid(): boolean {
+  return animate.mock.calls.some((call: unknown[]) => {
+    const options = call[1] as KeyframeAnimationOptions | undefined;
+    return options?.duration === 250;
+  });
+}
+
+/** Lets every pending intro start, so that one that did not shows as such. */
+async function settle(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve));
+}
+
+describe('ScenarioPicker recap', () => {
+  const noScenario: LobbyConfig = { ...rhino, scenario: '', standard: '', modulars: [] };
+
+  mockAnimations();
+
+  it('does not exist before a first choice, with no placeholder', () => {
+    renderPicker(noScenario);
+
+    expect(screen.getByRole('button', { name: 'Rhino' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { level: 3 })).toBeNull();
+    expect(screen.queryByText('Difficulty')).toBeNull();
+    expect(screen.queryByText('Modular sets')).toBeNull();
+  });
+
+  it('slides open once a first scenario is chosen, with its name, pack and settings', async () => {
+    const { rerender } = renderPicker(noScenario);
+
+    await rerender({ view: viewOf(rhino) });
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Rhino' })).toBeTruthy();
+    expect(screen.getAllByText('Core Set')).toHaveLength(2);
+    expect(screen.getByRole('group', { name: 'Difficulty' })).toBeTruthy();
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    await vi.waitFor(() => expect(slid()).toBe(true));
+  });
+
+  it('stays open, without sliding again, when the host chooses another scenario', async () => {
+    const { rerender } = renderPicker(rhino);
+
+    await rerender({ view: viewOf({ ...rhino, scenario: 'klaw', modulars: [] }) });
+    await settle();
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Klaw' })).toBeTruthy();
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('opens at once under reduced motion', async () => {
     motion.reduced = true;
+    const { rerender } = renderPicker(noScenario);
+
+    await rerender({ view: viewOf(rhino) });
+    await settle();
+
+    expect(screen.getByText('Modular sets')).toBeTruthy();
+    expect(animate).not.toHaveBeenCalled();
+  });
+});
+
+describe('ScenarioPicker for a guest', () => {
+  const noScenario: LobbyConfig = { ...rhino, scenario: '', standard: '', modulars: [] };
+
+  mockAnimations();
+
+  it('renders nothing while the host has not chosen', () => {
+    const { container } = renderPicker(noScenario, asGuest);
+
+    expect(container.querySelector('section')).toBeNull();
+    expect(container.textContent?.trim()).toBe('');
+  });
+
+  it('slides the Scenario box in once the host has chosen', async () => {
     const { rerender } = renderPicker(noScenario, asGuest);
 
     await rerender({ view: viewOf(rhino, asGuest) });
 
-    expect(screen.getByText('Modular sets')).toBeTruthy();
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { level: 2, name: 'Scenario' })).toBeTruthy();
+    expect(screen.getByText('chosen by Alex (host)')).toBeTruthy();
+    await vi.waitFor(() => expect(slid()).toBe(true));
+  });
+
+  it('shows a scenario chosen before the guest came at once, without the slide', async () => {
+    renderPicker(rhino, asGuest);
+    await settle();
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Rhino' })).toBeTruthy();
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it('shows the recap read only: the difficulty as a chip, the sets without remove buttons', () => {
+    renderPicker({ ...rhino, difficulty: 'expert', expert: 'expert' }, asGuest);
+
+    const level = screen.getByText('Expert');
+    expect(level.classList.contains('chip')).toBe(true);
+    expect(screen.queryByRole('group', { name: 'Difficulty' })).toBeNull();
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.getByText('Bomb Scare')).toBeTruthy();
+    // No list, no filter, no remove or Add a set button.
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByLabelText('Filter by scenario or pack')).toBeNull();
+  });
+
+  it('says None when no modular set is chosen', () => {
+    renderPicker({ ...rhino, modulars: [] }, asGuest);
+
+    expect(screen.getByText('None')).toBeTruthy();
   });
 });
 

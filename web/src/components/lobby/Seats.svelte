@@ -1,9 +1,16 @@
+<!--
+  The Players area: one seat per deck, as at the table. A player's card spans as many seats as
+  they have decks, as far as a row holds, and free seats fill the rest up to MAX_SEATS. The
+  viewer's own decks are their deck slots, which the lobby renders through `ownSlot`, so that
+  their load state stays with it.
+-->
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, tick, type Snippet } from 'svelte';
   import Icon from '../Icon.svelte';
+  import { overflowTip } from '../../lib/overflowTip';
   import { playerColorVar } from '../../lib/playerColor';
   import { gamePath, href } from '../../lib/router.svelte';
-  import { MAX_SEATS, seatCount, type PlayerView, type View } from '../../lib/types';
+  import { MAX_SEATS, seatCount, type DeckView, type PlayerView, type View } from '../../lib/types';
   import DeckNames from './DeckNames.svelte';
   import HeroThumb from './HeroThumb.svelte';
 
@@ -12,11 +19,19 @@
     onremove,
     onleave,
     ontakeseat,
+    onadddeck,
+    addLocked = false,
+    ownSlot,
   }: {
     view: View;
     onremove: (color: number) => void;
     onleave: () => void;
     ontakeseat: () => void;
+    onadddeck: () => void;
+    /** Add a deck is blocked, as while a deck load is in flight; the button keeps its place. */
+    addLocked?: boolean;
+    /** One of the viewer's deck slots, from its deck and its 0-based index. */
+    ownSlot: Snippet<[DeckView, number]>;
   } = $props();
 
   const COPIED_MS = 1500;
@@ -24,18 +39,19 @@
   // Built from the game id, so no token or other state leaks into the link.
   const inviteUrl = $derived(`${location.origin}${href(gamePath(view.id))}`);
   const isSpectator = $derived(view.you.role === 'spectator');
+  const seatsTaken = $derived(seatCount(view));
   // A newcomer takes the lowest colour no player uses.
   const freeColors = $derived(
     [0, 1, 2, 3]
       .filter((c) => !view.players.some((p) => p.color === c))
-      .slice(0, Math.max(0, MAX_SEATS - seatCount(view))),
+      .slice(0, Math.max(0, MAX_SEATS - seatsTaken)),
   );
 
   let copied = $state(false);
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
-  let inviteInput: HTMLInputElement;
-
-  const inviteId = $props.id();
+  // Shown once the clipboard is refused, for a manual copy.
+  let showLink = $state(false);
+  let linkInput = $state<HTMLInputElement>();
 
   onDestroy(() => clearTimeout(copyTimer));
 
@@ -43,8 +59,11 @@
     try {
       await navigator.clipboard.writeText(inviteUrl);
     } catch {
-      // No clipboard access (insecure origin, denied): select it for a manual copy.
-      inviteInput.select();
+      // No clipboard access (insecure origin, denied): the link shows, selected.
+      showLink = true;
+      await tick();
+      linkInput?.focus();
+      linkInput?.select();
       return;
     }
     copied = true;
@@ -55,166 +74,274 @@
   function isMe(player: PlayerView): boolean {
     return view.you.role === 'player' && player.color === view.you.color;
   }
-
-  // "you", "host" or both, after the player's name.
-  function roles(player: PlayerView): string {
-    const parts: string[] = [];
-    if (isMe(player)) {
-      parts.push('you');
-    }
-    if (player.host) {
-      parts.push('host');
-    }
-    return parts.join(' · ');
-  }
 </script>
 
-<section class="card-box">
+<section class="card-box players">
   <div class="bhead">
-    <h2>Players</h2>
-    <span class="aside">up to {MAX_SEATS}</span>
+    <div class="title">
+      <h2>Players</h2>
+      <span class="count">{seatsTaken} of {MAX_SEATS} seats</span>
+    </div>
+    <button class="btn copy" onclick={copyInvite}>
+      {#if copied}
+        <Icon name="check" />
+        Copied
+      {:else}
+        <Icon name="copy" />
+        Copy invite link
+      {/if}
+    </button>
   </div>
   <div class="sect">
-    <label class="lbl" for={inviteId}>Invite link</label>
-    <div class="invite">
-      <input id={inviteId} type="text" readonly value={inviteUrl} bind:this={inviteInput} />
-      <button class="btn" onclick={copyInvite}>
-        {#if copied}
-          <Icon name="check" />
-          Copied
+    {#if showLink}
+      <input
+        class="link"
+        type="text"
+        readonly
+        aria-label="Invite link"
+        value={inviteUrl}
+        bind:this={linkInput}
+      />
+    {/if}
+    <div class="seats">
+      {#each view.players as player (player.color)}
+        {@const mine = isMe(player)}
+        {@const status = player.online ? 'Online' : 'Offline'}
+        {@const decks = player.decks.length}
+        <div
+          class="seat"
+          class:me={mine}
+          class:span2={decks === 2}
+          class:span3={decks === 3}
+          class:span4={decks === 4}
+          style:--pc={playerColorVar(player.color)}
+        >
+          <div class="top">
+            <div class="who">
+              <div class="nm">
+                <b use:overflowTip>{player.name}</b>
+                <!-- On a phone, the roles and the online dot follow the name; wider, the status
+                     line below says it all. -->
+                {#if mine}<span class="tag">you</span>{/if}
+                {#if player.host}<span class="tag">host</span>{/if}
+                <span class="dot" class:off={!player.online} data-tip={status}>
+                  <span class="sr-only">{status}</span>
+                </span>
+              </div>
+              <span class="status" class:off={!player.online}>
+                <i></i>{status}
+                {#if mine}<span class="role">· you</span>{/if}
+                {#if player.host}<span class="role">· host</span>{/if}
+              </span>
+            </div>
+            {@render tools(player, mine)}
+          </div>
+          <div class="decks">
+            {#each player.decks as deck, slot (slot)}
+              {#if mine}
+                {@render ownSlot(deck, slot)}
+              {:else}
+                <div class="deck">
+                  <HeroThumb image={deck.heroImage} name={deck.heroName} />
+                  {#if deck.ready}
+                    <DeckNames heroName={deck.heroName ?? '?'} deckName={deck.deckName ?? ''} />
+                  {:else}
+                    <div class="wait">Waiting for a deck</div>
+                  {/if}
+                </div>
+              {/if}
+            {/each}
+          </div>
+        </div>
+      {/each}
+      {#each freeColors as color (color)}
+        {#if isSpectator}
+          <button class="free" style:--pc={playerColorVar(color)} onclick={ontakeseat}>
+            <i></i><b>Take this seat</b>
+          </button>
         {:else}
-          <Icon name="copy" />
-          Copy
+          <div class="free" style:--pc={playerColorVar(color)}>
+            <i></i>
+            <span><b>Free seat</b><br />share the invite link</span>
+          </div>
         {/if}
-      </button>
+      {/each}
     </div>
-    <p class="aside note">Players can join until the table is set up, then as spectators.</p>
-  </div>
-  <div class="sect seats">
-    {#each view.players as player (player.color)}
-      <div class="seat" style:--pc={playerColorVar(player.color)}>
-        <div class="head">
-          <div class="who">
-            <b>{player.name}</b>
-            {#if isMe(player) || player.host}
-              <span class="aside">{roles(player)}</span>
-            {/if}
-          </div>
-          {#if view.you.host && !isMe(player)}
-            {@const tip = `Take ${player.name} off this seat`}
-            <button
-              class="btn-ghost kick"
-              data-tip={tip}
-              aria-label={tip}
-              onclick={() => onremove(player.color)}
-            >
-              <Icon name="cross" />
-            </button>
-          {:else if !view.you.host && isMe(player)}
-            <button
-              class="btn-ghost kick"
-              data-tip="Leave your seat"
-              aria-label="Leave your seat"
-              onclick={onleave}
-            >
-              <Icon name="cross" />
-            </button>
-          {/if}
-        </div>
-        {#each player.decks as deck, slot (slot)}
-          <div class="slot">
-            <HeroThumb image={deck.heroImage} name={deck.heroName} />
-            {#if deck.ready}
-              <DeckNames heroName={deck.heroName ?? '?'} deckName={deck.deckName ?? ''} />
-            {:else}
-              <div class="nodeck">No deck yet</div>
-            {/if}
-            <span class="st" class:ok={deck.ready}>
-              <i></i>{deck.ready ? 'Ready' : 'Waiting'}
-            </span>
-          </div>
-        {/each}
-      </div>
-    {/each}
-    {#each freeColors as color (color)}
-      {#if isSpectator}
-        <button class="btn-ghost free" style:--pc={playerColorVar(color)} onclick={ontakeseat}>
-          <i></i>Take this seat
-        </button>
-      {:else}
-        <div class="free" style:--pc={playerColorVar(color)}>
-          <i></i>Free seat: share the invite link
-        </div>
-      {/if}
-    {/each}
   </div>
 </section>
 
+{#snippet tools(player: PlayerView, mine: boolean)}
+  {@const canAdd = mine && seatsTaken < MAX_SEATS}
+  {@const canRemove = view.you.host && !mine}
+  {@const canLeave = !view.you.host && mine}
+  {#if canAdd || canRemove || canLeave}
+    <div class="tools">
+      {#if canAdd}
+        <button
+          class="btn-ghost tool add"
+          data-tip="Add a deck"
+          aria-label="Add a deck"
+          aria-disabled={addLocked}
+          onclick={onadddeck}
+        >
+          <Icon name="plus" />
+        </button>
+      {/if}
+      {#if canRemove}
+        {@const tip = `Take ${player.name} off this seat`}
+        <button
+          class="btn-ghost tool"
+          data-tip={tip}
+          aria-label={tip}
+          onclick={() => onremove(player.color)}
+        >
+          <Icon name="user-minus" />
+        </button>
+      {/if}
+      {#if canLeave}
+        <button
+          class="btn-ghost tool"
+          data-tip="Leave your seat"
+          aria-label="Leave your seat"
+          onclick={onleave}
+        >
+          <Icon name="leave" />
+        </button>
+      {/if}
+    </div>
+  {/if}
+{/snippet}
+
 <style>
-  .invite {
-    display: flex;
-    gap: 8px;
+  /*
+    The widths follow the lobby's bands: a phone below 600px, then a tablet up to 1099px, then
+    wider. The seats' gap and a card's padding are variables, as a card over several seats spaces
+    its decks with them.
+  */
+  .players {
+    --seat-gap: 10px;
+    --seat-pad: 14px;
   }
 
-  .invite input {
+  @media (min-width: 600px) {
+    .players {
+      --seat-gap: 12px;
+    }
+  }
+
+  .title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
     min-width: 0;
+  }
+
+  .count {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .bhead .copy {
+    flex: none;
+    height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .copy :global(svg) {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
+
+  .link {
+    margin-bottom: 12px;
     color: var(--text-soft);
   }
 
-  /* Room for "Copied": the field doesn't jump. */
-  .invite .btn {
-    flex: none;
-    width: 112px;
-  }
-
-  .note {
-    margin: 8px 0 0;
-  }
-
-  .invite :global(svg) {
-    width: 16px;
-    height: 16px;
-  }
-
+  /* Dense, so that a card over two seats never leaves a hole behind a single one. */
   .seats {
+    display: grid;
+    gap: var(--seat-gap);
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-flow: row dense;
+  }
+
+  @media (min-width: 600px) {
+    .seats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .span2,
+    .span3,
+    .span4 {
+      grid-column: span 2;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .seats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .span3 {
+      grid-column: span 3;
+    }
+
+    .span4 {
+      grid-column: span 4;
+    }
+  }
+
+  /* On a phone, the player's colour runs down the card's left edge; wider, along its top. */
+  .seat {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-
-  .seat {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    position: relative;
-    overflow: hidden;
-    padding: 12px 14px 12px 18px;
+    padding: 10px 12px 12px 17px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 12px;
     background: var(--panel);
   }
 
-  /* The player's colour: the left edge of the row. */
   .seat::before {
     content: '';
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 4px;
+    width: 5px;
     background: var(--pc);
   }
 
-  .head,
-  .slot {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+  @media (min-width: 600px) {
+    .seat {
+      padding: var(--seat-pad);
+    }
+
+    .seat::before {
+      right: 0;
+      bottom: auto;
+      width: auto;
+      height: 4px;
+    }
   }
 
-  /* The name line keeps the height of the remove button, with or without one. */
-  .head {
-    min-height: 32px;
+  .seat.me {
+    background: color-mix(in srgb, var(--pc) 8%, var(--panel));
+    border-color: color-mix(in srgb, var(--pc) 35%, var(--line));
+  }
+
+  .top {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
   }
 
   .who {
@@ -222,77 +349,190 @@
     min-width: 0;
   }
 
-  .who b {
-    font-size: 15px;
-  }
-
-  .who .aside {
-    margin-left: 6px;
-  }
-
-  .nodeck {
-    flex: 1;
-    min-width: 0;
-    color: var(--muted);
-    font-size: 13px;
-  }
-
-  .st {
-    flex: none;
-    display: inline-flex;
+  .nm {
+    display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
+    min-width: 0;
+  }
+
+  .nm b {
+    min-width: 0;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tag {
+    flex: none;
+    padding: 1px 7px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--panel-2);
+    color: var(--text-soft);
+    font-size: 11px;
     font-weight: 700;
-    color: var(--warn);
   }
 
-  .st.ok {
-    color: var(--ok);
-  }
-
-  .st i {
-    width: 7px;
-    height: 7px;
+  .dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: currentColor;
+    background: var(--ok);
   }
 
-  .kick {
+  .dot.off,
+  .status.off i {
+    background: none;
+    border: 1.5px solid var(--faint);
+    box-shadow: none;
+  }
+
+  .status {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    color: var(--ok);
+    font-size: 12px;
+  }
+
+  .status i {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 15%, transparent);
+  }
+
+  .status.off {
+    color: var(--faint);
+  }
+
+  .role {
+    color: var(--muted);
+  }
+
+  @media (min-width: 600px) {
+    .tag,
+    .dot {
+      display: none;
+    }
+
+    .status {
+      display: inline-flex;
+    }
+  }
+
+  /* The icon buttons reach into the card's padding, so their glyphs line up with its edge. */
+  .tools {
+    flex: none;
+    display: flex;
+    gap: 2px;
+    margin: -4px -4px 0 0;
+  }
+
+  .tool {
     flex: none;
     width: 32px;
     height: 32px;
     padding: 0;
-    color: var(--faint);
-    display: inline-flex;
+    border-radius: 8px;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+  }
+
+  .tool :global(svg) {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
+
+  .tool.add {
+    color: var(--sel);
+    border-color: var(--line-strong);
+  }
+
+  @media (hover: hover) {
+    .tool.add:hover:not(:disabled, [aria-disabled='true']) {
+      border-color: var(--sel);
+      color: var(--sel);
+    }
+  }
+
+  /*
+    The decks of a card, side by side when it spans several seats. Each deck starts where the next
+    seat's content would: their gap is the seats' gap plus both cards' padding and border.
+  */
+  .decks {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  @media (min-width: 600px) {
+    .span2 .decks,
+    .span3 .decks,
+    .span4 .decks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: calc(var(--seat-gap) + 2 * (var(--seat-pad) + 1px));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .span3 .decks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .span4 .decks {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .deck {
+    display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    min-width: 0;
   }
 
-  .kick :global(svg) {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2.2;
+  .wait {
+    flex: 1;
+    min-width: 0;
+    color: var(--warn);
+    font-size: 12px;
+    font-weight: 600;
   }
 
+  /* A free seat: a dashed card with the colour the next newcomer gets. */
   .free {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    padding: 14px 18px;
+    padding: 12px 14px;
     border: 1.5px dashed var(--line-strong);
-    border-radius: 14px;
+    border-radius: 12px;
+    background: none;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     text-align: left;
+    white-space: normal;
   }
 
-  /* A spectator's free seat is a button: it takes the seat. */
-  @media (hover: hover) {
-    button.free:hover:not(:disabled) {
-      border-color: var(--pc);
+  @media (min-width: 600px) {
+    .free {
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      min-height: 100px;
+      text-align: center;
     }
   }
 
@@ -300,9 +540,20 @@
     flex: none;
     width: 10px;
     height: 10px;
-    border-radius: 2px;
     transform: rotate(45deg);
     background: var(--pc);
-    opacity: 0.7;
+  }
+
+  .free b {
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+
+  /* A spectator's free seat is a button: it takes the seat. */
+  @media (hover: hover) {
+    button.free:hover:not(:disabled) {
+      background: none;
+      border-color: var(--pc);
+    }
   }
 </style>

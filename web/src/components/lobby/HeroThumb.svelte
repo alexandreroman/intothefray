@@ -15,20 +15,26 @@
 {/if}
 
 <style>
+  /* 44px in a seat, 40px on a phone. */
   .hero {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     border: 1px solid #ffffff0f;
     background: var(--panel-2);
     flex: none;
     display: grid;
     place-items: center;
     color: var(--pc, var(--faint));
-    font-stretch: 62%;
     font-weight: 900;
-    font-style: italic;
-    font-size: 22px;
+    font-size: 18px;
     overflow: hidden;
+  }
+
+  @media (max-width: 599px) {
+    .hero {
+      width: 40px;
+      height: 40px;
+    }
   }
 </style>
