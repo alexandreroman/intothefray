@@ -1,6 +1,6 @@
 ---
 name: "Lobby layout"
-description: "One column: Players (a seat per deck), Scenario (every villain in the page, recap), Start; no sticky bar"
+description: "One column: Players (a seat per deck), Scenario (villains in the page, recap), Start; no sticky bar"
 type: project
 ---
 
@@ -22,18 +22,18 @@ type: project
   seat order, then free seats. A hole at the end of a row is filled by free
   seats, then by the first later card that fits; else it stays (`layOutSeats`,
   `lib/seatLayout.ts`). A card shows the player's colour (left band in one
-  column, top band otherwise), the name, `Online` / `Offline`
-  (`PlayerView.online`; a dot on a phone), `you` and `host`, then each deck's
-  hero and deck names or `Waiting for a deck`. The viewer's slots are
-  `DeckLoader`s that `Lobby.svelte` passes as the `ownSlot` snippet. A slot is
-  one 44px line in every state (empty, loading, loaded, changing), so nothing
-  under it moves: the field (its label visually hidden, the deck number in the
-  placeholder), the square `Load` button (arrow-right icon, a spinner while
-  loading), then `Cancel` (undo icon) while changing or the trash on an empty
-  slot of several; loaded, the hero line. Only an error adds lines. Free seats
-  are dashed cards (`Take this seat` for a spectator). The box header holds
-  `Copy invite link`; a refused clipboard shows the link in a selected read-only
-  field.
+  column, top band otherwise), the name and, on the same line, lowercase
+  capsules: `you`, `host`, `online` / `offline` (`PlayerView.online`, with its
+  dot; only the dot on a narrow phone line), then each deck's hero and deck
+  names or `Waiting for a deck`. The viewer's slots are `DeckLoader`s that
+  `Lobby.svelte` passes as the `ownSlot` snippet. A slot is one 44px line in
+  every state (empty, loading, loaded, changing), so nothing under it moves: the
+  field (its label visually hidden, the deck number in the placeholder), the
+  square `Load` button (arrow-right icon, a spinner while loading), then
+  `Cancel` (undo icon) while changing or the trash on an empty slot of several;
+  loaded, the hero line. Only an error adds lines. Free seats are dashed cards
+  (`Take this seat` for a spectator). The box header holds `Copy invite link`; a
+  refused clipboard shows the link in a selected read-only field.
 - Card actions are icon buttons with tooltips: `Add a deck` (plus),
   `Take {name} off this seat` (user-minus), `Leave your seat` (leave),
   `Change deck` (pencil), `Remove deck` (trash). The cross icon closes
@@ -46,17 +46,18 @@ type: project
   rest of the visit and goes away; a filter query searches every scenario.
   The chosen row is outlined in signal blue with a check; an unsupported one
   is greyed, `aria-disabled`, tip `Not supported yet`. Under the list, once
-  a scenario is chosen, the recap: three zones, Villain (art 120×90, name and
-  pack), Difficulty and Modular sets, from 600px in three equal columns with
-  their content centred, so no zone resizes as its content changes (the
-  name goes under the art in a column under 300px). Every settings control
-  is `--ctl` (34px) tall. The host's Difficulty zone holds the switch, then
-  the set dropdowns stacked in a second column; in a zone under 282px wide
-  the dropdowns go under the switch. `Show all villains` is centred from
-  600px, full width on a phone.
+  a scenario is chosen, the recap on two rows: the villain header (art
+  120×90, 88×66 on a phone; name and pack beside it, one line each), then,
+  under a rule, Difficulty | Modular sets in two equal columns split by a
+  vertical rule, so neither resizes as its content changes; their labels and
+  first controls sit level. On a phone the host's two settings stack. Every
+  settings control is `--ctl` (34px) tall. The host's Difficulty column
+  holds the switch, then the set dropdowns stacked in an inner column; in a
+  column under 282px wide the dropdowns go under the switch. `Show all
+  villains` is centred from 600px, full width on a phone.
 - **Scenario**, guest or spectator: no box until the host has chosen; then
-  the box shows the recap read only (difficulty as a chip). On a phone its
-  two settings sit in the art's and the name's columns (subgrid).
+  the box shows the recap read only (difficulty as a chip), its two
+  settings side by side at every width.
 - The host's recap and a guest's box slide open on the first choice
   (Svelte `slide`, 250 ms, `cubicOut`; at once under reduced motion) and
   stay while the host picks others; a viewer who arrives with a scenario
