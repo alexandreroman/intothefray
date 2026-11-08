@@ -7,6 +7,7 @@ import severalDecks from '../assets/news/2026-10-29-several-decks.webp';
 import redSkull from '../assets/news/2026-11-01-red-skull.webp';
 import shareLink from '../assets/news/2026-11-03-share-link.webp';
 import galaxysMostWanted from '../assets/news/2026-11-05-galaxys-most-wanted.webp';
+import newLobby from '../assets/news/2026-11-08-new-lobby.webp';
 
 /** One piece of news: a feature the players can use. */
 export interface NewsEntry {
@@ -25,6 +26,17 @@ export interface NewsEntry {
 
 /** Every entry, newest first (news.test.ts checks it). */
 export const NEWS: NewsEntry[] = [
+  {
+    id: '2026-11-08-new-lobby',
+    title: 'A new lobby',
+    text:
+      'The lobby fits phones and tablets as well as desktops: the players come first, with who is online and ' +
+      'their decks, and the host picks the villain from the full list right on the page.',
+    image: {
+      src: newLobby,
+      alt: "A player's card in the lobby: online, with a Black Panther deck",
+    },
+  },
   {
     id: '2026-11-05-galaxys-most-wanted',
     title: "The Galaxy's Most Wanted scenarios",
