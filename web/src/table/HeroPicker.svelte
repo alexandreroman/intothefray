@@ -3,7 +3,7 @@
   player's colour, with the deck's hand size in a badge. In "All" it picks the viewer's deck whose
   hand shows; in "Villain + player" the seat whose row shows. Only the current entry names its hero,
   beside its avatar. Each entry names its seat (data-seat): in dock mode, a card drawn into a deck's
-  hand that no hand shows flies to its entry (motion.svelte.ts).
+  hand that no hand shows flies to its entry in the hand sheet's selector (motion.svelte.ts).
 
   A switch takes about 0.3 s: the ring slides to the new avatar as its colour fades, while the new
   name unfolds and the old one folds. Every name box is as wide as the longest name listed (--nw),

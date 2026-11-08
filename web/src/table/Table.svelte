@@ -421,9 +421,10 @@
 
   // The hero selector at the bottom left (HeroPicker): in "Villain + player", every seat, its entry
   // picking the row shown; in "All", the viewer's own decks, its entry picking the hand shown. It
-  // shows only with two entries or more: a single hero leaves nothing to pick. In dock mode, a card
-  // drawn into a deck's hand flies to its entry when no hand shows it: its badge counts it once the
-  // card has landed (motion.drawing), as the dock does.
+  // shows only with two entries or more: a single hero leaves nothing to pick. Dock mode has no
+  // floating selector: the hand sheet's selector (ownEntries) picks the deck, in "Villain + player"
+  // its row too, and its badges count a card drawn into its hand once the card has landed
+  // (motion.drawing), as the dock does.
   const pickerEntries = $derived<HeroEntry[]>(
     seatedDecks
       .filter(({ seat }) => focused || own.includes(seat))
@@ -446,7 +447,6 @@
     return hand.filter((id) => motion.drawing.has(id)).length;
   }
   const pickerCurrent = $derived(focused ? shownSeat : selected);
-  const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null);
   // The selector's width in px while it shows, bound out of HeroPicker: on a wide screen, the hands
   // keep to the room right of it. Stale once it is gone.
   let pickerWidth = $state(0);
@@ -546,10 +546,10 @@
   // The short case of a small screen (SMALL_SCREEN_QUERY): a phone on its side.
   const short = new MediaQuery(SHORT_SCREEN_QUERY);
 
-  // Dock mode, a phone held either way on a touch screen: the dock (Dock.svelte) stands in
-  // for the hand's fan and the controls at the bottom right, and its buttons open the hand and the
-  // history in bottom sheets; the hero selector floats beside it. A mouse or a pen never sees it, at
-  // any width.
+  // Dock mode, a phone held either way on a touch screen: the dock (Dock.svelte) stands in for the
+  // hand's fan, the controls at the bottom right and the floating hero selector, the hand sheet's
+  // header picking the deck; its buttons open the hand and the history in bottom sheets. A mouse or
+  // a pen never sees it, at any width.
   const dockMode = $derived(touchMode.current && small.current);
   // On a phone on its side, the dock is a rail down the left edge, the table right of it.
   const dockRail = $derived(dockMode && short.current);
@@ -562,6 +562,8 @@
   // button beside the floating Undo opens the history sheet dock mode uses, as a finger
   // has no other way to read the history. A mouse window keeps its corner as it is.
   const historySheetMode = $derived(tablet && narrow.current);
+  // Whether the hero selector floats on the table: with two entries or more, outside dock mode.
+  const pickerShown = $derived(pickerEntries.length > 1 && pickerCurrent !== null && !dockMode);
   // The cards and piles below read it too: small cards and small piles.
   setDockMode({
     get current() {
@@ -2777,10 +2779,7 @@
     </div>
   {/if}
 
-  <!--
-    In dock mode too, compact, floating above the dock or right of the rail: there it is the only way
-    to pick the player shown in "Villain + player", and to switch decks without opening the hand.
-  -->
+  <!-- Outside dock mode alone: compact on a small screen, which is then a mouse's or a pen's. -->
   {#if pickerShown && pickerCurrent !== null}
     <div class="seatpick">
       <HeroPicker
@@ -3311,21 +3310,6 @@
   */
   .app.compact .seatpick {
     margin-bottom: calc(var(--controls-bottom) + var(--bar-button) + 18px);
-  }
-
-  /*
-    Dock mode: just above the dock's bar (--table-bottom, its room above the safe area), on its left
-    edge. As the dock, under the top bar and the sheets.
-  */
-  .app.dock-mode .seatpick {
-    z-index: 30;
-    margin: 0 0 var(--table-bottom) calc(8px + env(safe-area-inset-left));
-  }
-
-  /* The rail: at the top of the table right of it, under the top bar (--bar-room, the notch included). */
-  .app.dock-rail .seatpick {
-    align-self: start;
-    margin: calc(var(--bar-room) + 8px) 0 0 8px;
   }
 
   /* As the zoom control: under the veil and the raised hand. */

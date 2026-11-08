@@ -9,9 +9,12 @@
   side: the one of the selected deck is active, as above; the other one is
   inactive, dimmed. An inactive hand never rises and its cards take no
   pointer: the pointer coming into its band, or a tap on it, makes it the
-  active one (onactivate). Both take the whole room the hands have: at rest
-  each fan keeps to its place in it (restPlace); raised, the active one
-  spreads over most of it, and the other one fades out meanwhile (hidden).
+  active one (onactivate). It rises as it turns active: a mouse or a pen in
+  its band raises it, as any band does; a tap pins it up, as a first tap on a
+  resting hand does, so that one tap shows the fan of the other deck. Both
+  take the whole room the hands have: at rest each fan keeps to its place in
+  it (restPlace); raised, the active one spreads over most of it, and the
+  other one fades out meanwhile (hidden).
 
   A card a mouse or a pen drags to another place in the hand stays popped and
   hovered there once dropped, while the pointer stays on it (kept).
@@ -229,6 +232,9 @@
   // A finger pressed on a card of the pinned hand: moved far enough down, it lowers the hand.
   let swipe: { pointerId: number; y: number } | null = null;
   const SWIPE_DOWN = 40;
+  // A finger tapped this inactive hand: it pins itself up once the table makes it the active one.
+  // The next press is another gesture, which the tap no longer speaks for.
+  let raiseOnActivate = false;
 
   /**
    * Decided from the pointer position rather than :hover: as the hand rises,
@@ -277,6 +283,7 @@
   /** In the capture phase, so that the press is seen before what it lands on acts on it. */
   function onPress(event: PointerEvent): void {
     touch = event.pointerType === 'touch';
+    raiseOnActivate = false;
     const target = event.target as Element;
     const onCard = list?.contains(target) ?? false;
     swipe = touch && pinned && onCard ? { pointerId: event.pointerId, y: event.clientY } : null;
@@ -306,17 +313,21 @@
   /**
    * A tap on a card; a mouse click does nothing here, hovering is enough.
    * The first tap only raises the hand: the fan spreads out as it rises, and
-   * the card under the finger at rest is seldom the one wanted. In the raised
-   * hand, a tap selects a card, lifted to be read, another one moves the
-   * selection, and a tap on the selected card lets go of it. A tap opens no
-   * inspector: a hand card is played or discarded by a drag.
+   * the card under the finger at rest is seldom the one wanted. On an
+   * inactive hand, that first tap makes it the active one too, and it rises
+   * as it turns active. In the raised hand, a tap selects a card, lifted to
+   * be read, another one moves the selection, and a tap on the selected card
+   * lets go of it. A tap opens no inspector: a hand card is played or
+   * discarded by a drag.
    */
   function tapped(id: string): void {
     if (modal.open) {
       return;
     }
-    // An inactive hand only turns active; it rises at the next tap, as any resting hand.
+    // The table makes this hand the active one after onactivate, by its props: the hand rises then
+    // (pinUpAsActivated). A hand fading out while the other one is raised only turns active.
     if (!active) {
+      raiseOnActivate = touch && !hidden;
       onactivate?.();
       return;
     }
@@ -324,8 +335,7 @@
       return;
     }
     const wasOpen = open;
-    pinned = true;
-    open = true;
+    pinUp();
     if (!wasOpen) {
       return;
     }
@@ -335,6 +345,11 @@
     } else {
       interaction.select(element);
     }
+  }
+
+  function pinUp(): void {
+    pinned = true;
+    open = true;
   }
 
   /** Lowers the hand; its selected card, if any, goes down with it. */
@@ -372,7 +387,8 @@
 
   // A hand turning inactive goes down, even pinned up, its selected card with it. One turning active
   // under a resting mouse or pen follows it at once: it rises when the pointer is in its band, as the
-  // pointer that made it active is. Only a change counts: the props may be handed over again unchanged.
+  // pointer that made it active is. One a tap made active pins itself up, as a first tap on a resting
+  // hand does. Only a change counts: the props may be handed over again unchanged.
   let wasActive = untrack(() => active);
   $effect(() => {
     if (active === wasActive) {
@@ -381,7 +397,9 @@
     wasActive = active;
     if (active) {
       untrack(() => {
-        if (pointer && !touch && !interaction.dragging) {
+        if (raiseOnActivate) {
+          pinUpAsActivated();
+        } else if (pointer && !touch && !interaction.dragging) {
           followBand(pointer);
         }
       });
@@ -390,7 +408,16 @@
     }
   });
 
+  /** The hand a tap made active rises, unless a dialog froze the table or it has no card meanwhile. */
+  function pinUpAsActivated(): void {
+    raiseOnActivate = false;
+    if (!modal.open && cards.length > 0) {
+      pinUp();
+    }
+  }
+
   function deactivate(): void {
+    raiseOnActivate = false;
     pinned = false;
     open = false;
     keptBand = null;
@@ -865,6 +892,8 @@
     list-style: none;
     overflow: visible;
     pointer-events: none;
+    /* No square grey tap highlight over a tilted card's box: the hand's own lift is the feedback. */
+    -webkit-tap-highlight-color: transparent;
     /* Low enough that only the top part of the cards shows. */
     transform: translateY(var(--rest-drop)) scale(var(--rest-scale));
     transform-origin: 50% 100%;

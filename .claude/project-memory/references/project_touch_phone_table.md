@@ -147,8 +147,11 @@ type: project
     a phone on its side, holds the hand button (hero avatar, mini cards,
     the hand count in the count capsule, see [[project_count_capsule]];
     the drop target "back to hand" during a drag), Undo and History, which
-    has no badge. No hand fan, no corner bar; the hero selector floats
-    above the dock when it lists two entries or more. During a drag the
+    has no badge. No hand fan, no corner bar, no floating hero selector:
+    the hand picks the deck, the hand sheet's header holding the selector
+    of the player's own decks, each with its hand count. In "Villain +
+    player" the row shown is that deck's; another player's row is not
+    offered, and a spectator sees the first seat's. During a drag the
     hand button is the only hand target: a table card dropped there goes
     to its owner's hand, a hand card goes back.
   - In dock mode the top bar is always visible, never auto-hides and
@@ -166,8 +169,9 @@ type: project
     was shown: the hand sheet or the dock's hand button
     (`RiseFlight` in motion.svelte.ts, 300 ms). A card drawn or taken
     back into the hand flies to the hand button's minis (the rail's
-    avatar, another deck's hero selector entry), or into the open
-    sheet's carousel, and the counts step up as each card lands (see
+    avatar; the avatar for another of the player's decks), or into the
+    open sheet's carousel (its selector entry for another deck), and the
+    counts step up as each card lands (see
     [[project_card_move_animations]]).
   - The history opens as a sheet (`HistorySheet.svelte`) from the dock's
     or rail's History button.

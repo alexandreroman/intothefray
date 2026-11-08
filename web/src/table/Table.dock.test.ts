@@ -1,6 +1,7 @@
-// The table in dock mode: on a small touch screen, a dock stands in for the hand's fan
-// and the controls at the bottom right, the hero selector floating beside it; its buttons open the
-// hand and the history in bottom sheets. The top bar always shows, in its own room above the table.
+// The table in dock mode: on a small touch screen, a dock stands in for the hand's fan, the
+// controls at the bottom right and the floating hero selector; its buttons open the hand and the
+// history in bottom sheets, the hand sheet's header picking the deck. The top bar always shows, in
+// its own room above the table.
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Table from './Table.svelte';
@@ -140,6 +141,10 @@ function dock(): HTMLElement | null {
 
 function handButton(): HTMLElement {
   return dock()!.querySelector<HTMLElement>('.handbtn')!;
+}
+
+function handSheet(): HTMLElement | null {
+  return screen.queryByRole('dialog', { name: 'Your hand' });
 }
 
 function topBar(): HTMLElement {
@@ -307,49 +312,94 @@ describe('the hero selector in dock mode', () => {
     return document.querySelector<HTMLElement>('.seatpick');
   }
 
+  /**
+   * The view with two own decks (makeView's twoDecks), each with a card in its row: Alex's card and
+   * piles in Spider-Man's row, a card of Ant-Man's and its deck in the second.
+   */
+  function withAntManRow(): View {
+    const view = makeView({ twoDecks: true });
+    const table = view.table!;
+    table.cards = table.cards.map((c) => (c.id === 'mine' ? { ...c, y: 470 } : c));
+    table.piles = table.piles.map((p) => ({ ...p, y: 470 }));
+    table.cards.push(card('ants', { owner: 1, x: 300, y: 690 }));
+    table.piles.push(pile('deck:p1', { owner: 1, x: 600, y: 690 }));
+    return view;
+  }
+
   it.each([
     ['upright', PHONE],
     ['on its side', LANDSCAPE_PHONE],
   ])(
-    'picks the player shown in "Villain + player", on a phone %s (dock_hero_selector)',
+    'leaves it out of "Villain + player" on a phone %s, the hand sheet picking the row (dock_hero_selector)',
     async (_name, size) => {
       localStorage.setItem('itf-view', 'focus');
       mockScreen(size);
-      await renderTable(withSam());
+      await renderTable(withAntManRow());
 
-      const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
-      expect(seatpick()!.contains(picker)).toBe(true);
-      expect(seatpick()!.querySelector('.picker')?.classList).toContain('compact');
-      expect(dock()!.contains(picker)).toBe(false);
+      expect(seatpick()).toBeNull();
+      expect(screen.queryByRole('radiogroup', { name: 'Player shown' })).toBeNull();
       expect(placed('mine')).toBeTruthy();
+      expect(document.querySelector('.surface [data-id="ants"]')).toBeNull();
 
-      await fireEvent.click(within(picker).getByRole('radio', { name: 'Sam · Ant-Man' }));
+      await fireEvent.click(handButton());
+      const picker = within(handSheet()!).getByRole('radiogroup', { name: 'Hand shown' });
+      await fireEvent.click(within(picker).getByRole('radio', { name: /Ant-Man/ }));
 
       expect(document.querySelector('.surface [data-id="mine"]')).toBeNull();
-      expect(placed('sams')).toBeTruthy();
+      expect(placed('ants')).toBeTruthy();
+      expect(seatpick()).toBeNull();
     },
   );
 
-  it('switches between own decks in "All" without opening the hand (dock_hero_selector)', async () => {
+  // Picking Ant-Man in the hand sheet's selector is checked with the hand sheet below.
+  it.each([
+    ['upright', PHONE],
+    ['on its side', LANDSCAPE_PHONE],
+  ])(
+    'leaves it out of "All" on a phone %s, the hand sheet picking the deck (dock_hero_selector)',
+    async (_name, size) => {
+      mockScreen(size);
+      await renderTable(makeView({ twoDecks: true }));
+
+      expect(seatpick()).toBeNull();
+      expect(screen.queryByRole('radiogroup', { name: 'Hand shown' })).toBeNull();
+
+      await fireEvent.click(handButton());
+
+      const pickers = screen.getAllByRole('radiogroup', { name: 'Hand shown' });
+      expect(pickers).toHaveLength(1);
+      expect(handSheet()!.contains(pickers[0]!)).toBe(true);
+      expect(seatpick()).toBeNull();
+    },
+  );
+
+  it('leaves it out with a single deck, the hand sheet showing its hero alone', async () => {
     mockScreen(PHONE);
+    await renderTable();
+    await fireEvent.click(handButton());
+
+    expect(seatpick()).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: 'Hand shown' })).toBeNull();
+    expect(handSheet()!.querySelector('.deck-avatar')).toBeTruthy();
+  });
+
+  it('floats in "Villain + player" on a touch tablet, which has no dock', async () => {
+    localStorage.setItem('itf-view', 'focus');
+    mockScreen(TOUCH_TABLET);
+    await renderTable(withSam());
+
+    const picker = screen.getByRole('radiogroup', { name: 'Player shown' });
+    expect(seatpick()!.contains(picker)).toBe(true);
+    expect(dock()).toBeNull();
+  });
+
+  it('floats in "All" on a touch tablet, which has no dock', async () => {
+    mockScreen(TOUCH_TABLET);
     await renderTable(makeView({ twoDecks: true }));
 
     const picker = screen.getByRole('radiogroup', { name: 'Hand shown' });
     expect(seatpick()!.contains(picker)).toBe(true);
-    await fireEvent.click(within(picker).getByRole('radio', { name: /Ant-Man/ }));
-
-    expect(handButton().getAttribute('aria-label')).toBe('Hand · 1, Ant-Man');
-  });
-
-  it('floats above the dock at the bottom left, or right of the rail at the top', () => {
-    // jsdom lays nothing out: the rules themselves are checked.
-    const bar = /\n {2}\.app\.dock-mode \.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(bar).toMatch(
-      /margin: 0 0 var\(--table-bottom\) calc\(8px \+ env\(safe-area-inset-left\)\);/,
-    );
-    const rail = /\n {2}\.app\.dock-rail \.seatpick \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(rail).toMatch(/align-self: start;/);
-    expect(rail).toMatch(/margin: calc\(var\(--bar-room\) \+ 8px\) 0 0 8px;/);
+    expect(dock()).toBeNull();
   });
 });
 
@@ -512,10 +562,6 @@ describe('a drop on the dock', () => {
 });
 
 describe('the hand sheet', () => {
-  function handSheet(): HTMLElement | null {
-    return screen.queryByRole('dialog', { name: 'Your hand' });
-  }
-
   it('opens from the hand button with the selected deck’s hand, Play and Discard sending their actions', async () => {
     mockScreen(PHONE);
     const { session } = await renderTable();
@@ -2043,8 +2089,9 @@ describe('a card drawn into the hand in dock mode', () => {
     await tick();
   }
 
+  /** A seat's hand size in the hand sheet's hero selector. */
   function badge(seat: number): string | null | undefined {
-    return document.querySelector(`.seatpick .item[data-seat="${seat}"] .n`)?.textContent;
+    return handSheet()?.querySelector(`.item[data-seat="${seat}"] .n`)?.textContent;
   }
 
   it("steps the hand button's size and mini cards up as each copy lands on its mini", async () => {
@@ -2074,10 +2121,11 @@ describe('a card drawn into the hand in dock mode', () => {
     expect(arriving()).toEqual([false, false, false, false]);
   });
 
-  it("steps another own deck's selector badge up as its copy lands on its entry", async () => {
+  it("steps another own deck's badge up in the hand sheet's selector as its copy lands there", async () => {
     mockScreen(PHONE);
     const view = withDecks(true);
     const { session, rerender } = await renderTable(view);
+    await fireEvent.click(handButton());
     expect(badge(1)).toBe('1');
 
     await rerender({ session, view: drew(view, 1, ['a2']) });

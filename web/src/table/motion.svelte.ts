@@ -6,10 +6,10 @@
 // fades out into it (CHIP_FADE_FROM), turning over first where it starts when
 // it turns (flipsFirst), and a card leaves it at a card's size
 // (measureOrigin). In dock mode, a card drawn into the viewer's hand, or taken back into it off the
-// table, flies to the dock's hand button or to its deck's hero selector entry when no hand sheet
-// shows its hand (dockLanding). Nothing here holds the table up: the new view is drawn at
-// once, in its final state, and the animations only paint over it, never
-// catching the pointer.
+// table, flies to the dock's hand button, or to its deck's entry in the hand sheet's hero selector,
+// when no hand sheet shows its hand (dockLanding). Nothing here holds the table up: the new view is
+// drawn at once, in its final state, and the animations only paint over it, never catching the
+// pointer.
 
 import { tick } from 'svelte';
 import { prefersReducedMotion } from 'svelte/motion';
@@ -232,8 +232,8 @@ interface PileFlight extends FlightBase {
 
 /**
  * A copy of a drawn card on its way from its pile to its slot in the hand; in dock mode, with no
- * hand sheet showing its hand, to the dock's hand button or a hero selector entry (dock), also from
- * the table for a card taken back into the hand.
+ * hand sheet showing its hand, to the dock's hand button or the hand sheet's hero selector entry
+ * (dock), also from the table for a card taken back into the hand.
  */
 interface DrawFlight extends FlightBase {
   kind: 'draw';
@@ -246,17 +246,17 @@ interface DrawFlight extends FlightBase {
   to: Measured;
   /** The slot's tilt on the fan, in degrees. */
   angle: number;
-  /** Where it lands on the dock or the hero selector (dockLanding); null for a hand slot. */
+  /** Where it lands on the dock or the hand sheet's hero selector (dockLanding); null for a hand slot. */
   dock: DockLanding | null;
   /** It lands in an open sheet (the hand sheet's carousel or its header): it is drawn over it. */
   overSheet: boolean;
 }
 
 /**
- * Where a drawn card's copy lands in dock mode when no hand sheet shows its slot: on the dock or a
- * hero selector entry (dockLanding), or in the hand sheet's hand size (sheetCountLanding). Nothing
- * follows it there (#follow), an accepted approximation: the mini cards may move up as others leave
- * the hand, a switch of deck moves the selector's entries.
+ * Where a drawn card's copy lands in dock mode when no hand sheet shows its slot: on the dock or the
+ * hand sheet's hero selector entry (dockLanding), or in the hand sheet's hand size
+ * (sheetCountLanding). Nothing follows it there (#follow), an accepted approximation: the mini
+ * cards may move up as others leave the hand, a switch of deck moves the selector's entries.
  */
 interface DockLanding {
   /** It goes into an avatar or a capsule: it fades out on the last part of its way, as into a chip. */
@@ -583,9 +583,11 @@ function portraitOn(element: HTMLElement): Measured {
 /**
  * Where a card drawn into a seat's hand lands in dock mode when no hand sheet shows that hand. On
  * the dock's hand button showing the seat: on the bar, the card's own mini card, or the last one for
- * a card past them; on the rail, which has none, the avatar. Else that seat's hero selector entry,
- * the hand sheet's own first, as it lies over the table, unless the sheet is sliding away
- * (shownElement). Null when none shows (no selector, a drag over the hand button).
+ * a card past them; on the rail, which has none, the avatar. Else that seat's entry in the hero
+ * selector of the hand sheet, as it lies over the table, unless the sheet is sliding away
+ * (shownElement). Else the avatar of the dock's hand button, whatever deck it shows: its minis are
+ * another hand's cards. The floating hero selector, which dock mode does not show, is never looked
+ * up. Null when none shows (no hand button, a drag over it).
  */
 function dockLanding(
   root: HTMLElement,
@@ -606,17 +608,16 @@ function dockLanding(
     }
     return null;
   }
-  const entry =
-    shownElement(root, `.sheet ${heroEntry(seat)}`) ?? shownElement(root, heroEntry(seat));
+  const entry = shownElement(root, `.sheet ${heroEntry(seat)}`);
   const swatch = entry?.querySelector<HTMLElement>('.swatch');
-  if (!swatch) {
-    return null;
+  if (swatch) {
+    return { to: portraitOn(swatch), dock: { fades: true, pulse: swatch }, overSheet: true };
   }
-  return {
-    to: portraitOn(swatch),
-    dock: { fades: true, pulse: swatch },
-    overSheet: swatch.closest('.sheet') !== null,
-  };
+  const avatar = root.querySelector<HTMLElement>(`${DOCK_HAND_BUTTON} .avatar`);
+  if (avatar) {
+    return { to: portraitOn(avatar), dock: { fades: true, pulse: avatar }, overSheet: false };
+  }
+  return null;
 }
 
 /**
@@ -1627,7 +1628,7 @@ class TableMotion {
           { ...timing, duration: DRAW_MS },
           null,
         );
-        // A hand slot moves with its hand; the dock and the hero selector stay where they are.
+        // A hand slot moves with its hand; the dock and the hand sheet's header stay where they are.
         if (toSlot && flight.dock === null) {
           this.#follow(toSlot, flight);
         }
@@ -2438,8 +2439,8 @@ class TableMotion {
 
   /**
    * In dock mode, a copy of a card come into the viewer's hand, out of its pile or off the table
-   * (no pile), flying to where the dock or the hero selector shows its hand (dockLanding); null out
-   * of dock mode, or with nothing there to land on.
+   * (no pile), flying to the dock, or to the hand sheet's hero selector entry (dockLanding); null
+   * out of dock mode, or with nothing there to land on.
    */
   #dockFlight(
     root: HTMLElement,
@@ -2480,8 +2481,8 @@ class TableMotion {
   }
 
   /**
-   * The copy reached where it went: its card shows there from now on. On the dock or a hero
-   * selector entry, the avatar it landed on pulses.
+   * The copy reached where it went: its card shows there from now on. On the dock or the hand
+   * sheet's hero selector entry, the avatar it landed on pulses.
    */
   #land(flight: Flight): void {
     // stop() has already cleared away a flight it cancelled.

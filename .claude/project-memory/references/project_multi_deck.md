@@ -25,14 +25,19 @@ type: project
   it lists every seat and shows the picked seat's row, and another
   player's seat shows their row and no hand, shared-card actions staying
   credited to the last own deck. It shows only with 2 entries or more.
+  In dock mode (phones) it never floats: the hand sheet's header holds
+  the selector of the player's own decks, which in "Villain + player"
+  also picks the row shown (see [[project_touch_phone_table]]).
   The Q key and a card dragged to an own hand select that deck; Shift +
   ← / → steps through the selector's entries, round them.
 - A player with exactly 2 decks on a wide screen sees both hands side by
   side, in seat order, the same size, about 48 px apart between their
   tilted end cards, in the room between the hero selector and the bottom
   right controls (zoom, Undo). The selected deck's hand is active; the
-  other is dimmed and never rises, and the pointer entering it selects its
-  deck (in "Villain + player" that also shows that deck's row). A raised
+  other is dimmed and stays down while inactive. A mouse or a pen
+  entering it, or a finger's tap on it, selects its deck (in "Villain +
+  player" that also shows that deck's row) and raises its fan at once:
+  the pointer's band raises it, the tap pins it up. A raised
   hand spreads from the room's left edge to the table's right edge (see
   [[project_hand_sizes]]) and the other hand fades out until it lowers.
   Each fan glows from below in its player's colour. With 1, 3 or 4 decks,
