@@ -1119,6 +1119,8 @@
   // (.fixed-screen below). Without this, the resting hand, lowered past the bottom, would make the page
   // scrollable, and a wheel or a drag would scroll the page rather than the surface.
   $effect(() => {
+    // From the top: an offset left by the previous screen (a long lobby, scrolled) would stay under the table.
+    window.scrollTo(0, 0);
     const page = document.documentElement;
     page.classList.add('fixed-screen');
     return () => page.classList.remove('fixed-screen');
@@ -3031,8 +3033,9 @@
   }
 
   /*
-    Exactly the window. What lies past its edges, as the resting hand lowered under the bottom, is
-    clipped: it never reaches the page, which would scroll.
+    Pinned to the window, whatever height the browser's toolbars leave it: nothing it holds can
+    overflow the page, which iOS would let scroll despite its overflow: hidden. What lies past its
+    edges, as the resting hand lowered under the bottom, is clipped.
   */
   .app {
     /*
@@ -3046,9 +3049,9 @@
       out-of-play chips (Surface.svelte) and the markers (MarkerToken.svelte).
     */
     --above-cards: 100000;
+    position: fixed;
+    inset: 0;
     display: grid;
-    height: 100vh;
-    height: 100dvh;
     overflow: clip;
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-columns: minmax(0, 1fr) 320px;

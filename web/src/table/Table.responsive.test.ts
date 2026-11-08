@@ -319,13 +319,29 @@ describe('Table in the window', () => {
     expect(page.classList).not.toContain('fixed-screen');
   });
 
+  it('scrolls the window to the top before it locks the page', () => {
+    mockScreen(DESKTOP);
+    // Whether the page was already locked when the window scrolled: a locked page scrolls no more.
+    let lockedWhenScrolled: boolean | undefined;
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {
+      lockedWhenScrolled = document.documentElement.classList.contains('fixed-screen');
+    });
+
+    render(Table, { session: fakeSession(), view: makeView() });
+
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith(0, 0);
+    expect(lockedWhenScrolled).toBe(false);
+    expect(document.documentElement.classList).toContain('fixed-screen');
+  });
+
   it('keeps the page and the table to the window, clipping the lowered hand', () => {
     // jsdom applies no stylesheet: the rules themselves are checked.
     const pageRule = /:global\(html\.fixed-screen body\) \{([^}]*)\}/.exec(tableSource)?.[1];
     expect(pageRule).toMatch(/height:\s*100%/);
     expect(pageRule).toMatch(/overflow:\s*hidden/);
     const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(appRule).toMatch(/height:\s*100dvh/);
+    expect(appRule).toMatch(/position:\s*fixed/);
+    expect(appRule).toMatch(/inset:\s*0/);
     expect(appRule).toMatch(/overflow:\s*clip/);
   });
 
