@@ -1531,10 +1531,16 @@
     event.preventDefault();
   }
 
-  /** A chosen entry runs on the menu's element, once the menu is closed. */
+  /**
+   * A chosen entry runs on the menu's element, once the menu is closed. A token entry (`staysOpen`)
+   * leaves the menu open, its submenu too, to add the same token again: the entry relabels as the
+   * view answers ("Damage (7)").
+   */
   function runContextItem(item: ActionItem): void {
     const element = interaction.contextMenu?.element ?? null;
-    interaction.closeContextMenu();
+    if (!item.staysOpen) {
+      interaction.closeContextMenu();
+    }
     runItem(item, element);
   }
 

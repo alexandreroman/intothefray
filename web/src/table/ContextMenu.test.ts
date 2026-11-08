@@ -241,15 +241,79 @@ describe('the context menu', () => {
     const { session } = await renderTable();
     await rightClick(placed('mine'));
 
-    await fireEvent.click(menuItem(contextMenu()!, 'Add a token'));
-    const submenu = screen.getByRole('menu', { name: 'Add a token' });
-    expect(labels(submenu)).toEqual(['Damage (6)', 'Threat', 'Counter', 'Acceleration']);
+    await fireEvent.click(menuItem(contextMenu()!, 'Add a status'));
+    const submenu = screen.getByRole('menu', { name: 'Add a status' });
+    expect(labels(submenu)).toEqual(['Stunned', 'Confused', 'Tough', 'Retaliate', 'Locked']);
     // Right of the menu.
     expect(submenu.style.left).toBe('320px');
 
-    await fireEvent.click(menuItem(submenu, 'Damage (6)'));
+    await fireEvent.click(menuItem(submenu, 'Stunned'));
     expect(session.act).toHaveBeenCalledWith(
-      { kind: 'token', card: 'mine', name: 'dmg', delta: 1 },
+      { kind: 'status', card: 'mine', name: 'stunned', delta: 1 },
+      0,
+    );
+    expect(contextMenu()).toBeNull();
+  });
+
+  it('stays open where it is on a token entry, to add the same token again', async () => {
+    const { session, rerender } = await renderTable();
+    await rightClick(placed('mine'));
+    const menu = contextMenu()!;
+    // From the keyboard (a click without pointer details), the focus goes to the submenu's first item.
+    await fireEvent.click(menuItem(menu, 'Add a token'));
+    const submenu = screen.getByRole('menu', { name: 'Add a token' });
+    const damage = menuItem(submenu, 'Damage (6)');
+    expect(document.activeElement).toBe(damage);
+    const placedAt = { left: submenu.style.left, top: submenu.style.top };
+
+    await fireEvent.click(damage);
+    await fireEvent.click(damage);
+    const add = { kind: 'token', card: 'mine', name: 'dmg', delta: 1 };
+    expect(session.act.mock.calls).toEqual([
+      [add, 0],
+      [add, 0],
+    ]);
+    expect(contextMenu()).toBe(menu);
+    expect(screen.getByRole('menu', { name: 'Add a token' })).toBe(submenu);
+
+    // The view answers: the same entry relabels in place, keeps the focus, and the submenu its place.
+    const view = makeView();
+    view.table!.cards[0]!.tokens = { dmg: 8 };
+    await rerender({ view });
+    expect(labels(submenu)[0]).toBe('Damage (8)');
+    expect(menuItem(submenu, 'Damage (8)')).toBe(damage);
+    expect(document.activeElement).toBe(damage);
+    expect({ left: submenu.style.left, top: submenu.style.top }).toEqual(placedAt);
+    expect(contextMenu()).toBe(menu);
+
+    // Escape still closes the submenu, then the menu.
+    await fireEvent.keyDown(damage, { key: 'Escape' });
+    expect(screen.queryByRole('menu', { name: 'Add a token' })).toBeNull();
+    expect(contextMenu()).toBe(menu);
+    await fireEvent.keyDown(menu, { key: 'Escape' });
+    expect(contextMenu()).toBeNull();
+  });
+
+  it('closes on a status or a modifier entry, after a token entry left it open', async () => {
+    const { session } = await renderTable();
+    await rightClick(placed('mine'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Add a token'));
+    await fireEvent.click(menuItem(screen.getByRole('menu', { name: 'Add a token' }), 'Threat'));
+    expect(contextMenu()).not.toBeNull();
+
+    await fireEvent.click(menuItem(contextMenu()!, 'Add a status'));
+    await fireEvent.click(menuItem(screen.getByRole('menu', { name: 'Add a status' }), 'Tough'));
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'status', card: 'mine', name: 'tough', delta: 1 },
+      0,
+    );
+    expect(contextMenu()).toBeNull();
+
+    await rightClick(placed('mine'));
+    await fireEvent.click(menuItem(contextMenu()!, 'Add a modifier'));
+    await fireEvent.click(menuItem(screen.getByRole('menu', { name: 'Add a modifier' }), '+1 ATK'));
+    expect(session.act).toHaveBeenLastCalledWith(
+      { kind: 'modifier', card: 'mine', name: 'atk', delta: 1 },
       0,
     );
     expect(contextMenu()).toBeNull();
@@ -279,9 +343,9 @@ describe('the context menu', () => {
       action: { kind: 'toHand', card: 'mine' },
     },
     {
-      row: 'Add a token',
-      item: 'Damage (6)',
-      action: { kind: 'token', card: 'mine', name: 'dmg', delta: 1 },
+      row: 'Add a status',
+      item: 'Stunned',
+      action: { kind: 'status', card: 'mine', name: 'stunned', delta: 1 },
     },
   ])(
     'keeps the $row submenu open on hover over its items, which run',

@@ -92,6 +92,11 @@ export interface ActionItem {
   group: number;
   /** The items of a submenu; a separator is an item with the id 'sep'. */
   menu?: ActionItem[];
+  /**
+   * Chosen from a menu (the desktop action menu, the inspector's submenu page), it leaves that menu
+   * open where it is, to be chosen again: a token entry, as a card often takes several at once.
+   */
+  staysOpen?: true;
   run?: () => Action | { ask: CountQuestion } | LocalAction;
 }
 
@@ -565,20 +570,23 @@ function detachItem(card: CardView, table: TableView, sizeOf: TouchOptions['size
 
 /**
  * "Add a token" or "Add a status": a submenu whose items each add one of
- * their counter, its current count in brackets. Acceleration has no key.
+ * their counter, its current count in brackets. Acceleration has no key. A
+ * token entry leaves its menu open, to add the same token again: damage and
+ * threat often come several at a time.
  */
 function counterMenu(card: CardView, kind: 'token' | 'status'): ActionItem {
   const counters = kind === 'token' ? TOKENS : STATUSES;
   const counts = countersOf(card, kind);
   const menu = counters.map((counter): ActionItem => {
     const count = counts?.[counter.name] ?? 0;
-    return {
+    const item: ActionItem = {
       id: counter.name,
       label: count > 0 ? `${counter.label} (${count})` : counter.label,
       key: counter.key,
       group: 0,
       run: () => ({ kind, card: card.id, name: counter.name, delta: 1 }),
     };
+    return kind === 'token' ? { ...item, staysOpen: true } : item;
   });
   return {
     id: kind === 'token' ? 'tokens' : 'statuses',

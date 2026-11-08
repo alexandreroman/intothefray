@@ -4,9 +4,11 @@
   saying why it has none. Opened by a click, a tap or a right click, at the
   pointer, and flipped up or left to stay inside its bounds (the visible
   table, the box's grid) and the window. A submenu opens beside its row, on
-  hover or on a click. Escape, Tab, a press outside the menu, a scroll of its
-  bounds, a zoom of the table, or a resize close it. With only a note and no
-  entries, it is a small dialog rather than a menu with nothing to choose.
+  hover or on a click. A chosen entry closes it, but for a token entry, which
+  leaves it open where it is, to add the same token again. Escape, Tab, a
+  press outside the menu, a scroll of its bounds, a zoom of the table, or a
+  resize close it. With only a note and no entries, it is a small dialog
+  rather than a menu with nothing to choose.
   The table's keys keep working while it is open, on its element as under
   the pointer (keys.ts): the simplest consistent choice. The menu stays open
   and follows what they change ("Damage (7)").
@@ -49,7 +51,7 @@
     bounds: HTMLElement;
     /** The table's zoom: a change closes the menu, as its element moves from under it. */
     zoom?: number;
-    /** Runs a chosen item; the caller closes the menu first. */
+    /** Runs a chosen item; the caller closes the menu first, unless the item `staysOpen` (a token entry). */
     onrun: (item: ActionItem) => void;
     onclose: () => void;
   } = $props();

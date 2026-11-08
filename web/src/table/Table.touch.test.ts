@@ -443,11 +443,13 @@ describe('touch zoom', () => {
 });
 
 describe('the inspector, adding tokens, statuses and modifiers', () => {
+  // A token entry keeps the submenu's page, to add the same token again; the others go back to the
+  // main page, which shows what they added.
   it.each([
-    ['tokens', /^Damage/, { kind: 'token', card: 'two', name: 'dmg', delta: 1 }],
-    ['statuses', /^Confused/, { kind: 'status', card: 'two', name: 'confused', delta: 1 }],
-    ['modifiers', /^\+1 ATK/, { kind: 'modifier', card: 'two', name: 'atk', delta: 1 }],
-  ])('stays open after an entry of the %s submenu runs', async (submenu, entry, action) => {
+    ['tokens', /^Damage/, { kind: 'token', card: 'two', name: 'dmg', delta: 1 }, true],
+    ['statuses', /^Confused/, { kind: 'status', card: 'two', name: 'confused', delta: 1 }, false],
+    ['modifiers', /^\+1 ATK/, { kind: 'modifier', card: 'two', name: 'atk', delta: 1 }, false],
+  ])('stays open after an entry of the %s submenu runs', async (submenu, entry, action, onPage) => {
     mockScreen({ ...DESKTOP, touch: true });
     const { session } = await renderTable();
     await tap(placed('two'));
@@ -457,6 +459,8 @@ describe('the inspector, adding tokens, statuses and modifiers', () => {
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith(action, 0);
     expect(sheet()).not.toBeNull();
+    const back = within(sheet()!).queryByRole('button', { name: /^Back/ });
+    expect(back !== null).toBe(onPage);
   });
 
   it('stays open after a step in a token pill, and closes after any other entry', async () => {

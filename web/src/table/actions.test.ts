@@ -270,6 +270,15 @@ describe('actionsFor', () => {
     });
   });
 
+  it('leaves the menu open on a token entry only, to add the same token again', () => {
+    const items = itemsFor({ kind: 'card', id: 'mine' });
+
+    expect(menuOf(items, 'tokens').map((it) => it.staysOpen)).toEqual([true, true, true, true]);
+    expect(menuOf(items, 'statuses').some((it) => it.staysOpen)).toBe(false);
+    expect(menuOf(items, 'modifiers').some((it) => it.staysOpen)).toBe(false);
+    expect(items.some((it) => it.staysOpen)).toBe(false);
+  });
+
   it('the modifier submenu gives +1 then, past a separator, −1 to each stat, without keys', () => {
     const items = itemsFor({ kind: 'card', id: 'mine' });
 
