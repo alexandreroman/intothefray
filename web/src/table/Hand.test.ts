@@ -12,6 +12,8 @@ import {
   HAND_CARD,
   HAND_PADDING,
   HAND_REST_SCALE,
+  HOVER_POP_SCALE,
+  hoverPop,
   restingFanPositions,
   TOUCH_POP_SCALE,
   touchPop,
@@ -393,7 +395,10 @@ describe('Hand', () => {
         String.raw` \.hcard:hover \.fan,\n {2}\.hcard\.kept \.fan,\n {2}\.hcard\.locked \.fan \{([^}]*)\}`,
     ).exec(handSource)?.[1];
     expect(pop).toMatch(
-      /transform: translateY\(calc\(var\(--ty\) - 31px\)\) rotate\(var\(--rot\)\) scale\(1\.3\);/,
+      new RegExp(
+        String.raw`transform: translate\(var\(--hover-pop-x\), var\(--hover-pop-y\)\) rotate\(var\(--rot\)\)` +
+          String.raw`\s+scale\(var\(--hover-pop-scale\)\);`,
+      ),
     );
     // A finger hovers nothing: no hovered card comes forward in touch mode either.
     expect(handSource).toMatch(
@@ -402,6 +407,28 @@ describe('Hand', () => {
           String.raw`\n {2}\.hcard\.kept,\n {2}\.hcard\.locked \{\s*z-index: 60;`,
       ),
     );
+  });
+
+  it("pops the hovered card to where hoverPop puts it, within the fan's room and the window", () => {
+    vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(860);
+    const card = { w: 286, h: 400 };
+    const six = Array.from({ length: 6 }, (_, i) => handCard(`s${i}`, '01003'));
+    render(Hand, { cards: six, faceOf, captionOf, seat: 0, cardSize: card, open: true });
+
+    expect(handList().style.getPropertyValue('--hover-pop-scale')).toBe(`${HOVER_POP_SCALE}`);
+    // The fan's room: the hand's width less its side padding, from its middle.
+    const room = { left: -412, right: 412 };
+    const slots = filledFanPositions(6, 824, card);
+    handCards().forEach((item, i) => {
+      const pop = hoverPop(slots[i]!, card, room);
+      expect(item.style.getPropertyValue('--hover-pop-x')).toBe(`${pop.x}px`);
+      expect(item.style.getPropertyValue('--hover-pop-y')).toBe(`${pop.y}px`);
+    });
+    // The end cards move in; the middle ones stay on their slots.
+    expect(
+      Number.parseFloat(handCards()[0]!.style.getPropertyValue('--hover-pop-x')),
+    ).toBeGreaterThan(0);
+    expect(handCards()[2]!.style.getPropertyValue('--hover-pop-x')).toBe('0px');
   });
 
   it('pops a card selected on a tablet less, to where touchPop puts it, tilted as on its slot', () => {

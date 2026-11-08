@@ -31,6 +31,8 @@
     HAND_PADDING,
     HAND_REST_DROP,
     handRestScale,
+    HOVER_POP_SCALE,
+    hoverPop,
     isLandscape,
     type FanSlot,
     type HandInsets,
@@ -137,7 +139,7 @@
   // The raised fan's room, in px from the hand's middle, less the hand's side padding: from the
   // left edge of the hand's room, which keeps the hero selector clear, to the table's right edge,
   // over the controls at the bottom right, which the veil covers while the hand is raised. A card
-  // selected on a tablet pops within it too (touchPop).
+  // hovered, or selected on a tablet, pops within it too (hoverPop, touchPop).
   const raisedRoom = $derived({
     left: HAND_PADDING.side - width / 2,
     right: width / 2 + inset.right - HAND_PADDING.side,
@@ -765,6 +767,7 @@
   style:--pad-bottom="{HAND_PADDING.bottom}px"
   style:--pad-side="{HAND_PADDING.side}px"
   style:--touch-pop-scale={TOUCH_POP_SCALE}
+  style:--hover-pop-scale={HOVER_POP_SCALE}
   bind:this={list}
   bind:clientWidth={width}
 >
@@ -783,6 +786,7 @@
     {:else}
       {@const face = faceOf(card)}
       {@const pop = slot ? touchPop(slot, cardSize, raisedRoom) : { x: 0, y: 0 }}
+      {@const hover = slot ? hoverPop(slot, cardSize, raisedRoom) : { x: 0, y: 0 }}
       <!--
       Only a touch tap raises the hand and selects (there is no hover on touch): keyboard users act
       on hand cards with their keys instead.
@@ -800,6 +804,8 @@
         style:--ty="{slot?.y ?? 0}px"
         style:--touch-pop-x="{pop.x}px"
         style:--touch-pop-y="{pop.y}px"
+        style:--hover-pop-x="{hover.x}px"
+        style:--hover-pop-y="{hover.y}px"
         onpointerenter={(event) => enterCard(card.id, event)}
         onpointerleave={() => leaveCard(card.id)}
         onpointerdown={(event) => pressCard(card.id, event)}
@@ -1051,14 +1057,16 @@
   }
 
   /*
-    The hovered card pops up larger, keeping its tilt on the arc. Scaled from below its bottom, its
-    top rises by a third of its height: the raised hand's cards, sized from the preview's (or half
-    a small screen), leave room enough for that above them in the window.
+    The hovered card pops up larger, keeping its tilt on the arc, 31 px up from its slot. A sagging
+    or tilted end card moves up and in as far as it takes to show whole within the fan's room and
+    the window: popped on its slot, its outer corners would reach past the table's edge and its
+    lowest one stay below the window's (hoverPop, layout.ts).
   */
   :global(.app:not(.touch)) .hand:not(.pinned, .inactive, .keeping) .hcard:hover .fan,
   .hcard.kept .fan,
   .hcard.locked .fan {
-    transform: translateY(calc(var(--ty) - 31px)) rotate(var(--rot)) scale(1.3);
+    transform: translate(var(--hover-pop-x), var(--hover-pop-y)) rotate(var(--rot))
+      scale(var(--hover-pop-scale));
   }
 
   /*
