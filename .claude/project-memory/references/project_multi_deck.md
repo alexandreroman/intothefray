@@ -34,8 +34,10 @@ type: project
   side, in seat order, the same size, about 48 px apart between their
   tilted end cards, in the room between the hero selector and the bottom
   right controls (zoom, Undo). The selected deck's hand is active; the
-  other is dimmed and never rises, and the pointer entering it selects its
-  deck (in "Villain + player" that also shows that deck's row). A raised
+  other is dimmed and stays down while inactive. A mouse or a pen
+  entering it, or a finger's tap on it, selects its deck (in "Villain +
+  player" that also shows that deck's row) and raises its fan at once:
+  the pointer's band raises it, the tap pins it up. A raised
   hand spreads from the room's left edge to the table's right edge (see
   [[project_hand_sizes]]) and the other hand fades out until it lowers.
   Each fan glows from below in its player's colour. With 1, 3 or 4 decks,
