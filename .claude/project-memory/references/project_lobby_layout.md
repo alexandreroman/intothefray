@@ -15,16 +15,25 @@ type: project
   bar follows. Every box shares one side padding per band, so a box's
   title, controls and content share their edges.
 - **Players** (`Seats.svelte`): a seat is a deck, as at the table; the grid
-  always shows 4 seats in 1 / 2 / 4 columns, packed densely. A player's card
-  spans one column per deck, its decks side by side, the second where the
-  next seat's content would start. A card shows the player's colour (left
-  band in one column, top band otherwise), the name, `Online` / `Offline`
-  (`PlayerView.online`; a dot on a phone), `you` and `host`, then each
-  deck's hero and deck names or `Waiting for a deck`. The viewer's slots
-  are `DeckLoader`s that `Lobby.svelte` passes as the `ownSlot` snippet.
-  Free seats are dashed cards (`Take this seat` for a spectator). The box
-  header holds `Copy invite link`; a refused clipboard shows the link in a
-  selected read-only field.
+  always shows 4 seats, two to a row at most: 1 column on a phone, 2 from 600px,
+  where a card with several decks takes the whole row, its decks two to a row,
+  the second where the next seat's content would start. The viewer's card is
+  first and never moves, so their deck slots stay put; then the other players in
+  seat order, then free seats. A hole at the end of a row is filled by free
+  seats, then by the first later card that fits; else it stays (`layOutSeats`,
+  `lib/seatLayout.ts`). A card shows the player's colour (left band in one
+  column, top band otherwise), the name, `Online` / `Offline`
+  (`PlayerView.online`; a dot on a phone), `you` and `host`, then each deck's
+  hero and deck names or `Waiting for a deck`. The viewer's slots are
+  `DeckLoader`s that `Lobby.svelte` passes as the `ownSlot` snippet. A slot is
+  one 44px line in every state (empty, loading, loaded, changing), so nothing
+  under it moves: the field (its label visually hidden, the deck number in the
+  placeholder), the square `Load` button (arrow-right icon, a spinner while
+  loading), then `Cancel` (undo icon) while changing or the trash on an empty
+  slot of several; loaded, the hero line. Only an error adds lines. Free seats
+  are dashed cards (`Take this seat` for a spectator). The box header holds
+  `Copy invite link`; a refused clipboard shows the link in a selected read-only
+  field.
 - Card actions are icon buttons with tooltips: `Add a deck` (plus),
   `Take {name} off this seat` (user-minus), `Leave your seat` (leave),
   `Change deck` (pencil), `Remove deck` (trash). The cross icon closes
@@ -37,9 +46,14 @@ type: project
   rest of the visit and goes away; a filter query searches every scenario.
   The chosen row is outlined in signal blue with a check; an unsupported one
   is greyed, `aria-disabled`, tip `Not supported yet`. Under the list, once
-  a scenario is chosen, the recap: art 120×90, name and pack, Difficulty and
-  Modular sets (side by side from 1100px). Every settings control is `--ctl`
-  (34px) tall.
+  a scenario is chosen, the recap: three zones, Villain (art 120×90, name and
+  pack), Difficulty and Modular sets, from 600px in three equal columns with
+  their content centred, so no zone resizes as its content changes (the
+  name goes under the art in a column under 300px). Every settings control
+  is `--ctl` (34px) tall. The host's Difficulty zone holds the switch, then
+  the set dropdowns stacked in a second column; in a zone under 282px wide
+  the dropdowns go under the switch. `Show all villains` is centred from
+  600px, full width on a phone.
 - **Scenario**, guest or spectator: no box until the host has chosen; then
   the box shows the recap read only (difficulty as a chip). On a phone its
   two settings sit in the art's and the name's columns (subgrid).
