@@ -36,10 +36,14 @@ type: project
   refused clipboard shows the link in a selected read-only field.
 - Card actions are icon buttons with tooltips: `Add a deck` (plus),
   `Take {name} off this seat` (user-minus), `Leave your seat` (leave),
-  `Change deck` (pencil), `Remove deck` (trash). The cross icon closes
+  `Change deck` (pencil), `Remove deck` (trash); their icons end on the
+  card's content edge. The cross icon closes
   things only (the top bar's Close the lobby, dialogs, a set chip's remove).
-- **Scenario**, host (`ScenarioPicker.svelte`): the `Villain` filter, then
-  the scenarios as compact rows (40×30 art icon, name), grouped by pack in
+- **Scenario**, host (`ScenarioPicker.svelte`): the filter field, with no
+  visible label, in the left column of the recap's two-column grid (as wide
+  as Difficulty); then the scenarios as rows 44px tall (40px on a phone),
+  8px padding, a 40×30 art icon and the name, the icons on the pack names'
+  edge (a negative margin offsets the padding), grouped by pack in
   release order, packs in 2 / 3 / 4 CSS columns, never split. The list
   opens on whole packs up to 16 scenarios (`FOLDED_MIN_SCENARIOS`) plus the
   chosen scenario's pack; `Show all villains (N more)` unfolds it for the
