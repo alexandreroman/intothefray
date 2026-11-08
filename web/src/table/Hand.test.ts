@@ -389,6 +389,11 @@ describe('Hand', () => {
     }
   });
 
+  it("lays no square tap highlight over a tapped card's tilted box: the hand's own lift is the feedback", () => {
+    // jsdom applies no stylesheet: the hand's root rule is checked, whose value every card inherits.
+    expect(rule('.hand')).toContain('-webkit-tap-highlight-color: transparent;');
+  });
+
   it('pops the hovered card up, 1.3 times as large, keeping its tilt, but in touch mode', () => {
     const pop = new RegExp(
       String.raw`\n {2}:global\(\.app:not\(\.touch\)\) \.hand:not\(\.pinned, \.inactive, \.keeping\)` +

@@ -892,6 +892,8 @@
     list-style: none;
     overflow: visible;
     pointer-events: none;
+    /* No square grey tap highlight over a tilted card's box: the hand's own lift is the feedback. */
+    -webkit-tap-highlight-color: transparent;
     /* Low enough that only the top part of the cards shows. */
     transform: translateY(var(--rest-drop)) scale(var(--rest-scale));
     transform-origin: 50% 100%;
