@@ -24,7 +24,6 @@
     value,
     onchange,
     label,
-    disabled = false,
   }: {
     options: readonly Option[];
     value: T;
@@ -32,8 +31,6 @@
     onchange: (value: T) => void;
     /** The name of the whole control, for screen readers. */
     label: string;
-    /** Read only: the selection shows, as bright as ever, but cannot change. */
-    disabled?: boolean;
   } = $props();
 
   function choose(next: T): void {
@@ -52,7 +49,6 @@
       aria-pressed={option.value === value}
       aria-label={option.icon ? option.label : undefined}
       data-tip={option.icon ? option.label : undefined}
-      {disabled}
       onclick={() => choose(option.value)}
       {@attach pointerBlur}
     >
@@ -101,10 +97,6 @@
 
   button[aria-pressed='true'] {
     color: var(--text);
-  }
-
-  button:disabled {
-    opacity: 1;
   }
 
   button :global(svg) {

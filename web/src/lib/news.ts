@@ -31,7 +31,7 @@ export const NEWS: NewsEntry[] = [
     title: 'A new lobby',
     text:
       'The lobby fits phones and tablets as well as desktops: the players come first, with who is online and ' +
-      'their decks, and the host picks the villain from the full list right on the page.',
+      'their decks, and the host picks the villain from the list right on the page.',
     image: {
       src: newLobby,
       alt: "A player's card in the lobby: online, with a Black Panther deck",

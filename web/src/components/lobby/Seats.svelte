@@ -465,12 +465,13 @@
   }
 
   /*
-    The decks of a card, side by side when it spans several seats. Each deck starts where the next
-    seat's content would: their gap is the seats' gap plus both cards' padding and border.
+    The decks of a card, side by side when it spans several seats, 16px apart when stacked. Side by
+    side, each deck starts where the next seat's content would: their gap is the seats' gap plus
+    both cards' padding and border.
   */
   .decks {
     display: grid;
-    gap: 10px;
+    gap: 16px;
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }

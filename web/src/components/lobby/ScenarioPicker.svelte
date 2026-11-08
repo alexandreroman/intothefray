@@ -824,12 +824,23 @@
     stroke-width: 3;
   }
 
-  .vrow.unsupported {
-    opacity: 0.45;
-  }
-
+  /* Faded by the global aria-disabled rule; the art loses its colour too. */
   .vrow.unsupported .ico {
     filter: grayscale(1);
+  }
+
+  /* A row the host can pick zooms in on its art (CardArt's --art-zoom); an unsupported row stays
+     still. */
+  @media (prefers-reduced-motion: no-preference) {
+    .vrow:not([aria-disabled='true']):focus-visible {
+      --art-zoom: 1.07;
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .vrow:not([aria-disabled='true']):hover {
+      --art-zoom: 1.07;
+    }
   }
 
   .none {
@@ -911,9 +922,11 @@
     gap: 14px;
   }
 
-  /* Read only, the two settings take the art's and the name's columns, so they line up with them. */
+  /* Read only, the two settings take the art's and the name's columns, so they line up with them:
+     the column gap stays the recap's. */
   .ro .settings {
     grid-template-columns: subgrid;
+    column-gap: normal;
   }
 
   /* M and L: one row, the art, the name, then the settings after a vertical rule. */

@@ -349,10 +349,6 @@
     }
   }
 
-  .lobby :global(.sect + .sect) {
-    border-top: 1px solid var(--panel-2);
-  }
-
   .lobby :global(.lbl) {
     display: block;
     margin-bottom: 8px;
