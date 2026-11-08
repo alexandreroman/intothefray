@@ -1,6 +1,7 @@
 <script lang="ts">
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
+  import { MediaQuery } from 'svelte/reactivity';
   import { slide } from 'svelte/transition';
   import { tick, untrack } from 'svelte';
   import { storedLang } from '../../lib/lang';
@@ -14,6 +15,8 @@
   import Segmented from '../Segmented.svelte';
   import { placeUnder, type DropdownPlace } from '../../lib/dropdown';
   import type { Rect } from '../../lib/rect';
+  import { TOUCH_MODE_QUERY } from '../../lib/screen';
+  import { onVisibleAreaChange, withinVisible } from '../../lib/visibleArea';
   import {
     hostName,
     type Difficulty,
@@ -296,6 +299,7 @@
   let menuSize = $state<{ w: number; h: number } | null>(null);
   let menuPlace = $state<DropdownPlace | null>(null);
   const menuPlaced = $derived(menuPlace !== null);
+  const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
 
   /**
    * The menu's whole size, even while it is cut to scroll: the field, the list's full height, the
@@ -325,7 +329,13 @@
     if (!menuSize || !addWrap || !addButton) {
       return;
     }
-    const place = placeUnder(addButton.getBoundingClientRect(), menuSize, room(), MENU_GAP);
+    // Within the part of the window the user sees: above the on-screen keyboard, once it shows.
+    const place = placeUnder(
+      addButton.getBoundingClientRect(),
+      menuSize,
+      withinVisible(room()),
+      MENU_GAP,
+    );
     const origin = addWrap.getBoundingClientRect();
     menuPlace = { ...place, left: place.left - origin.left, top: place.top - origin.top };
   }
@@ -348,10 +358,18 @@
     });
   });
 
-  // The field takes the keys once the menu shows: an unseen field takes no focus. The menu is
-  // placed in an effect, and shows on the next update, once the template gives it .placed.
+  // Placed again as the on-screen keyboard shows or hides while the menu is open.
   $effect(() => {
-    if (!menuPlaced) {
+    if (menu) {
+      return onVisibleAreaChange(placeMenu);
+    }
+  });
+
+  // The field takes the keys once the menu shows: an unseen field takes no focus. The menu is
+  // placed in an effect, and shows on the next update, once the template gives it .placed. On a
+  // touch screen, the keyboard would show at once over the list: the host taps the field to filter.
+  $effect(() => {
+    if (!menuPlaced || touchMode.current) {
       return;
     }
     const field = untrack(() => menuField);

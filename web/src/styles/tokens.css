@@ -278,6 +278,19 @@ select {
 }
 
 /*
+  iOS zooms the page into a focused field whose text is under 16 px, and stays zoomed once the
+  keyboard is gone. !important: the components size their fields in scoped rules. Any coarse
+  pointer, so that an iPad with a trackpad, no longer in touch mode, is covered too.
+*/
+@media (any-pointer: coarse) {
+  input[type='text'],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/*
   The native arrow sits against the border wherever the browser puts it, so it is drawn here: a
   small triangle of two half squares, in theme colours (an SVG image could not use the tokens).
   Its right edge is inset as far as the text is from the left; a smaller select sets --select-pad.
