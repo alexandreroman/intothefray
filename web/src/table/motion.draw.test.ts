@@ -294,7 +294,7 @@ describe('a card drawn into the hand in dock mode, the hand sheet shut', () => {
   it("flies to the dock's avatar, fading out, when the dock shows another own deck's hand", async () => {
     const app = page();
     const button = dockBar(app, 1, ['a1']);
-    // A hero selector on the page, as in "Villain + player", is no place to land.
+    // A hero selector on the page, out of the hand sheet, is no place to land.
     heroSelector(app, [0, 1]);
 
     await draw(app, ['d']);

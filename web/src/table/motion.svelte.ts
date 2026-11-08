@@ -586,8 +586,8 @@ function portraitOn(element: HTMLElement): Measured {
  * a card past them; on the rail, which has none, the avatar. Else that seat's entry in the hero
  * selector of the hand sheet, as it lies over the table, unless the sheet is sliding away
  * (shownElement). Else the avatar of the dock's hand button, whatever deck it shows: its minis are
- * another hand's cards. The floating hero selector of "Villain + player" is no place to land. Null
- * when none shows (no hand button, a drag over it).
+ * another hand's cards. The floating hero selector, which dock mode does not show, is never looked
+ * up. Null when none shows (no hand button, a drag over it).
  */
 function dockLanding(
   root: HTMLElement,
