@@ -33,7 +33,7 @@ type: project
   a key shows it (the modifier entries have none); a refused one is
   greyed with its reason.
 - Detach is a touch inspector entry only, for a tucked card in play: in
-  the first group right after the default and Flip (a large button), no
+  the first group right after the default and Flip (a plain tile), no
   key; a mouse or a pen drags the card off its stack instead. The
   inspector passes `TouchOptions` (`sizeOf`) to `actionsFor`, which adds
   it; the mouse menu and the keys call `actionsFor` without them. Never
