@@ -1685,9 +1685,18 @@
     return faces[(card.face + 1) % faces.length]!.images;
   }
 
-  /** Whether the inspected card lies landscape: a face-down card or a pile shows a portrait back or top. */
+  /**
+   * Whether the inspected card lies landscape, as inspectorImages draws it: a face-up card or a pile's
+   * face-up top lies as its face; a face-down card, a pile's back and an empty pile are portrait.
+   */
   function inspectorLandscape(element: TableElement): boolean {
-    const card = element.kind === 'pile' ? undefined : cardsById.get(element.id);
+    let card: TableCard | undefined;
+    if (element.kind === 'pile') {
+      const pile = byId(piles).get(element.id);
+      card = pile ? topOf(pile) : undefined;
+    } else {
+      card = cardsById.get(element.id);
+    }
     return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
   }
 

@@ -14,7 +14,7 @@ import {
 } from '../lib/screen.testing';
 import { HAND_CARD_NARROW, HAND_REST_DROP, handRestDrop, smallHandDrop } from './layout';
 import { knownCard, loadGameCards } from '../lib/catalog';
-import type { CardView as TableCard, PackFace, View } from '../lib/types';
+import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import {
   card,
   fakeSession,
@@ -43,6 +43,7 @@ const FACES: Record<string, Partial<PackFace>[]> = {
   ],
   '01094': [{ name: 'Rhino', stage: 'I' }],
   '01003': [{ name: 'Web-Shooter' }],
+  '01097': [{ name: 'Bomb Scare', size: 'land', images: ['bomb-scare.png'] }],
 };
 
 const OTHERS: TableCard[] = [
@@ -51,15 +52,19 @@ const OTHERS: TableCard[] = [
   card('h', { zone: 'hand' }),
 ];
 
-/** Rhino with Alex (p0, the viewer), a card with a token and a status, and a card in Alex's hand. */
+/**
+ * Rhino with Alex (p0, the viewer), a card with a token and a status, a card in Alex's hand, Alex's
+ * deck and any other piles of `piles`.
+ */
 function makeView(
   cards: TableCard[] = [card('mine', { tokens: { dmg: 2 }, status: { stunned: 1 } }), ...OTHERS],
+  piles: PileView[] = [],
 ): View {
   return playingView({
     players: [seated('Alex', 0, [{ area: 'p0', heroName: 'Spider-Man', handCount: 1 }], true)],
     table: {
       cards,
-      piles: [pile('deck:p0', { owner: 0, x: 600 })],
+      piles: [pile('deck:p0', { owner: 0, x: 600 }), ...piles],
       hands: { p0: ['h'] },
       stages: [VILLAIN_STAGE],
     },
@@ -173,6 +178,25 @@ describe('the inspector', () => {
     expect(screen.getByRole('dialog', { name: /^Your deck, \d+ cards$/ })).toBe(sheet());
     expect(columnStart()).toContain('pages');
     expect(sheet()!.querySelector('.count-pill')).toBeNull();
+  });
+
+  it("lies landscape on a pile's face-up landscape top, portrait on a deck's back", async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const scheme = card('scheme', { code: '01097', owner: -1, back: 'encounter', zone: 'pile' });
+    const discard = pile('encd', { kind: 'encounterDiscard', x: 800, count: 1, cards: ['scheme'] });
+    await renderTable(makeView([card('mine'), scheme, ...OTHERS], [discard]));
+    /** The face the inspector draws, not its unseen measuring copy. */
+    const face = () =>
+      sheet()!.querySelector<HTMLElement>('.inspector:not(.measure) .visual > .face')!;
+
+    await tap(placed('encd'));
+    // The sheet shows the top card's face, which lies as its catalog face does.
+    expect(face().querySelector('img')?.getAttribute('src')).toContain('bomb-scare.png');
+    expect(face().classList).toContain('land');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('deck:p0'));
+    expect(face().classList).not.toContain('land');
   });
 
   it('leaves the context menu to a mouse (mouse_click_opens_menu)', async () => {
