@@ -196,24 +196,17 @@
 </section>
 
 {#snippet playerCard(player: PlayerView, slots: { key: number; deck: DeckView }[], mine: boolean)}
-  {@const status = player.online ? 'Online' : 'Offline'}
+  {@const status = player.online ? 'online' : 'offline'}
   <div class="seat" class:me={mine} style:--pc={playerColorVar(player.color)}>
     <div class="top">
-      <div class="who">
-        <div class="nm">
-          <b use:overflowTip>{player.name}</b>
-          <!-- On a phone, the roles and the online dot follow the name; wider, the status line
-               below says it all. -->
-          {#if mine}<span class="tag">you</span>{/if}
-          {#if player.host}<span class="tag">host</span>{/if}
-          <span class="dot" class:off={!player.online} data-tip={status}>
-            <span class="sr-only">{status}</span>
-          </span>
-        </div>
-        <span class="status" class:off={!player.online}>
-          <i></i>{status}
-          {#if mine}<span class="role">· you</span>{/if}
-          {#if player.host}<span class="role">· host</span>{/if}
+      <!-- One line: the name, then the capsules. On a narrow phone the online capsule keeps only
+           its dot; its text stays for screen readers and in its tooltip. -->
+      <div class="nm">
+        <b use:overflowTip>{player.name}</b>
+        {#if mine}<span class="tag">you</span>{/if}
+        {#if player.host}<span class="tag">host</span>{/if}
+        <span class="tag status" class:off={!player.online} data-tip={status}>
+          <i></i><span class="label">{status}</span>
         </span>
       </div>
       {@render tools(player, mine)}
@@ -418,21 +411,19 @@
 
   .top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 8px;
     min-width: 0;
   }
 
-  .who {
-    flex: 1;
-    min-width: 0;
-  }
-
+  /* The name gives way first: the capsules after it never wrap nor shrink. */
   .nm {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 6px;
     min-width: 0;
+    container: seat-line / inline-size;
   }
 
   .nm b {
@@ -445,73 +436,77 @@
 
   .tag {
     flex: none;
-    padding: 1px 7px;
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 7px;
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     background: var(--panel-2);
     color: var(--text-soft);
     font-size: 11px;
     font-weight: 700;
-  }
-
-  .dot {
-    flex: none;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--ok);
-  }
-
-  .dot.off,
-  .status.off i {
-    background: none;
-    border: 1.5px solid var(--faint);
-    box-shadow: none;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .status {
-    display: none;
-    align-items: center;
-    gap: 6px;
-    margin-top: 2px;
+    gap: 5px;
+    border-color: color-mix(in srgb, var(--ok) 35%, var(--line-strong));
     color: var(--ok);
-    font-size: 12px;
   }
 
   .status i {
     flex: none;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--ok);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 15%, transparent);
   }
 
   .status.off {
-    color: var(--faint);
-  }
-
-  .role {
+    border-color: var(--line-strong);
     color: var(--muted);
   }
 
-  @media (min-width: 600px) {
-    .tag,
-    .dot {
-      display: none;
-    }
+  .status.off i {
+    background: none;
+    border: 1.5px solid var(--faint);
+  }
 
-    .status {
-      display: inline-flex;
+  /*
+    On a phone, a name line too narrow for every capsule keeps the online one to its dot. The
+    line's own width decides, not the window's, so a wide phone keeps the whole capsule.
+  */
+  @media (max-width: 599px) {
+    @container seat-line (width < 260px) {
+      .status {
+        justify-content: center;
+        width: 20px;
+        padding: 0;
+      }
+
+      /* As .sr-only (styles/tokens.css): out of sight, still read by screen readers. */
+      .status .label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
     }
   }
 
-  /* The icon buttons reach into the card's padding, so their glyphs line up with its edge. */
+  /*
+    The icon buttons reach into the card's padding, so their glyphs line up with its edge, and
+    above and below the name line, so the card is no taller than that line.
+  */
   .tools {
     flex: none;
     display: flex;
     gap: 2px;
-    margin: -4px -4px 0 0;
+    margin: -6px -4px -6px 0;
   }
 
   .tool {

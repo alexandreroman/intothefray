@@ -219,33 +219,29 @@ describe('Seats', () => {
   });
 
   describe('a player card', () => {
-    it('tells whether the player is online, with their roles', () => {
+    it('tells whether the player is online in a capsule, with a tooltip', () => {
       renderSeats({ players: [alex, jo] });
 
-      const online = card('Alex').querySelector('.status')!;
+      const online = card('Alex').querySelector<HTMLElement>('.status')!;
       expect(online.classList.contains('off')).toBe(false);
-      expect(online.textContent).toMatch(/^Online\s*· you\s*· host$/);
-      const offline = card('Jo').querySelector('.status')!;
+      expect(online.textContent?.trim()).toBe('online');
+      expect(online.dataset.tip).toBe('online');
+      const offline = card('Jo').querySelector<HTMLElement>('.status')!;
       expect(offline.classList.contains('off')).toBe(true);
-      expect(offline.textContent?.trim()).toBe('Offline');
+      expect(offline.textContent?.trim()).toBe('offline');
+      expect(offline.dataset.tip).toBe('offline');
     });
 
-    it('gives the phone dot a tooltip and a hidden text', () => {
-      renderSeats({ players: [alex, jo] });
+    it('follows the name with the viewer, host and online capsules, each said once', () => {
+      renderSeats({ players: [alex, sam] });
 
-      const dot = card('Jo').querySelector<HTMLElement>('.dot')!;
-      expect(dot.dataset.tip).toBe('Offline');
-      expect(within(dot).getByText('Offline').classList.contains('sr-only')).toBe(true);
-      expect(card('Alex').querySelector<HTMLElement>('.dot')!.dataset.tip).toBe('Online');
-    });
-
-    it('tags the viewer and the host after the name', () => {
-      renderSeats();
-
-      const tags = (name: string) =>
-        [...card(name).querySelectorAll('.tag')].map((tag) => tag.textContent);
-      expect(tags('Alex')).toEqual(['you', 'host']);
-      expect(tags('Sam')).toEqual([]);
+      const capsules = (name: string) =>
+        [...card(name).querySelectorAll('.nm .tag')].map((tag) => tag.textContent?.trim());
+      expect(capsules('Alex')).toEqual(['you', 'host', 'online']);
+      expect(capsules('Sam')).toEqual(['online']);
+      expect(within(card('Alex')).getAllByText('you')).toHaveLength(1);
+      expect(within(card('Alex')).getAllByText('host')).toHaveLength(1);
+      expect(within(card('Alex')).getAllByText('online')).toHaveLength(1);
     });
 
     it('shows the full name in a tooltip when it is cut short', async () => {
