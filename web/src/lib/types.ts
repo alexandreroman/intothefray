@@ -173,8 +173,8 @@ export interface PileView {
   /** A compact scenario deck or discard pile, drawn smaller (80 x 112 instead of 112 x 157). */
   compact?: boolean;
   /**
-   * The back of a side deck whose cards have their own (Labor, Gift, Sense):
-   * that back captioned with the deck's label.
+   * The printed back the cards of a side deck share, drawn captioned with the deck's label; absent on
+   * any other pile.
    */
   back?: Back;
   /**
