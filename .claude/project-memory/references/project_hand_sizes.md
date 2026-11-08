@@ -1,6 +1,6 @@
 ---
 name: "Hand card sizes"
-description: "Raised hand cards are 80 % of the preview's card (65 % on a tablet), card box cards too, at most 220 px; the resting hand shows the base card at 82 %"
+description: "Raised hand cards are 80 % of the preview's card (65 % on a tablet), card box cards too, at most 160 px; the resting hand shows the base card at 82 %"
 type: project
 ---
 
@@ -48,11 +48,11 @@ type: project
   width.
 - A card box (search, look at the top, browse, stage choice) shows its
   cards as wide as the raised hand's card (`raisedHandCard`, the tablet
-  share included), at most 220 px (`BOX_TILE_MAX`), in fixed columns, as
-  many as fit in its 1200 px: five on a large screen. The box is as wide
-  as its columns, so the grid lines up with
-  its header (`tileWidth` of `CardBox.svelte`, `boxGrid` in
-  `web/src/table/boxes.ts`). A landscape card lies across its 5:7 tile.
+  share included), at most 160 px (`BOX_TILE_MAX`), in fixed columns, as
+  many as fit in its 1200 px: six on a large screen and on a tablet on its
+  side (1180 × 820), four on a tablet upright (820 px wide). The box is as
+  wide as its columns, so the grid lines up with its header (`tileWidth`
+  of `CardBox.svelte`, `boxGrid` in `web/src/table/boxes.ts`). A landscape card lies across its 5:7 tile.
   The box takes that card before a crowded fan shrinks it
   (`filledHandCard`), so its size never follows the hand's count.
 - In dock mode the hand is not drawn as a fan: it opens from the dock as
@@ -69,9 +69,10 @@ its own size (at most a 358 px wide card) rather than growing with large
 screens. On a narrow screen, room matters more than size: the user wants
 the raised hand to use the screen's width and accepts smaller cards to keep
 each one readable. Card boxes are read like the raised hand, so wherever
-the hand is a fan their cards take its size on a small screen; on a large
-screen they keep a reasonable size, five to a row, rather than growing
-with the hand (user decision).
+the hand is a fan their cards take its size on a small screen; elsewhere
+they stay at most 160 px wide, six to a row on a large screen, rather than
+growing with the hand: larger cards were far too big on a tablet (user
+decision).
 
 **How to apply:** `previewCardWidth` mirrors `.peek`'s CSS; change both
 together, and size hand changes through the base and raised cards.
