@@ -602,7 +602,6 @@
 
     <div class="body">
       <div class="lhead">
-        <div class="lbl">Villain</div>
         <input
           type="text"
           class="filter"
@@ -673,8 +672,11 @@
 {:else if chosen}
   <section class="card-box scenario" in:slide={slideIn}>
     <div class="bhead">
-      <h2>Scenario</h2>
-      <span class="aside">chosen by {hostName(view)} (host)</span>
+      <!-- The title and the note share a baseline; the pair is centred in the header, as a lone title. -->
+      <div class="htitle">
+        <h2>Scenario</h2>
+        <span class="aside">chosen by {hostName(view)} (host)</span>
+      </div>
     </div>
     <div class="body">
       {@render recap(chosen)}
@@ -685,52 +687,65 @@
 <style>
   /*
     Widths: S below 600px (the base rules), M from 600px, L from 1100px. Every settings control is
-    --ctl tall, so a row of them, or the two settings side by side, line up.
+    --ctl tall, so a row of them, or the two settings side by side, line up. The villain filter's row
+    and the recap's settings share their columns' gap (--col-gap).
   */
   .scenario {
     --ctl: 34px;
     --segmented-height: var(--ctl);
+    --lbl-line: 16px;
+    --lbl-gap: 14px;
+    --col-gap: 16px;
+  }
+
+  @media (min-width: 600px) {
+    .scenario {
+      --col-gap: 24px;
+    }
+  }
+
+  .htitle {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
   }
 
   .body {
     padding: 16px var(--box-pad) 22px;
   }
 
-  /* The label and the filter on one line; stacked, the field full width, on S. */
+  /*
+    The filter takes the first of the recap's two settings columns (.settings), as wide as the
+    Difficulty column and on its left edge; the second column stays empty. On S, one column.
+  */
   .lhead {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-
-  .lhead .lbl {
-    flex: none;
-    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: var(--col-gap);
+    margin-bottom: 18px;
   }
 
   @media (min-width: 600px) {
     .lhead {
-      flex-direction: row;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .lhead .filter {
-      max-width: 360px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
+  /* The rows reach --row-out past each side of their column (.vrow): the gap leaves 10px between
+     the rows of two columns. */
   .vlist {
+    --row-pad: 8px;
+    --row-out: calc(var(--row-pad) + 1px);
     column-count: 2;
-    column-gap: 10px;
+    column-gap: calc(10px + 2 * var(--row-out));
   }
 
   @media (min-width: 600px) {
     .vlist {
       column-count: 3;
-      column-gap: 20px;
     }
   }
 
@@ -770,18 +785,27 @@
     background: var(--panel-2);
   }
 
+  /*
+    A row reaches past its column by its padding and border on both sides, so its icon starts on the
+    pack's name, the filter and the box's other content, and its check ends with the pack's rule.
+  */
   .vrow {
     display: flex;
     align-items: center;
-    gap: 8px;
-    width: 100%;
-    height: 36px;
-    padding: 0 8px 0 4px;
+    gap: 12px;
+    width: calc(100% + 2 * var(--row-out));
+    height: 40px;
+    margin-inline: calc(-1 * var(--row-out));
+    padding: 0 var(--row-pad);
     border: 1px solid transparent;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     text-align: left;
+  }
+
+  .vrow + .vrow {
+    margin-top: 2px;
   }
 
   /* The aspect given to its CardArt too. */
@@ -797,8 +821,7 @@
 
   @media (min-width: 600px) {
     .vrow {
-      gap: 10px;
-      height: 38px;
+      height: 44px;
     }
 
     .ico {
@@ -891,18 +914,6 @@
     their first controls, all --ctl tall. On S the host's settings stack, Difficulty first; a guest's
     stay side by side, their chips being short.
   */
-  .recap {
-    --lbl-line: 16px;
-    --lbl-gap: 14px;
-    --col-gap: 16px;
-  }
-
-  @media (min-width: 600px) {
-    .recap {
-      --col-gap: 24px;
-    }
-  }
-
   .vhead {
     display: flex;
     align-items: center;

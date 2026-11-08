@@ -325,7 +325,9 @@
     white-space: nowrap;
   }
 
-  .bhead .copy {
+  /* As tall as the settings controls, so the header is no taller than the others. The extra classes
+     outrank the lobby's shared button rule (.lobby :global(.btn)), which is 44px tall. */
+  .players .bhead .copy {
     flex: none;
     height: 34px;
     padding: 0 12px;
@@ -506,14 +508,15 @@
   }
 
   /*
-    The icon buttons reach into the card's padding, so their glyphs line up with its edge, and
-    above and below the name line, so the card is no taller than that line.
+    The icon buttons reach into the card's padding by their own (8px), so their 16px icons end on
+    its edge, as a deck slot's do (DeckLoader), and above and below the name line, so the card is no
+    taller than that line.
   */
   .tools {
     flex: none;
     display: flex;
     gap: 2px;
-    margin: -6px -4px -6px 0;
+    margin: -6px -8px -6px 0;
   }
 
   .tool {
@@ -583,13 +586,15 @@
     font-weight: 600;
   }
 
-  /* A free seat: a dashed card with the colour the next newcomer gets, padded as a seat. */
+  /* A free seat: a dashed card with the colour the next newcomer gets, padded as a seat; on a phone,
+     its content starts where a player card's does, past the colour band. */
   .free {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
     padding: var(--seat-pad-y) var(--seat-pad);
+    padding-left: calc(var(--seat-band) + var(--seat-pad));
     border: 1.5px dashed var(--line-strong);
     border-radius: 12px;
     background: none;
@@ -603,6 +608,7 @@
   @media (min-width: 600px) {
     .free {
       flex-direction: column;
+      padding-left: var(--seat-pad);
       justify-content: center;
       gap: 8px;
       min-height: 100px;
