@@ -1723,6 +1723,48 @@ describe('dragging a hand card', () => {
     expect(document.querySelector('.hand')?.classList).toContain('open');
   });
 
+  it('opens no slot for the only card of a hand, and takes it back sending nothing', async () => {
+    const view = makeView({ cards: CARDS.filter((c) => c.id !== 'h2' && c.id !== 'h3') });
+    view.players[0]!.decks[0]!.handCount = 1;
+    view.table = { ...view.table!, hands: { p0: ['h1'] } };
+    const { session } = await renderTable(view);
+    await press(handCard('h1'), 350, 780);
+    // Over the room of a hand without its card: the middle of the hand's room, 140 px either side,
+    // up to 140 px above the table's bottom edge (900).
+    await moveTo(60, 820);
+    expect(document.querySelector('.hand .hcard.gap')).toBeNull();
+    expect(interaction.handGap).toBeNull();
+    expect(document.querySelector('.hand')?.classList).not.toContain('open');
+    expect(document.querySelector('.draglayer .hghost')).toBeNull();
+
+    await release(60, 820);
+    expect(session.act).not.toHaveBeenCalled();
+  });
+
+  it("opens no slot for the only card of one of two hands, the other's cards still reordering", async () => {
+    const { session } = await renderTable(twoHandsView());
+    // Ant-Man's only card, h4, over its hand's room, once the pointer has made that hand the active one.
+    await moveTo(950, 780, 0);
+    expect(activeSeat()).toBe('1');
+    await press(handCard('h4'), 950, 780);
+    await moveTo(60, 820);
+    expect(document.querySelector('.hand .hcard.gap')).toBeNull();
+    expect(interaction.handGap).toBeNull();
+    await release(60, 820);
+    expect(session.act).not.toHaveBeenCalled();
+
+    await moveTo(350, 780, 0);
+    expect(activeSeat()).toBe('0');
+    await press(handCard('h1'), 350, 780);
+    await moveTo(700, 760);
+    expect(document.querySelector('.hand[data-seat="0"] .hcard.gap')).not.toBeNull();
+    await release(700, 760);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'handOrder', area: 'p0', cards: ['h2', 'h3', 'h1'] },
+      0,
+    );
+  });
+
   it('can be dropped on a pile', async () => {
     const { session } = await renderTable();
     await press(handCard('h3'), 650, 780);
@@ -1970,6 +2012,21 @@ describe('telling the other players about the drag', () => {
     await moveTo(300, 450);
     expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['hidden-0'] })]);
     expect(JSON.stringify(dragsSent(session))).not.toContain('h1');
+  });
+
+  it("tells nothing of a hand's only card over its hand, but tells it over the table", async () => {
+    const view = makeView({ cards: CARDS.filter((c) => c.id !== 'h2' && c.id !== 'h3') });
+    view.players[0]!.decks[0]!.handCount = 1;
+    view.table = { ...view.table!, hands: { p0: ['h1'] } };
+    const { session } = await renderTable(view);
+    await press(handCard('h1'), 350, 780);
+    // Over the room of the hand without its card, within the table (see "opens no slot for the only
+    // card of a hand").
+    await moveTo(60, 820);
+    expect(dragsSent(session)).toEqual([]);
+
+    await moveTo(300, 450);
+    expect(dragsSent(session)).toEqual([expect.objectContaining({ cards: ['hidden-0'] })]);
   });
 
   it('keeps the real id of a card from a public pile', async () => {

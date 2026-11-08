@@ -12,6 +12,7 @@ import {
   insertIndex,
   isDownward,
   mainCardOf,
+  ownHandTarget,
   pileTargets,
   sourceOf,
   stackOf,
@@ -906,6 +907,25 @@ describe('the hand', () => {
     expect(insertIndex([100, 200, 300], 50)).toBe(0);
     expect(insertIndex([100, 200, 300], 250)).toBe(2);
     expect(insertIndex([100, 200, 300], 900)).toBe(3);
+  });
+
+  it("slots a hand card in among its hand's other cards", () => {
+    const others = [rect(300, 600, 132, 185), rect(400, 590, 132, 185)];
+    expect(ownHandTarget(others, 450, rect(0, 50, 1000, 750), 800)).toEqual({
+      kind: 'hand',
+      index: 1,
+      rect: { left: 160, top: 570, right: 672, bottom: 800 },
+    });
+  });
+
+  it('only takes back the only card of a hand, opening no slot for it', () => {
+    const target = ownHandTarget([], 500, rect(0, 50, 1000, 750), 800);
+    expect(target).toEqual({
+      kind: 'toHand',
+      rect: { left: 360, top: 660, right: 640, bottom: 800 },
+    });
+    const lone: DragSource = { kind: 'hand', card: 'c1', hand: ['c1'], area: 'p0' };
+    expect(dropAction(lone, target, AT_ORIGIN, DEAL_TO)).toBeNull();
   });
 });
 
