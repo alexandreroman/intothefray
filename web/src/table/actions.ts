@@ -451,7 +451,7 @@ function neverExhausts(type: string): boolean {
  * somehow exhausted already, so that it can always be readied. A card whose face the viewer
  * does not know (face down, or not in the catalog yet) keeps it.
  */
-function canExhaust(card: CardView): boolean {
+export function canExhaust(card: CardView): boolean {
   if (card.exhausted || card.faceDown || !card.code) {
     return true;
   }

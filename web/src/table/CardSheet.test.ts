@@ -12,6 +12,7 @@ import {
   type TestScreen,
 } from '../lib/screen.testing';
 import { MAX_COUNT, type ActionItem } from './actions';
+import { MOVE_EASING, TILT_MS } from './motion.svelte';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
 import { stubImageDecode } from '../lib/decodeImage.testing';
@@ -119,6 +120,8 @@ function renderSheet(
     images?: string[];
     nextImages?: string[];
     landscape?: boolean;
+    exhausted?: boolean;
+    tilts?: boolean;
   } = {},
 ) {
   const onrun = vi.fn();
@@ -133,6 +136,8 @@ function renderSheet(
       images: props.images ?? ['rhino.png'],
       nextImages: props.nextImages,
       landscape: props.landscape,
+      exhausted: props.exhausted,
+      tilts: props.tilts,
       counters: props.counters ?? [],
       stack: props.stack,
       // Rhino, a table card, unless the test says otherwise: an undefined cardId is a pile.
@@ -711,6 +716,175 @@ describe('CardSheet', () => {
     });
   });
 
+  describe('the exhausted tilt', () => {
+    /** The card drawn in the shown face, which tilts. */
+    function tilt(): HTMLElement {
+      return document.querySelector<HTMLElement>('.inspector:not(.measure) .face > .tilt')!;
+    }
+
+    function face(): HTMLElement {
+      return document.querySelector<HTMLElement>('.inspector:not(.measure) .face')!;
+    }
+
+    it('draws an exhausted card tilted, a ready one upright', () => {
+      const { unmount } = renderSheet({ exhausted: true, tilts: true });
+      expect(tilt().classList).toContain('exhausted');
+      unmount();
+
+      renderSheet({ exhausted: false, tilts: true });
+      expect(tilt().classList).not.toContain('exhausted');
+    });
+
+    it('tilts the same card as the view exhausts it, and turns it upright as it readies', async () => {
+      const { rerender } = renderSheet({ tilts: true });
+      const card = tilt();
+
+      await rerender({ exhausted: true });
+      expect(tilt()).toBe(card);
+      expect(card.classList).toContain('exhausted');
+
+      await rerender({ exhausted: false });
+      expect(tilt()).toBe(card);
+      expect(card.classList).not.toContain('exhausted');
+    });
+
+    it('turns the face and its counters together', () => {
+      renderSheet({ exhausted: true, tilts: true, counters: [DAMAGE, STUNNED] });
+
+      expect(tilt().querySelector('img')?.getAttribute('src')).toBe('rhino.png');
+      expect(within(tilt()).getByRole('button', { name: 'Damage, 3' })).toBeTruthy();
+      expect(within(tilt()).getByRole('button', { name: 'Stunned' })).toBeTruthy();
+    });
+
+    it('reserves the bounds of a card that can tilt, and not of one that cannot', () => {
+      const { unmount } = renderSheet({ tilts: true });
+      expect(face().classList).toContain('tilts');
+      unmount();
+
+      renderSheet({ tilts: false });
+      expect(face().classList).not.toContain('tilts');
+    });
+
+    it("turns clockwise by the table's angle on rotate, apart from the face's turn over", () => {
+      expect(rule('.tilt.exhausted')).toContain('rotate: var(--exhaust-angle);');
+      expect(rule('.tilt.exhausted')).not.toContain('transform');
+      // The face turns over on transform and scale; the card in it tilts on rotate alone.
+      expect(rule('.tilt')).not.toContain('transform');
+      expect(rule('.tilt')).not.toContain('transition');
+    });
+
+    it("plays the table's tilt, only without reduced motion", () => {
+      renderSheet({ tilts: true });
+
+      const inspector = document.querySelector<HTMLElement>('.inspector:not(.measure)')!;
+      expect(inspector.style.getPropertyValue('--tilt-ms')).toBe(`${TILT_MS}ms`);
+      expect(inspector.style.getPropertyValue('--tilt-easing')).toBe(MOVE_EASING);
+      const motion = block('@media (prefers-reduced-motion: no-preference)');
+      expect(ruleIn(motion, '.tilt')).toContain(
+        'transition: rotate var(--tilt-ms) var(--tilt-easing);',
+      );
+    });
+
+    it('gives a card that can tilt the box of its tilted bounds, and draws it to fill them', () => {
+      const inspector = rule('.inspector');
+      expect(inspector).toContain('--tilt-cos: cos(var(--exhaust-angle));');
+      expect(inspector).toContain('--tilt-sin: sin(var(--exhaust-angle));');
+      const face = rule('.face');
+      expect(face).toContain('--card-ratio: 5 / 7;');
+      expect(face).toContain('--face-ratio: var(--card-ratio);');
+      expect(rule('.face.land')).toContain('--card-ratio: 7 / 5;');
+      // (r·c + s) / (c + r·s): the width over the height of the card's bounds, tilted.
+      const tilted = rule(
+        '.face.tilts,\n  .slide.tilts,\n  .spacer.tilts,\n  .visual.stacked.tilts',
+      );
+      expect(tilted).toContain('(var(--card-ratio) * var(--tilt-cos) + var(--tilt-sin)) /');
+      expect(tilted).toContain('(var(--tilt-cos) + var(--card-ratio) * var(--tilt-sin))');
+      const drawn = rule('.face.tilts > .tilt');
+      expect(drawn).toContain(
+        'width: calc(100% * var(--card-ratio) / (var(--card-ratio) * var(--tilt-cos) + var(--tilt-sin)));',
+      );
+      expect(drawn).toContain(
+        'height: calc(100% / (var(--tilt-cos) + var(--card-ratio) * var(--tilt-sin)));',
+      );
+      // Centred in its face, which it fills for a card that cannot tilt.
+      const card = rule('.tilt');
+      expect(card).toContain('position: absolute;');
+      expect(card).toContain('inset: 0;');
+      expect(card).toContain('margin: auto;');
+    });
+
+    it('carries the shadow and the corners on the card that tilts, not on its face', () => {
+      expect(rule('.tilt')).toContain('box-shadow: 4px 6px 16px #000c;');
+      expect(rule('.tilt')).toContain('border-radius: var(--card-radius);');
+      expect(rule('.face.land > .tilt')).toContain('border-radius: var(--card-radius-land);');
+      expect(rule('.face')).not.toContain('box-shadow');
+      expect(rule('.face')).not.toContain('border-radius');
+      expect(rule('.slide.dim > .face > .tilt')).toContain('box-shadow: 2px 4px 10px #000a;');
+    });
+
+    describe('in a stack', () => {
+      function tiltOf(id: string): HTMLElement {
+        return slideOf(id).querySelector<HTMLElement>('.face > .tilt')!;
+      }
+
+      const TILTING: StackCard[] = [
+        { ...STACK[0]!, exhausted: false, tilts: true },
+        { ...STACK[1]!, exhausted: true, tilts: true },
+        { ...STACK[2]!, tilts: false },
+      ];
+
+      it('tilts each card by its own state, the shown one as the view says', () => {
+        renderSheet({ stack: TILTING, cardId: 'rhino', exhausted: true, tilts: true });
+
+        expect(tiltOf('rhino').classList).toContain('exhausted');
+        expect(tiltOf('armor').classList).toContain('exhausted');
+        expect(tiltOf('hidden').classList).not.toContain('exhausted');
+      });
+
+      it('reserves the tilted bounds of each card that can tilt, its spacer with it', () => {
+        renderSheet({ stack: TILTING, cardId: 'armor', tilts: true });
+
+        expect(slides().map((slide) => slide.classList.contains('tilts'))).toEqual([
+          true,
+          true,
+          false,
+        ]);
+        expect(slideOf('rhino').querySelector('.face')?.classList).toContain('tilts');
+        expect(slideOf('hidden').querySelector('.face')?.classList).not.toContain('tilts');
+        const spacers = [...document.querySelectorAll('.inspector:not(.measure) .spacer')];
+        expect(spacers.map((spacer) => spacer.classList.contains('tilts'))).toEqual([true, false]);
+      });
+
+      it('tilts the card the sheet switches to without drawing it again', async () => {
+        const { rerender } = renderSheet({ stack: TILTING, cardId: 'rhino', tilts: true });
+        const armor = tiltOf('armor');
+
+        await rerender({ cardId: 'armor', header: ARMOR_HEADER, exhausted: true });
+
+        expect(tiltOf('armor')).toBe(armor);
+        expect(armor.classList).toContain('exhausted');
+        expect(tiltOf('rhino').classList).not.toContain('exhausted');
+      });
+
+      it("sizes the carousel by its main card's box, tilted when it can tilt", () => {
+        const { unmount } = renderSheet({ stack: TILTING, cardId: 'armor' });
+        const visual = () => document.querySelector('.inspector:not(.measure) .visual.stacked')!;
+        expect(visual().classList).toContain('tilts');
+        unmount();
+
+        renderSheet({
+          stack: [{ ...TILTING[0]!, tilts: false }, ...TILTING.slice(1)],
+          cardId: 'armor',
+        });
+        expect(visual().classList).not.toContain('tilts');
+        // The main card's portrait box: a landscape box's ratio is its inverse.
+        const stacked = rule('.visual.stacked');
+        expect(stacked).toContain('--card-ratio: 5 / 7;');
+        expect(stacked).toContain('--face-ratio: var(--card-ratio);');
+      });
+    });
+  });
+
   it('closes on Escape', async () => {
     const { onclose } = renderSheet();
 
@@ -770,9 +944,10 @@ describe('CardSheet', () => {
       expect(rule('.inspector.dock:not(.beside) .visual > .face')).toContain(
         'width: min(100%, calc(42dvh * var(--face-ratio)));',
       );
-      expect(rule('.face')).toContain('--face-ratio: 5 / 7;');
+      expect(rule('.face')).toContain('--card-ratio: 5 / 7;');
+      expect(rule('.face')).toContain('--face-ratio: var(--card-ratio);');
       expect(rule('.face')).toContain('aspect-ratio: var(--face-ratio);');
-      expect(rule('.face.land')).toContain('--face-ratio: 7 / 5;');
+      expect(rule('.face.land')).toContain('--card-ratio: 7 / 5;');
     });
 
     it('keeps one gutter around the card and its column, the sheet padding its edges by 12 px', () => {
@@ -986,7 +1161,7 @@ describe('CardSheet', () => {
     it("sizes a portrait stack's carousel as a phone on its side does", () => {
       const stacked = rule('.inspector.beside .visual.stacked');
       expect(stacked).toContain('--slide-h: calc(var(--card-room) - var(--carousel-chrome));');
-      expect(stacked).toContain('width: calc(var(--slide-h) * 5 / 7 + 88px);');
+      expect(stacked).toContain('width: calc(var(--slide-h) * var(--face-ratio) + 88px);');
       expect(rule('.inspector')).toContain('--carousel-chrome: 38px;');
     });
 
@@ -1025,7 +1200,7 @@ describe('CardSheet', () => {
       // At most as high as the room, scrolling past it, as beside a portrait card.
       expect(rule('.inspector.beside .side')).toContain('max-height: var(--card-room);');
       const stacked = rule('.inspector.beside.land .visual.stacked');
-      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) * 5 / 7);');
+      expect(stacked).toContain('--slide-h: calc(var(--sheet-room) * var(--face-ratio));');
       expect(stacked).toContain('--slide-max: 100%;');
       expect(stacked).toContain('width: calc(var(--sheet-room) + 88px);');
     });
@@ -1044,7 +1219,7 @@ describe('CardSheet', () => {
         'width: min(var(--land-room), 100%);',
       );
       expect(rule('.inspector.column .visual.stacked')).toContain(
-        '--slide-h: calc(var(--land-room) * 5 / 7);',
+        '--slide-h: calc(var(--land-room) * var(--face-ratio));',
       );
       const column = rule('.inspector.column .side');
       expect(column).toContain('align-self: stretch;');
@@ -1785,6 +1960,68 @@ describe('CardSheet', () => {
           await finishAnimations();
           expect(inspector.classList).toContain('column');
           expect(inspector.classList).not.toContain('beside');
+        } finally {
+          heights.mockRestore();
+        }
+      });
+
+      it('measures a card turning to a face that cannot tilt in its new box, kept until edge-on', async () => {
+        const measured: boolean[] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              measured.push(this.querySelector('.face')?.classList.contains('tilts') ?? true);
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        try {
+          const { rerender } = renderSheet({ tilts: true });
+          const face = document.querySelector<HTMLElement>('.inspector .face')!;
+
+          await rerender({ images: ['rhino-2.png'], header: TURNED, tilts: false });
+          await tick();
+
+          expect(measured).toEqual([false]);
+          expect(face.classList).toContain('tilts');
+
+          await finishAnimations();
+          expect(face.classList).not.toContain('tilts');
+        } finally {
+          heights.mockRestore();
+        }
+      });
+
+      it('measures a stack in the boxes its cards take, each by its own tilt', async () => {
+        const measured: boolean[][] = [];
+        const heights = vi
+          .spyOn(HTMLElement.prototype, 'offsetHeight', 'get')
+          .mockImplementation(function (this: HTMLElement) {
+            if (this.classList.contains('measure')) {
+              const boxes = [...this.querySelectorAll('.visual, .slide')];
+              measured.push(boxes.map((box) => box.classList.contains('tilts')));
+              return 300;
+            }
+            return this.classList.contains('inspector') ? 500 : 0;
+          });
+        const stack: StackCard[] = [
+          { ...STACK[0]!, tilts: true },
+          { ...STACK[1]!, tilts: false },
+        ];
+        try {
+          const { rerender } = renderSheet({ stack, cardId: 'rhino', tilts: true });
+
+          await rerender({ images: ['rhino-2.png'], header: TURNED, tilts: false });
+          await tick();
+
+          // The main card shown turns to a face that cannot tilt: the copy takes its new box, the
+          // carousel and the main card's slide alike, while the sheet keeps the old one until edge-on.
+          expect(measured).toEqual([[false, false, false]]);
+          expect(slideOf('rhino').classList).toContain('tilts');
+          expect(document.querySelector('.inspector:not(.measure) .visual')?.classList).toContain(
+            'tilts',
+          );
         } finally {
           heights.mockRestore();
         }

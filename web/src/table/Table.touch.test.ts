@@ -213,9 +213,9 @@ describe('the inspector', () => {
     const { session } = await renderTable();
     await tap(placed('two'));
 
-    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Exhaust/ }));
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Discard/ }));
 
-    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'two' }, 0);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'discard', card: 'two' }, 0);
     expect(sheet()).toBeNull();
   });
 
@@ -469,8 +469,8 @@ describe('the inspector, adding tokens, statuses and modifiers', () => {
     expect(session.act).toHaveBeenCalledOnce();
     expect(sheet()).not.toBeNull();
 
-    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Exhaust/ }));
-    expect(session.act).toHaveBeenLastCalledWith({ kind: 'exhaust', card: 'mine' }, 0);
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Discard/ }));
+    expect(session.act).toHaveBeenLastCalledWith({ kind: 'discard', card: 'mine' }, 0);
     expect(sheet()).toBeNull();
   });
 });
@@ -738,6 +738,83 @@ describe('the inspector, flipping a card', () => {
     await fireEvent.click(within(contextMenu()!).getByRole('menuitem', { name: /^Flip/ }));
 
     expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'flip', card: 'two' }, 0);
+    expect(contextMenu()).toBeNull();
+    expect(sheet()).toBeNull();
+  });
+});
+
+describe('the inspector, exhausting a card', () => {
+  /** The view with Peter Parker ('two') as given. */
+  function viewWithTwo(extra: Partial<TableCard>): View {
+    return makeView([
+      card('mine'),
+      card('two', { code: '01002', x: 200, ...extra }),
+      ...OTHERS.slice(1),
+    ]);
+  }
+
+  /** The card drawn on the inspector's face, which tilts as it is exhausted. */
+  function tilt(): HTMLElement {
+    return sheet()!.querySelector<HTMLElement>('.face > .tilt')!;
+  }
+
+  it('stays open on Exhaust, on the same sheet, which tilts the card and offers Ready', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session, rerender } = await renderTable();
+    await tap(placed('two'));
+    const opened = sheet();
+    const button = within(sheet()!).getByRole('button', { name: /^Exhaust/ });
+    expect(tilt().classList).not.toContain('exhausted');
+
+    await fireEvent.click(button);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'two' }, 0);
+    expect(sheet()).toBe(opened);
+
+    await rerender({ view: viewWithTwo({ exhausted: true }) });
+
+    expect(sheet()).toBe(opened);
+    // The same button, which reads as the view answers.
+    expect(within(sheet()!).getByRole('button', { name: /^Ready/ })).toBe(button);
+    expect(tilt().classList).toContain('exhausted');
+  });
+
+  it('stays open on Ready, which turns the card upright again', async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    const { session, rerender } = await renderTable(viewWithTwo({ exhausted: true }));
+    await tap(placed('two'));
+    const opened = sheet();
+    expect(tilt().classList).toContain('exhausted');
+
+    await fireEvent.click(within(sheet()!).getByRole('button', { name: /^Ready/ }));
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'two' }, 0);
+    expect(sheet()).toBe(opened);
+
+    await rerender({ view: viewWithTwo({}) });
+
+    expect(sheet()).toBe(opened);
+    expect(within(sheet()!).getByRole('button', { name: /^Exhaust/ })).toBeTruthy();
+    expect(tilt().classList).not.toContain('exhausted');
+  });
+
+  it("reserves a card's tilted bounds, and not a pile's", async () => {
+    mockScreen({ ...DESKTOP, touch: true });
+    await renderTable();
+
+    await tap(placed('two'));
+    expect(sheet()!.querySelector('.face')?.classList).toContain('tilts');
+    await fireEvent.keyDown(window, { key: 'Escape' });
+
+    await tap(placed('deck:p0'));
+    expect(sheet()!.querySelector('.face')?.classList).not.toContain('tilts');
+  });
+
+  it('leaves the mouse menu closing on Exhaust', async () => {
+    const { session } = await renderTable();
+
+    await fireEvent.click(placed('two'));
+    await fireEvent.click(within(contextMenu()!).getByRole('menuitem', { name: /^Exhaust/ }));
+
+    expect(session.act).toHaveBeenCalledExactlyOnceWith({ kind: 'exhaust', card: 'two' }, 0);
     expect(contextMenu()).toBeNull();
     expect(sheet()).toBeNull();
   });

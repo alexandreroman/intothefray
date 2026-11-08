@@ -51,6 +51,7 @@
   import { diffViews, dockMotions, MAX_APART_MS } from './animate';
   import {
     actionsFor,
+    canExhaust,
     counterName,
     countersOf,
     deckCount,
@@ -1700,6 +1701,21 @@
     return card !== undefined && !isHidden(card) && isLandscape(sizeOf(card));
   }
 
+  /** Whether the inspected element is an exhausted card, which the inspector draws tilted; never a pile. */
+  function inspectorExhausted(element: TableElement): boolean {
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    return card?.exhausted === true;
+  }
+
+  /**
+   * Whether the inspected element is a card that can tilt, as it offers Exhaust or Ready
+   * (canExhaust): the inspector keeps the room of its tilted bounds. Never a pile.
+   */
+  function inspectorTilts(element: TableElement): boolean {
+    const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
+    return card !== undefined && canExhaust(card);
+  }
+
   /** The tokens, statuses and modifiers of a table card, which the inspector steps; none for a pile. */
   function inspectorCounters(element: TableElement): SheetCounter[] {
     const card = element.kind === 'card' ? cardsById.get(element.id) : undefined;
@@ -1721,6 +1737,8 @@
         landscape: inspectorLandscape(member),
         counters: inspectorCounters(member),
         scheme: header?.scheme ?? false,
+        exhausted: inspectorExhausted(member),
+        tilts: inspectorTilts(member),
       };
     });
   }
@@ -1770,6 +1788,15 @@
     return element.kind === 'card' && item.id === 'flip';
   }
 
+  /**
+   * Whether the item is a table card's Exhaust or Ready (actionsFor's `exhaust`): the inspector stays
+   * open and tilts the card in it, or turns it upright (CardSheet.svelte), its button reading Ready
+   * or Exhaust as the view answers.
+   */
+  function exhaustsCard(item: ActionItem, element: TableElement): boolean {
+    return element.kind === 'card' && item.id === 'exhaust';
+  }
+
   /** Whether the item is a deck's Reveal (actionsFor's `reveal`), run from that deck's inspector. */
   function revealsFrom(item: ActionItem, element: TableElement): boolean {
     return element.kind === 'pile' && item.id === 'reveal';
@@ -1778,8 +1805,9 @@
   /**
    * A chosen entry runs on the inspector's element, as the menu's does. It closes the inspector
    * first, but for an entry that adds a token, a status or a modifier: the inspector stays open,
-   * as for a stepper, and for a card's Flip, which it shows turning over. A deck's Reveal keeps it
-   * open too, and switches it to the revealed card once the view shows it.
+   * as for a stepper, for a card's Exhaust or Ready, which it shows tilting, and for a card's Flip,
+   * which it shows turning over. A deck's Reveal keeps it open too, and switches it to the revealed
+   * card once the view shows it.
    */
   function runInspectorItem(item: ActionItem): void {
     const element = sheetElement;
@@ -1793,7 +1821,7 @@
       }
       return;
     }
-    if (!addsCounter(item) && !flipsCard(item, element)) {
+    if (!addsCounter(item) && !exhaustsCard(item, element) && !flipsCard(item, element)) {
       inspected = null;
     }
     if (item === SELECT_ENTRY.item) {
@@ -2891,6 +2919,8 @@
         images={inspectorImages(sheetElement)}
         nextImages={inspectorNextImages(sheetElement)}
         landscape={inspectorLandscape(sheetElement)}
+        exhausted={inspectorExhausted(sheetElement)}
+        tilts={inspectorTilts(sheetElement)}
         counters={inspectorCounters(sheetElement)}
         stack={inspectorStack(sheetElement)}
         cardId={sheetElement.kind === 'card' ? sheetElement.id : undefined}
