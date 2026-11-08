@@ -3,6 +3,8 @@ import ScenarioPicker from './ScenarioPicker.svelte';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
 import type { Rect } from '../../lib/rect';
+import { mockScreen, PHONE } from '../../lib/screen.testing';
+import { mockVisualViewport } from '../../lib/visibleArea.testing';
 
 // The card language, as each test chooses: Options does not offer French, so no stored choice gives it.
 const cardLang = vi.hoisted(() => ({ current: 'en' as Lang }));
@@ -372,6 +374,67 @@ describe('ScenarioPicker filter fields', () => {
   });
 });
 
+describe('ScenarioPicker Add a set menu placement', () => {
+  // jsdom lays nothing out: the button and its wrapper sit 300 px down a window 800 px tall, and the
+  // menu is 240 x 200 px. Under the button, it would end at 534 px.
+  const WRAP_TOP = 300;
+
+  beforeEach(() => {
+    vi.stubGlobal('innerHeight', 800);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.classList.contains('menu')) {
+        return new DOMRect(0, 0, 240, 200);
+      }
+      if (this.classList.contains('add-wrap') || this.classList.contains('add')) {
+        return new DOMRect(100, WRAP_TOP, 120, 30);
+      }
+      return new DOMRect();
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('menu') ? 200 : 0;
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  /** The open menu's top and bottom edges, in the window's coordinates. */
+  function menuEdges(container: HTMLElement): { top: number; bottom: number } {
+    const menu = container.querySelector<HTMLElement>('.menu.placed');
+    if (menu === null) {
+      throw new Error('the menu is not placed');
+    }
+    const top = WRAP_TOP + Number.parseFloat(menu.style.top);
+    return { top, bottom: top + Number.parseFloat(menu.style.height) };
+  }
+
+  it('opens within the part of the window the user sees, above the keyboard', async () => {
+    mockVisualViewport({ height: 400 });
+    const { container } = renderPicker({ ...rhino, modulars: [] });
+
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+
+    await vi.waitFor(() => expect(menuEdges(container).bottom).toBeLessThanOrEqual(400));
+  });
+
+  it('moves as the keyboard shows while it is open', async () => {
+    const viewport = mockVisualViewport({ height: 800 });
+    const { container } = renderPicker({ ...rhino, modulars: [] });
+    await fireEvent.click(screen.getByRole('button', { name: '+ Add a set' }));
+    await vi.waitFor(() => expect(menuEdges(container).top).toBeGreaterThan(WRAP_TOP));
+
+    viewport.resize({ height: 400 });
+
+    await vi.waitFor(() => expect(menuEdges(container).bottom).toBeLessThanOrEqual(400));
+  });
+});
+
 describe('ScenarioPicker Add a set menu groups', () => {
   // Several packs, sets listed out of pack order: the menu follows the packs, then the sets' own order.
   const packed: Index = {
@@ -552,6 +615,7 @@ describe('ScenarioPicker Add a set menu groups', () => {
 
     afterEach(() => {
       vi.restoreAllMocks();
+      vi.unstubAllGlobals();
     });
 
     it('is focused and empty each time the menu opens', async () => {
@@ -566,6 +630,16 @@ describe('ScenarioPicker Add a set menu groups', () => {
       expect(field().value).toBe('');
       await vi.waitFor(() => expect(document.activeElement).toBe(field()));
       expect(screen.getByRole('group', { name: 'Green Goblin' })).toBeTruthy();
+    });
+
+    it('is not focused as the menu opens on a touch screen: the keyboard would cover the list', async () => {
+      mockScreen(PHONE);
+      const { container } = await openMenu();
+      await vi.waitFor(() => expect(container.querySelector('.menu.placed')).not.toBeNull());
+      // The desktop focuses it on the update after the menu shows: one more turn.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(document.activeElement).not.toBe(field());
     });
 
     it('ArrowDown moves the focus to the first set shown', async () => {

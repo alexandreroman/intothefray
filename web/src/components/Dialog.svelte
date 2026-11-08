@@ -148,10 +148,16 @@
 </div>
 
 <style>
-  /* Over everything of the page but the tooltips (6000): the same dim for every dialog. */
+  /* Over everything of the page but the tooltips (6000): the same dim for every dialog. The
+     on-screen keyboard shrinks only the visual viewport, and inset: 0 would keep the whole window,
+     its lower part under the keyboard: the backdrop takes the part the user sees
+     (lib/visibleArea), so that the dialog stays above the keyboard. */
   .backdrop {
     position: fixed;
-    inset: 0;
+    top: var(--visible-top, 0px);
+    left: 0;
+    right: 0;
+    height: var(--visible-height, 100%);
     z-index: 5600;
     display: grid;
     place-items: center;
@@ -169,12 +175,13 @@
     box-shadow: 0 24px 60px #000c;
   }
 
-  /* A wide box: a column whose middle part scrolls. */
+  /* A wide box: a column whose middle part scrolls. Never taller than the part of the window the
+     user sees, less the backdrop's padding: the card box never runs under the keyboard. */
   .box.wide {
     display: flex;
     flex-direction: column;
     width: min(920px, 100%);
-    max-height: 88vh;
+    max-height: min(88vh, calc(var(--visible-height, 100vh) - 32px));
     padding: 0;
   }
 
