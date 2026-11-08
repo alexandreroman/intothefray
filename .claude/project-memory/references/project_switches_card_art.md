@@ -16,7 +16,9 @@ type: project
 - A switch option shows no browser tap highlight on a touch screen
   (`-webkit-tap-highlight-color: transparent` on `[data-indicator] ~ button`
   in `styles/tokens.css`, and on the hero selector's entries): the sliding
-  indicator is the feedback. Other buttons keep the browser's highlight.
+  indicator is the feedback. So does a villain row of the lobby's list
+  (`.vrow`), whose chosen outline and wash are the feedback. Other buttons
+  keep the browser's highlight.
 - Hero and villain thumbnails show only the illustration of the card:
   `components/CardArt.svelte` zooms the card image onto the art window
   (`ART_LEFT`, `ART_RIGHT`, `ART_TOP`, `ART_BOTTOM` in
