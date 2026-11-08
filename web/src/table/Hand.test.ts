@@ -864,14 +864,50 @@ describe('Hand beside another one', () => {
     }
   });
 
-  it('turns active, without rising, on a tap', async () => {
+  it('turns active on a tap, and rises pinned up as it does, with no card selected', async () => {
     const onactivate = vi.fn();
-    render(Hand, { cards: CARDS, faceOf, captionOf, seat: 1, active: false, onactivate });
+    const props = { cards: CARDS, faceOf, captionOf, seat: 1, onactivate };
+    const { rerender } = render(Hand, { ...props, active: false });
 
     const [card] = handCards();
     await fireEvent.pointerDown(card!, { pointerType: 'touch' });
     await fireEvent.click(card!);
     expect(onactivate).toHaveBeenCalledOnce();
+    // Inactive, it never rises: it waits for the table to make it the active one.
+    expect(isOpen()).toBe(false);
+
+    await rerender({ ...props, active: true });
+    expect(isOpen()).toBe(true);
+    expect(handList().classList).toContain('pinned');
+    expect(interaction.locked).toBe(false);
+    expect(interaction.hovered).toBeNull();
+  });
+
+  it('turns active, without rising, on a mouse click', async () => {
+    const onactivate = vi.fn();
+    const props = { cards: CARDS, faceOf, captionOf, seat: 1, onactivate };
+    const { rerender } = render(Hand, { ...props, active: false });
+
+    const [card] = handCards();
+    await fireEvent.pointerDown(card!, { pointerType: 'mouse' });
+    await fireEvent.click(card!);
+    expect(onactivate).toHaveBeenCalledOnce();
+
+    await rerender({ ...props, active: true });
+    expect(isOpen()).toBe(false);
+    expect(handList().classList).not.toContain('pinned');
+  });
+
+  it('rises at no later activation once another press follows the tap', async () => {
+    const props = { cards: CARDS, faceOf, captionOf, seat: 1, onactivate: () => {} };
+    const { rerender } = render(Hand, { ...props, active: false });
+
+    const [card] = handCards();
+    await fireEvent.pointerDown(card!, { pointerType: 'touch' });
+    await fireEvent.click(card!);
+    // The table leaves it inactive; the finger goes on to press elsewhere, then Q makes it active.
+    await fireEvent.pointerDown(document.body, { pointerType: 'touch' });
+    await rerender({ ...props, active: true });
     expect(isOpen()).toBe(false);
   });
 

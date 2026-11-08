@@ -1888,6 +1888,24 @@ describe('several decks', () => {
     }
   });
 
+  it('makes the inactive hand active and raises it pinned up on one tap', async () => {
+    render(Table, { session: fakeSession(), view: makeTwoDeckView() });
+    await catalogLoaded();
+    const antMan = screen.getByRole('list', { name: 'Your Ant-Man hand' });
+
+    const card = within(antMan).getByRole('listitem');
+    await fireEvent.pointerDown(card, { pointerType: 'touch' });
+    await fireEvent.click(card);
+    expect(checkedDeck('Hand shown')).toEqual(['Alex · Ant-Man']);
+    await waitFor(() => expect(antMan.classList).toContain('open'));
+    expect(antMan.classList).toContain('pinned');
+    expect(antMan.classList).not.toContain('inactive');
+    // The tap raises the hand only: no card of it is lifted to be read.
+    expect(within(antMan).getByRole('listitem').classList).not.toContain('locked');
+    const spiderMan = screen.getByRole('list', { name: 'Your Spider-Man hand' });
+    expect(spiderMan.classList).toContain('hidden');
+  });
+
   it("shows both hands in the Villain + player view on an own deck's row", async () => {
     localStorage.setItem('itf-view', 'focus');
     render(Table, { session: fakeSession(), view: makeTwoDeckView() });
