@@ -7,8 +7,8 @@
     | 'exit-fullscreen'
     | 'cross'
     | 'pencil'
-    | 'rows-all'
-    | 'rows-focus'
+    | 'villain-players'
+    | 'villain-player'
     | 'check'
     | 'arrow-right'
     | 'undo'
@@ -66,15 +66,19 @@
   {:else if name === 'pencil'}
     <!-- A pencil, writing towards the bottom left. -->
     <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
-  {:else if name === 'rows-all'}
-    <!-- Every row of the table. -->
-    <rect x="4" y="4" width="16" height="4" rx="1" />
-    <rect x="4" y="10" width="16" height="4" rx="1" />
-    <rect x="4" y="16" width="16" height="4" rx="1" />
-  {:else if name === 'rows-focus'}
-    <!-- The villain's row, and one player's row under it. -->
-    <rect x="4" y="5" width="16" height="5" rx="1" fill="currentColor" fill-opacity=".25" />
-    <rect x="4" y="14" width="16" height="5" rx="1" />
+  {:else if name === 'villain-players'}
+    <!-- A horned villain, and the players under it: every row of the table. -->
+    <circle cx="12" cy="7" r="2.6" fill="currentColor" fill-opacity=".35" />
+    <path d="M10.2 5.1 9.2 2.6M13.8 5.1l1-2.5" />
+    <circle cx="6.5" cy="15.2" r="2.4" />
+    <circle cx="17.5" cy="15.2" r="2.4" />
+    <path d="M2.5 21.5a4 4 0 0 1 8 0M13.5 21.5a4 4 0 0 1 8 0" />
+  {:else if name === 'villain-player'}
+    <!-- The same villain over one player: the villain's row and one player's. -->
+    <circle cx="12" cy="7" r="2.6" fill="currentColor" fill-opacity=".35" />
+    <path d="M10.2 5.1 9.2 2.6M13.8 5.1l1-2.5" />
+    <circle cx="12" cy="15.2" r="2.4" />
+    <path d="M7.5 21.5a4.5 4.5 0 0 1 9 0" />
   {:else if name === 'check'}
     <path d="M5 12.5l4.5 4.5L19 7.5" />
   {:else if name === 'arrow-right'}
