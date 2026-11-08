@@ -840,20 +840,6 @@
     filter: grayscale(1);
   }
 
-  /* A row the host can pick zooms in on its art (CardArt's --art-zoom); an unsupported row stays
-     still. */
-  @media (prefers-reduced-motion: no-preference) {
-    .vrow:not([aria-disabled='true']):focus-visible {
-      --art-zoom: 1.07;
-    }
-  }
-
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .vrow:not([aria-disabled='true']):hover {
-      --art-zoom: 1.07;
-    }
-  }
-
   .none {
     color: var(--muted);
     text-align: center;
