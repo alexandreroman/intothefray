@@ -37,7 +37,7 @@ type: project
   "main scheme" on the row and on the chip; adding one also adds its
   recommended modulars, starred.
 - The menu stays whole inside the visible page: between the top bar and
-  the lobby's start bar (`room` prop from `Lobby.svelte`), under its button
+  the window's bottom (`room` prop from `Lobby.svelte`), under its button
   or above it when only that side fits, else on the roomier side cut to
   scroll; shifted to stay inside the window (`placeUnder` in
   `web/src/lib/dropdown.ts`). That room is cut to the part of the window

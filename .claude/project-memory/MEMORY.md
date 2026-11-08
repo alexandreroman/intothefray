@@ -78,8 +78,8 @@
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
 - [Acceleration token](references/project_acceleration_token.md) — token "acc": menu and pill only; Fray red, upward double chevron, by the threat
 - [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview (tablet 65 %); card boxes alike, ≤ 160 px; resting 82 %
-- [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card boxes, villain list, Add a set menu, What's new: scrollFade
-- [Lobby columns share one height](references/project_lobby_columns.md) — side by side, Scenario box fills its column; settings slide in
+- [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card boxes, Add a set menu, What's new: scrollFade
+- [Lobby layout](references/project_lobby_layout.md) — one column: Players (seat per deck), Scenario (full villain list, recap), Start
 - [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
