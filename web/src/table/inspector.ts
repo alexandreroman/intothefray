@@ -1,8 +1,8 @@
 // What the inspector (CardSheet.svelte) shows of a card or a pile on a touch
 // screen, beside the entries of its context menu (contextItems.ts): the
-// counters a card carries, with steppers, the entries it shows, their split
-// into the large buttons of the first group and the rows of the others, and
-// the stack the card belongs to, shown as a carousel in place of it. Pure.
+// counters a card carries, with steppers, the entries it shows, in their
+// groups, and the stack the card belongs to, shown as a carousel in place of
+// it. Pure.
 
 import type { CardView } from '../lib/types';
 import {
@@ -15,7 +15,7 @@ import {
   type ActionItem,
   type CounterKind,
 } from './actions';
-import type { ContextAction, ContextEntry, ContextSeparator } from './contextItems';
+import type { ContextAction, ContextEntry, ContextSeparator, ContextSubmenu } from './contextItems';
 import { mainCardOf, stackOf } from './drag';
 
 /** A token, status or modifier a card carries, as the inspector shows it with its steppers. */
@@ -43,9 +43,6 @@ export interface StackCard {
   /** It is a scheme, its tokens in a scheme's places (ContextHeader.scheme). */
   scheme?: boolean;
 }
-
-/** The most large buttons in a row, from the first group of entries. */
-const MAX_MAIN = 4;
 
 const TOKEN_NAMES = TOKENS.map((token) => token.name);
 const STATUS_NAMES = STATUSES.map((status) => status.name);
@@ -145,31 +142,31 @@ function isSeparator(entry: ContextEntry): entry is ContextSeparator {
   return entry.kind === 'separator';
 }
 
+/** An entry of a group: an action or a submenu, anything but the separator between groups. */
+export type GroupEntry = ContextAction | ContextSubmenu;
+
 /**
- * Splits the entries into the main actions, the large buttons, and the rest,
- * the rows below them. The main actions are the first group's actions, at
- * most four, up to its first submenu, the default one first: in the inspector
- * it may stand alone above the others (lib/buttonGrid.ts). The rest starts
- * where they end, without the separator that closed their group.
+ * The entries in their groups, in their order: each group the entries between
+ * two separators, which the inspector lays out as a grid of its own. No group
+ * is empty.
  */
-export function splitEntries(entries: ContextEntry[]): {
-  main: ContextAction[];
-  rest: ContextEntry[];
-} {
-  const main: ContextAction[] = [];
+export function entryGroups(entries: readonly ContextEntry[]): GroupEntry[][] {
+  const groups: GroupEntry[][] = [];
+  let current: GroupEntry[] = [];
   for (const entry of entries) {
-    if (entry.kind !== 'action' || main.length === MAX_MAIN) {
-      break;
+    if (entry.kind === 'separator') {
+      if (current.length > 0) {
+        groups.push(current);
+      }
+      current = [];
+    } else {
+      current.push(entry);
     }
-    main.push(entry);
   }
-  const rest = entries.slice(main.length);
-  if (main.length > 0 && rest[0]?.kind === 'separator') {
-    rest.shift();
+  if (current.length > 0) {
+    groups.push(current);
   }
-  const lead = main.filter((entry) => entry.item.default);
-  const others = main.filter((entry) => !entry.item.default);
-  return { main: [...lead, ...others], rest };
+  return groups;
 }
 
 /**

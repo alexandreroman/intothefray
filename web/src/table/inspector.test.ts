@@ -1,7 +1,7 @@
 import { arrowItem, type ActionItem } from './actions';
 import type { ContextAction, ContextEntry, ContextSeparator, ContextSubmenu } from './contextItems';
 import { card } from './fixtures.testing';
-import { countersFor, splitEntries, stackCardsOf, visibleEntries } from './inspector';
+import { countersFor, entryGroups, stackCardsOf, visibleEntries } from './inspector';
 
 function action(id: string): ContextAction {
   const item: ActionItem = { id, label: id, group: 0 };
@@ -70,55 +70,6 @@ describe('countersFor', () => {
   });
 });
 
-describe('splitEntries', () => {
-  it('takes the first group as the main actions', () => {
-    const [a1, a2, a3] = [action('a1'), action('a2'), action('a3')];
-
-    expect(splitEntries([a1, a2, SEP, a3])).toEqual({ main: [a1, a2], rest: [a3] });
-  });
-
-  it('takes at most four main actions, the others leading the rest', () => {
-    const [a1, a2, a3, a4, a5] = [
-      action('a1'),
-      action('a2'),
-      action('a3'),
-      action('a4'),
-      action('a5'),
-    ];
-    const s1 = submenu('s1');
-
-    expect(splitEntries([a1, a2, a3, a4, a5, SEP, s1])).toEqual({
-      main: [a1, a2, a3, a4],
-      rest: [a5, SEP, s1],
-    });
-  });
-
-  it('stops the main actions at a submenu', () => {
-    const a1 = action('a1');
-    const s1 = submenu('s1');
-    const a2 = action('a2');
-
-    expect(splitEntries([a1, s1, a2])).toEqual({ main: [a1], rest: [s1, a2] });
-  });
-
-  it('has no main actions when the first entry is a submenu', () => {
-    const entries: ContextEntry[] = [submenu('s1'), SEP, action('a1')];
-
-    expect(splitEntries(entries)).toEqual({ main: [], rest: entries });
-  });
-
-  it('has nothing for no entries', () => {
-    expect(splitEntries([])).toEqual({ main: [], rest: [] });
-  });
-
-  it('puts the default main action first, the others in their order', () => {
-    const [a1, a2, a3] = [action('a1'), action('a2'), action('a3')];
-    const play: ContextAction = { kind: 'action', item: { ...a2.item, default: true } };
-
-    expect(splitEntries([a1, play, a3]).main).toEqual([play, a1, a3]);
-  });
-});
-
 describe('visibleEntries', () => {
   it('leaves out a refused action and a refused submenu, with the separator before them', () => {
     const exhaust = action('exhaust');
@@ -170,6 +121,35 @@ describe('visibleEntries', () => {
     const entries: ContextEntry[] = [action('a'), SEP, submenu('s1')];
 
     expect(visibleEntries(entries)).toEqual(entries);
+  });
+});
+
+describe('entryGroups', () => {
+  it('splits the entries at their separators, in their order', () => {
+    const [a1, a2, a3] = [action('a1'), action('a2'), action('a3')];
+    const s1 = submenu('s1');
+
+    expect(entryGroups([a1, a2, SEP, s1, a3, SEP, action('a4')])).toEqual([
+      [a1, a2],
+      [s1, a3],
+      [action('a4')],
+    ]);
+  });
+
+  it('makes one group of entries with no separator', () => {
+    const [a1, a2] = [action('a1'), action('a2')];
+
+    expect(entryGroups([a1, a2])).toEqual([[a1, a2]]);
+  });
+
+  it('makes no empty group, at either end or between two separators', () => {
+    const [a1, a2] = [action('a1'), action('a2')];
+
+    expect(entryGroups([SEP, a1, SEP, SEP, a2, SEP])).toEqual([[a1], [a2]]);
+  });
+
+  it('has no group for no entries', () => {
+    expect(entryGroups([])).toEqual([]);
   });
 });
 
