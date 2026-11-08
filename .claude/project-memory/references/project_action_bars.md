@@ -97,13 +97,14 @@ type: project
   (`ownHandTarget` in `drag.ts`). A hand card over its own hand is never
   shown to the other players.
 - Tokens come from the submenus, the keys and the token pill.
-- An "Add a token" entry adds its token and leaves the menu and its
-  submenu open where they are, the entry relabelled with the new count
-  ("Damage (3)") under the pointer, so the same token goes on again with
-  another click (`ActionItem.staysOpen`, set by `counterMenu` on token
-  entries only). Every other entry, "Add a status" and "Add a modifier"
-  ones included, closes the menu. Escape (the submenu first, then the
-  menu), Tab, a press outside, a scroll, a zoom or a resize close it.
+- An entry of "Add a token", "Add a status" or "Add a modifier" adds its
+  counter and leaves the menu and its submenu open where they are, the
+  entry relabelled with the new count ("Damage (3)", "Tough (2)") or
+  greyed at the ±99 modifier limit, under the pointer, so the same
+  counter goes on again with another click (`ActionItem.staysOpen`, set
+  by `counterMenu` and `modifierMenu`). Every other entry closes the
+  menu. Escape (the submenu first, then the menu), Tab, a press outside,
+  a scroll, a zoom or a resize close it.
 - Out-of-play piles (scenario areas, victory display, set-aside) are
   reached from chips
   (icon and count) at the right of the owner frame's name line; an
@@ -116,8 +117,9 @@ type: project
 **Why:** a UX review against DragnCards and OCTGN; the user chose one
 complete, labelled menu per card, pile and box tile. A one-card hand has
 nothing to reorder, so its fan offers no place for its card (user
-decision). A card often takes several tokens at once (damage, threat),
-so the token submenu stays open for another click (user decision).
+decision). A card often takes several counters at once (damage, threat,
+Tough ×2, +2 ATK), so the three counter submenus stay open for another
+click, all alike (user decision).
 
 **How to apply:** new actions go into `actionsFor` (keys and menu read
 it).
