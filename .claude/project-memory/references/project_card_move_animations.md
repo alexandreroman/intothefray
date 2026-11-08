@@ -106,8 +106,7 @@ type: project
   (`#dockFlight`, `dockLanding` in `motion.svelte.ts`): its own mini on
   the dock's hand button (the last mini past the fourth card), landing
   at the mini's size; on the rail, the avatar; for another of the
-  viewer's decks, the hand button's avatar, whatever deck it shows (the
-  floating hero selector of "Villain + player" is no landing place).
+  viewer's decks, the hand button's avatar, whatever deck it shows.
   Into an avatar or an entry, it shrinks to a portrait card as high as
   it and fades out over the last 45 % of its way (`CHIP_FADE_FROM`). It
   turns face up on the way out of a hidden pile, the draws 70 ms apart

@@ -147,11 +147,11 @@ type: project
     a phone on its side, holds the hand button (hero avatar, mini cards,
     the hand count in the count capsule, see [[project_count_capsule]];
     the drop target "back to hand" during a drag), Undo and History, which
-    has no badge. No hand fan, no corner bar. The hero selector floats
-    above the dock (on a phone on its side, at the top right of the rail)
-    in "Villain + player" only, to pick the row shown; in "All" the hand
-    picks the deck: the hand sheet's header holds the selector of the
-    player's own decks, each with its hand count. During a drag the
+    has no badge. No hand fan, no corner bar, no floating hero selector:
+    the hand picks the deck, the hand sheet's header holding the selector
+    of the player's own decks, each with its hand count. In "Villain +
+    player" the row shown is that deck's; another player's row is not
+    offered, and a spectator sees the first seat's. During a drag the
     hand button is the only hand target: a table card dropped there goes
     to its owner's hand, a hand card goes back.
   - In dock mode the top bar is always visible, never auto-hides and
