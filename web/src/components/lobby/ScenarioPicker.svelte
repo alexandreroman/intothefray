@@ -51,11 +51,16 @@
   // The Add a set menu's gap under its button, and its height cap: it scrolls inside beyond it.
   const MENU_GAP = 4;
   const MENU_MAX_HEIGHT = 320;
+  // The folded villain list shows whole packs, in release order, until it holds at least this many scenarios.
+  const FOLDED_MIN_SCENARIOS = 16;
 
   // Pack, scenario and set names in the language chosen in Options, a separate route: read once.
   const lang = storedLang();
 
   let filter = $state('');
+  // Show all villains unfolds the list for the rest of the visit: it is neither stored nor sent.
+  let unfolded = $state(false);
+  let villainList = $state<HTMLElement>();
   let menuOpen = $state(false);
   // The Add a set menu's own filter, empty each time the menu opens.
   let setFilter = $state('');
@@ -163,8 +168,8 @@
     ]);
   }
 
-  // The host's list: every scenario the filter keeps, under its pack, packs in release order.
-  const groups = $derived(
+  // Every scenario the filter keeps, under its pack, packs in release order.
+  const matchingGroups = $derived(
     index.packs
       .map((pack) => ({
         pack,
@@ -172,6 +177,51 @@
       }))
       .filter((group) => group.scenarios.length > 0),
   );
+
+  /**
+   * The packs the folded list shows: the first ones in release order until they hold
+   * FOLDED_MIN_SCENARIOS scenarios, supported or not, and the chosen scenario's pack.
+   */
+  const foldedPacks = $derived.by(() => {
+    const codes: string[] = [];
+    let count = 0;
+    for (const pack of index.packs) {
+      if (count >= FOLDED_MIN_SCENARIOS) {
+        break;
+      }
+      codes.push(pack.code);
+      count += index.scenarios.filter((s) => s.pack === pack.code).length;
+    }
+    if (chosen) {
+      codes.push(chosen.pack);
+    }
+    return new Set(codes);
+  });
+
+  // A filter query searches every pack: the fold applies only to the whole list.
+  const folding = $derived(!unfolded && fold(filter) === '');
+  const groups = $derived(
+    folding ? matchingGroups.filter((group) => foldedPacks.has(group.pack.code)) : matchingGroups,
+  );
+  const hiddenGroups = $derived(
+    folding ? matchingGroups.filter((group) => !foldedPacks.has(group.pack.code)) : [],
+  );
+  const hiddenCount = $derived(
+    hiddenGroups.reduce((sum, group) => sum + group.scenarios.length, 0),
+  );
+
+  /**
+   * Shows every villain. The button goes with the fold, so the focus moves to the first scenario
+   * it brings, rather than falling back to the page.
+   */
+  async function unfold(): Promise<void> {
+    const firstShown = hiddenGroups[0]?.scenarios[0];
+    unfolded = true;
+    await tick();
+    const rows = villainList?.querySelectorAll<HTMLElement>('.vrow') ?? [];
+    const row = [...rows].find((r) => r.dataset.scenario === firstShown?.id);
+    row?.focus();
+  }
 
   function configure(changes: Partial<LobbyConfig>): void {
     onconfigure({
@@ -544,7 +594,7 @@
       </div>
 
       <!-- Packs flow in columns, a pack never split; the page scrolls, not the list. -->
-      <div class="vlist">
+      <div class="vlist" id="{uid}-villains" bind:this={villainList}>
         {#each groups as group (group.pack.code)}
           <div class="vpack">
             <div class="pk"><span use:overflowTip>{localizedName(group.pack, lang)}</span></div>
@@ -558,6 +608,7 @@
                 class:unsupported={!scenario.supported}
                 aria-pressed={selected}
                 aria-disabled={!scenario.supported}
+                data-scenario={scenario.id}
                 data-tip={scenario.supported ? undefined : 'Not supported yet'}
                 onclick={() => chooseScenario(scenario)}
               >
@@ -580,6 +631,15 @@
           <div class="none">No scenario matches.</div>
         {/each}
       </div>
+
+      {#if hiddenCount > 0}
+        <button
+          class="btn more"
+          aria-expanded="false"
+          aria-controls="{uid}-villains"
+          onclick={unfold}>Show all villains ({hiddenCount} more)</button
+        >
+      {/if}
 
       <!-- Opens once a first scenario is chosen, and stays as the host picks others. -->
       {#if chosen}
@@ -778,11 +838,30 @@
     padding: 30px 0;
   }
 
-  /* 12px under the last pack's rows, then 6px: 18px down to the rule. */
+  /* The lobby's secondary button: full width on S, centred on M and L. */
+  .more {
+    display: block;
+    width: 100%;
+    height: 40px;
+    padding: 0 16px;
+  }
+
+  @media (min-width: 600px) {
+    .more {
+      width: fit-content;
+      margin-inline: auto;
+    }
+  }
+
+  /* 12px under the last pack's rows, then 6px: 18px down to the rule; 18px under the button. */
   .recap-pane {
     margin-top: 6px;
     padding-top: 18px;
     border-top: 1px solid var(--panel-2);
+  }
+
+  .more + .recap-pane {
+    margin-top: 18px;
   }
 
   /* S: the art and the name in a row, the settings under them. */

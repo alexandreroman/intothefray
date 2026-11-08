@@ -803,6 +803,134 @@ describe('ScenarioPicker villain list', () => {
     expect(packs(container)).toEqual([]);
     expect(screen.getByText('No scenario matches.')).toBeTruthy();
   });
+
+  it('shows every scenario, with no button, when the fold hides none', () => {
+    renderList({ ...rhino, scenario: '' });
+
+    expect(screen.queryByRole('button', { name: /^Show all villains/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show fewer' })).toBeNull();
+  });
+
+  describe('folded', () => {
+    // Packs of 10, 6 (one not supported), 3, 4 and 2 scenarios: the first two hold 16.
+    const sizes = [10, 6, 3, 4, 2];
+    const long: Index = {
+      ...index,
+      packs: sizes.map((_, i) => ({
+        code: `p${i + 1}`,
+        name: `Pack ${i + 1}`,
+        file: `p${i + 1}.json`,
+        position: i + 1,
+      })),
+      scenarios: sizes.flatMap((size, i) =>
+        Array.from({ length: size }, (_, j) => ({
+          id: `p${i + 1}_${j + 1}`,
+          name: `Villain ${i + 1}.${j + 1}`,
+          pack: `p${i + 1}`,
+          image: '',
+          supported: !(i === 1 && j === 0),
+          recommended: [],
+        })),
+      ),
+    };
+
+    function renderLong(scenario = '') {
+      return render(ScenarioPicker, {
+        view: viewOf({ ...rhino, scenario, modulars: [] }),
+        index: long,
+        onconfigure: vi.fn(),
+        room: windowRoom,
+      });
+    }
+
+    function shownPacks(container: HTMLElement): string[] {
+      return packs(container).map((pack) => pack.pack);
+    }
+
+    function showAll(): HTMLElement {
+      return screen.getByRole('button', { name: /^Show all villains/ });
+    }
+
+    it('shows whole packs in release order until 16 scenarios, unsupported ones counted', () => {
+      const { container } = renderLong();
+
+      expect(packs(container)).toEqual([
+        { pack: 'Pack 1', scenarios: Array.from({ length: 10 }, (_, j) => `Villain 1.${j + 1}`) },
+        { pack: 'Pack 2', scenarios: Array.from({ length: 6 }, (_, j) => `Villain 2.${j + 1}`) },
+      ]);
+    });
+
+    it('never cuts a pack that crosses the threshold', () => {
+      const { container } = render(ScenarioPicker, {
+        view: viewOf({ ...rhino, scenario: '', modulars: [] }),
+        index: { ...long, scenarios: long.scenarios.filter((s) => s.id !== 'p2_6') },
+        onconfigure: vi.fn(),
+        room: windowRoom,
+      });
+
+      expect(shownPacks(container)).toEqual(['Pack 1', 'Pack 2', 'Pack 3']);
+      expect(packs(container)[2]?.scenarios).toHaveLength(3);
+    });
+
+    it("adds the chosen scenario's pack in release order, and leaves it out of the count", () => {
+      const { container } = renderLong('p4_2');
+
+      expect(shownPacks(container)).toEqual(['Pack 1', 'Pack 2', 'Pack 4']);
+      expect(showAll().textContent).toBe('Show all villains (5 more)');
+    });
+
+    it('offers a button that tells how many scenarios it shows, and controls the list', () => {
+      const { container } = renderLong();
+
+      const button = showAll();
+      expect(button.textContent).toBe('Show all villains (9 more)');
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+      const list = container.querySelector('.vlist');
+      expect(list?.id).toBeTruthy();
+      expect(button.getAttribute('aria-controls')).toBe(list?.id);
+    });
+
+    it('unfolds for good: every pack shows, the button goes, the focus moves to the first new row', async () => {
+      const { container } = renderLong();
+
+      showAll().focus();
+      await fireEvent.click(showAll());
+
+      expect(shownPacks(container)).toEqual(['Pack 1', 'Pack 2', 'Pack 3', 'Pack 4', 'Pack 5']);
+      expect(screen.queryByRole('button', { name: /^Show all villains/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Show fewer' })).toBeNull();
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Villain 3.1' }));
+    });
+
+    it('stays unfolded once the filter is emptied again', async () => {
+      const { container } = renderLong();
+      await fireEvent.click(showAll());
+      const field = screen.getByLabelText('Filter by scenario or pack');
+
+      await fireEvent.input(field, { target: { value: 'Pack 5' } });
+      await fireEvent.input(field, { target: { value: '' } });
+
+      expect(shownPacks(container)).toHaveLength(5);
+      expect(screen.queryByRole('button', { name: /^Show all villains/ })).toBeNull();
+    });
+
+    it('searches every pack while the filter holds a query, without the button', async () => {
+      const { container } = renderLong();
+      const field = screen.getByLabelText('Filter by scenario or pack');
+
+      await fireEvent.input(field, { target: { value: 'Villain 5.' } });
+
+      expect(packs(container)).toEqual([
+        { pack: 'Pack 5', scenarios: ['Villain 5.1', 'Villain 5.2'] },
+      ]);
+      expect(screen.queryByRole('button', { name: /^Show all villains/ })).toBeNull();
+
+      await fireEvent.input(field, { target: { value: '' } });
+
+      expect(shownPacks(container)).toEqual(['Pack 1', 'Pack 2']);
+      expect(showAll().textContent).toBe('Show all villains (9 more)');
+    });
+  });
 });
 
 // jsdom has no Web Animations: each animation finishes on the next task.
