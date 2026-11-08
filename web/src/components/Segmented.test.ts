@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import Segmented from './Segmented.svelte';
+import segmentedSource from './Segmented.svelte?raw';
 
 const LEVELS = [
   { value: 'standard', label: 'Standard' },
@@ -42,6 +43,13 @@ function indicator(): HTMLElement {
     throw new Error('no indicator');
   }
   return element;
+}
+
+/** The declarations of a rule of the component's stylesheet, at the given indent. */
+function rule(selector: string, indent = 2): string {
+  const escaped = selector.replace(/[.()[\]*+]/g, (c) => `\\${c}`);
+  const pattern = new RegExp(`\\n {${indent}}${escaped} \\{([^}]*)\\}`);
+  return pattern.exec(segmentedSource)?.[1] ?? '';
 }
 
 /** jsdom lays nothing out: gives a button the place a browser would. */
@@ -87,6 +95,10 @@ describe('Segmented', () => {
     expect(button.dataset.tip).toBe('All');
     expect(button.hasAttribute('title')).toBe(false);
     expect(button.querySelector('svg')).not.toBeNull();
+  });
+
+  it('lays no square tap highlight over a tapped option of the pill', () => {
+    expect(rule('button')).toContain('-webkit-tap-highlight-color: transparent;');
   });
 
   it('places its indicator over the selected option without sliding', () => {
