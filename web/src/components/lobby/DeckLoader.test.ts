@@ -82,6 +82,29 @@ describe('DeckLoader', () => {
     }
   });
 
+  it('loads the link from an icon button named in its tooltip, disabled while the field is empty', async () => {
+    const { onload } = renderLoader(waiting);
+
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Load' });
+    expect(button.dataset.tip).toBe('Load');
+    expect(button.textContent?.trim()).toBe('');
+    expect(button.querySelector('svg')?.dataset.icon).toBe('arrow-right');
+    expect(button.disabled).toBe(true);
+
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Deck link' }), {
+      target: { value: ' https://example.com/deck/1 ' },
+    });
+    expect(button.disabled).toBe(false);
+    await fireEvent.click(button);
+    expect(onload).toHaveBeenCalledExactlyOnceWith('https://example.com/deck/1');
+  });
+
+  it('numbers the load button of one of several decks', () => {
+    renderLoader(waiting, { slot: 2 });
+
+    expect(screen.getByRole('button', { name: 'Load deck 2' }).dataset.tip).toBe('Load deck 2');
+  });
+
   it('changes the deck from a pencil icon button named in its tooltip', () => {
     renderLoader(ready);
 
@@ -113,17 +136,54 @@ describe('DeckLoader', () => {
     expect(screen.queryByRole('textbox', { name: 'Deck link' })).toBeNull();
   });
 
-  it('numbers the slot of one of several decks, in a label it shows', () => {
+  it('numbers the slot of one of several decks, in its name and its placeholder', () => {
     renderLoader(waiting, { slot: 2 });
 
-    expect(screen.getByRole('textbox', { name: 'Deck 2 link' })).toBeTruthy();
-    expect(screen.getByText('Deck 2 link').classList.contains('sr-only')).toBe(false);
+    const field = screen.getByRole('textbox', { name: 'Deck 2 link' });
+    expect(field.getAttribute('placeholder')).toBe('Paste deck 2 link…');
   });
 
-  it('names the field of a single slot for screen readers only', () => {
-    renderLoader(waiting);
+  it('names the field for screen readers only, with no label line above the form', () => {
+    for (const slot of [null, 2]) {
+      const { unmount } = render(DeckLoader, {
+        deck: waiting,
+        number: slot,
+        deckError: null,
+        error: null,
+        onload: vi.fn(),
+        onremove: vi.fn(),
+      });
 
-    expect(screen.getByText('Deck link').classList.contains('sr-only')).toBe(true);
+      const label = document.querySelector('label');
+      expect(label?.classList.contains('sr-only')).toBe(true);
+      expect(label?.closest('form')).not.toBeNull();
+      const pane = document.querySelector('.pane');
+      expect([...(pane?.children ?? [])].map((child) => child.tagName)).toEqual(['FORM', 'P']);
+      unmount();
+    }
+  });
+
+  it("puts an empty slot's trash icon button on the form's line", () => {
+    renderLoader(waiting, { slot: 2, onremove: vi.fn() });
+
+    const remove = screen.getByRole('button', { name: 'Remove deck 2' });
+    expect(remove.closest('form')).toBe(document.querySelector('form'));
+    expect(remove.getAttribute('type')).toBe('button');
+  });
+
+  it('cancels a Change from an undo icon button on the form line, named in its tooltip', async () => {
+    renderLoader(ready, { slot: 2, onremove: vi.fn() });
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Change deck 2' }));
+
+    const cancel = screen.getByRole('button', { name: 'Cancel' });
+    expect(cancel.closest('form')).toBe(document.querySelector('form'));
+    expect(cancel.dataset.tip).toBe('Cancel');
+    expect(cancel.textContent?.trim()).toBe('');
+    expect(cancel.querySelector('svg')?.dataset.icon).toBe('undo');
+    expect(cancel.getAttribute('type')).toBe('button');
+    // Changing a loaded deck, the slot offers Cancel rather than its trash.
+    expect(screen.queryByRole('button', { name: 'Remove deck 2' })).toBeNull();
   });
 
   it('removes the slot from its trash icon button, named in its tooltip', async () => {
@@ -173,19 +233,20 @@ describe('DeckLoader', () => {
       expect(document.querySelector('[aria-busy]')).toBeNull();
     });
 
-    it('names the load button Loading and marks it disabled, keeping it focusable', async () => {
+    it('shows a spinner in place of the Load icon and marks it disabled, keeping it focusable', async () => {
       await startLoading(waiting);
 
-      const button = screen.getByRole('button', { name: 'Loading' });
+      const button = screen.getByRole('button', { name: 'Load' });
       expect(button.getAttribute('aria-disabled')).toBe('true');
       expect(button.hasAttribute('disabled')).toBe(false);
-      expect(screen.queryByRole('button', { name: 'Load' })).toBeNull();
+      expect(button.querySelector('.spinner')).not.toBeNull();
+      expect(button.querySelector('svg')).toBeNull();
     });
 
     it('does not load again on submit', async () => {
       const { onload } = await startLoading(waiting);
 
-      await fireEvent.click(screen.getByRole('button', { name: 'Loading' }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
 
       expect(onload).not.toHaveBeenCalled();
     });
@@ -301,7 +362,7 @@ describe('DeckLoader', () => {
       renderLoader(waiting, { locked: true });
 
       expect(document.querySelector('[aria-busy]')).toBeNull();
-      expect(screen.queryByRole('button', { name: 'Loading' })).toBeNull();
+      expect(document.querySelector('.spinner')).toBeNull();
       expect(screen.getByRole('status').textContent?.trim()).toBe('');
     });
 

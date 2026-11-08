@@ -733,7 +733,7 @@ describe('Lobby', () => {
     await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
       target: { value: 'https://example.com/deck/2' },
     });
-    await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
 
     expect(session.lobby).toHaveBeenCalledWith('setDeck', {
       url: 'https://example.com/deck/2',
@@ -817,7 +817,7 @@ describe('Lobby', () => {
     await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
       target: { value: 'https://example.com/nope' },
     });
-    await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
     await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
 
     const alert = screen.getByRole('alert');
@@ -883,7 +883,7 @@ describe('Lobby', () => {
     await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
       target: { value: 'https://example.com/nope' },
     });
-    await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+    await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
     await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
     expect(screen.getByRole('alert')).toBeTruthy();
 
@@ -912,7 +912,7 @@ describe('Lobby', () => {
       await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
         target: { value: 'https://example.com/deck/2' },
       });
-      await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+      await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
       return live;
     }
 
@@ -929,7 +929,7 @@ describe('Lobby', () => {
         target: { value: 'https://example.com/deck/1' },
       });
       await fireEvent.click(screen.getByRole('button', { name: 'Load' }));
-      expect(screen.getByRole('button', { name: 'Loading' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Load' }).querySelector('.spinner')).not.toBeNull();
       return live;
     }
 
@@ -941,7 +941,10 @@ describe('Lobby', () => {
       expect(busy[0]?.querySelector('input')?.id).toBe(
         screen.getByRole('textbox', { name: 'Deck 2 link' }).id,
       );
-      expect(screen.getAllByRole('button', { name: 'Loading' })).toHaveLength(1);
+      expect(document.querySelectorAll('.spinner')).toHaveLength(1);
+      expect(
+        screen.getByRole('button', { name: 'Load deck 2' }).querySelector('.spinner'),
+      ).not.toBeNull();
       // Each slot's status is visually hidden: only screen readers announce the load.
       expect(screen.getAllByRole('status').map((status) => status.textContent?.trim())).toEqual([
         '',
@@ -957,7 +960,9 @@ describe('Lobby', () => {
         target: { value: 'https://example.com/deck/1' },
       });
 
-      const others = screen.getAllByRole('button', { name: 'Load' });
+      const others = ['Load deck 1', 'Load deck 3'].map((name) =>
+        screen.getByRole('button', { name }),
+      );
       await fireEvent.click(others[0]!);
 
       expect(others.map((button) => button.getAttribute('aria-disabled'))).toEqual([
@@ -969,7 +974,7 @@ describe('Lobby', () => {
       await live.receive({ type: 'error', code: 'deck', message: 'This deck link is not valid.' });
 
       expect(
-        screen.getAllByRole('button', { name: 'Load' })[0]!.getAttribute('aria-disabled'),
+        screen.getByRole('button', { name: 'Load deck 1' }).getAttribute('aria-disabled'),
       ).toBe('false');
     });
 
@@ -983,7 +988,7 @@ describe('Lobby', () => {
       await fireEvent.input(screen.getByRole('textbox', { name: 'Deck 2 link' }), {
         target: { value: 'https://example.com/deck/2' },
       });
-      await fireEvent.click(screen.getAllByRole('button', { name: 'Load' })[1]!);
+      await fireEvent.click(screen.getByRole('button', { name: 'Load deck 2' }));
       const lobby = vi.spyOn(live.session, 'lobby');
       const add = screen.getByRole('button', { name: 'Add a deck' });
       const remove = screen.getByRole('button', { name: 'Remove deck 1' });

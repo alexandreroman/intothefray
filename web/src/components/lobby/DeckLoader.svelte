@@ -52,6 +52,10 @@
   let changingFrom = $state<string | null>(null);
 
   const label = $derived(number === null ? 'Deck link' : `Deck ${number} link`);
+  const placeholder = $derived(
+    number === null ? 'Paste a deck link…' : `Paste deck ${number} link…`,
+  );
+  const loadLabel = $derived(number === null ? 'Load' : `Load deck ${number}`);
   const removeLabel = $derived(number === null ? 'Remove this deck' : `Remove deck ${number}`);
   const changeLabel = $derived(number === null ? 'Change deck' : `Change deck ${number}`);
   const signature = $derived(JSON.stringify([deck.hero, deck.deckName]));
@@ -96,59 +100,57 @@
 </script>
 
 <!-- The form and the loaded deck cross-fade in place, one over the other, as a deck loads or the
-     player changes it. -->
+     player changes it. Both are one line of the same height, so that nothing under the slot moves;
+     only an error adds lines under the form. -->
 <div class="slot">
   {#if showForm}
     <div class="pane" transition:swapFade>
-      <!-- One of several slots names itself above its field; a single one needs no visible name in
-           its player's card. The remove button stays on that line. -->
-      <div class="lblrow">
-        <label class="lbl" class:sr-only={number === null} for={inputId}>{label}</label>
-        {@render remove()}
-      </div>
       <!-- Busy, the form leaves out the status line below: a busy region may hold back what it
-           announces. -->
+           announces. The field's name is for screen readers only: its placeholder says it all. -->
       <form class="form" onsubmit={load} aria-busy={loading || undefined}>
+        <label class="sr-only" for={inputId}>{label}</label>
         <input
           id={inputId}
           type="text"
-          placeholder="Paste a deck link…"
+          {placeholder}
           readonly={loading}
           bind:value={url}
           bind:this={input}
         />
-        <div class="actions">
-          <!-- aria-disabled rather than disabled while a load is in flight: the button keeps the
-               focus. -->
-          <button
-            class="btn load"
-            type="submit"
-            disabled={url.trim() === ''}
-            aria-disabled={locked}
-          >
-            <!-- Both labels share one cell, so that the button keeps its width. Hidden, the other
-                 label is left out of the button's name too. -->
-            <span class="labels">
-              <span style:visibility={loading ? 'hidden' : undefined}>Load</span>
-              <span class="busy" style:visibility={loading ? undefined : 'hidden'}>
-                <span class="spinner"></span>Loading
-              </span>
-            </span>
-          </button>
-          {#if changingFrom !== null}
-            <button
-              class="btn"
-              type="button"
-              disabled={loading}
-              onclick={() => (changingFrom = null)}
-            >
-              Cancel
-            </button>
+        <!-- A square as tall as the field; while its load is in flight, the spinner takes the
+             icon's place. aria-disabled rather than disabled meanwhile: the button keeps the
+             focus. -->
+        <button
+          class="btn load"
+          type="submit"
+          data-tip={loadLabel}
+          aria-label={loadLabel}
+          disabled={url.trim() === ''}
+          aria-disabled={locked}
+        >
+          {#if loading}
+            <span class="spinner"></span>
+          {:else}
+            <Icon name="arrow-right" />
           {/if}
-        </div>
+        </button>
+        {#if changingFrom !== null}
+          <button
+            class="btn-ghost tool"
+            type="button"
+            data-tip="Cancel"
+            aria-label="Cancel"
+            disabled={loading}
+            onclick={() => (changingFrom = null)}
+          >
+            <Icon name="undo" />
+          </button>
+        {:else if !deck.ready}
+          {@render remove()}
+        {/if}
       </form>
       <!-- Always there while the form shows: a live region must exist before what it announces.
-           Only screen readers get it; the Loading button shows the load. -->
+           Only screen readers get it; the spinner in Load shows the load. -->
       <p class="sr-only" role="status">
         {#if loading}Loading the deck…{/if}
       </p>
@@ -196,6 +198,7 @@
   {#if onremove}
     <button
       class="btn-ghost tool"
+      type="button"
       data-tip={removeLabel}
       aria-label={removeLabel}
       aria-disabled={locked}
@@ -220,58 +223,34 @@
     min-width: 0;
   }
 
-  /* The label shares its line with the remove button. */
-  .lblrow {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
   /*
-    The field and its buttons side by side; stacked on a wide window, where the seats are narrow
-    (four in a row). The field stands further from Load than Load from Cancel: 12px, clear of the
-    focus outline.
+    One 44px line at every width: the field, then the Load, Cancel and remove icon buttons. The
+    field stands further from Load than Load from the next icon: 12px, clear of the focus outline.
   */
   .form {
     display: flex;
-    gap: 12px;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
   }
 
   .form input {
+    flex: 1;
     min-width: 0;
+    margin-right: 4px;
   }
 
-  .actions {
+  /* `.btn.load` outweighs the lobby's `.btn` padding. */
+  .form .btn.load {
     flex: none;
-    display: flex;
-    gap: 8px;
+    width: 44px;
+    padding: 0;
   }
 
-  @media (min-width: 1100px) {
-    .form {
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .load {
-      flex: 1;
-    }
-  }
-
-  .labels {
-    display: grid;
-    justify-items: center;
-  }
-
-  .labels > * {
-    grid-area: 1 / 1;
-  }
-
-  .busy {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .load :global(svg) {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
   }
 
   /* A ring with one side left open, turning. */
@@ -305,10 +284,12 @@
     }
   }
 
+  /* As tall as the form, so that the slot keeps its height as a deck loads or is changed. */
   .loaded {
     display: flex;
     gap: 10px;
     align-items: center;
+    height: 44px;
     min-width: 0;
   }
 
@@ -337,9 +318,9 @@
     stroke-width: 2;
   }
 
-  /* Alone beside the label, the remove button stays on the label's line. */
-  .lblrow .tool {
-    margin: -8px -4px 0 0;
+  /* In the form too, the icon button reaches into the card's padding. */
+  .form .tool {
+    margin-right: -4px;
   }
 
   .err {
