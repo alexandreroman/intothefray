@@ -419,62 +419,74 @@
 
 {#snippet recap(scenario: ScenarioRef)}
   <div class="recap" class:ro={!isHost}>
-    <div class="vart">
-      {#if scenario.image}
-        <CardArt src={scenario.image} aspect={4 / 3} />
-      {/if}
-    </div>
-    <div class="vtitle">
-      <h3 class="vname">{localizedName(scenario, lang)}</h3>
-      <div class="vfrom">{packName(scenario.pack)}</div>
+    <!-- The zone is the container its layout queries: a query never styles its own container. -->
+    <div class="villain">
+      <div class="vhead">
+        <div class="vart">
+          {#if scenario.image}
+            <CardArt src={scenario.image} aspect={4 / 3} />
+          {/if}
+        </div>
+        <div class="vtitle">
+          <h3 class="vname" use:overflowTip>{localizedName(scenario, lang)}</h3>
+          <div class="vfrom" use:overflowTip>{packName(scenario.pack)}</div>
+        </div>
+      </div>
     </div>
 
     <div class="settings">
+      <!-- The zone is the container its layout queries. -->
       <div class="difficulty">
         <div class="lbl">Difficulty</div>
-        <div class="line">
-          {#if isHost}
+        {#if isHost}
+          <div class="levels">
             <Segmented
               options={LEVELS}
               value={difficulty}
               onchange={chooseDifficulty}
               label="Difficulty"
             />
-            <!-- The selects carry their names in a tooltip: a visible label would not fit the line. -->
-            {#if showStandardSet}
-              <label class="set">
-                <span class="sr-only">Standard set</span>
-                <select
-                  value={standardSet}
-                  data-tip="Standard set"
-                  onchange={(e) => configure({ standard: e.currentTarget.value })}
-                >
-                  <option value="">None</option>
-                  {#each standardSets as set (set.code)}
-                    <option value={set.code}>{localizedName(set, lang)}</option>
-                  {/each}
-                </select>
-              </label>
+            <!-- The selects carry their names in a tooltip: a visible label would not fit the zone. -->
+            {#if showStandardSet || showExpertSet}
+              <div class="sets">
+                {#if showStandardSet}
+                  <label class="set">
+                    <span class="sr-only">Standard set</span>
+                    <select
+                      value={standardSet}
+                      data-tip="Standard set"
+                      onchange={(e) => configure({ standard: e.currentTarget.value })}
+                    >
+                      <option value="">None</option>
+                      {#each standardSets as set (set.code)}
+                        <option value={set.code}>{localizedName(set, lang)}</option>
+                      {/each}
+                    </select>
+                  </label>
+                {/if}
+                {#if showExpertSet}
+                  <label class="set">
+                    <span class="sr-only">Expert set</span>
+                    <select
+                      value={expertSet}
+                      data-tip="Expert set"
+                      onchange={(e) => configure({ expert: e.currentTarget.value })}
+                    >
+                      <option value="">None</option>
+                      {#each expertSets as set (set.code)}
+                        <option value={set.code}>{localizedName(set, lang)}</option>
+                      {/each}
+                    </select>
+                  </label>
+                {/if}
+              </div>
             {/if}
-            {#if showExpertSet}
-              <label class="set">
-                <span class="sr-only">Expert set</span>
-                <select
-                  value={expertSet}
-                  data-tip="Expert set"
-                  onchange={(e) => configure({ expert: e.currentTarget.value })}
-                >
-                  <option value="">None</option>
-                  {#each expertSets as set (set.code)}
-                    <option value={set.code}>{localizedName(set, lang)}</option>
-                  {/each}
-                </select>
-              </label>
-            {/if}
-          {:else}
+          </div>
+        {:else}
+          <div class="line">
             <span class="chip guest-chip">{difficultyLabel}</span>
-          {/if}
-        </div>
+          </div>
+        {/if}
       </div>
 
       {#if selfContained}
@@ -846,16 +858,18 @@
     padding: 30px 0;
   }
 
-  /* The lobby's secondary button: full width on S, centred on M and L. */
-  .more {
-    display: block;
+  /* The lobby's secondary button: full width on S, centred on M and L. A block box, for the auto
+     margins to centre it; the extra classes outrank the lobby's shared inline .btn rule
+     (.lobby :global(.btn)). */
+  .body .btn.more {
+    display: flex;
     width: 100%;
     height: 40px;
     padding: 0 16px;
   }
 
   @media (min-width: 600px) {
-    .more {
+    .body .btn.more {
       width: fit-content;
       margin-inline: auto;
     }
@@ -872,12 +886,18 @@
     margin-top: 18px;
   }
 
-  /* S: the art and the name in a row, the settings under them. */
+  /* S: the art and the name in a row, the settings under them. The villain zone leaves the art and
+     the name to the recap's grid. */
   .recap {
     display: grid;
     grid-template-columns: 88px minmax(0, 1fr);
     gap: 14px 20px;
     align-items: start;
+  }
+
+  .villain,
+  .vhead {
+    display: contents;
   }
 
   /* 4:3, the aspect given to its CardArt too. */
@@ -926,42 +946,88 @@
     column-gap: normal;
   }
 
-  /* M and L: one row, the art, the name, then the settings after a vertical rule. */
+  /*
+    M and L: one row of three zones of equal width, the villain, the difficulty and the modular sets,
+    so that no zone resizes as its content changes: controls that outgrow their zone wrap inside it.
+    Each zone takes the row's height, its content centred, so the vertical rules before the
+    difficulty and the sets run the row's full height.
+  */
   @media (min-width: 600px) {
     .recap {
-      grid-template-columns: 120px minmax(140px, 200px) minmax(0, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    /* The villain zone has no rule to stretch: it is centred itself. */
+    .villain {
+      display: block;
+      container: villain / inline-size;
+      align-self: center;
+      min-width: 0;
+    }
+
+    .vhead {
+      display: flex;
       align-items: center;
+      gap: 14px;
     }
 
     .vart {
+      flex: none;
       width: 120px;
       height: 90px;
     }
 
-    .vname {
-      font-size: 28px;
+    .vtitle {
+      flex: 1;
     }
 
-    .settings,
-    .ro .settings {
-      grid-column: auto;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 12px;
+    /* One line each, cut with an ellipsis; the taller line keeps the descenders inside the cut. */
+    .vname,
+    .vfrom {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .vname {
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    /* The difficulty and the sets, or the self-contained note, are the recap's zones themselves. */
+    .settings {
+      display: contents;
+    }
+
+    .difficulty,
+    .modulars,
+    .own-cards {
+      align-self: stretch;
       padding-left: 20px;
       border-left: 1px solid var(--panel-2);
     }
+
+    .difficulty,
+    .modulars {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
   }
 
-  /* L: Difficulty takes what its controls need, on one line; the sets the rest. */
-  @media (min-width: 1100px) {
-    .settings,
-    .ro .settings {
-      grid-template-columns: max-content minmax(0, 1fr);
-      gap: 32px;
+  /* A villain zone too narrow for the art and a readable name beside it puts the name under the
+     art, which keeps its size on the left. */
+  @container villain (width < 300px) {
+    .vhead {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
     }
 
-    .difficulty .line {
-      flex-wrap: nowrap;
+    .vtitle {
+      flex: none;
+      align-self: stretch;
     }
   }
 
@@ -977,15 +1043,54 @@
     gap: 8px;
   }
 
-  /* Only the block padding goes: the side padding (--select-pad) also places the drawn arrow. */
+  .difficulty {
+    container: difficulty / inline-size;
+  }
+
+  /* The host's switch in the first column, its set selects stacked in the second, the switch level
+     with the first select. A self-contained scenario leaves the switch alone. */
+  .levels {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .sets {
+    justify-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  /* A zone too narrow for the switch (164px), the gap and a usable select (110px) beside it puts
+     the selects under the switch, at the zone's width. */
+  @container difficulty (width < 282px) {
+    .levels {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* The column's width, never wider: a long name ends in an ellipsis. Only the block padding goes:
+     the side padding (--select-pad) also places the drawn arrow. */
+  .set {
+    display: block;
+    min-width: 0;
+  }
+
   .set select {
-    width: auto;
+    width: 100%;
+    max-width: 100%;
     height: var(--ctl);
     padding-block: 0;
     font-size: 13px;
+    text-overflow: ellipsis;
   }
 
-  /* In the place of the sets, level with the difficulty's controls. */
+  /* In the place of the sets: level with the difficulty's controls on S, centred in its zone on M
+     and L. */
   .own-cards {
     align-self: end;
     display: flex;
