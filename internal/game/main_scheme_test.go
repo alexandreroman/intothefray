@@ -136,8 +136,10 @@ func TestSetupMainSchemeStage(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		// The main scheme lies on its stage and the Art attachments wait
+		// aside, all out of the encounter deck.
 		want := card.Quantity
-		if card.Code == "60121" {
+		if card.Code == "60121" || slices.Contains(set.SetAside, card.Code) {
 			want = 0
 		}
 		if got := encounterCount(table, card.Code); got != want {
@@ -202,6 +204,60 @@ func TestSetupMainSchemeSetInPlay(t *testing.T) {
 				}
 				if n := encounterCount(table, tt.code); n != 0 {
 					t.Errorf("%s copies in the encounter deck = %d, want 0", tt.code, n)
+				}
+			})
+		}
+	}
+}
+
+// TestSetupFearNoEvilSetAside checks the cards Fear No Evil sets aside: those
+// of the main scheme set (Art Museum Heist's Art attachments, Stop the
+// Presses!'s Daily Bugle supports) and Bullseye's Adamantium-Laced Spine. They
+// wait on the scenario's set-aside pile on their first face, out of the
+// encounter deck, at both difficulties.
+func TestSetupFearNoEvilSetAside(t *testing.T) {
+	artAttachments := []string{"60122", "60123", "60124", "60125"}
+	bugleSupports := []string{"60153", "60154", "60155", "60156"}
+	spine := "60068"
+
+	tests := []struct {
+		scenario string
+		scheme   string
+		want     []string
+	}{
+		{scenario: "bullseye", scheme: "art_museum_heist", want: append([]string{spine}, artAttachments...)},
+		{scenario: "bullseye", scheme: "stop_the_presses", want: append([]string{spine}, bugleSupports...)},
+		{scenario: "bullseye", scheme: "the_getaway", want: []string{spine}},
+		{scenario: "electro", scheme: "art_museum_heist", want: artAttachments},
+		{scenario: "electro", scheme: "stop_the_presses", want: bugleSupports},
+	}
+	for _, tt := range tests {
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scenario+"/"+tt.scheme+"/"+string(difficulty), func(t *testing.T) {
+				cfg := underlingConfig(tt.scenario, tt.scheme)
+				cfg.Difficulty = difficulty
+				if difficulty == pack.Expert {
+					cfg.Expert = "expert"
+				}
+				table := startedGame(t, cfg).Table
+
+				aside := table.Piles[PileScenarioAside].Cards
+				got := make([]string, 0, len(aside))
+				for _, id := range aside {
+					c := table.Cards[id]
+					got = append(got, c.Code)
+					if c.Face != 0 {
+						t.Errorf("%s face = %d, want 0", c.Code, c.Face)
+					}
+				}
+				slices.Sort(got)
+				if !slices.Equal(got, tt.want) {
+					t.Errorf("scenario set-aside pile = %v, want %v", got, tt.want)
+				}
+				for _, code := range tt.want {
+					if n := encounterCount(table, code); n != 0 {
+						t.Errorf("%s copies in the encounter deck = %d, want 0", code, n)
+					}
 				}
 			})
 		}

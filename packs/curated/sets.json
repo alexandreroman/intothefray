@@ -12,7 +12,7 @@
     }
   },
   "standard_pvp": {"unlisted": true},
-  "art_museum_heist": {"mainScheme": true},
+  "art_museum_heist": {"mainScheme": true, "setAside": ["60122", "60123", "60124", "60125"]},
   "the_getaway": {
     "mainScheme": true,
     "inPlay": {
@@ -26,7 +26,8 @@
     "inPlay": {
       "standard": [{"card": "60152", "face": 0}],
       "expert": [{"card": "60152", "face": 0}]
-    }
+    },
+    "setAside": ["60153", "60154", "60155", "60156"]
   },
   "the_raft_breakout": {
     "mainScheme": true,

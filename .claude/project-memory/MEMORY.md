@@ -54,7 +54,7 @@
 - [Moving several cards as a group](references/project_group_moves.md) — rubber band; drag or menu acts on the group; one atomic group action
 - [Localized card names and images](references/project_localized_cards.md) — localized overrides per face and index; Options offers French (CDN)
 - [French name sources](references/project_french_name_sources.md) — curated > mc4db FR > fr.marvelcdb > cgbuilder; cgbuilder non-fatal
-- [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin, Underlings as villains; scenario = main scheme set
+- [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin, Underlings as villains; scheme set; Art, Bugle, Spine aside
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Galaxy's Most Wanted scenarios](references/project_galaxys_most_wanted_scenarios.md) — five scenarios curated; Milano, Power Stone placed
 - [Scenario out-of-play areas](references/project_scenario_areas.md) — curated `areas` (The Collection): public pile, star chip before victory

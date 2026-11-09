@@ -202,11 +202,13 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 
 	t.Run("underling scenarios", func(t *testing.T) {
 		tests := []struct {
-			id      string
-			villain pack.FaceRef
-			inPlay  []pack.FaceRef
+			id       string
+			villain  pack.FaceRef
+			inPlay   []pack.FaceRef
+			setAside []string
 		}{
-			{id: "bullseye", villain: pack.FaceRef{Card: "60065", Face: 0}},
+			// Adamantium-Laced Spine waits aside.
+			{id: "bullseye", villain: pack.FaceRef{Card: "60065", Face: 0}, setAside: []string{"60068"}},
 			{id: "electro", villain: pack.FaceRef{Card: "60076", Face: 0}},
 			{id: "hammerhead", villain: pack.FaceRef{Card: "60086", Face: 0}},
 			{id: "purple_man", villain: pack.FaceRef{Card: "60097", Face: 0}},
@@ -237,6 +239,9 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 					t.Errorf("%s %s in play = %v, want %v", tt.id, difficulty, start.InPlay, tt.inPlay)
 				}
 			}
+			if !slices.Equal(scenario.SetAside, tt.setAside) {
+				t.Errorf("%s set aside = %v, want %v", tt.id, scenario.SetAside, tt.setAside)
+			}
 		}
 	})
 
@@ -266,8 +271,8 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 		// The cards a 1A Setup text names explicitly start in play: the Daily
 		// Bugle environment, The Getaway's Out Front attachment (the face of
 		// 60129 that is not Alongside) and The Raft Breakout's Master Key.
-		// Art Museum Heist's Art attachment is drawn at random, so it stays
-		// in the encounter deck.
+		// Art Museum Heist's Art attachment is picked at random, so players
+		// take it by hand from the set-aside ones.
 		inPlay := map[string][]pack.FaceRef{
 			"art_museum_heist":  nil,
 			"the_getaway":       {{Card: "60129", Face: 0}},
@@ -275,12 +280,20 @@ func TestEmbeddedFearNoEvil(t *testing.T) {
 			"stop_the_presses":  {{Card: "60152", Face: 0}},
 			"the_raft_breakout": {{Card: "60143", Face: 0}},
 		}
+		// The Art attachments and the Daily Bugle supports wait aside.
+		setAside := map[string][]string{
+			"art_museum_heist": {"60122", "60123", "60124", "60125"},
+			"stop_the_presses": {"60153", "60154", "60155", "60156"},
+		}
 		for _, code := range mainSchemes {
 			set, _ := catalog.Set(code)
 			for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
 				if got := set.InPlay[difficulty]; !slices.Equal(got, inPlay[code]) {
 					t.Errorf("%s %s in play = %v, want %v", code, difficulty, got, inPlay[code])
 				}
+			}
+			if !slices.Equal(set.SetAside, setAside[code]) {
+				t.Errorf("%s set aside = %v, want %v", code, set.SetAside, setAside[code])
 			}
 		}
 	})
