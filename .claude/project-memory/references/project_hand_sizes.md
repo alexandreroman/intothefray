@@ -59,6 +59,14 @@ type: project
   of `CardBox.svelte`, `boxGrid` in `web/src/table/boxes.ts`). A landscape card lies across its 5:7 tile.
   The box takes that card before a crowded fan shrinks it
   (`filledHandCard`), so its size never follows the hand's count.
+- A card box opens three rows of tiles high when three full rows, its
+  one-line header and its footer fit in the dialog's column
+  (`min(88vh, 100vh - 32px)`), two rows otherwise, the rest scrolling
+  (`boxRows` in `web/src/table/boxes.ts`). The rows follow the tile width,
+  the window's height (`innerHeight`, never the part an on-screen keyboard
+  leaves) and the tablet's 44 px targets only, so every box of a window
+  opens at the same size whatever it holds. With 160 px tiles, three rows
+  show from a 977 px high window (991 px on a tablet).
 - In dock mode the hand is not drawn as a fan: it opens from the dock as
   a carousel sheet (see [[project_touch_phone_table]]), and card boxes
   fill the screen with tiles 104 px wide at least, filling the row. These
@@ -76,7 +84,8 @@ each one readable. Card boxes are read like the raised hand, so wherever
 the hand is a fan their cards take its size on a small screen; elsewhere
 they stay at most 160 px wide, six to a row on a large screen, rather than
 growing with the hand: larger cards were far too big on a tablet (user
-decision).
+decision). A tall window shows a third row of tiles rather than larger
+ones, so that more cards show at once (user decision).
 
 **How to apply:** `previewCardWidth` mirrors `.peek`'s CSS; change both
 together, and size hand changes through the base and raised cards.

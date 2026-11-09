@@ -1,7 +1,8 @@
 <!--
   The card box: Search, Look at top, Browse and the stage choice share one
-  fixed-size box, two rows of 5:7 tiles with the rest scrolling, a name filter
-  and a footer. Its tiles are as wide as the raised hand's cards, at most
+  fixed-size box, three rows of 5:7 tiles on a window tall enough for them,
+  two otherwise (boxRows), with the rest scrolling, a name filter and a
+  footer. Its tiles are as wide as the raised hand's cards, at most
   160 px (`tileWidth`, boxGrid), in as many columns as the window holds, and
   the box is as wide as those columns. A click, a tap or a right click on a pile tile opens
   its context menu at the pointer, over the box; in Look at top, tiles are
@@ -33,7 +34,9 @@
   } from '../lib/types';
   import {
     boxGrid,
+    boxRows,
     canShuffleIn,
+    CARD_RATIO,
     compareCardNumbers,
     isDeck,
     pileLabel,
@@ -92,8 +95,6 @@
   // A dragged tile within EDGE_SCROLL px of the grid's top or bottom scrolls it by SCROLL_STEP px a move.
   const EDGE_SCROLL = 40;
   const SCROLL_STEP = 12;
-  // A card is 1.4 times as high as wide.
-  const CARD_RATIO = 1.4;
   const SLIDE_MS = 180;
 
   const dock = dockMode();
@@ -178,6 +179,8 @@
   const matching = $derived(tiles.filter((t) => matchesQuery(query, [t.name, t.englishName])));
 
   const touchMode = new MediaQuery(TOUCH_MODE_QUERY);
+  // A tablet: touch mode outside dock mode, as the table's `.app.tablet` class has it (Table.svelte).
+  const tablet = $derived(touchMode.current && !dock.current);
 
   /**
    * In touch mode the box opens with the focus on itself, not in its filter: a focused text field would pop the
@@ -358,6 +361,7 @@
   // ---- The fixed size ----
 
   let windowWidth = $state(window.innerWidth);
+  let windowHeight = $state(window.innerHeight);
 
   // The room the grid keeps for a classic scrollbar (scrollbar-gutter), in px; 0 with overlay
   // scrollbars, and in jsdom.
@@ -376,20 +380,25 @@
   }
 
   /**
-   * Two rows of 5:7 tiles, from the fitted tiles' width only (never from what
-   * the grid shows), so that every box opens at the same size; the rest
-   * scrolls. On a short window the dialog's column, 88vh at most, shrinks the
-   * scrolling grid to the room its header and footer leave. In dock mode the
-   * box fills the screen, and the grid all the room left in it.
+   * Three rows of 5:7 tiles on a window tall enough for them, else two
+   * (boxRows), from the fitted tiles' width and the window's height only
+   * (never from what the grid shows), so that every box opens at the same
+   * size; the rest scrolls. On a short window the dialog's column, 88vh at
+   * most, shrinks the two rows' scrolling grid to the room its header and
+   * footer leave. In dock mode the box fills the screen, and the grid all the
+   * room left in it.
    */
   let gridHeight = $state<number | null>(null);
 
-  // Reruns as `fitted` changes, on every change of the window's width or of dock mode.
+  // Reruns as `fitted` changes, on every change of the window's width or of dock mode, and as the
+  // window's height or touch mode changes.
   function sizeGrid(element: HTMLElement): void {
     if (fitted === null) {
       gridHeight = null;
       return;
     }
+    // Read first: the window's height and touch mode are tracked even when the grid is not laid out yet.
+    const rows = boxRows(fitted.tile, windowHeight, tablet);
     const style = getComputedStyle(element);
     const gap = parseFloat(style.columnGap);
     const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
@@ -398,7 +407,7 @@
     if (element.clientWidth - padX <= 0) {
       return;
     }
-    gridHeight = 2 * fitted.tile * CARD_RATIO + gap + padY;
+    gridHeight = rows * fitted.tile * CARD_RATIO + (rows - 1) * gap + padY;
   }
 
   // ---- Reordering the top cards ----
@@ -650,6 +659,7 @@
 
 <svelte:window
   bind:innerWidth={windowWidth}
+  bind:innerHeight={windowHeight}
   onpointerdowncapture={onWindowPointerDown}
   onpointermove={onPointerMove}
   onpointerup={onPointerUp}
