@@ -1,6 +1,6 @@
 ---
 name: "Hero side decks"
-description: "Hero extra decks are curated side decks; Invocation has its own discard, the others none; set-aside hero cards"
+description: "Hero extra decks are curated side decks of their own set only; Invocation own discard, Sense bottom, others none; set-aside cards"
 type: project
 ---
 
@@ -11,8 +11,10 @@ configured in `packs/curated/sets.json` (`side`: label, top card faceup,
 `discard` rule). The generator links each one to the hero of the same pack whose
 set code prefixes the set code, in the printed order of the cards. Setup
 shuffles them and places them after the hero's discard, with a minimum gap
-before the identity. Doctor Strange's Invocation deck has its own discard pile
-(`"own"`); Weather, Sense, Labor and Gift have the rule `"none"` (see
+before the identity. A side deck takes only the cards of its own set
+(`Card.SideDeck`, set at setup). Doctor Strange's Invocation deck has its own
+discard pile (`"own"`); Daredevil's Sense deck takes its discarded cards at its
+bottom (`"bottom"`); Weather, Labor and Gift have the rule `"none"` (see
 [[project_discard_destinations]]). The Invocation and Sense decks show their top
 card faceup to everyone; the others lie facedown. Every side deck has a back of
 its own (`back` in `side`), and the generator rejects a curated side deck
@@ -24,7 +26,8 @@ Rogue's Touched, Ironheart's other versions) go to the player's set-aside pile.
 Storm's starting Weather card and other heroes' Setup permanents stay manual.
 
 **Why:** the rules give a dedicated discard only to the Invocation deck;
-Sense cards return under their deck, Weather supports are permanent, Gift
+Sense cards return under their deck (Matt Murdock), Weather supports are
+swapped with a support of the player's choice and are permanent, Gift
 and Labor cards never enter a deck, a discard pile or a hand. One back
 for the whole deck keeps its face-down top card hidden: a card with a back
 of its own would show which card lies on top. Face and placement come from

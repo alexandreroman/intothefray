@@ -37,7 +37,7 @@
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword cards in play via sets.json; Dreadpool set aside; unlisted sets
 - [Cards excluded from a set](references/project_set_exclude.md) — sets.json `exclude` drops a source's misfiled card (Shang-Chi 10098)
 - [Villains from another set](references/project_set_villains.md) — sets.json `villains`, `imageCard`: Marauders images for NeXt Evolution
-- [Hero side decks](references/project_hero_side_decks.md) — curated side decks, Invocation "own" discard, others "none"; set-aside hero cards
+- [Hero side decks](references/project_hero_side_decks.md) — own set only; Invocation "own", Sense "bottom", others "none"; set-aside hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face; immutable CDN cache
 - [Compression: HTTP by the proxy, WebSocket by the backend](references/project_no_backend_compression.md) — WebSocket deflate, no context takeover
@@ -61,7 +61,7 @@
 - [Campaign player card backs](references/project_campaign_card_backs.md) — faction campaign + player card type gets the player back
 - [Rise of Red Skull scenarios](references/project_red_skull_scenarios.md) — five villains curated; weapons and side-scheme decks; searches manual
 - [Scenario decks and several villains](references/project_scenario_decks.md) — deck cards out of the classic deck; several villains
-- [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own" or "none"; any deck takes its owner's cards
+- [Discard destinations](references/project_discard_destinations.md) — owner's discard by default; "own", "bottom", "none"; side decks own set only
 - [Stage change carry-over](references/project_stage_carry_over.md) — villain keeps all but damage, main scheme only acceleration
 - [Scenario required sets](references/project_scenario_required_sets.md) — `sets` adds required encounter sets (Hydra Patrol); never modular
 - [Action menu organisation](references/project_action_bars.md) — click opens the menu; hand by drag and keys; chips; touch: inspector sheet
