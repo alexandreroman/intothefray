@@ -1276,10 +1276,12 @@ describe('Table history column under End game', () => {
     expect(rule(tableSource, '.app.dock-mode .top')).toMatch(/--bar-gutter-end: inherit;/);
   });
 
-  it('collapses to a strip one bar control wide, with the gutter on either side and the border', () => {
+  it('collapses to a strip from the middle of the gap before End game to the window edge', () => {
+    // End game and its gutter, then half the gap between the bar's buttons: the side panel's
+    // border lies within it, on the strip's left edge.
     const collapsed = rule(tableSource, '.app.history-collapsed');
     expect(collapsed).toMatch(
-      /--strip-width: calc\(var\(--top-bar-control\) \+ 2 \* var\(--bar-gutter-end\) \+ 1px\);/,
+      /--strip-width: calc\(var\(--top-bar-control\) \+ var\(--bar-gutter-end\) \+ var\(--top-bar-gap\) \/ 2\);/,
     );
     expect(collapsed).toMatch(/grid-template-columns: minmax\(0, 1fr\) var\(--strip-width\);/);
     expect(rule(tableSource, '.side')).toMatch(/border-left: 1px solid/);
@@ -1290,7 +1292,10 @@ describe('Table history column under End game', () => {
       expect(rule(sidePanelSource, selector)).toMatch(/width: var\(--top-bar-control\);/);
       expect(rule(sidePanelSource, selector)).toMatch(/height: var\(--top-bar-control\);/);
     }
-    expect(rule(sidePanelSource, '.strip')).toMatch(/padding: 10px var\(--bar-gutter-end\) 0;/);
+    // The strip's buttons keep to its right edge, on the gutter: no gutter on their left.
+    const strip = rule(sidePanelSource, '.strip');
+    expect(strip).toMatch(/padding: 10px var\(--bar-gutter-end\) 0 0;/);
+    expect(strip).toMatch(/align-items: flex-end;/);
     expect(rule(sidePanelSource, '.loghead')).toMatch(
       /padding: 10px var\(--bar-gutter-end\) 0 18px;/,
     );

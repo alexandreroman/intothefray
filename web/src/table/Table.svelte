@@ -3079,12 +3079,13 @@
   }
 
   /*
-    The history collapsed to a strip: the table takes the rest. The strip is one top bar control
-    wide (--top-bar-control, tokens.css), with the bar's gutter on either side and the side
-    panel's border: its buttons stand under End game (SidePanel.svelte).
+    The history collapsed to a strip: the table takes the rest. Its buttons stand under End game,
+    one top bar control (--top-bar-control, tokens.css) on the bar's gutter (SidePanel.svelte),
+    and its left edge, the side panel's border included, in the middle of the gap between End game
+    and the button before it (--top-bar-gap, tokens.css).
   */
   .app.history-collapsed {
-    --strip-width: calc(var(--top-bar-control) + 2 * var(--bar-gutter-end) + 1px);
+    --strip-width: calc(var(--top-bar-control) + var(--bar-gutter-end) + var(--top-bar-gap) / 2);
     grid-template-columns: minmax(0, 1fr) var(--strip-width);
   }
 
@@ -3242,7 +3243,7 @@
     cursor: crosshair;
   }
 
-  /* Its border is part of the collapsed strip's width (.app.history-collapsed). */
+  /* Its border lies within the collapsed strip's width, on its left edge (.app.history-collapsed). */
   .side {
     grid-area: side;
     display: flex;

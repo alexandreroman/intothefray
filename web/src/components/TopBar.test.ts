@@ -639,6 +639,7 @@ describe('TopBar control size', () => {
   it('is a shared token: 38px, 44px for a finger in touch mode', () => {
     const root = /^:root \{([^}]*)\}/.exec(tokensCss)?.[1];
     expect(root).toMatch(/--top-bar-control: 38px;/);
+    expect(root).toMatch(/--top-bar-gap: 8px;/);
     const touch = new RegExp(
       `@media ${TOUCH_MODE_QUERY.replace(/[()]/g, '\\$&')} \\{\\s*:root \\{([^}]*)\\}`,
     ).exec(tokensCss)?.[1];
@@ -650,6 +651,7 @@ describe('TopBar control size', () => {
     expect(barRule('.icon-button')).toMatch(/height: var\(--top-bar-control\);/);
     expect(barRule('.pill')).toMatch(/height: var\(--top-bar-control\);/);
     expect(barRule('.actions')).toMatch(/--segmented-height: var\(--top-bar-control\);/);
+    expect(barRule('.actions')).toMatch(/gap: var\(--top-bar-gap\);/);
     // No size of its own: the token alone grows them in touch mode.
     expect(barSource).not.toMatch(/\b(38|44)px\b/);
   });

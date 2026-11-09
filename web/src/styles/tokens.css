@@ -80,6 +80,11 @@
     Taller in touch mode (below).
   */
   --top-bar-control: 38px;
+  /*
+    The room between two of the top bar's controls (TopBar). The collapsed history strip starts
+    in the middle of the one before End game.
+  */
+  --top-bar-gap: 8px;
 }
 
 /* A finger needs a 44px target: touch mode (TOUCH_MODE_QUERY, lib/screen.ts). */

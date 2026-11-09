@@ -333,7 +333,7 @@
   .actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--top-bar-gap);
     margin-left: auto;
     --segmented-height: var(--top-bar-control);
     --segmented-bg: var(--panel);

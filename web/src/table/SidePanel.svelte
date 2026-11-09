@@ -233,9 +233,10 @@
 
   /*
     The buttons that collapse and expand the history stand under the top bar's End game: as big
-    as the bar's controls (--top-bar-control, tokens.css), as far from the window's edge
-    (--bar-gutter-end, Table.svelte), and the strip as wide as one of them with that gutter on
-    either side (.app.history-collapsed, Table.svelte).
+    as the bar's controls (--top-bar-control, tokens.css) and as far from the window's edge
+    (--bar-gutter-end, Table.svelte). The strip's left edge is in the middle of the gap before End
+    game (.app.history-collapsed, Table.svelte): its buttons keep to the right, little room on
+    their left.
   */
   .loghead {
     flex: none;
@@ -273,8 +274,8 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 10px var(--bar-gutter-end) 0;
+    align-items: flex-end;
+    padding: 10px var(--bar-gutter-end) 0 0;
   }
 
   /*
