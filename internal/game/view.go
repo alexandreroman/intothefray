@@ -35,6 +35,11 @@ type CardView struct {
 	// came from. It is left out for every other card, whose home the client
 	// infers.
 	Home string `json:"home,omitempty"`
+	// SideDeck is the side deck a card of one belongs to (see
+	// Card.SideDeck): the client offers that side deck, and no other, to put
+	// the card into. A face-down table card hides it, as it hides its code,
+	// unless the card is at home in that side deck: Home tells it anyway.
+	SideDeck string `json:"sideDeck,omitempty"`
 }
 
 // PileView is a pile as one viewer sees it: the card list is only given for
@@ -404,11 +409,16 @@ func (c *Card) viewOf(stageKey string) CardView {
 		Tokens: maps.Clone(c.Tokens), Status: maps.Clone(c.Status), Mods: maps.Clone(c.Mods), Stage: stageKey,
 		Identity: c.Identity,
 	}
-	if c.FaceDown && c.Zone == ZoneTable {
+	hidden := c.FaceDown && c.Zone == ZoneTable
+	if hidden {
 		cv.Code = ""
 	}
 	if ruledDeckID(c.Home) {
 		cv.Home = c.Home
+	}
+	// A side card at home in the player's deck looks like any card of it.
+	if !hidden || c.SideDeck == c.Home {
+		cv.SideDeck = c.SideDeck
 	}
 	return cv
 }

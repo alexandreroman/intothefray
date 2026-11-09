@@ -502,12 +502,12 @@ describe('keys on the table', () => {
     async () => {
       const cards = [
         card('v', { code: '01094', owner: -1, back: 'villain' }),
-        card('sense', { x: 200, home: 'side:p0:0' }),
+        card('weather', { x: 200, home: 'side:p0:0' }),
       ];
       const view = makeView({ cards });
-      view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
+      view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Weather' }));
       const { session } = await renderTable(view);
-      await fireEvent.pointerEnter(placed('sense'));
+      await fireEvent.pointerEnter(placed('weather'));
 
       await press('x');
       await press('Backspace');
@@ -515,7 +515,7 @@ describe('keys on the table', () => {
       await press('b');
       // The server follows the card's home: the action names no pile.
       expect(session.act).toHaveBeenCalledExactlyOnceWith(
-        { kind: 'toDeck', card: 'sense', where: 'bottom' },
+        { kind: 'toDeck', card: 'weather', where: 'bottom' },
         0,
       );
     },
@@ -882,13 +882,13 @@ describe('keys on a hand card', () => {
     const view = makeView({
       cards: [
         card('v', { code: '01094', owner: -1, back: 'villain' }),
-        card('sense', { zone: 'hand', home: 'side:p0:0' }),
+        card('weather', { zone: 'hand', home: 'side:p0:0' }),
       ],
     });
-    view.table!.hands = { p0: ['sense'] };
-    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
+    view.table!.hands = { p0: ['weather'] };
+    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Weather' }));
     const { session } = await renderTable(view);
-    await fireEvent.pointerEnter(inHand('sense'));
+    await fireEvent.pointerEnter(inHand('weather'));
 
     await press('x');
     await press('Backspace');

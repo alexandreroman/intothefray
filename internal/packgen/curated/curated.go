@@ -199,6 +199,8 @@ func checkScenarioDef(def ScenarioDef) error {
 			return fmt.Errorf("deck %q has neither sets nor cards", deck.Key)
 		case !deck.Discard.Valid():
 			return fmt.Errorf("deck %q has an unknown discard rule %q", deck.Key, deck.Discard)
+		case deck.Discard == pack.DiscardBottom:
+			return fmt.Errorf("deck %q: the discard rule %q is for side decks only", deck.Key, deck.Discard)
 		}
 		decks[deck.Key] = true
 		encounter = encounter || deck.Encounter

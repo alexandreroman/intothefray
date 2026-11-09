@@ -194,8 +194,11 @@ export function tileActions(card: CardView, pile: PileView, context: TileContext
   }
 
   // A card in a discard pile is discarded already; a side deck's card without one has nowhere to go.
+  // A card of a deck whose cards are discarded to its bottom (Sense) is put there from that deck by
+  // Put at the bottom of the deck.
   const piles = context.view.table?.piles ?? [];
-  if (!discardPile && discardPileOf(card, piles) !== null) {
+  const discard = discardPileOf(card, piles);
+  if (!discardPile && discard !== null && discard !== pile.id) {
     actions.push({
       id: 'discard',
       label: 'Discard',

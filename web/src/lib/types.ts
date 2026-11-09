@@ -153,6 +153,12 @@ export interface CardView {
    * for every other card, whose home the client infers.
    */
   home?: string;
+  /**
+   * The pile id of the side deck a card of one belongs to, sent whatever its
+   * face and wherever its home: that side deck is the only one that takes
+   * the card. Absent for every other card.
+   */
+  sideDeck?: string;
 }
 
 export interface PileView {

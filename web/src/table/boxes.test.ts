@@ -196,7 +196,7 @@ describe('a discard pile box', () => {
 });
 
 describe('side decks', () => {
-  // Alex's Iron Man (p0) has an Invocation deck with its discard pile and a Sense deck without
+  // Alex's Iron Man (p0) has an Invocation deck with its discard pile and a Weather deck without
   // one; Sam (p2) has an Invocation deck and its discard pile.
   const SIDE_PILES: PileView[] = [
     pile('side:p0:0', {
@@ -207,7 +207,9 @@ describe('side decks', () => {
       discard: 'sided:p0:0',
     }),
     pile('sided:p0:0', { kind: 'sideDiscard', owner: 0, label: 'Invocation' }),
-    pile('side:p0:1', { kind: 'sideDeck', owner: 0, label: 'Sense' }),
+    pile('side:p0:1', { kind: 'sideDeck', owner: 0, label: 'Weather' }),
+    // Daredevil's Sense deck takes its discarded cards under it.
+    pile('side:p0:2', { kind: 'sideDeck', owner: 0, label: 'Sense', discard: 'side:p0:2' }),
     pile('side:p2:0', { kind: 'sideDeck', owner: 2, label: 'Invocation', discard: 'sided:p2:0' }),
     pile('sided:p2:0', { kind: 'sideDiscard', owner: 2, label: 'Invocation' }),
   ];
@@ -248,9 +250,23 @@ describe('side decks', () => {
 
   it('does not discard a card of a side deck without a discard pile', () => {
     const view = viewWithSideDecks();
-    const sense = sideCard('s', 0, 'side:p0:1');
-    const tiles = tileActions(sense, sideOf('side:p0:1'), contextOf(view));
+    const weather = sideCard('s', 0, 'side:p0:1');
+    const tiles = tileActions(weather, sideOf('side:p0:1'), contextOf(view));
     expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'bottom']);
+  });
+
+  it('puts a Sense card under its deck by Put at the bottom, with no Discard to the same place', () => {
+    const view = viewWithSideDecks();
+    const sense = sideCard('s', 0, 'side:p0:2');
+    const tiles = tileActions(sense, sideOf('side:p0:2'), contextOf(view));
+    expect(tiles.map((tile) => tile.id)).toEqual(['draw', 'play', 'bottom']);
+    // Out of play, it is discarded under its deck.
+    const victory = pile('vic', { kind: 'victory', owner: -1 });
+    const outOfPlay = tileActions(sense, victory, contextOf(view));
+    expect(outOfPlay.find((tile) => tile.id === 'discard')?.run()).toEqual({
+      kind: 'discard',
+      card: 's',
+    });
   });
 
   it('shuffles a side discard card back into its side deck', () => {

@@ -623,8 +623,18 @@ describe('diffViews', () => {
         topFaceUp: true,
         cards: ['s1'],
       });
-    const top = card('s1', { code: '60002', zone: 'pile', home: 'side:p0:1' });
-    const radar = card('radar', { code: '60003', x: 800, home: 'side:p0:1' });
+    const top = card('s1', {
+      code: '60002',
+      zone: 'pile',
+      home: 'side:p0:1',
+      sideDeck: 'side:p0:1',
+    });
+    const radar = card('radar', {
+      code: '60003',
+      x: 800,
+      home: 'side:p0:1',
+      sideDeck: 'side:p0:1',
+    });
     const bottomOf = (count: number, text: string, cards: CardView[] = [top]) =>
       view({
         cards,
@@ -682,6 +692,35 @@ describe('diffViews', () => {
       }
     });
 
+    it('slips the top card a side deck showed under it, discarded to its bottom', () => {
+      const next = view({
+        cards: [
+          card('s2', { code: '60004', zone: 'pile', home: 'side:p0:1', sideDeck: 'side:p0:1' }),
+        ],
+        piles: [seatPile('deck:p0'), { ...sense(4), cards: ['s2'] }],
+        log: [OLD_LINE, line('put Acute Tactility at the bottom of their Sense deck', alex)],
+      });
+      const before = view({ cards: [top], piles: [seatPile('deck:p0'), sense(4)] });
+
+      expect(diffViews(before, next)).toContainEqual({
+        kind: 'under',
+        id: 's1',
+        toPile: 'side:p0:1',
+        fromPile: 'side:p0:1',
+      });
+      // Several cards: the line lists them after the deck.
+      const several = {
+        ...next,
+        log: [
+          OLD_LINE,
+          line('put 2 cards at the bottom of their Sense deck (Acute Tactility, a card)', alex),
+        ],
+      };
+      expect(diffViews(before, several).filter((anim) => anim.kind === 'under')).toEqual([
+        { kind: 'under', id: 's1', toPile: 'side:p0:1', fromPile: 'side:p0:1' },
+      ]);
+    });
+
     it('does not slip under for a card put on top, nor for an undone line', () => {
       // Put on top, it flies there instead, turning face down.
       expect(diffViews(prev, bottomOf(5, 'put Radar Sense on top of their Sense deck'))).toEqual([
@@ -720,7 +759,7 @@ describe('diffViews', () => {
       const enemy = card('e', { code: '01100', owner: -1, back: 'encounter', x: 800 });
       const thug = card('t', { code: '01101', owner: -1, back: 'encounter', x: 1000 });
       const tucked = (id: string, home: string, parent = 'e') =>
-        card(id, { code: '60004', x: 810, y: 10, parent, home });
+        card(id, { code: '60004', x: 810, y: 10, parent, home, sideDeck: home });
       const piles = (senseCount: number, discarded: string[], invocationCount = 5) => [
         seatPile('deck:p0'),
         sense(senseCount),
@@ -741,6 +780,28 @@ describe('diffViews', () => {
         expect(diffViews(before, after).filter((anim) => anim.kind === 'under')).toEqual([
           { kind: 'under', id: 'k', toPile: 'side:p0:1' },
         ]);
+      });
+
+      it('slips under its side deck discarding to its bottom, the line naming only the host', () => {
+        const bottom = (count: number) => ({ ...sense(count), discard: 'side:p0:1' });
+        const before = view({
+          cards: [top, enemy, tucked('k', 'side:p0:1')],
+          piles: [seatPile('deck:p0'), bottom(4), encd([])],
+        });
+        const after = view({
+          cards: [top, { ...enemy, zone: 'pile', x: 0, y: 0 }],
+          piles: [seatPile('deck:p0'), bottom(5), encd(['e'])],
+          log: discardedLine('discarded Hydra Mercenary'),
+        });
+
+        expect(diffViews(before, after)).toContainEqual({
+          kind: 'under',
+          id: 'k',
+          toPile: 'side:p0:1',
+        });
+        expect(
+          diffViews(before, after).filter((anim) => anim.kind === 'fly' && anim.id === 'k'),
+        ).toEqual([]);
       });
 
       it('slips under for a host discarded with others, in a group', () => {
@@ -1923,8 +1984,11 @@ describe('diffViews', () => {
         ]);
       });
 
-      it("flies from the table to the player's side deck", () => {
-        const prev = view({ cards: [card('c4', { code: '01001' })], piles: [deck(10), labor(5)] });
+      it('flies from the table to its side deck, its home being the player deck', () => {
+        const prev = view({
+          cards: [card('c4', { code: '01001', sideDeck: 'side:p0:0' })],
+          piles: [deck(10), labor(5)],
+        });
         const next = view({ piles: [deck(10), labor(6)] });
 
         expect(diffViews(prev, next)).toEqual([
@@ -2088,7 +2152,7 @@ describe('diffViews', () => {
           label: 'Invocation',
           discard: 'sided:p0:0',
         });
-      const side = card('s', { code: '01001', home: 'side:p0:0', x: 300 });
+      const side = card('s', { code: '01001', home: 'side:p0:0', sideDeck: 'side:p0:0', x: 300 });
       const prev = view({ cards: [side], piles: [deck(10), invocation(4)] });
       const next = view({
         piles: [deck(10), invocation(5)],

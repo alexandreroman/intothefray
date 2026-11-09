@@ -957,8 +957,8 @@ func pileX(i int) int {
 // its own discard pile when it has one, from left to right after the discard
 // pile. Each side deck records where its cards are discarded (see
 // Pile.Discard): to its own discard pile, to the seat's discard pile by
-// default, or nowhere for the rule "none". It returns the number of piles it
-// created.
+// default, to its own bottom for the rule "bottom", or nowhere for the rule
+// "none". It returns the number of piles it created.
 func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 	y := rowY(playerRow(seat))
 	count := 0
@@ -981,6 +981,8 @@ func (b *tableBuilder) addSidePiles(seat int, hero pack.Hero) (int, error) {
 			count++
 		case pack.DiscardOwner:
 			deck.Discard = playerDiscardID(PlayerArea(seat))
+		case pack.DiscardBottom:
+			deck.Discard = deck.ID
 		}
 	}
 	return count, nil
@@ -1035,12 +1037,12 @@ func (b *tableBuilder) sideDeckCodes(hero pack.Hero) ([]string, error) {
 	return codes, nil
 }
 
-// setupSideCards creates the cards of seat's side decks, owned by the seat
-// and at home in their side deck, and shuffles each deck. It then puts the
-// cards the hero's set and the deck's cards set aside on seat's set-aside
-// pile, every catalog copy of them, at home in seat's deck. The identity
-// cards among them are other versions of the identity (see
-// Card.IdentityVersion).
+// setupSideCards creates the cards of seat's side decks, owned by the seat,
+// at home in their side deck and belonging to it for good (see
+// Card.SideDeck), and shuffles each deck. It then puts the cards the hero's
+// set and the deck's cards set aside on seat's set-aside pile, every catalog
+// copy of them, at home in seat's deck. The identity cards among them are
+// other versions of the identity (see Card.IdentityVersion).
 func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 	hero, ok := b.cat.HeroByIdentity(deck.Hero)
 	if !ok {
@@ -1050,6 +1052,9 @@ func (b *tableBuilder) setupSideCards(seat int, deck *DeckChoice) error {
 		pileID := sideDeckID(seat, i)
 		if err := b.addSetCards(setCode, seat, pileID, pileID, nil); err != nil {
 			return err
+		}
+		for _, id := range b.table.Piles[pileID].Cards {
+			b.table.Cards[id].SideDeck = pileID
 		}
 		b.shuffle(pileID)
 	}

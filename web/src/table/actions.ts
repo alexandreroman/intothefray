@@ -860,12 +860,23 @@ function homeDeckFor(
 const DECK_KINDS: readonly PileKind[] = ['deck', 'sideDeck', 'encounter', 'scenarioDeck'];
 
 /**
- * The decks on the table that take the card, as the server has it: those of the card's owner, so a
- * player's deck and side decks for that player's card, the encounter and scenario decks for a card
- * of nobody's. Its home deck (homeDeckOf) comes first.
+ * Whether the deck takes the card, as checkTakes has it on the server: a deck of the card's owner,
+ * and a side deck only a card of its own (`sideDeck`).
+ */
+function deckTakes(deck: PileView, card: CardView): boolean {
+  if (!DECK_KINDS.includes(deck.kind) || deck.owner !== card.owner) {
+    return false;
+  }
+  return deck.kind !== 'sideDeck' || card.sideDeck === deck.id;
+}
+
+/**
+ * The decks on the table that take the card (deckTakes): a player's deck for that player's card,
+ * and the side deck it belongs to, the encounter and scenario decks for a card of nobody's. Its
+ * home deck (homeDeckOf) comes first.
  */
 export function decksOf(card: CardView, piles: readonly PileView[]): PileView[] {
-  const decks = piles.filter((pile) => DECK_KINDS.includes(pile.kind) && pile.owner === card.owner);
+  const decks = piles.filter((pile) => deckTakes(pile, card));
   const home = homeDeckOf(card);
   const homeDeck = decks.filter((deck) => deck.id === home);
   const others = decks.filter((deck) => deck.id !== home);
@@ -889,8 +900,9 @@ export function decksFor(
 
 /**
  * The discard pile a card goes to, as discardPileID has it: a side or scenario deck's card to
- * the pile that deck names, or nowhere (null) when it names none; an encounter card without a
- * home to the encounter discard pile, when the table has one.
+ * the pile that deck names, the deck itself when its cards go to its bottom (Sense), or nowhere
+ * (null) when it names none; an encounter card without a home to the encounter discard pile, when
+ * the table has one.
  */
 export function discardPileOf(card: CardView, piles: readonly PileView[]): string | null {
   const home = homeDeckOf(card);
@@ -904,9 +916,9 @@ export function discardPileOf(card: CardView, piles: readonly PileView[]): strin
 
 /**
  * The discard pile the top cards of a deck go to, as discardOf has it on the server: the pile a
- * side or scenario deck names (`discard`), the encounter discard pile for the encounter deck, its
- * owner's discard pile for a player's deck. Null when there is none on the table: a side or
- * scenario deck may never discard its cards.
+ * side or scenario deck names (`discard`), the deck itself when its cards go to its bottom (Sense),
+ * the encounter discard pile for the encounter deck, its owner's discard pile for a player's deck.
+ * Null when there is none on the table: a side or scenario deck may never discard its cards.
  */
 export function deckDiscardOf(deck: PileView, piles: readonly PileView[]): string | null {
   let discard: string | undefined;

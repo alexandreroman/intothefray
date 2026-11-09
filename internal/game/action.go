@@ -273,7 +273,7 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 	case ActHandOrder:
 		return resolveHandOrder(who, a)
 	case ActDiscardTop:
-		return resolveDiscardTop(t, who, a)
+		return resolveDiscardTop(t, who, a, rng)
 	case ActReorderTop:
 		return resolveReorderTop(original, t, who, a, rng)
 	case ActShuffle:
@@ -699,8 +699,12 @@ func resolveReorderTop(original, t *Table, who actor, a Action, rng *rand.Rand) 
 
 // resolveDiscardTop records the cards to discard, top first. Only a deck
 // whose cards are discarded somewhere can be discarded from (see discardOf):
-// a side deck or a scenario deck may never discard its cards.
-func resolveDiscardTop(t *Table, who actor, a Action) (Action, error) {
+// a side deck or a scenario deck may never discard its cards. A deck whose
+// cards are discarded to its bottom takes them under it out of sight unless
+// they are all of its cards, which then end in the same order: they get new
+// ids (see cycledOutOfSight), so that nobody can tie the card that comes up
+// later to the top card they saw go under.
+func resolveDiscardTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, error) {
 	pile, err := ownPile(t, who, a.Pile)
 	if err != nil {
 		return a, err
@@ -712,7 +716,19 @@ func resolveDiscardTop(t *Table, who actor, a Action) (Action, error) {
 		return a, invalid("cannot discard %d cards from pile %q", a.N, pile.ID)
 	}
 	a.Cards = topCards(pile, a.N)
+	a.Renames = nil
+	if cycledOutOfSight(pile, len(a.Cards)) {
+		a.Renames = map[string]string{}
+		addFreshIDs(t, a.Renames, a.Cards, rng)
+	}
 	return a, nil
+}
+
+// cycledOutOfSight reports whether discarding the n top cards of pile takes
+// them under it out of sight: pile discards its cards to its bottom (see
+// discardsToBottom), and n is not all of its cards.
+func cycledOutOfSight(pile *Pile, n int) bool {
+	return pile.discardsToBottom() && n < len(pile.Cards)
 }
 
 func resolveHandOrder(who actor, a Action) (Action, error) {

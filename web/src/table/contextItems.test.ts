@@ -39,7 +39,7 @@ function makeView(): View {
         card('s', { code: '01097', owner: -1, back: 'encounter' }),
         card('down', { code: undefined, faceDown: true }),
         card('inv', { home: 'side:p0:0' }),
-        card('sense', { home: 'side:p0:1' }),
+        card('weather', { home: 'side:p0:1' }),
         // The cards of the own discard piles, which the server lists with the table's.
         card('y', { zone: 'pile' }),
         card('u', { zone: 'pile', home: 'side:p0:0' }),
@@ -53,8 +53,8 @@ function makeView(): View {
         pile('enc', { kind: 'encounter', count: 29 }),
         pile('encd', { kind: 'encounterDiscard', count: 1, cards: ['t'] }),
         pile('vic', { kind: 'victory', count: 0, cards: [] }),
-        // Alex's Invocation deck has a discard pile of its own, the Sense and Labor decks none.
-        // Invocation and Sense show their top card, Labor hides it.
+        // Alex's Invocation deck has a discard pile of its own, the Weather and Labor decks none.
+        // Invocation and Weather show their top card, Labor hides it.
         pile('side:p0:0', {
           kind: 'sideDeck',
           owner: 0,
@@ -74,7 +74,7 @@ function makeView(): View {
           kind: 'sideDeck',
           owner: 0,
           count: 5,
-          label: 'Sense',
+          label: 'Weather',
           topFaceUp: true,
         }),
         pile('side:p0:2', { kind: 'sideDeck', owner: 0, count: 5, label: 'Labor' }),
@@ -354,7 +354,7 @@ describe('contextItems', () => {
     ]);
     expect(texts(invocation)).toContain('Discard [X]');
 
-    expect(texts(entriesFor({ kind: 'card', id: 'sense' }))).toEqual([
+    expect(texts(entriesFor({ kind: 'card', id: 'weather' }))).toEqual([
       '*Exhaust [E]',
       'Flip [F]',
       '---',

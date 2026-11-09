@@ -260,11 +260,7 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActToDeck:
 		return n.toDeckEvent(a), true
 	case ActDiscard:
-		text := join(words("discarded "), n.name(a.Card))
-		if n.before.Cards[a.Card].Zone == ZoneHand {
-			text = join(text, words(" from hand"))
-		}
-		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
+		return n.discardEvent(a), true
 	case ActToPile:
 		text := join(words("moved "), n.name(a.Card), words(" to "), n.pile(a.Target))
 		return logLine{text: text, cards: n.visibleCards(a.Card)}, true
@@ -310,6 +306,9 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActReorderTop:
 		return n.reorderEvent(a)
 	case ActDiscardTop:
+		if n.before.Piles[a.Pile].discardsToBottom() {
+			return n.underDeckEvent(a), true
+		}
 		text := join(words("discarded "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
 		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActShuffle:
@@ -344,6 +343,48 @@ func (n narrator) reorderEvent(a Action) (logLine, bool) {
 	return logLine{text: join(words("put "), n.name(top), words(" back into "), n.pile(a.Pile))}, true
 }
 
+// discardEvent narrates a discard: "discarded Black Cat", "discarded a card
+// from hand". A card discarded to the bottom of its deck (see discardTo) is
+// put there, as a toDeck at the bottom says it: "put Radar Sense at the
+// bottom of their Sense deck".
+func (n narrator) discardEvent(a Action) logLine {
+	if deck, ok := n.bottomDiscardDeck(a.Card); ok {
+		text := join(words("put "), n.name(a.Card), words(" at the bottom of "), n.pile(deck))
+		return logLine{text: text, cards: n.visibleCards(a.Card)}
+	}
+	text := join(words("discarded "), n.name(a.Card))
+	if n.before.Cards[a.Card].Zone == ZoneHand {
+		text = join(text, words(" from hand"))
+	}
+	return logLine{text: text, cards: n.visibleCards(a.Card)}
+}
+
+// bottomDiscardDeck returns the id of the deck card id is discarded to the
+// bottom of (see discardsToBottom), and false when it is discarded to a
+// discard pile.
+func (n narrator) bottomDiscardDeck(id string) (string, bool) {
+	pile, ok := n.before.Piles[n.before.discardPileID(n.before.Cards[id])]
+	if !ok || !pile.discardsToBottom() {
+		return "", false
+	}
+	return pile.ID, true
+}
+
+// underDeckEvent narrates a discard of the top cards of a deck that takes
+// them under it, as a toDeck at the bottom says it: "put Radar Sense at the
+// bottom of their Sense deck", or as a group does for several cards: "put 2
+// cards at the bottom of their Sense deck (Radar Sense, a card)".
+func (n narrator) underDeckEvent(a Action) logLine {
+	deck := n.pile(a.Pile)
+	if len(a.Cards) == 1 {
+		text := join(words("put "), n.name(a.Cards[0]), words(" at the bottom of "), deck)
+		return logLine{text: text, cards: n.visibleCards(a.Cards...)}
+	}
+	text := join(words(fmt.Sprintf("put %d cards at the bottom of ", len(a.Cards))), deck,
+		words(" ("), n.cardList(a.Cards), words(")"))
+	return logLine{text: text, cards: n.visibleCards(a.Cards...)}
+}
+
 func (n narrator) toHandEvent(a Action) logLine {
 	c := n.before.Cards[a.Card]
 	if c.Zone == ZonePile && !visible(n.before, a.Card) {
@@ -369,7 +410,8 @@ func (n narrator) toDeckEvent(a Action) logLine {
 
 // groupEvent narrates a group that takes its cards off the table, the names
 // in brackets as details: "discarded 3 cards (Black Cat, a card, Web-Shooter)".
-// Every action of a group is of one kind (see resolveGroup).
+// A group of cards all discarded to the bottom of one deck is put there (see
+// discardEvent). Every action of a group is of one kind (see resolveGroup).
 func (n narrator) groupEvent(a Action) logLine {
 	cards := make([]string, 0, len(a.Actions))
 	targets := make([]string, 0, len(a.Actions))
@@ -386,6 +428,9 @@ func (n narrator) groupEvent(a Action) logLine {
 	switch first.Kind {
 	case ActDiscard:
 		text = words("discarded " + count)
+		if deck, ok := n.sharedBottomDiscardDeck(cards); ok {
+			text = join(words("put "+count+" at the bottom of "), n.pile(deck))
+		}
 	case ActToHand:
 		text = words("took " + count + " into hand")
 	case ActToPile:
@@ -399,6 +444,18 @@ func (n narrator) groupEvent(a Action) logLine {
 	}
 	text = join(text, words(" ("), n.cardList(cards), words(")"))
 	return logLine{text: text, cards: n.visibleCards(cards...)}
+}
+
+// sharedBottomDiscardDeck returns the id of the deck every card of ids is
+// discarded to the bottom of (see bottomDiscardDeck), and false when they are
+// not all discarded there.
+func (n narrator) sharedBottomDiscardDeck(ids []string) (string, bool) {
+	shared, ok := n.bottomDiscardDeck(ids[0])
+	for _, id := range ids[1:] {
+		deck, bottom := n.bottomDiscardDeck(id)
+		ok = ok && bottom && deck == shared
+	}
+	return shared, ok
 }
 
 // sharedPile names the pile all ids are, or several when they differ.

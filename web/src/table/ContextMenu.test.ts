@@ -1049,23 +1049,26 @@ describe('what the menu runs', () => {
   it('sends a side card back to its side deck, with no Discard without a side discard pile', async () => {
     const piles = [
       ...makeView().table!.piles,
-      pile('side:p0:1', { kind: 'sideDeck', owner: 0, x: 750, count: 5, label: 'Sense' }),
+      pile('side:p0:1', { kind: 'sideDeck', owner: 0, x: 750, count: 5, label: 'Weather' }),
     ];
-    const cards = [...makeView().table!.cards, card('sense', { x: 150, home: 'side:p0:1' })];
+    const cards = [...makeView().table!.cards, card('weather', { x: 150, home: 'side:p0:1' })];
     const { session } = await renderTable(makeView({ cards, piles }));
 
-    await click(placed('sense'));
+    await click(placed('weather'));
     expect(labels(contextMenu()!)).not.toContain('Discard');
     await fireEvent.click(menuItem(contextMenu()!, 'Move to'));
     const submenu = screen.getByRole('menu', { name: 'Move to' });
     expect(labels(submenu)).toEqual([
       'Hand',
-      'Top of Sense deck',
-      'Bottom of Sense deck',
-      'Shuffle into Sense deck',
+      'Top of Weather deck',
+      'Bottom of Weather deck',
+      'Shuffle into Weather deck',
     ]);
-    await fireEvent.click(menuItem(submenu, 'Bottom of Sense deck'));
-    expect(session.act).toHaveBeenCalledWith({ kind: 'toDeck', card: 'sense', where: 'bottom' }, 0);
+    await fireEvent.click(menuItem(submenu, 'Bottom of Weather deck'));
+    expect(session.act).toHaveBeenCalledWith(
+      { kind: 'toDeck', card: 'weather', where: 'bottom' },
+      0,
+    );
   });
 
   it('greys out Reveal while a card is revealed on the encounter deck, saying why', async () => {

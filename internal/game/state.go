@@ -84,6 +84,10 @@ type Card struct {
 	// owner's identity. Setup marks the set-aside identity cards; an identity
 	// replaced by a version becomes one in turn.
 	IdentityVersion bool `json:"identityVersion,omitempty"`
+	// SideDeck is the id of the side deck a card of one belongs to, set at
+	// setup and never changed: it is the only side deck that takes the card
+	// (see checkTakes), wherever its home has been since.
+	SideDeck string `json:"sideDeck,omitempty"`
 	// Shapes holds the shape of each face, filled at setup: a stack lies
 	// according to the shapes of its cards (see placeStack). The server keeps
 	// it for itself; the client reads the faces from the card pool.
@@ -238,8 +242,9 @@ type Pile struct {
 	// Discard is the id of the pile the cards of a side deck or a scenario
 	// deck are discarded to, set at setup from the deck's discard rule: its
 	// own discard pile, its owner's (the encounter discard pile for a
-	// scenario deck), or empty when they are never discarded. The other decks
-	// always discard to the same pile (see discardOf).
+	// scenario deck), the deck itself when they go to its bottom (see
+	// discardsToBottom), or empty when they are never discarded. The other
+	// decks always discard to the same pile (see discardOf).
 	Discard string `json:"discard,omitempty"`
 }
 
@@ -340,6 +345,13 @@ func (c *Card) clone() *Card {
 	clone.Mods = maps.Clone(c.Mods)
 	clone.Shapes = slices.Clone(c.Shapes)
 	return &clone
+}
+
+// discardsToBottom reports whether the cards discarded to p go to its
+// bottom: p is a deck whose discard rule is "bottom", which records the deck
+// itself as its discard pile (see Pile.Discard).
+func (p *Pile) discardsToBottom() bool {
+	return p.Discard == p.ID
 }
 
 func (p *Pile) clone() *Pile {

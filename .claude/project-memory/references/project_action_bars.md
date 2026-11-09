@@ -69,10 +69,12 @@ type: project
   stage choice reads "Change card…".
 - A hero side deck has the own deck's entries, Draw 1 and Draw X drawing
   from it; Reveal only when it hides its top card (Labor, Gift, Weather;
-  see [[project_deck_reveal]]); Discard 1 and Discard X only when it has a
-  side discard pile (Invocation), which has a discard pile's entries. A
-  side card's Move to names its deck ("Top of Sense deck"); without a
-  side discard it has no Discard, and X and Backspace do nothing on it.
+  see [[project_deck_reveal]]); Discard 1 and Discard X only when its
+  cards are discarded somewhere: to a side discard pile (Invocation),
+  which has a discard pile's entries, or to the deck's bottom (Sense). A
+  side card's Move to names its deck ("Top of Sense deck"); a card whose
+  deck discards nowhere (Weather, Labor, Gift) has no Discard, and X and
+  Backspace do nothing on it (see [[project_discard_destinations]]).
 - Card keys beside the menu: E exhaust, F flip (a stage card with
   several faces too), X discard (Backspace too), H hand, B bottom of
   deck (a side card's side deck), V change card (villain / main

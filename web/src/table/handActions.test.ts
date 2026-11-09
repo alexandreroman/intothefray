@@ -47,11 +47,11 @@ describe('handActions', () => {
 
   it('disables Discard, with a reason, on a side deck card without a discard pile', () => {
     const view = handView();
-    view.table!.cards.push(card('sense', { zone: 'hand', home: 'side:p0:0' }));
-    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Sense' }));
-    view.table!.hands = { p0: ['h', 'sense'] };
+    view.table!.cards.push(card('weather', { zone: 'hand', home: 'side:p0:0' }));
+    view.table!.piles.push(pile('side:p0:0', { kind: 'sideDeck', owner: 0, label: 'Weather' }));
+    view.table!.hands = { p0: ['h', 'weather'] };
 
-    const [play, discard] = handActions('sense', view, sizeOf);
+    const [play, discard] = handActions('weather', view, sizeOf);
 
     expect(play?.disabled).toBeUndefined();
     expect(discard).toMatchObject({ id: 'discard', disabled: true });

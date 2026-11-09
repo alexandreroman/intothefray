@@ -258,6 +258,24 @@ func TestLoadRejectsEncounterDeckNotSelfContained(t *testing.T) {
 	}
 }
 
+func TestLoadAcceptsBottomDiscardRule(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, "scenarios"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	sets := `{"daredevil_sense_deck":{"side":{"label":"Sense","topFaceUp":true,"discard":"bottom","back":"player"}}}`
+	if err := os.WriteFile(filepath.Join(dir, "sets.json"), []byte(sets), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := Load(dir)
+	if err != nil {
+		t.Fatalf("got error %v, want none for a side deck discarding to its bottom", err)
+	}
+	if got := loaded.Sets["daredevil_sense_deck"].Side.Discard; got != pack.DiscardBottom {
+		t.Errorf("got discard rule %q, want %q", got, pack.DiscardBottom)
+	}
+}
+
 func TestLoadRejectsUnknownWith(t *testing.T) {
 	wantScenarioError(t, `{"id":"x","villainSet":"x","piles":[`+stageV+`],"start":{`+
 		`"standard":{"top":{"v":{"card":"1","face":0}}},`+
@@ -274,6 +292,11 @@ func TestLoadRejectsBadDecks(t *testing.T) {
 			"unknown discard rule",
 			`{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"discard":"victory"}]}`,
 			`deck "a" has an unknown discard rule "victory"`,
+		},
+		{
+			"discard to the bottom of a scenario deck",
+			`{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"discard":"bottom"}]}`,
+			`deck "a": the discard rule "bottom" is for side decks only`,
 		},
 		{
 			// Without a classic encounter deck, there is no encounter discard pile to default to.

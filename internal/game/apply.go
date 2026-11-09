@@ -242,9 +242,10 @@ func validArea(a Area) bool {
 
 // discardPileID returns the id of the pile where c is discarded: for a card
 // of a side deck or a scenario deck, the pile that deck records (see
-// Pile.Discard), empty when its cards are never discarded; else the discard
-// pile of its owner (the encounter discard pile for a card owned by nobody).
-// A card keeps its home wherever it is discarded to.
+// Pile.Discard), the deck itself when its cards go to its bottom, empty when
+// they are never discarded; else the discard pile of its owner (the
+// encounter discard pile for a card owned by nobody). A card keeps its home
+// wherever it is discarded to.
 func (t *Table) discardPileID(c *Card) string {
 	if ruledDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
@@ -259,14 +260,15 @@ func (t *Table) discardPileID(c *Card) string {
 }
 
 // tuckedDestination returns the pile a card carried by a card leaving the
-// table goes to (see carried): the pile it is discarded to, on top. A side
-// deck or scenario deck card whose cards are never discarded goes to the
-// bottom of its deck instead (bottom is then true), as Daredevil's Sense
-// cards do, so that it never keeps its host on the table. ok is false when
-// there is no such pile.
+// table goes to (see carried): the pile it is discarded to, on top, or at the
+// bottom of its deck for a deck whose cards are discarded there (bottom is
+// then true), as Daredevil's Sense cards are. A side deck or scenario deck
+// card whose cards are never discarded goes to the bottom of its deck too, so
+// that it never keeps its host on the table. ok is false when there is no
+// such pile.
 func (t *Table) tuckedDestination(c *Card) (pile *Pile, bottom, ok bool) {
 	if pile, ok := t.Piles[t.discardPileID(c)]; ok {
-		return pile, false, true
+		return pile, pile.discardsToBottom(), true
 	}
 	if ruledDeckID(c.Home) {
 		if home, ok := t.Piles[c.Home]; ok {
@@ -499,9 +501,7 @@ func (t *Table) leave(c *Card) {
 			resetCard(child)
 			pile, bottom, _ := t.tuckedDestination(child)
 			if bottom {
-				pile.Cards = slices.Insert(pile.Cards, 0, child.ID)
-				child.Zone = ZonePile
-				child.Pile = pile.ID
+				t.pushUnderPile(pile, child)
 			} else {
 				t.pushOnPile(pile, child)
 			}
@@ -539,6 +539,13 @@ func resetCard(c *Card) {
 // pushOnPile puts c on top of pile.
 func (t *Table) pushOnPile(pile *Pile, c *Card) {
 	pile.Cards = append(pile.Cards, c.ID)
+	c.Zone = ZonePile
+	c.Pile = pile.ID
+}
+
+// pushUnderPile puts c at the bottom of pile.
+func (t *Table) pushUnderPile(pile *Pile, c *Card) {
+	pile.Cards = slices.Insert(pile.Cards, 0, c.ID)
 	c.Zone = ZonePile
 	c.Pile = pile.ID
 }
@@ -666,9 +673,10 @@ func toDeckID(c *Card, a Action) string {
 }
 
 // checkTakes verifies that deck takes c: a deck takes the cards of its owner
-// only. A player's deck and side decks take that player's cards; the
-// encounter decks and the scenario decks, owned by nobody, take the cards
-// owned by nobody. No other pile is a deck.
+// only, and a side deck only the cards of its own set (see Card.SideDeck). A
+// player's deck takes that player's cards, those of their side decks too;
+// the encounter decks and the scenario decks, owned by nobody, take the
+// cards owned by nobody. No other pile is a deck.
 func checkTakes(deck *Pile, c *Card) error {
 	switch deck.Kind {
 	case KindDeck, KindSideDeck, KindEncounter, KindScenarioDeck:
@@ -677,6 +685,9 @@ func checkTakes(deck *Pile, c *Card) error {
 	}
 	if deck.Owner != c.Owner {
 		return invalid("deck %q does not take card %q, which has another owner", deck.ID, c.ID)
+	}
+	if deck.Kind == KindSideDeck && c.SideDeck != deck.ID {
+		return invalid("side deck %q does not take card %q, which is not one of its cards", deck.ID, c.ID)
 	}
 	return nil
 }
@@ -706,7 +717,7 @@ func applyToDeck(t *Table, a Action) error {
 		deck.Cards = append(deck.Cards, c.ID)
 	case whereBottom:
 		t.leave(c)
-		deck.Cards = slices.Insert(deck.Cards, 0, c.ID)
+		t.pushUnderPile(deck, c)
 	case whereShuffle:
 		// The caller resolved the shuffle: Cards is the whole new pile, and
 		// Renames also covers the cards c carries that go to the bottom of
@@ -747,6 +758,8 @@ func samePermutation(a, b []string) bool {
 	return slices.Equal(slices.Sorted(slices.Values(a)), slices.Sorted(slices.Values(b)))
 }
 
+// applyDiscard puts the card on the pile it is discarded to (see
+// discardPileID and discardTo).
 func applyDiscard(t *Table, a Action) error {
 	c, err := t.card(a.Card)
 	if err != nil {
@@ -760,8 +773,21 @@ func applyDiscard(t *Table, a Action) error {
 		return err
 	}
 
-	t.putOnPile(pile, c)
+	t.discardTo(pile, c)
 	return nil
+}
+
+// discardTo moves c, wherever it is, to pile, the pile it is discarded to: at
+// the bottom of a deck whose cards are discarded there (see
+// discardsToBottom), as a toDeck at the bottom puts it, on top of any other
+// pile. checkLeave must have succeeded first.
+func (t *Table) discardTo(pile *Pile, c *Card) {
+	t.leave(c)
+	if pile.discardsToBottom() {
+		t.pushUnderPile(pile, c)
+		return
+	}
+	t.pushOnPile(pile, c)
 }
 
 func applyToPile(t *Table, a Action) error {
@@ -1420,10 +1446,10 @@ func deckOfDiscard(discardID string) (string, bool) {
 }
 
 // discardOf returns the id of the pile the top cards of deck are discarded
-// to: the pile a side deck or a scenario deck records (see Pile.Discard),
-// empty when its cards are never discarded, the encounter discard pile for
-// the encounter deck, the seat's discard pile for a player's deck, and empty
-// for a pile that is no deck.
+// to: the pile a side deck or a scenario deck records (see Pile.Discard), the
+// deck itself when they go to its bottom, empty when its cards are never
+// discarded, the encounter discard pile for the encounter deck, the seat's
+// discard pile for a player's deck, and empty for a pile that is no deck.
 func discardOf(deck *Pile) string {
 	switch {
 	case ruledDeckID(deck.ID):
@@ -1438,7 +1464,11 @@ func discardOf(deck *Pile) string {
 }
 
 // applyDiscardTop discards the recorded cards, wherever they are in the deck
-// (see applyDraw), in the recorded order.
+// (see applyDraw), in the recorded order (see discardTo). A deck whose cards
+// are discarded to its bottom takes its top cards under it, one after the
+// other, as so many discards of its top card would, and gives them the new
+// ids resolveDiscardTop picked when they go out of sight (see
+// cycledOutOfSight).
 func applyDiscardTop(t *Table, a Action) error {
 	deck, err := t.pile(a.Pile)
 	if err != nil {
@@ -1451,10 +1481,19 @@ func applyDiscardTop(t *Table, a Action) error {
 	if err := checkInPile(deck, a.Cards); err != nil {
 		return err
 	}
+	var expected []string
+	if cycledOutOfSight(deck, len(a.Cards)) {
+		expected = a.Cards
+	}
+	if _, err := checkFreshIDs(t, a.Renames, expected); err != nil {
+		return err
+	}
 
 	for _, id := range a.Cards {
-		t.putOnPile(discard, t.Cards[id])
+		t.discardTo(discard, t.Cards[id])
 	}
+	renameInViews(t, a.Renames)
+	renameCards(t, a.Renames)
 	return nil
 }
 

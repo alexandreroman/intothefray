@@ -510,15 +510,17 @@ export interface PileTarget {
 
 /**
  * The piles a dragged card can go to: the top of every deck that takes it
- * (decksFor: those of its owner, its home deck first; the viewer's own cards
- * and cards of nobody's only), any deck but its home an exact target (see
- * PileTarget), and its discard pile, when it has one; none
- * when it stays on the table. Move to ▾ offers its home deck only. The top
- * card of a deck goes to the pile that deck discards to (deckDiscardOf): a
- * player's deck to its discard pile, the encounter deck's to the encounter
- * discard pile, a side or scenario deck's to the pile it names. A deck's top
- * card also takes its own deck, an exact target, where a drop returns it and
- * sends nothing.
+ * (decksFor: those of its owner, a side deck only for a card of its own, its
+ * home deck first; the viewer's own cards and cards of nobody's only), any
+ * deck but its home an exact target (see PileTarget), and its discard pile,
+ * when it has one; none when it stays on the table. Move to ▾ offers its home
+ * deck only. The top card of a deck goes to the pile that deck discards to
+ * (deckDiscardOf): a player's deck to its discard pile, the encounter deck's
+ * to the encounter discard pile, a side or scenario deck's to the pile it
+ * names. A deck's top card also takes its own deck, an exact target, where a
+ * drop returns it and sends nothing. A deck whose cards are discarded to its
+ * bottom (Sense) is no discard target of its own cards: a drop onto it puts
+ * the card on top, or returns its top card.
  */
 export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   const table = view.table;
@@ -537,7 +539,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
     }
     const targets: PileTarget[] = [];
     const discard = deckDiscardOf(deck, table.piles);
-    if (discard !== null) {
+    if (discard !== null && discard !== deck.id) {
       targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
     }
     // A drop right over the deck cancels the drag: without this target, it would deal or play the
@@ -564,7 +566,7 @@ export function pileTargets(drag: DragSource, view: View): PileTarget[] {
   }
   // The out-of-play piles are not drawn: Move to ▾ sends a card there.
   const discard = discardPileOf(card, table.piles);
-  if (discard !== null) {
+  if (discard !== null && !targets.some((target) => target.pile === discard)) {
     targets.push({ pile: discard, drop: 'discard', label: 'Discard' });
   }
   return targets.filter(exists);

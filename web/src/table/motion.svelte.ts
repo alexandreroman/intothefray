@@ -680,8 +680,10 @@ function originOf(root: HTMLElement, anim: Anim, piles: readonly PileView[]): HT
     }
     case 'away':
       return find(remoteGhost(anim.id)) ?? find(placed(anim.id));
-    case 'under':
-      return find(remoteGhost(anim.id)) ?? find(ownGhost(anim.id)) ?? find(placed(anim.id));
+    case 'under': {
+      const place = anim.fromPile === undefined ? placed(anim.id) : pilePlace(anim.fromPile);
+      return find(remoteGhost(anim.id)) ?? find(ownGhost(anim.id)) ?? find(place);
+    }
     case 'fly': {
       const place = anim.fromPile === undefined ? placed(anim.id) : pilePlace(anim.fromPile);
       const ghost = find(remoteGhost(anim.id)) ?? find(ownGhost(anim.id));
