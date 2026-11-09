@@ -293,13 +293,12 @@
     min-width: 0;
   }
 
-  /* The slot's icon buttons, change and remove, side by side, reaching into the card's padding by
-     their own (8px): their 16px icons end on its edge, as the Load button does. */
+  /* The slot's icon buttons, change and remove, side by side: their boxes end on the card's content
+     edge, as the Load square does. */
   .tools {
     flex: none;
     display: flex;
     gap: 2px;
-    margin-right: -8px;
   }
 
   .tool {
@@ -317,11 +316,6 @@
     width: 16px;
     height: 16px;
     stroke-width: 2;
-  }
-
-  /* In the form too, the icon button reaches into the card's padding by its own. */
-  .form .tool {
-    margin-right: -8px;
   }
 
   .err {

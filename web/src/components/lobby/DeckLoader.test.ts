@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import DeckLoader from './DeckLoader.svelte';
+import deckLoaderSource from './DeckLoader.svelte?raw';
 import type { DeckView } from '../../lib/types';
 import { cutShort } from '../../lib/overflowTip.testing';
+import { declarations } from '../../styles/tokens.testing';
 
 const waiting: DeckView = { ready: false, handCount: 0 };
 const ready: DeckView = {
@@ -443,5 +445,19 @@ describe('DeckLoader in motion', () => {
     const form = screen.getByRole('textbox', { name: 'Deck link' }).closest('.pane');
     await vi.waitFor(() => expect(new Set(faded())).toEqual(new Set([loaded, form])));
     expect(form?.parentElement).toBe(slot);
+  });
+});
+
+describe('the icon buttons of a slot', () => {
+  // jsdom lays nothing out, so the stylesheet's rules for the buttons and their row are checked:
+  // with no margin, their boxes end on the card's content edge, as the Load square does.
+  it("end on the card's content edge", () => {
+    const toolRules = [...deckLoaderSource.matchAll(/\n {2}[^\n{]*\.tools? \{([^}]*)\}/g)];
+    const margins = toolRules
+      .flatMap((match) => declarations(match[1]))
+      .filter((declaration) => declaration.startsWith('margin'));
+
+    expect(toolRules).not.toHaveLength(0);
+    expect(margins).toEqual([]);
   });
 });
