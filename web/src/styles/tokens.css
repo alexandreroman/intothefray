@@ -129,9 +129,14 @@ body {
   corners, and cannot be rounded. Inherited, it is off everywhere: each control gives its own press
   look instead (the button rules below, a component's :active rules), or has its own feedback (a
   switch's sliding indicator, a card's lift).
+  No text size adjustment either: iOS Safari's keeps text at its unzoomed size under a CSS zoom
+  (the table's zoom, the inspector's counters), while the boxes zoom. Desktop browsers scale text
+  with the zoom either way.
 */
 html {
   -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 /*

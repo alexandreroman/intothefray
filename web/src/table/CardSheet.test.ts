@@ -400,6 +400,60 @@ describe('CardSheet', () => {
     expect(screen.queryByRole('button', { name: 'Hand' })).toBeNull();
   });
 
+  describe('moving the focus in and out of a submenu', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    /** A tap: the press the window hears before the click, as a finger makes it. */
+    async function tap(element: HTMLElement): Promise<void> {
+      await fireEvent.pointerDown(element);
+      await fireEvent.click(element);
+    }
+
+    it('focuses the Back row without a focus ring as a tap opens a submenu', async () => {
+      renderSheet();
+      // Spied once the sheet is open: only the move into the submenu counts.
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+      await tap(screen.getByRole('button', { name: 'Move to…' }));
+
+      const back = screen.getByRole('button', { name: /Back/ });
+      expect(document.activeElement).toBe(back);
+      // jsdom has no :focus-visible: the call tells whether the browser draws the ring.
+      expect(focus.mock.contexts).toEqual([back]);
+      expect(focus).toHaveBeenCalledWith({ focusVisible: false });
+    });
+
+    it("focuses the submenu's tile again without a focus ring as a tap on Back closes it", async () => {
+      renderSheet();
+      await tap(screen.getByRole('button', { name: 'Move to…' }));
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+      await tap(screen.getByRole('button', { name: /Back/ }));
+
+      const moveTo = screen.getByRole('button', { name: 'Move to…' });
+      expect(document.activeElement).toBe(moveTo);
+      expect(focus.mock.contexts).toEqual([moveTo]);
+      expect(focus).toHaveBeenCalledWith({ focusVisible: false });
+    });
+
+    it('focuses the Back row with its focus ring as a key opens a submenu', async () => {
+      renderSheet();
+      const moveTo = screen.getByRole('button', { name: 'Move to…' });
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+      // Enter on a button: its key, then the click it makes.
+      await fireEvent.keyDown(moveTo, { key: 'Enter' });
+      await fireEvent.click(moveTo);
+
+      const back = screen.getByRole('button', { name: /Back/ });
+      expect(document.activeElement).toBe(back);
+      expect(focus.mock.contexts).toEqual([back]);
+      expect(focus).toHaveBeenCalledWith({ focusVisible: true });
+    });
+  });
+
   it('goes back to its main page once a submenu entry that does not stay open runs', async () => {
     const entry = item('entry', { label: 'Entry' });
     const { onrun, onclose } = renderSheet({

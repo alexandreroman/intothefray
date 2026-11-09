@@ -596,6 +596,24 @@ describe('the context menu', () => {
     expect(document.activeElement).toBe(menuItem(menu, 'Add a token'));
   });
 
+  it('moves the focus into a submenu and back to its row with the focus ring, from the keys', async () => {
+    await renderTable();
+    await rightClick(placed('mine'));
+    const row = menuItem(contextMenu()!, 'Add a token');
+    row.focus();
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+    await fireEvent.keyDown(row, { key: 'ArrowRight' });
+    const damage = menuItem(screen.getByRole('menu', { name: 'Add a token' }), 'Damage (6)');
+    await vi.waitFor(() => expect(document.activeElement).toBe(damage));
+    await fireEvent.keyDown(damage, { key: 'ArrowLeft' });
+
+    expect(document.activeElement).toBe(row);
+    // jsdom has no :focus-visible: the calls tell whether the browser draws the ring.
+    expect(focus.mock.contexts).toEqual([damage, row]);
+    expect(focus.mock.calls).toEqual([[{ focusVisible: true }], [{ focusVisible: true }]]);
+  });
+
   it('shows the reason of a disabled item under its label under a finger, within the menu width', () => {
     const hidden = /\n {2}\.reason \{([^}]*)\}/.exec(menuSource)?.[1];
     expect(hidden).toMatch(/position: absolute;/);

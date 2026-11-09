@@ -77,6 +77,12 @@ describe('the table page on a touch screen', () => {
     // A rule outside any media query starts its line.
     expect(tokensCss).not.toMatch(/^\S*:hover/m);
   });
+
+  it("scales text with the table's CSS zoom: iOS Safari adjusts no text size", () => {
+    expect(declarations(tokensRule('html'))).toEqual(
+      expect.arrayContaining(['-webkit-text-size-adjust: none', 'text-size-adjust: none']),
+    );
+  });
 });
 
 describe('a press on a touch screen', () => {
