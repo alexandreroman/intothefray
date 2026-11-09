@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import Home from './Home.svelte';
 import { createGame } from '../lib/api';
 import { NEWS, type NewsEntry } from '../lib/news';
+import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
 import { getPref, getToken } from '../lib/prefs';
 import { fetchGamesInProgress } from '../lib/stats';
 
@@ -360,6 +361,7 @@ describe('Home', () => {
         Element.prototype.animate = originalAnimate;
         animate.mockClear();
         running = [];
+        resetDevice();
       });
 
       it('folds the banner away once dismissed, then removes it', async () => {
@@ -375,6 +377,18 @@ describe('Home', () => {
           expect.any(Array),
           expect.objectContaining({ duration: 220 }),
         );
+      });
+
+      it('lets the Home Screen banner come only once the news banner has left', async () => {
+        setDevice(IPAD);
+        render(Home);
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+        expect(screen.queryByRole('complementary', { name: 'Home Screen tip' })).toBeNull();
+
+        await finishAnimations();
+        expect(banner()).toBeNull();
+        expect(screen.getByRole('complementary', { name: 'Home Screen tip' })).toBeTruthy();
       });
 
       it('removes the banner at once under reduced motion', async () => {
@@ -399,6 +413,91 @@ describe('Home', () => {
         expect(opener.isConnected).toBe(true);
         await waitFor(() => expect(document.activeElement).toBe(newsButton()));
       });
+    });
+  });
+  describe('Home Screen banner', () => {
+    const TEXT = 'Play full screen: add Into the Fray to your Home Screen.';
+
+    function banner(): HTMLElement | null {
+      return screen.queryByRole('complementary', { name: 'Home Screen tip' });
+    }
+
+    function newsButton(): HTMLElement {
+      return screen.getByRole('button', { name: /^What's new/ });
+    }
+
+    afterEach(resetDevice);
+
+    it('shows on an iPad in a browser tab, its text the button that explains', async () => {
+      setDevice(IPAD);
+      render(Home);
+      const buttons = within(banner()!).getAllByRole('button');
+      expect(
+        buttons.map(
+          (button) =>
+            button.textContent?.replace(/\s+/g, ' ').trim() || button.getAttribute('aria-label'),
+        ),
+      ).toEqual([TEXT, 'Dismiss']);
+
+      await fireEvent.click(within(banner()!).getByRole('button', { name: TEXT }));
+      const dialog = screen.getByRole('dialog', { name: 'Play full screen' });
+
+      // Got it closes the explanation only: the banner stays, to come back to.
+      await fireEvent.click(within(dialog).getByRole('button', { name: 'Got it' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(banner()).not.toBeNull();
+      expect(getPref('itf-home-screen-banner')).toBeNull();
+    });
+
+    it("goes for good once dismissed, the focus on the What's new button", async () => {
+      setDevice(IPAD);
+      const { unmount } = render(Home);
+      const dismiss = within(banner()!).getByRole('button', { name: 'Dismiss' });
+      dismiss.focus();
+
+      await fireEvent.click(dismiss);
+      expect(banner()).toBeNull();
+      expect(document.activeElement).toBe(newsButton());
+      unmount();
+
+      render(Home);
+      expect(banner()).toBeNull();
+    });
+
+    it('waits while the news banner shows, and comes once it is dismissed', async () => {
+      setDevice(IPAD);
+      localStorage.setItem('itf-news-seen', '2000-01-01-old');
+      render(Home);
+      expect(screen.getByRole('complementary', { name: 'Latest news' })).toBeTruthy();
+      expect(banner()).toBeNull();
+
+      const news = screen.getByRole('complementary', { name: 'Latest news' });
+      await fireEvent.click(within(news).getByRole('button', { name: 'Dismiss' }));
+
+      expect(screen.queryByRole('complementary', { name: 'Latest news' })).toBeNull();
+      expect(banner()).not.toBeNull();
+    });
+
+    it('comes once the news open from their banner', async () => {
+      setDevice(IPAD);
+      localStorage.setItem('itf-news-seen', '2000-01-01-old');
+      render(Home);
+
+      await fireEvent.click(screen.getByRole('button', { name: /^New: / }));
+      await fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+      expect(banner()).not.toBeNull();
+    });
+
+    it('does not show on an iPad opened from the Home Screen', () => {
+      setDevice(IPAD, true);
+      render(Home);
+      expect(banner()).toBeNull();
+    });
+
+    it('does not show on another device', () => {
+      render(Home);
+      expect(banner()).toBeNull();
     });
   });
 });

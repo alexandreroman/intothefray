@@ -87,6 +87,7 @@ beforeEach(() => {
 afterEach(() => {
   cardLang.current = 'en';
   vi.unstubAllGlobals();
+  Reflect.deleteProperty(navigator, 'connection');
   vi.clearAllMocks();
   document.body.replaceChildren();
 });
@@ -112,7 +113,12 @@ describe('Table preload', () => {
   });
 
   it('fetches nothing when the browser asks to save data', async () => {
-    vi.stubGlobal('navigator', { ...navigator, connection: { saveData: true } });
+    // On the real navigator, as an own property deleted afterwards: a copy of it would lose its
+    // getters, such as the user agent the top bar reads.
+    Object.defineProperty(navigator, 'connection', {
+      value: { saveData: true },
+      configurable: true,
+    });
     render(Table, { session: fakeSession(), view: makeView() });
     await settle();
     expect(RecordedImage.made).toEqual([]);

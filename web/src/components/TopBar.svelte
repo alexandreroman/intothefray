@@ -15,6 +15,7 @@
     onFullscreenChange,
     toggleFullscreen,
   } from '../lib/fullscreen';
+  import { isIPad } from '../lib/platform';
 
   let {
     spectators = 0,
@@ -111,8 +112,12 @@
     onend?.();
   }
 
-  // iPhone Safari has neither Fullscreen API: the button is not shown there.
-  const fullscreenSupported = canFullscreen();
+  // iPhone Safari has neither Fullscreen API: the button is not shown there. An iPad has one, but
+  // its browsers, all WebKit, ask to leave fullscreen at every key pressed (the table's shortcuts,
+  // a count typed in), and a page cannot stop them: an iPad gets no Fullscreen either, not even
+  // opened from the Home Screen. Home offers it a banner on adding the app to the Home Screen
+  // instead, where it opens full screen with no browser bars.
+  const fullscreenSupported = canFullscreen() && !isIPad();
 
   let fullscreen = $state(isFullscreen());
   const touch = new MediaQuery(TOUCH_MODE_QUERY);

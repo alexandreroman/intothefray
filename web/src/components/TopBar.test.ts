@@ -5,6 +5,7 @@ import barSource from './TopBar.svelte?raw';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { setFullscreenElement } from '../lib/fullscreen.testing';
+import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 import { TOUCH_MODE_QUERY } from '../lib/screen';
 import { tokensCss } from '../styles/tokens.testing';
@@ -410,6 +411,59 @@ describe('TopBar Fullscreen on a phone upright', () => {
     render(TopBar, { onend: () => {} });
 
     expect(screen.queryByRole('button', { name: /fullscreen/i })).toBeNull();
+  });
+});
+
+describe('TopBar on an iPad', () => {
+  // An iPad on its side. Its browsers have the Fullscreen API, which every test installs.
+  const IPAD_SCREEN = { width: 1180, height: 820, touch: true };
+
+  beforeEach(() => {
+    mockScreen(IPAD_SCREEN);
+    document.documentElement.requestFullscreen = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    resetDevice();
+  });
+
+  function actionNames(container: HTMLElement): string[] {
+    return [...container.querySelectorAll('.actions > *')].map(
+      (element) => element.getAttribute('aria-label') ?? '',
+    );
+  }
+
+  it('offers no Fullscreen in a browser tab, and nothing in its place', () => {
+    setDevice(IPAD);
+    const { container } = render(TopBar, {
+      spectators: 2,
+      viewMode: 'all',
+      onviewmode: () => {},
+      readyAll: { disabled: false, run: () => {} },
+      onend: () => {},
+    });
+
+    expect(actionNames(container)).toEqual([
+      '2 spectators',
+      'Table view',
+      'Ready all cards',
+      'End game',
+    ]);
+  });
+
+  it('offers no Fullscreen opened from the Home Screen either', () => {
+    setDevice(IPAD, true);
+    const { container } = render(TopBar, { onend: () => {} });
+
+    expect(actionNames(container)).toEqual(['End game']);
+  });
+
+  it('keeps Fullscreen on another touch screen', () => {
+    const { container } = render(TopBar, { onend: () => {} });
+
+    expect(actionNames(container)).toEqual(['Fullscreen', 'End game']);
   });
 });
 

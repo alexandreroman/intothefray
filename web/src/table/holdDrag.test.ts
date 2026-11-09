@@ -153,6 +153,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  Reflect.deleteProperty(navigator, 'vibrate');
   vi.useRealTimers();
   interaction.reset();
 });
@@ -189,7 +190,9 @@ describe('a touch press on a table card, in touch mode', () => {
 
   it('arms after the hold, lifts the card and buzzes; then a move drags it', async () => {
     const vibrate = vi.fn(() => true);
-    vi.stubGlobal('navigator', { ...navigator, vibrate });
+    // On the real navigator, as an own property deleted afterwards: a copy of it would lose its
+    // getters, such as the user agent the top bar reads.
+    Object.defineProperty(navigator, 'vibrate', { value: vibrate, configurable: true });
     const { session } = await renderTable();
     await press(placed('mine'), 50, 400);
     await wait(299);
