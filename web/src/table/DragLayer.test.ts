@@ -1949,6 +1949,66 @@ describe('the hand on touch', () => {
     expect(isOpen()).toBe(true);
   });
 
+  it('a drag of another card lets go of the selected one as it starts, and the reorder goes on', async () => {
+    const { session } = await renderTable();
+    await raise();
+    await tap(handCard('h2'), 500, 780);
+    expect(handCard('h2').classList).toContain('locked');
+
+    await touchDown(handCard('h1'), 350, 780);
+    await touchMove(700, 760);
+    expect(interaction.dragging?.card).toBe('h1');
+    expect(handCard('h2').classList).not.toContain('locked');
+    expect(interaction.locked).toBe(false);
+
+    await touchUp(700, 760);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'handOrder', area: 'p0', cards: ['h2', 'h3', 'h1'] },
+      0,
+    );
+    expect(isOpen()).toBe(true);
+  });
+
+  it('a drag of another card to the table lets go of the selected one as it starts', async () => {
+    const { session } = await renderTable();
+    await raise();
+    await tap(handCard('h2'), 500, 780);
+
+    await touchDown(handCard('h3'), 650, 780);
+    await touchMove(650, 770);
+    await touchMove(300, 450);
+    expect(ghosts().map((g) => g.dataset.id)).toEqual(['h3']);
+    expect(handCard('h2').classList).not.toContain('locked');
+    expect(interaction.locked).toBe(false);
+
+    await touchUp(300, 450);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ kind: 'play', card: 'h3' }),
+      0,
+    );
+  });
+
+  it('a drag of the selected card lets go of it too: it lands in its new place unselected', async () => {
+    const { session } = await renderTable();
+    await raise();
+    await tap(handCard('h2'), 500, 780);
+    expect(handCard('h2').classList).toContain('locked');
+
+    await touchDown(handCard('h2'), 500, 780);
+    await touchMove(700, 760);
+    expect(interaction.dragging?.card).toBe('h2');
+    // Out of the fan while dragged: a gap holds its new place.
+    expect(interaction.locked).toBe(false);
+
+    await touchUp(700, 760);
+    expect(session.act).toHaveBeenCalledExactlyOnceWith(
+      { kind: 'handOrder', area: 'p0', cards: ['h1', 'h3', 'h2'] },
+      0,
+    );
+    expect(handCard('h2').classList).not.toContain('locked');
+    expect(isOpen()).toBe(true);
+  });
+
   it('another hand shown keeps it raised', async () => {
     // Three decks: one hand shows at a time.
     const view = makeView({ cards: [...CARDS, card('h4', { owner: 1, zone: 'hand' })] });

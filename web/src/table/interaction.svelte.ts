@@ -458,13 +458,20 @@ class TableInteraction {
     this.#scrollGuarded = null;
   }
 
-  /** The press turned into a drag: the token pill goes. */
+  /**
+   * The press turned into a drag: the token pill goes. A hand card dragged lets go of the hand card
+   * a tap selected, the dragged one or another: the selected card drops back into the fan, and the
+   * dragged one lands unselected. A mouse never selects: its hover stays.
+   */
   lift(card: string | null, lifted: readonly string[]): void {
     if (this.held === null) {
       return;
     }
     this.held = { ...this.held, moved: true, card, lifted };
     this.hideCounter();
+    if (this.held.element.kind === 'hand' && this.locked && this.hovered?.kind === 'hand') {
+      this.release();
+    }
   }
 
   /** The drag under way and the drop waiting for the server, if any. */

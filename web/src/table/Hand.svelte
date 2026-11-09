@@ -317,8 +317,8 @@
    * inactive hand, that first tap makes it the active one too, and it rises
    * as it turns active. In the raised hand, a tap selects a card, lifted to
    * be read, another one moves the selection, and a tap on the selected card
-   * lets go of it. A tap opens no inspector: a hand card is played or
-   * discarded by a drag.
+   * lets go of it, as does the drag of any hand card. A tap opens no
+   * inspector: a hand card is played or discarded by a drag.
    */
   function tapped(id: string): void {
     if (modal.open) {
