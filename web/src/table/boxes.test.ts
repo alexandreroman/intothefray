@@ -1,8 +1,13 @@
-import { boxGrid, canShuffleIn, pileLabel, tileActions, type TileContext } from './boxes';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { boxGrid, boxRows, canShuffleIn, pileLabel, tileActions, type TileContext } from './boxes';
 import type { CardView, PileView, View } from '../lib/types';
 import { card, pile, playingView, seated } from './fixtures.testing';
 import boxSource from './CardBox.svelte?raw';
 import dialogSource from '../components/Dialog.svelte?raw';
+
+// Read from disk: vitest imports a stylesheet as an empty module, ?raw too.
+const tokensSource = readFileSync(path.join(import.meta.dirname, '../styles/tokens.css'), 'utf8');
 
 /** A card of that seat's, in one of the piles. */
 function pileCard(id: string, owner: number): CardView {
@@ -350,9 +355,76 @@ describe('boxGrid', () => {
   });
 });
 
-/** The declarations of a top-level rule of a component's stylesheet. */
-function ruleOf(source: string, selector: string): string {
+describe('boxRows', () => {
+  // A box three rows of 160 px tiles high: its 1 px borders, its header (14 px padding, 1 px border
+  // and a 35.6 px filter), three 224 px rows with their two 14 px gaps and 14 px padding, and its
+  // footer (12 px padding, 1 px border and 40 px buttons): 859.6 px, 88 % of a 976.8 px window.
+  it('opens three rows from a window whose column holds them', () => {
+    expect(boxRows(160, 977, false)).toBe(3);
+    expect(boxRows(160, 1440, false)).toBe(3);
+  });
+
+  it('opens two rows on a window just short of three', () => {
+    expect(boxRows(160, 976, false)).toBe(2);
+    // A tablet on its side, a laptop.
+    expect(boxRows(160, 820, false)).toBe(2);
+    expect(boxRows(160, 768, false)).toBe(2);
+  });
+
+  it('follows the tiles: smaller ones take three rows on a shorter window', () => {
+    // Three rows of 196 px: a 775.6 px box, 88 % of a 881.4 px window.
+    expect(boxRows(140, 881, false)).toBe(2);
+    expect(boxRows(140, 882, false)).toBe(3);
+  });
+
+  it("counts a tablet's 44 px filter and footer buttons", () => {
+    // 8 px taller than on a desktop: a 872 px box, 88 % of a 990.9 px window.
+    expect(boxRows(160, 977, true)).toBe(2);
+    expect(boxRows(160, 990, true)).toBe(2);
+    expect(boxRows(160, 991, true)).toBe(3);
+    // A tablet on its side and upright (1180 × 820, 820 × 1180).
+    expect(boxRows(160, 820, true)).toBe(2);
+    expect(boxRows(160, 1180, true)).toBe(3);
+  });
+
+  it('never opens fewer than two rows', () => {
+    expect(boxRows(160, 300, false)).toBe(2);
+    expect(boxRows(160, 0, false)).toBe(2);
+    expect(boxRows(160, 0, true)).toBe(2);
+  });
+
+  it('mirrors the sizes of the stylesheets it computes with', () => {
+    // COLUMN_MAX_SHARE and BACKDROP_PADDING (Dialog.svelte).
+    expect(ruleOf(dialogSource, '.box.wide')).toContain(
+      'max-height: min(88vh, calc(var(--visible-height, 100vh) - 32px));',
+    );
+    // HEAD_FRAME and FILTER_HEIGHT (CardBox.svelte), on the page's 14px/1.4 text (tokens.css).
+    const head = ruleOf(boxSource, '.mhead');
+    expect(head).toContain('padding: 14px 16px;');
+    expect(head).toContain('border-bottom: 1px solid');
+    const filter = ruleOf(boxSource, '.mhead .filter');
+    expect(filter).toContain('padding: 7px 12px;');
+    expect(filter).toContain('border: 1px solid');
+    expect(filter).toContain('font: inherit;');
+    expect(ruleOf(tokensSource, 'body', '')).toContain('font: 14px/1.4 var(--font);');
+    // FOOT_FRAME and FOOT_BUTTON_HEIGHT (CardBox.svelte), around the main button's height (tokens.css).
+    const foot = ruleOf(boxSource, '.mfoot');
+    expect(foot).toContain('padding: 12px 16px;');
+    expect(foot).toContain('border-top: 1px solid');
+    expect(ruleOf(boxSource, '.mfoot button:not(.btn-primary)')).toContain('height: 40px;');
+    expect(ruleOf(tokensSource, '.btn-primary.compact', '')).toContain('height: 40px;');
+    // TABLET_TARGET (CardBox.svelte): the tablet's filter and footer buttons.
+    expect(ruleOf(boxSource, ':global(.app.tablet) .mhead .filter')).toContain('height: 44px;');
+    expect(ruleOf(boxSource, ':global(.app.tablet) .mfoot button')).toContain('height: 44px;');
+  });
+});
+
+/**
+ * The declarations of a top-level rule of a stylesheet, its selector indented by `indent`: two
+ * spaces in a component's style block, none in a CSS file.
+ */
+function ruleOf(source: string, selector: string, indent = '  '): string {
   const escaped = selector.replace(/[.()]/g, (c) => `\\${c}`);
-  const pattern = new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`);
+  const pattern = new RegExp(`\\n${indent}${escaped} \\{([^}]*)\\}`);
   return pattern.exec(source)?.[1] ?? '';
 }

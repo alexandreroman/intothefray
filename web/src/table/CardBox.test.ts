@@ -1170,9 +1170,8 @@ describe('CardBox in dock mode', () => {
     expect(dialog.style.width).toBe(`min(${890 + 16}px, 100%)`);
   });
 
-  it('opens its grid two rows high on a short window, which the box shrinks to the room left', async () => {
-    vi.stubGlobal('innerHeight', 300);
-    // Laid out as the stylesheet says: the grid has room for its tiles inside its padding.
+  /** Lays the grid out as the stylesheet says: it has room for its tiles inside its padding. */
+  function layOutGrid() {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
       this: HTMLElement,
     ) {
@@ -1198,15 +1197,47 @@ describe('CardBox in dock mode', () => {
         },
       });
     });
+  }
+
+  // Five 160 px columns in jsdom's 1024 px window: rows of 5:7 tiles, their gaps and padding.
+  const TWO_ROWS = `${2 * 160 * 1.4 + 14 + 2 * 14}px`;
+  const THREE_ROWS = `${3 * 160 * 1.4 + 2 * 14 + 2 * 14}px`;
+
+  it('opens its grid two rows high on a short window, which the box shrinks to the room left', async () => {
+    vi.stubGlobal('innerHeight', 300);
+    layOutGrid();
     const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
     await tick();
 
-    // Five 160 px columns in jsdom's 1024 px window: two rows of 5:7 tiles, their gap and padding,
-    // whatever the window's height.
     const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
-    expect(grid.style.height).toBe(`${2 * 160 * 1.4 + 14 + 2 * 14}px`);
+    expect(grid.style.height).toBe(TWO_ROWS);
     // The box's column, 88vh at most, shrinks the scrolling grid to the room its header and footer leave.
     expect(boxRule('.mgrid')).toMatch(/overflow-y: auto;/);
+  });
+
+  it('opens its grid three rows high on a window tall enough for them', async () => {
+    vi.stubGlobal('innerHeight', 1000);
+    layOutGrid();
+    const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
+    await tick();
+
+    // Whatever the box holds: the search shows three cards, less than one row.
+    const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
+    expect(grid.style.height).toBe(THREE_ROWS);
+  });
+
+  it("drops to two rows as the window's height alone shrinks", async () => {
+    vi.stubGlobal('innerHeight', 1000);
+    layOutGrid();
+    const dialog = renderBox('deck:p0', 'search', false, makeView({ private: SEARCH }));
+    await tick();
+    const grid = dialog.querySelector<HTMLElement>('.mgrid')!;
+    expect(grid.style.height).toBe(THREE_ROWS);
+
+    vi.stubGlobal('innerHeight', 900);
+    window.dispatchEvent(new Event('resize'));
+    await tick();
+    expect(grid.style.height).toBe(TWO_ROWS);
   });
 
   it('heads the box with one line: the title cut short, then the filter', () => {

@@ -260,7 +260,27 @@ const BOX_TILE_MAX = 160;
 const BACKDROP_PADDING = 16;
 const BOX_BORDER = 1;
 const GRID_PADDING_X = 16;
+const GRID_PADDING_Y = 14;
 const GRID_GAP = 14;
+
+// The box's header and footer on one line, in px. They mirror the CSS of CardBox.svelte and must
+// change together: .mhead's padding and bottom border around its tallest item, the filter
+// (.mhead .filter: its padding and border around a line of the page's 14px/1.4 text, tokens.css);
+// .mfoot's padding and top border around its 40 px buttons (.btn-primary.compact, tokens.css).
+// On a tablet (.app.tablet) the filter and the footer's buttons are 44 px high, a finger's target.
+// A wrapped header is left out: every box of a window opens at the same size, whatever its title.
+const HEAD_FRAME = 2 * 14 + 1;
+const FILTER_HEIGHT = 2 * 7 + 2 * 1 + 14 * 1.4;
+const FOOT_FRAME = 2 * 12 + 1;
+const FOOT_BUTTON_HEIGHT = 40;
+const TABLET_TARGET = 44;
+
+// The share of the window's height a wide dialog's column takes at most: .box.wide's max-height,
+// min(88vh, 100vh - 32px) (Dialog.svelte), the 32 px being the backdrop's padding.
+const COLUMN_MAX_SHARE = 0.88;
+
+/** A card is 1.4 times as high as wide: a box's 5:7 tile too. */
+export const CARD_RATIO = 1.4;
 
 /** The columns of a box's grid, the width of their tiles and the box's width, in px. */
 interface BoxGrid {
@@ -286,4 +306,21 @@ export function boxGrid(raisedCard: number, windowWidth: number, gutter: number)
   const fitted = Math.max(0, Math.min(tile, inner));
   const width = columns * fitted + (columns - 1) * GRID_GAP + frame;
   return { columns, tile: fitted, width };
+}
+
+/**
+ * The rows of tiles a box opens with, outside dock mode, for tiles `tile` px wide in a window
+ * `windowHeight` px high: three when a box with three full rows, its header and its footer fits
+ * in the dialog's column, else two. `tablet` (touch mode outside dock mode, the app's `tablet`
+ * class) gives the header and the footer their taller targets. Never from what the box shows, so
+ * that every box of a window opens at the same size. The window's height, not the part the
+ * on-screen keyboard leaves: a keyboard opened on the filter never changes the rows of an open box.
+ */
+export function boxRows(tile: number, windowHeight: number, tablet: boolean): number {
+  const column = Math.min(COLUMN_MAX_SHARE * windowHeight, windowHeight - 2 * BACKDROP_PADDING);
+  const head = HEAD_FRAME + (tablet ? TABLET_TARGET : FILTER_HEIGHT);
+  const threeRows = 3 * tile * CARD_RATIO + 2 * GRID_GAP + 2 * GRID_PADDING_Y;
+  const foot = FOOT_FRAME + (tablet ? TABLET_TARGET : FOOT_BUTTON_HEIGHT);
+  const box = 2 * BOX_BORDER + head + threeRows + foot;
+  return box <= column ? 3 : 2;
 }
