@@ -6,6 +6,8 @@ import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { setFullscreenElement } from '../lib/fullscreen.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
+import { TOUCH_MODE_QUERY } from '../lib/screen';
+import { tokensCss } from '../styles/tokens.testing';
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
 // properties that shadow nothing and are simply deleted afterwards.
@@ -624,5 +626,33 @@ describe('TopBar safe areas', () => {
     const end =
       'max(var(--bar-gutter-end,var(--content-gutter,24px)),var(--bar-inset-right,env(safe-area-inset-right)))';
     expect(padding).toBe(start + end);
+  });
+});
+
+describe('TopBar control size', () => {
+  // jsdom applies no stylesheet: the rules themselves are checked.
+  function barRule(selector: string): string {
+    const escaped = selector.replace(/[.]/g, '\\.');
+    return new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`).exec(barSource)?.[1] ?? '';
+  }
+
+  it('is a shared token: 38px, 44px for a finger in touch mode', () => {
+    const root = /^:root \{([^}]*)\}/.exec(tokensCss)?.[1];
+    expect(root).toMatch(/--top-bar-control: 38px;/);
+    expect(root).toMatch(/--top-bar-gap: 8px;/);
+    const touch = new RegExp(
+      `@media ${TOUCH_MODE_QUERY.replace(/[()]/g, '\\$&')} \\{\\s*:root \\{([^}]*)\\}`,
+    ).exec(tokensCss)?.[1];
+    expect(touch).toMatch(/--top-bar-control: 44px;/);
+  });
+
+  it('sizes the icon buttons, the pill and the view switch from it', () => {
+    expect(barRule('.icon-button')).toMatch(/width: var\(--top-bar-control\);/);
+    expect(barRule('.icon-button')).toMatch(/height: var\(--top-bar-control\);/);
+    expect(barRule('.pill')).toMatch(/height: var\(--top-bar-control\);/);
+    expect(barRule('.actions')).toMatch(/--segmented-height: var\(--top-bar-control\);/);
+    expect(barRule('.actions')).toMatch(/gap: var\(--top-bar-gap\);/);
+    // No size of its own: the token alone grows them in touch mode.
+    expect(barSource).not.toMatch(/\b(38|44)px\b/);
   });
 });

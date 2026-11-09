@@ -231,18 +231,25 @@
     color: var(--muted);
   }
 
+  /*
+    The buttons that collapse and expand the history stand under the top bar's End game: as big
+    as the bar's controls (--top-bar-control, tokens.css) and as far from the window's edge
+    (--bar-gutter-end, Table.svelte). The strip's left edge is in the middle of the gap before End
+    game (.app.history-collapsed, Table.svelte): its buttons keep to the right, little room on
+    their left.
+  */
   .loghead {
     flex: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 10px 6px 0 18px;
+    padding: 10px var(--bar-gutter-end) 0 18px;
   }
 
   .toggle {
-    width: 32px;
-    height: 32px;
+    width: var(--top-bar-control);
+    height: var(--top-bar-control);
     padding: 0;
     display: flex;
     align-items: center;
@@ -267,18 +274,31 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding-top: 10px;
+    align-items: flex-end;
+    padding: 10px var(--bar-gutter-end) 0 0;
+  }
+
+  /*
+    The height of the expanded Undo button, on whose line the strip's Undo is centred: 44px on a
+    tablet, for a finger.
+  */
+  .undo,
+  .strip-undo {
+    --undo-height: 42px;
+  }
+
+  :global(.app.tablet) :is(.undo, .strip-undo) {
+    --undo-height: 44px;
   }
 
   .strip-undo {
     margin-top: auto;
-    padding-bottom: calc(var(--edge-bottom) + 5px);
+    padding-bottom: calc(var(--edge-bottom) + (var(--undo-height) - var(--top-bar-control)) / 2);
   }
 
   .strip-undo button {
-    width: 32px;
-    height: 32px;
+    width: var(--top-bar-control);
+    height: var(--top-bar-control);
     padding: 0;
     display: flex;
     align-items: center;
@@ -291,13 +311,6 @@
     width: 16px;
     height: 16px;
     stroke-width: 2;
-  }
-
-  /* A tablet: a finger needs 44 px targets; the collapsed strip is that wide, its 1 px border included
-     (Table.svelte). */
-  :global(.app.tablet) :is(.toggle, .strip-undo button) {
-    width: 44px;
-    height: 44px;
   }
 
   .log {
@@ -394,18 +407,13 @@
 
   .undo button {
     width: 100%;
-    height: 42px;
+    height: var(--undo-height);
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 0 14px;
     background: var(--panel);
     font-size: 13px;
-  }
-
-  /* A tablet: a finger needs a 44 px target. */
-  :global(.app.tablet) .undo button {
-    height: 44px;
   }
 
   .undo :global(svg) {

@@ -62,9 +62,11 @@ describe('the web app manifest', () => {
 
 describe('the table page on a touch screen', () => {
   it('pans but never pinch-zooms: the table has its own zoom', () => {
-    const touchRules = /@media \(hover: none\) and \(pointer: coarse\) \{([\s\S]*?)\n\}/.exec(
-      tokensCss,
-    )?.[1];
+    // tokens.css has several touch blocks: the one of the table page is among them.
+    const touchBlocks = tokensCss.matchAll(
+      /@media \(hover: none\) and \(pointer: coarse\) \{([\s\S]*?)\n\}/g,
+    );
+    const touchRules = [...touchBlocks].map((block) => block[1]).join('');
     expect(touchRules).toMatch(/html\.fixed-screen \{\s*touch-action: pan-x pan-y;\s*\}/);
   });
 

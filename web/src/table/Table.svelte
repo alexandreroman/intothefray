@@ -3044,6 +3044,12 @@
     */
     --bar-button: 32px;
     /*
+      The top bar's room at the window's right edge: its icons sit 8px from it, over the side
+      panel, not the play area. The history column keeps the same room, so that its buttons stand
+      under End game.
+    */
+    --bar-gutter-end: 8px;
+    /*
       Above every card, whose z-index the server raises with each move (it only grows): the
       out-of-play chips (Surface.svelte) and the markers (MarkerToken.svelte).
     */
@@ -3072,18 +3078,22 @@
     --bar-button: 44px;
   }
 
-  /* The history collapsed to a strip: the table takes the rest. */
+  /*
+    The history collapsed to a strip: the table takes the rest. Its buttons stand under End game,
+    one top bar control (--top-bar-control, tokens.css) on the bar's gutter (SidePanel.svelte),
+    and its left edge, the side panel's border included, in the middle of the gap between End game
+    and the button before it (--top-bar-gap, tokens.css).
+  */
   .app.history-collapsed {
-    grid-template-columns: minmax(0, 1fr) 44px;
+    --strip-width: calc(var(--top-bar-control) + var(--bar-gutter-end) + var(--top-bar-gap) / 2);
+    grid-template-columns: minmax(0, 1fr) var(--strip-width);
   }
 
   /*
-    The bar's icons sit close to the window's edge, over the side panel, not the play area. The
-    table pads by the side safe areas itself (dock mode, below; elsewhere they are 0): the bar
+    The table pads by the side safe areas itself (dock mode, below; elsewhere they are 0): the bar
     adds none of its own.
   */
   .top {
-    --bar-gutter-end: 8px;
     --bar-inset-left: 0px;
     --bar-inset-right: 0px;
     grid-area: top;
@@ -3233,6 +3243,7 @@
     cursor: crosshair;
   }
 
+  /* Its border lies within the collapsed strip's width, on its left edge (.app.history-collapsed). */
   .side {
     grid-area: side;
     display: flex;
@@ -3435,7 +3446,8 @@
     whole height: sliding away, it shows the table under it, and nothing else moves. A short screen
     wider than a narrow one (a short window with a mouse) keeps the history column, which then
     runs from the top of the window: the bar floats over the play area only, its icons on the play
-    area's edge. Dock mode never has the column (below).
+    area's edge, while the column keeps the app's gutter (--bar-gutter-end, .app). Dock mode never
+    has the column (below).
   */
   .app.compact {
     grid-template-rows: minmax(0, 1fr);
@@ -3448,14 +3460,17 @@
     align-self: start;
   }
 
-  /* Without the history column, the bar spans the window, its icons close to the window's edge. */
+  /*
+    Without the history column, the bar spans the window, its icons close to the window's edge:
+    the app's gutter (.app).
+  */
   @media (max-width: 900px) {
     .app.compact {
       grid-template-areas: 'table';
     }
 
     .app.compact .top {
-      --bar-gutter-end: 8px;
+      --bar-gutter-end: inherit;
     }
   }
 
@@ -3472,7 +3487,7 @@
   }
 
   .app.dock-mode .top {
-    --bar-gutter-end: 8px;
+    --bar-gutter-end: inherit;
   }
 
   /*

@@ -45,7 +45,7 @@
 - [Table layout](references/project_table_layout.md) — rows, owner frames, out-of-play chips; 112×157 table cards; one villain row; markers
 - [First player token needs two heroes](references/project_first_player_token.md) — none in a one-hero game; counts seats, not players
 - [Provider-neutral UI copy](references/project_provider_neutral_copy.md) — UI says "deck link", names no deck provider
-- [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow each screen's content column; table: icons 8px from window edge
+- [Top bar alignment](references/project_top_bar_alignment.md) — bar edges follow the content column; history buttons under End game
 - [Several decks per player](references/project_multi_deck.md) — 1–4 deck slots; seat = deck; credited seat; hero selector; two hands side by side
 - [Hero selector look and animation](references/project_hero_selector.md) — avatars, hand counts, current hero named only, fixed width, 0.3 s switch
 - [Truncated text shows a tooltip](references/project_truncated_text.md) — ellipsis text gets a full-text tooltip via use:overflowTip
