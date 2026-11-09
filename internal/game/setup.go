@@ -642,10 +642,9 @@ func (b *tableBuilder) requireNoVillainLeftover(setCode string) error {
 // it. They take the size and spacing of the classic encounter piles, or are
 // compact when the deck is (see pack.ScenarioDeck.Compact). The deck records
 // where its cards are discarded (see Pile.Discard): to its own discard pile,
-// to its own bottom for the rule "bottom", else to the encounter discard
-// pile, its owner's, unless its rule is "none" or the scenario has no classic
-// encounter deck (setupScenario then removes that pile before laying out the
-// decks).
+// else to the encounter discard pile, its owner's, unless its rule is "none"
+// or the scenario has no classic encounter deck (setupScenario then removes
+// that pile before laying out the decks).
 func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 	deckID, discardID := scenarioDeckIDs(deck.Key, deck.Encounter)
 	deckKind, discardKind := KindScenarioDeck, KindScenarioDiscard
@@ -670,8 +669,6 @@ func (b *tableBuilder) addDeckGroup(deck pack.ScenarioDeck) {
 		if _, ok := b.table.Piles[PileEncounterDiscard]; ok {
 			pile.Discard = PileEncounterDiscard
 		}
-	case pack.DiscardBottom:
-		pile.Discard = deckID
 	}
 	b.lastPile = true
 }

@@ -64,9 +64,10 @@ func addFreshIDs(t *Table, renames map[string]string, ids []string, rng *rand.Ra
 
 // renamedOnTheWay returns the cards a gives new ids as it takes a.Card out
 // of its place, so that nobody can tie the card that comes out later to the
-// one they saw go: every card a sends onto a deck, but one that lands on top
-// of a side deck that shows it (see landsInSight), and a card taken into a
-// hand out of a hand or face down off the table. That covers a card
+// one they saw go: every card a sends onto a deck, but one that lands in
+// everybody's sight on a side deck that shows its top card (see
+// landsInSight), and a card taken into a hand out of a hand or face down off
+// the table. That covers a card
 // discarded to the bottom of its deck (see discardTo) and the cards a card
 // leaving the table carries (see carried) that go to the bottom of a deck
 // (see tuckedDestination). The cards a shuffle into a deck gathers are left
@@ -80,13 +81,13 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 	switch a.Kind {
 	case ActToDeck:
 		deck, ok := t.Piles[toDeckID(c, a)]
-		inSight := ok && landsInSight(deck, a.Where)
+		inSight := ok && t.landsInSight(c, deck, a.Where)
 		if a.Where != whereShuffle && !inSight {
 			ids = append(ids, c.ID)
 		}
 	case ActDiscard:
 		deck, ok := t.Piles[t.discardPileID(c)]
-		if ok && deck.discardsToBottom() && !landsInSight(deck, whereBottom) {
+		if ok && deck.discardsToBottom() && !t.landsInSight(c, deck, whereBottom) {
 			ids = append(ids, c.ID)
 		}
 	case ActToHand:
@@ -107,11 +108,33 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 	return append(ids, t.sentUnderDecks(c, a)...)
 }
 
-// landsInSight reports whether a card put into deck at where, its top or its
+// landsInSight reports whether c, put into deck at where, its top or its
 // bottom, lies in everybody's sight: on a side deck that shows its top card,
-// on top of it, or under no card.
-func landsInSight(deck *Pile, where string) bool {
-	return deck.TopFaceUp && (where == whereTop || len(deck.Cards) == 0)
+// on top of it, or under no card. The cards c carries that drop into the deck
+// as it leaves the table (see tuckedDestination) go in first: c then lies
+// under them.
+func (t *Table) landsInSight(c *Card, deck *Pile, where string) bool {
+	if !deck.TopFaceUp {
+		return false
+	}
+	if where == whereTop {
+		return true
+	}
+	return len(deck.Cards) == 0 && !t.dropsCarriedInto(c, deck)
+}
+
+// dropsCarriedInto reports whether one of the cards c carries (see carried)
+// goes into deck when c leaves the table (see tuckedDestination).
+func (t *Table) dropsCarriedInto(c *Card, deck *Pile) bool {
+	if c.Zone != ZoneTable {
+		return false
+	}
+	for _, child := range t.carried(c) {
+		if pile, _, ok := t.tuckedDestination(child); ok && pile == deck {
+			return true
+		}
+	}
+	return false
 }
 
 // sentUnderDecks returns the cards c carries (see carried) that go to the
@@ -198,9 +221,10 @@ func renamedAgain(t *Table, a Action, rng *rand.Rand) (Action, error) {
 	switch {
 	case takesAway[a.Kind]:
 		keepOrAddIDs(covered, renames, a.Renames, covered.renamedOnTheWay(a), rng)
-	case a.Kind == ActReorderTop:
+	case a.Kind == ActReorderTop || a.Kind == ActDiscardTop:
 		// A reorder renames the cards it reorders, or none (see
-		// resolveReorderTop): apply checks them.
+		// resolveReorderTop), and so does a discard of a deck's top cards to
+		// its bottom (see resolveDiscardTop): apply checks them.
 		for _, id := range a.Cards {
 			if renamed, ok := a.Renames[id]; ok {
 				renames[id] = renamed
@@ -229,10 +253,11 @@ func keepOrAddIDs(t *Table, renames, recorded map[string]string, ids []string, r
 }
 
 // renamesCards reports whether a is of a kind that may give cards new ids
-// itself: one that takes a card away, a shuffle, or a reorder of a deck's top
-// (see resolveReorderTop).
+// itself: one that takes a card away, a shuffle, a reorder of a deck's top
+// (see resolveReorderTop), or a discard of a deck's top cards to its bottom
+// (see resolveDiscardTop).
 func renamesCards(a Action) bool {
-	return takesAway[a.Kind] || producesShuffle(a) || a.Kind == ActReorderTop
+	return takesAway[a.Kind] || producesShuffle(a) || a.Kind == ActReorderTop || a.Kind == ActDiscardTop
 }
 
 // takesAway are the kinds that may take a card out of its place, and with it

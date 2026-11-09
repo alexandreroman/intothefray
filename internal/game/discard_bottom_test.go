@@ -1,11 +1,12 @@
 package game
 
 import (
+	"errors"
 	"slices"
 	"strings"
 	"testing"
 
-	"github.com/alexandreroman/intothefray/internal/pack"
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // TestSenseDeckDiscardsToItsBottom checks the pile the Sense deck records
@@ -131,53 +132,132 @@ func TestSenseCardsDiscardedInAGroupGoUnderTheirDeck(t *testing.T) {
 
 // TestSenseDeckDiscardTopCyclesToItsBottom discards the top cards of the
 // Sense deck: they go under it one after the other, in the recorded order,
-// and keep their ids.
+// out of sight under new ids, and the line names the top card everybody saw.
 func TestSenseDeckDiscardTopCyclesToItsBottom(t *testing.T) {
 	tests := []struct {
 		n    int
 		line string
 	}{
-		{1, "put the top card of their Sense deck at the bottom"},
-		{2, "put the top 2 cards of their Sense deck at the bottom"},
+		{1, "put <name> at the bottom of their Sense deck"},
+		{2, "put 2 cards at the bottom of their Sense deck (<name>, a card)"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.line, func(t *testing.T) {
 			f := sideDeckFixture(t)
 			before := slices.Clone(f.g.Table.Piles[senseDeck].Cards)
 			top := topCards(f.g.Table.Piles[senseDeck], tt.n)
+			name := f.nameOf(t, top[0])
 
 			f.mustDo(t, "b", Action{Kind: ActDiscardTop, Pile: senseDeck, N: tt.n}, at(1))
 
+			if got := f.lastEvent(t).Action.Cards; !slices.Equal(got, top) {
+				t.Errorf("recorded cards = %v, want %v", got, top)
+			}
 			// The top card goes under the deck first, the next one under it.
-			moved := slices.Clone(top)
-			slices.Reverse(moved)
+			var moved []string
+			for _, id := range slices.Backward(top) {
+				renamed := f.renamedID(t, id)
+				if renamed == id {
+					t.Errorf("card %s keeps its id under the deck", id)
+				}
+				moved = append(moved, renamed)
+			}
 			want := slices.Concat(moved, before[:len(before)-tt.n])
 			if got := f.g.Table.Piles[senseDeck].Cards; !slices.Equal(got, want) {
 				t.Errorf("%s = %v, want %v", senseDeck, got, want)
 			}
-			if got := f.lastEvent(t).Action.Cards; !slices.Equal(got, top) {
-				t.Errorf("recorded cards = %v, want %v", got, top)
+			if got, want := f.lastLog().Text, strings.ReplaceAll(tt.line, "<name>", name); got != want {
+				t.Errorf("line = %q, want %q", got, want)
 			}
-			if got := f.lastLog().Text; got != tt.line {
-				t.Errorf("line = %q, want %q", got, tt.line)
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+
+			f.mustDo(t, "b", Action{Kind: ActUndo}, at(2))
+			if got := f.g.Table.Piles[senseDeck].Cards; !slices.Equal(got, before) {
+				t.Errorf("%s after undo = %v, want %v", senseDeck, got, before)
+			}
+		})
+	}
+}
+
+// TestSenseDeckDiscardOfAllItsCardsKeepsTheirIDs discards every card of the
+// Sense deck to its bottom: they end in the same order, the top card in
+// sight, and keep their ids.
+func TestSenseDeckDiscardOfAllItsCardsKeepsTheirIDs(t *testing.T) {
+	f := sideDeckFixture(t)
+	before := slices.Clone(f.g.Table.Piles[senseDeck].Cards)
+
+	f.mustDo(t, "b", Action{Kind: ActDiscardTop, Pile: senseDeck, N: len(before)}, at(1))
+
+	if renames := f.lastEvent(t).Action.Renames; len(renames) != 0 {
+		t.Errorf("renames = %v, want none", renames)
+	}
+	if got := f.g.Table.Piles[senseDeck].Cards; !slices.Equal(got, before) {
+		t.Errorf("%s = %v, want %v", senseDeck, got, before)
+	}
+	checkIntegrity(t, f.g.Table)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
+}
+
+// TestDiscardTopRefusesMissingRenames refuses a discard of the Sense deck's
+// top card that gives it no new id, and one that renames a deck's top cards
+// discarded to a discard pile.
+func TestDiscardTopRefusesMissingRenames(t *testing.T) {
+	f := sideDeckFixture(t)
+	tb := f.g.Table.Clone()
+	sense := Action{Kind: ActDiscardTop, Pile: senseDeck, N: 1, Cards: topCards(tb.Piles[senseDeck], 1)}
+	if err := apply(tb, sense); !errors.Is(err, ErrInvalid) {
+		t.Errorf("discard to the bottom without renames = %v, want ErrInvalid", err)
+	}
+	top := topCards(tb.Piles["deck:p1"], 1)
+	deck := Action{Kind: ActDiscardTop, Pile: "deck:p1", N: 1, Cards: top, Renames: map[string]string{top[0]: "cnew"}}
+	if err := apply(tb, deck); !errors.Is(err, ErrInvalid) {
+		t.Errorf("discard to a discard pile with renames = %v, want ErrInvalid", err)
+	}
+}
+
+// carriedSenseFixture returns a game of Daredevil alone whose whole Sense
+// deck is in his hand but two cards: host on the table, the other tucked
+// under it. The Sense deck is empty.
+func carriedSenseFixture(t *testing.T) (f *doFixture, host, tucked string) {
+	t.Helper()
+	f = heroGame(t, heroDeck(t, packstest.Catalog(t), daredevilIdentity, "Daredevil"))
+	sense := sideDeckID(0, 0)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: len(f.g.Table.Piles[sense].Cards), Pile: sense}, at(1))
+	hand := f.g.Table.Hands["p0"]
+	host, tucked = hand[len(hand)-2], hand[len(hand)-1]
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: host, X: 800, Y: 500}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: tucked, Target: host}, at(3))
+	return f, host, tucked
+}
+
+// TestSenseCardOverItsTuckedCardGoesOutOfSight takes a Sense card off the
+// table to the bottom of its empty deck, discarded or put there, a Sense card
+// tucked under it: the tucked card drops into the deck first, so the host
+// lies under it, out of sight, under a new id.
+func TestSenseCardOverItsTuckedCardGoesOutOfSight(t *testing.T) {
+	for _, a := range []Action{
+		{Kind: ActDiscard},
+		{Kind: ActToDeck, Where: whereBottom},
+	} {
+		t.Run(string(a.Kind), func(t *testing.T) {
+			f, host, tucked := carriedSenseFixture(t)
+			a.Card = host
+
+			f.mustDo(t, "h", a, at(4))
+
+			hostID, tuckedID := f.renamedID(t, host), f.renamedID(t, tucked)
+			if hostID == host {
+				t.Errorf("host %s keeps its id under the tucked card", host)
+			}
+			if got := f.g.Table.Piles[sideDeckID(0, 0)].Cards; !slices.Equal(got, []string{hostID, tuckedID}) {
+				t.Errorf("Sense deck = %v, want [%s %s]", got, hostID, tuckedID)
 			}
 			checkIntegrity(t, f.g.Table)
 			checkHistory(t, f.g)
 			checkReplay(t, f)
 		})
-	}
-}
-
-// TestBottomDiscardScenarioDeck sets up a scenario deck whose cards are
-// discarded to its bottom: it records itself as its discard pile.
-func TestBottomDiscardScenarioDeck(t *testing.T) {
-	b := &tableBuilder{cat: setupCatalog(t), rng: newTestRNG(), table: newEmptyTable(1)}
-	b.addDeckGroup(pack.ScenarioDeck{Key: "b", Label: "Bottom", Sets: []string{"sa"}, Discard: pack.DiscardBottom})
-	deckID, discardID := scenarioDeckIDs("b", false)
-	if got := b.table.Piles[deckID].Discard; got != deckID {
-		t.Errorf("%s discard = %q, want %s", deckID, got, deckID)
-	}
-	if b.table.Piles[discardID] != nil {
-		t.Errorf("a deck discarding to its bottom has %s", discardID)
 	}
 }

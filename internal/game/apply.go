@@ -1466,8 +1466,9 @@ func discardOf(deck *Pile) string {
 // applyDiscardTop discards the recorded cards, wherever they are in the deck
 // (see applyDraw), in the recorded order (see discardTo). A deck whose cards
 // are discarded to its bottom takes its top cards under it, one after the
-// other, as so many discards of its top card would. They keep their ids, as
-// the cards of a reorder do (see resolveReorderTop): they stay in their deck.
+// other, as so many discards of its top card would, and gives them the new
+// ids resolveDiscardTop picked when they go out of sight (see
+// cycledOutOfSight).
 func applyDiscardTop(t *Table, a Action) error {
 	deck, err := t.pile(a.Pile)
 	if err != nil {
@@ -1480,10 +1481,19 @@ func applyDiscardTop(t *Table, a Action) error {
 	if err := checkInPile(deck, a.Cards); err != nil {
 		return err
 	}
+	var expected []string
+	if cycledOutOfSight(deck, len(a.Cards)) {
+		expected = a.Cards
+	}
+	if _, err := checkFreshIDs(t, a.Renames, expected); err != nil {
+		return err
+	}
 
 	for _, id := range a.Cards {
 		t.discardTo(discard, t.Cards[id])
 	}
+	renameInViews(t, a.Renames)
+	renameCards(t, a.Renames)
 	return nil
 }
 

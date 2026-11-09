@@ -36,8 +36,9 @@ type CardView struct {
 	// infers.
 	Home string `json:"home,omitempty"`
 	// SideDeck is the side deck a card of one belongs to (see
-	// Card.SideDeck), sent whatever its face, as Home is: the client offers
-	// that side deck, and no other, to put the card into.
+	// Card.SideDeck): the client offers that side deck, and no other, to put
+	// the card into. A face-down table card hides it, as it hides its code,
+	// unless the card is at home in that side deck: Home tells it anyway.
 	SideDeck string `json:"sideDeck,omitempty"`
 }
 
@@ -408,12 +409,16 @@ func (c *Card) viewOf(stageKey string) CardView {
 		Tokens: maps.Clone(c.Tokens), Status: maps.Clone(c.Status), Mods: maps.Clone(c.Mods), Stage: stageKey,
 		Identity: c.Identity,
 	}
-	if c.FaceDown && c.Zone == ZoneTable {
+	hidden := c.FaceDown && c.Zone == ZoneTable
+	if hidden {
 		cv.Code = ""
 	}
 	if ruledDeckID(c.Home) {
 		cv.Home = c.Home
 	}
-	cv.SideDeck = c.SideDeck
+	// A side card at home in the player's deck looks like any card of it.
+	if !hidden || c.SideDeck == c.Home {
+		cv.SideDeck = c.SideDeck
+	}
 	return cv
 }

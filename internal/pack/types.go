@@ -42,7 +42,8 @@ const (
 	DiscardNone DiscardRule = "none"
 	// DiscardBottom puts a discarded card at the bottom of its deck: the
 	// cards discarded from the deck's top go under it, and so does a card
-	// tucked under a card leaving the table (Sense).
+	// tucked under a card leaving the table (Sense). It is for side decks
+	// only.
 	DiscardBottom DiscardRule = "bottom"
 )
 

@@ -274,13 +274,6 @@ func TestLoadAcceptsBottomDiscardRule(t *testing.T) {
 	if got := loaded.Sets["daredevil_sense_deck"].Side.Discard; got != pack.DiscardBottom {
 		t.Errorf("got discard rule %q, want %q", got, pack.DiscardBottom)
 	}
-
-	// A scenario with encounter decks of its own has no encounter discard
-	// pile: a deck discarding to its bottom needs none.
-	if err := loadScenario(t, `{"id":"x","villainSet":"x","selfContained":true,`+
-		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true,"discard":"bottom"}],`+emptyStart+`}`); err != nil {
-		t.Fatalf("got error %v, want none for an encounter deck discarding to its bottom", err)
-	}
 }
 
 func TestLoadRejectsUnknownWith(t *testing.T) {
@@ -299,6 +292,11 @@ func TestLoadRejectsBadDecks(t *testing.T) {
 			"unknown discard rule",
 			`{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"discard":"victory"}]}`,
 			`deck "a" has an unknown discard rule "victory"`,
+		},
+		{
+			"discard to the bottom of a scenario deck",
+			`{"id":"x","villainSet":"x","decks":[{"key":"a","label":"A","sets":["s"],"discard":"bottom"}]}`,
+			`deck "a": the discard rule "bottom" is for side decks only`,
 		},
 		{
 			// Without a classic encounter deck, there is no encounter discard pile to default to.

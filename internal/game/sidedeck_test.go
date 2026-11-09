@@ -490,6 +490,43 @@ func TestSideDeckViews(t *testing.T) {
 	}
 }
 
+// TestFaceDownSideCardHidesItsSideDeck shows a Sense card face down on the
+// table: out of the player's deck, it hides which side deck it belongs to,
+// as it hides its code; at home in its side deck, its home tells it anyway,
+// and the side deck still takes it back.
+func TestFaceDownSideCardHidesItsSideDeck(t *testing.T) {
+	f := sideDeckFixture(t)
+	visitor := drawSide(t, f, "b", senseDeck, 1)
+	f.mustDo(t, "b", Action{Kind: ActToDeck, Card: visitor, Where: whereTop, Pile: "deck:p1"}, at(2))
+	visitor = f.renamedID(t, visitor)
+	// Dragged off the deck, it lands face down.
+	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: "deck:p1", X: 800, Y: 770}, at(3))
+	homeCard := drawSide(t, f, "b", senseDeck, 4)
+	f.mustDo(t, "b", Action{Kind: ActPlay, Card: homeCard, X: 960, Y: 770}, at(5))
+	f.g.Table.Cards[homeCard].FaceDown = true
+
+	for _, token := range []string{"h", "b", "nobody"} {
+		cards := map[string]CardView{}
+		for _, cv := range f.g.ViewFor(token).Table.Cards {
+			cards[cv.ID] = cv
+		}
+		if cv := cards[visitor]; !cv.FaceDown || cv.Code != "" || cv.Home != "" || cv.SideDeck != "" {
+			t.Errorf("%s sees the face-down Sense card from the deck as %+v, want nothing of its side deck", token, cv)
+		}
+		if cv := cards[homeCard]; cv.Code != "" || cv.Home != senseDeck || cv.SideDeck != senseDeck {
+			t.Errorf("%s sees the face-down Sense card at home as %+v, want its home and side deck", token, cv)
+		}
+	}
+
+	// Face up, it shows its side deck again.
+	f.mustDo(t, "b", Action{Kind: ActFlip, Card: visitor}, at(6))
+	for _, cv := range f.g.ViewFor("h").Table.Cards {
+		if cv.ID == visitor && cv.SideDeck != senseDeck {
+			t.Errorf("the face-up Sense card belongs to %q, want %s", cv.SideDeck, senseDeck)
+		}
+	}
+}
+
 // tuckedSenseFixture returns a game of Daredevil alone (p0, Sense deck
 // "side:p0:0", whose cards are discarded to its bottom) and a Sense card
 // drawn into his hand.

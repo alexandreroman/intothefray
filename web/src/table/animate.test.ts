@@ -692,6 +692,35 @@ describe('diffViews', () => {
       }
     });
 
+    it('slips the top card a side deck showed under it, discarded to its bottom', () => {
+      const next = view({
+        cards: [
+          card('s2', { code: '60004', zone: 'pile', home: 'side:p0:1', sideDeck: 'side:p0:1' }),
+        ],
+        piles: [seatPile('deck:p0'), { ...sense(4), cards: ['s2'] }],
+        log: [OLD_LINE, line('put Acute Tactility at the bottom of their Sense deck', alex)],
+      });
+      const before = view({ cards: [top], piles: [seatPile('deck:p0'), sense(4)] });
+
+      expect(diffViews(before, next)).toContainEqual({
+        kind: 'under',
+        id: 's1',
+        toPile: 'side:p0:1',
+        fromPile: 'side:p0:1',
+      });
+      // Several cards: the line lists them after the deck.
+      const several = {
+        ...next,
+        log: [
+          OLD_LINE,
+          line('put 2 cards at the bottom of their Sense deck (Acute Tactility, a card)', alex),
+        ],
+      };
+      expect(diffViews(before, several).filter((anim) => anim.kind === 'under')).toEqual([
+        { kind: 'under', id: 's1', toPile: 'side:p0:1', fromPile: 'side:p0:1' },
+      ]);
+    });
+
     it('does not slip under for a card put on top, nor for an undone line', () => {
       // Put on top, it flies there instead, turning face down.
       expect(diffViews(prev, bottomOf(5, 'put Radar Sense on top of their Sense deck'))).toEqual([

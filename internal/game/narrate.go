@@ -306,11 +306,10 @@ func (n narrator) describe(a Action) (logLine, bool) {
 	case ActReorderTop:
 		return n.reorderEvent(a)
 	case ActDiscardTop:
-		text := join(words("discarded "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
-		// A deck whose cards are discarded to its bottom takes them under it.
 		if n.before.Piles[a.Pile].discardsToBottom() {
-			text = join(words("put "+topCount(len(a.Cards))+" of "), n.pile(a.Pile), words(" at the bottom"))
+			return n.underDeckEvent(a), true
 		}
+		text := join(words("discarded "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
 		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActShuffle:
 		return logLine{text: join(words("shuffled "), n.pile(a.Pile))}, true
@@ -369,6 +368,21 @@ func (n narrator) bottomDiscardDeck(id string) (string, bool) {
 		return "", false
 	}
 	return pile.ID, true
+}
+
+// underDeckEvent narrates a discard of the top cards of a deck that takes
+// them under it, as a toDeck at the bottom says it: "put Radar Sense at the
+// bottom of their Sense deck", or as a group does for several cards: "put 2
+// cards at the bottom of their Sense deck (Radar Sense, a card)".
+func (n narrator) underDeckEvent(a Action) logLine {
+	deck := n.pile(a.Pile)
+	if len(a.Cards) == 1 {
+		text := join(words("put "), n.name(a.Cards[0]), words(" at the bottom of "), deck)
+		return logLine{text: text, cards: n.visibleCards(a.Cards...)}
+	}
+	text := join(words(fmt.Sprintf("put %d cards at the bottom of ", len(a.Cards))), deck,
+		words(" ("), n.cardList(a.Cards), words(")"))
+	return logLine{text: text, cards: n.visibleCards(a.Cards...)}
 }
 
 func (n narrator) toHandEvent(a Action) logLine {
