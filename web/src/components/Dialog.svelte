@@ -1,12 +1,13 @@
 <!--
   The shell of every dialog of the app, the one modal layer: a backdrop that
   dims the page under it, a box titled by its first line, and the focus moved
-  into it and kept there. Escape, or a click on the backdrop, cancels; the
-  click does nothing else. While it is shown, a modal counts as open (see
-  modal.svelte.ts): the page does not scroll, the table keys, hover and drags
-  stop. A wide box (the card boxes, the shortcuts sheet) draws its own heading
-  and spacing. The box is centred unless `at` places it; a box that fills
-  takes the whole screen, within its safe areas (a card box on a phone).
+  into it, without a focus ring, and kept there. Escape, or a click on the
+  backdrop, cancels; the click does nothing else. While it is shown, a modal
+  counts as open (see modal.svelte.ts): the page does not scroll, the table
+  keys, hover and drags stop. A wide box (the card boxes, the shortcuts sheet)
+  draws its own heading and spacing. The box is centred unless `at` places it;
+  a box that fills takes the whole screen, within its safe areas (a card box
+  on a phone).
 -->
 <script lang="ts">
   import { onDestroy, onMount, type Snippet } from 'svelte';
@@ -73,10 +74,13 @@
     }
   });
 
+  // The focus moves in without a focus ring, whether the pointer or a shortcut
+  // opened the dialog: nothing in the box has been reached by the keyboard yet.
+  // Tab or the arrows inside then show the ring, as the browser has it.
   onMount(() => {
-    // The content may have focused one of its own elements already (autofocus).
+    // The content may have focused one of its own elements already (focusOnOpen).
     if (!box?.contains(document.activeElement)) {
-      focusables(box)[0]?.focus();
+      focusables(box)[0]?.focus({ focusVisible: false });
     }
   });
 

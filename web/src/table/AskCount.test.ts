@@ -32,6 +32,10 @@ function shown(value: HTMLElement): string {
 }
 
 describe('AskCount', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('asks with a default of 5, and Enter confirms', async () => {
     const { dialog, value, onconfirm } = renderAsk();
     expect(dialog.textContent).toContain('How many cards do you draw?');
@@ -42,6 +46,16 @@ describe('AskCount', () => {
 
     await fireEvent.keyDown(value, { key: 'Enter' });
     expect(onconfirm).toHaveBeenCalledWith(5);
+  });
+
+  it('focuses the value as it opens without a focus ring', () => {
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    const { value } = renderAsk();
+
+    expect(document.activeElement).toBe(value);
+    // jsdom has no :focus-visible: the call tells whether the browser draws the ring.
+    expect(focus.mock.contexts).toEqual([value]);
+    expect(focus).toHaveBeenCalledWith({ focusVisible: false });
   });
 
   it('shows the value without a text field', () => {

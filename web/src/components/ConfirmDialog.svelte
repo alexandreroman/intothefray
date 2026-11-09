@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import Dialog from './Dialog.svelte';
+  import { focusOnOpen } from './modal.svelte';
 
   let {
     question,
@@ -31,8 +32,7 @@
   {/if}
   <div class="buttons">
     <!-- The safe choice has the focus. -->
-    <!-- svelte-ignore a11y_autofocus -->
-    <button type="button" onclick={oncancel} autofocus>Cancel</button>
+    <button type="button" onclick={oncancel} {@attach focusOnOpen}>Cancel</button>
     <button type="button" class="btn-primary compact" onclick={onconfirm}>{confirmLabel}</button>
   </div>
 </Dialog>

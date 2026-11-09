@@ -12,6 +12,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import Dialog from '../components/Dialog.svelte';
+  import { focusOnOpen } from '../components/modal.svelte';
 
   let {
     title,
@@ -126,11 +127,6 @@
     }
   }
 
-  // The value has the focus as the box opens: the keys change it at once.
-  function focusOnOpen(element: HTMLElement): void {
-    element.focus();
-  }
-
   /** Quick clicks on − and + never start a text selection. */
   function noSelection(event: MouseEvent): void {
     event.preventDefault();
@@ -148,6 +144,7 @@
       onmousedown={noSelection}
       onclick={() => step(-1)}>−</button
     >
+    <!-- The value has the focus as the box opens: the keys change it at once. -->
     <div
       class="value"
       role="spinbutton"

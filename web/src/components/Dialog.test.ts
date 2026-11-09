@@ -50,6 +50,48 @@ describe('Dialog', () => {
     expect(document.activeElement).toBe(cancel);
   });
 
+  describe('moving the focus in as it opens', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('focuses the first control of its content, without a focus ring', () => {
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+      const content = createRawSnippet(() => ({
+        render: () => '<div><button>First</button><button>Second</button></div>',
+      }));
+      render(Dialog, { title: 'Options', oncancel: () => {}, children: content });
+
+      const first = screen.getByRole('button', { name: 'First' });
+      expect(document.activeElement).toBe(first);
+      // jsdom has no :focus-visible: the call tells whether the browser draws the ring.
+      expect(focus).toHaveBeenCalledWith({ focusVisible: false });
+      expect(focus.mock.contexts).toEqual([first]);
+    });
+
+    it('shows the focus ring on Tab, even on its only control', async () => {
+      const content = createRawSnippet(() => ({
+        render: () => '<div><button>Close</button></div>',
+      }));
+      render(Dialog, { title: "What's new", oncancel: () => {}, children: content });
+      const close = screen.getByRole('button', { name: 'Close' });
+      expect(document.activeElement).toBe(close);
+
+      // Tab wraps onto the control that has the focus: it must take it again, with its ring.
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+      const blur = vi.spyOn(HTMLElement.prototype, 'blur');
+      await fireEvent.keyDown(close, { key: 'Tab' });
+      expect(document.activeElement).toBe(close);
+      expect(blur.mock.contexts).toEqual([close]);
+      expect(focus.mock.contexts).toEqual([close]);
+      expect(focus).toHaveBeenCalledWith({ focusVisible: true });
+
+      await fireEvent.keyDown(close, { key: 'Tab', shiftKey: true });
+      expect(document.activeElement).toBe(close);
+      expect(focus).toHaveBeenLastCalledWith({ focusVisible: true });
+    });
+  });
+
   describe('filling the screen', () => {
     const content = createRawSnippet(() => ({ render: () => '<p>Cards</p>' }));
 
