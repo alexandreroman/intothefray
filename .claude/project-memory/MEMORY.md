@@ -104,3 +104,4 @@
 - [Card counts use one capsule](references/project_count_capsule.md) — piles, dock, hand sheet, hero selector: .count-pill
 - [No button alone on a line](references/project_no_lone_button.md) — buttonGrid: 1 full, pairs, 3 in a row if ≥96 px, odd: last full
 - [Full-bleed favicon](references/project_favicon.md) — one opaque icon for tabs and search; favicon.ico (32x32) declared before favicon.svg
+- [A press shows the hover's look](references/project_press_looks.md) — no tap highlight; :active = hover look, rounded; own-feedback elements none
