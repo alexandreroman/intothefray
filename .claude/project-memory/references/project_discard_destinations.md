@@ -43,8 +43,9 @@ type: project
   top card, which returns only when dropped right over the deck (see
   [[project_action_bars]]).
 - A scenario with its own encounter decks has no classic encounter discard
-  pile, so each of its decks states `"own"`, `"bottom"` or `"none"`
-  (checked by the pack generator).
+  pile, so each of its decks states `"own"` or `"none"` (checked by the
+  pack generator). `"bottom"` is a side deck rule only; the generator
+  rejects it on a scenario deck.
 
 **Why:** user decision: one default rule with declared exceptions, each
 exception backed by the official rules: The Rise of Red Skull rulebook
