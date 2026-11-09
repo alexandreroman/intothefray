@@ -337,6 +337,12 @@ describe('HandSheet', () => {
       expect(rule('.actions button')).toContain('min-height: 48px;');
     });
 
+    it('lights a pressed action up, and darkens a pressed Play, as the primary button', () => {
+      // Their own rules outweigh every button's press (tokens.css): they give it back.
+      expect(rule('.actions button:active')).toContain('background-color: var(--hover);');
+      expect(rule('.actions .play:active')).toContain('background-color: var(--accent-deep);');
+    });
+
     it('holds the carousel and its dots together', () => {
       renderSheet();
 

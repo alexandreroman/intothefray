@@ -15,5 +15,8 @@ applyTheme(storedTheme());
 installEscapeLock();
 // For the page's whole life too: a text field of any screen brings up the on-screen keyboard.
 installVisibleArea();
+// Safari on iOS gives :active, every control's press look (tokens.css), only to an element under a
+// touchstart listener: an empty one on the document reaches them all. Passive, it never holds up a scroll.
+document.addEventListener('touchstart', () => {}, { passive: true });
 
 mount(App, { target });

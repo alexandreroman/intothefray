@@ -510,6 +510,13 @@
     color: var(--text);
   }
 
+  /* Pressed, as under the pointer: a lighter surface, the owner's edge; an empty pile's chip opens nothing. */
+  .chip:active:not([aria-disabled='true']) {
+    background: var(--hover);
+    border-color: var(--owner);
+    color: var(--text);
+  }
+
   @media (hover: hover) {
     .chip:hover:not([aria-disabled='true']) {
       background: var(--hover);

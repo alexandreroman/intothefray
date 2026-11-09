@@ -219,9 +219,13 @@
     --spacing: 14px;
   }
 
-  /* One entry: its hero's avatar, the hero's name beside it. */
+  /*
+    One entry: its hero's avatar, the hero's name beside it. None of a button's hover or press
+    surface: the sliding ring is the feedback.
+  */
   .item,
-  .item:hover {
+  .item:hover,
+  .item:active {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -232,8 +236,6 @@
     color: var(--muted);
     /* A button centres its text: the name sits against its avatar, the room it leaves after it. */
     text-align: left;
-    /* The browser's tap highlight is square over the entry: the sliding ring is the feedback. */
-    -webkit-tap-highlight-color: transparent;
   }
 
   .swatch {

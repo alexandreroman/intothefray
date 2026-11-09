@@ -802,8 +802,6 @@
     font-size: 13px;
     font-weight: 600;
     text-align: left;
-    /* No square tap highlight: the chosen row's outline and wash are the feedback. */
-    -webkit-tap-highlight-color: transparent;
   }
 
   .vrow + .vrow {
@@ -840,9 +838,14 @@
     white-space: nowrap;
   }
 
-  /* The chosen row keeps its outline and wash, a little brighter under the pointer. */
+  /* The chosen row keeps its outline and wash, a little brighter under the pointer or pressed. */
   .vrow.on {
     background: color-mix(in srgb, var(--sel) 14%, transparent);
+    border-color: var(--sel);
+  }
+
+  .vrow.on:active {
+    background: color-mix(in srgb, var(--sel) 22%, transparent);
     border-color: var(--sel);
   }
 

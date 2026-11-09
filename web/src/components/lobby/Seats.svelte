@@ -541,6 +541,12 @@
     border-color: var(--line-strong);
   }
 
+  /* Pressed, as under the pointer: its edge lights up too. */
+  .tool.add:active:not(:disabled, [aria-disabled='true']) {
+    border-color: var(--sel);
+    color: var(--sel);
+  }
+
   @media (hover: hover) {
     .tool.add:hover:not(:disabled, [aria-disabled='true']) {
       border-color: var(--sel);
@@ -629,7 +635,13 @@
     font-weight: 600;
   }
 
-  /* A spectator's free seat is a button: it takes the seat. */
+  /* A spectator's free seat is a button: it takes the seat. Pressed, as under the pointer, its
+     dashed edge takes the seat's colour, on no surface. */
+  button.free:active:not(:disabled) {
+    background: none;
+    border-color: var(--pc);
+  }
+
   @media (hover: hover) {
     button.free:hover:not(:disabled) {
       background: none;

@@ -379,6 +379,18 @@
     transform: skewX(-8deg);
   }
 
+  /*
+    A press lights a button up, as every button's (tokens.css), which these rules outweigh; Play
+    darkens, as the primary button's panel does.
+  */
+  .actions button:active {
+    background-color: var(--hover);
+  }
+
+  .actions .play:active {
+    background-color: var(--accent-deep);
+  }
+
   .hint {
     grid-area: hint;
     margin: 8px 0 0;

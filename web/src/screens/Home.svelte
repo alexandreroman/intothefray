@@ -465,7 +465,7 @@
     border-radius: 12px;
   }
 
-  /* Plain text, wrapping as text does; the title is underlined under the pointer or the focus. */
+  /* Plain text, wrapping as text does; the title is underlined under the pointer, pressed or focused. */
   .banner .open {
     flex: 1 1 auto;
     min-width: 0;
@@ -481,9 +481,15 @@
     color: var(--text-soft);
   }
 
-  .banner .open:focus-visible .title {
+  .banner .open:focus-visible .title,
+  .banner .open:active .title {
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  /* Pressed, as under the pointer: a tap's feedback. */
+  .banner .open:active {
+    color: var(--text);
   }
 
   @media (hover: hover) {
