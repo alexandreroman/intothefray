@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { onDestroy, onMount, tick, untrack } from 'svelte';
-  import { lastPressByPointer } from '../components/modal.svelte';
+  import { focusAfterPress, lastPressByPointer } from '../components/modal.svelte';
   import { overflowTip } from '../lib/overflowTip';
   import './countPill.css';
   import { keyLabel, type ActionItem } from './actions';
@@ -245,7 +245,7 @@
 
   async function focusSubmenu(): Promise<void> {
     await tick();
-    itemsOf(submenu)[0]?.focus();
+    focusAfterPress(itemsOf(submenu)[0]);
   }
 
   // ---- The keyboard ----
@@ -268,7 +268,7 @@
     const id = openId;
     openId = null;
     if (focusRow && id !== null) {
-      menu?.querySelector<HTMLElement>(`[data-submenu="${CSS.escape(id)}"]`)?.focus();
+      focusAfterPress(menu?.querySelector<HTMLElement>(`[data-submenu="${CSS.escape(id)}"]`));
     }
   }
 

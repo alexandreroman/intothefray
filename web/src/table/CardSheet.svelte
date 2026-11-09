@@ -87,6 +87,7 @@
   import { MediaQuery } from 'svelte/reactivity';
   import { fade, fly, slide } from 'svelte/transition';
   import Sheet from '../components/Sheet.svelte';
+  import { focusAfterPress } from '../components/modal.svelte';
   import { motionMs } from '../lib/motion';
   import { buttonGrid } from '../lib/buttonGrid';
   import { decodeImage, type Decode } from '../lib/decodeImage';
@@ -601,14 +602,14 @@
   );
 
   // The tile the focus was on goes as the list changes: the focus moves to the Back row, or back to
-  // the submenu's tile, rather than falling out of the sheet.
+  // the submenu's tile, rather than falling out of the sheet. Its ring shows only after a key's press.
   async function openSub(entry: ContextSubmenu): Promise<void> {
     // Measured before the switch, on the main page; already held while it is still sliding back.
     heldHeight ??= pagesElement?.offsetHeight ?? null;
     pageStep = 1;
     openId = entry.id;
     await tick();
-    content?.querySelector<HTMLElement>('.back')?.focus();
+    focusAfterPress(content?.querySelector<HTMLElement>('.back'));
   }
 
   // A counter entry (`staysOpen`: a token, a status, a modifier) keeps the submenu page, the focus on
@@ -627,7 +628,7 @@
     openId = null;
     await tick();
     if (id !== null) {
-      content?.querySelector<HTMLElement>(`[data-submenu="${CSS.escape(id)}"]`)?.focus();
+      focusAfterPress(content?.querySelector<HTMLElement>(`[data-submenu="${CSS.escape(id)}"]`));
     }
   }
 

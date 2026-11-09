@@ -1,6 +1,6 @@
 ---
 name: "Dialogs take the focus without a focus ring"
-description: "Every dialog moves the focus in with focusVisible: false, whatever opened it; focusOnOpen picks the element"
+description: "Every dialog moves the focus in with focusVisible: false, whatever opened it; focusOnOpen picks the element; menus focus after a press with focusAfterPress"
 type: project
 ---
 
@@ -22,6 +22,12 @@ type: project
   browser's own ring rules.
 - Modal sheets (`Sheet.svelte`) focus their panel the same way. Card boxes in
   touch mode focus their box quietly too.
+- Menus and submenus move the focus after a press with `focusAfterPress`
+  (`web/src/components/modal.svelte.ts`): the ring shows only when a key made
+  the press; a finger, mouse or pen moves the focus quietly. The touch
+  inspector (`CardSheet.svelte`) uses it for the Back row and the submenu's
+  tile, the context menu for its submenu's first item and its row. Arrow-key
+  steps between items keep a plain focus call.
 - Context menus are not dialogs: opened from the keyboard, their first item
   takes the focus with its ring.
 - A dialog closed by the pointer gives the focus back to its opener without
@@ -32,4 +38,5 @@ selection nobody made; the keyboard has not moved inside the box yet.
 
 **How to apply:** a new dialog content element that wants the focus on open
 takes `{@attach focusOnOpen}`; any other focus moved in as a dialog or modal
-sheet opens passes `{ focusVisible: false }`.
+sheet opens passes `{ focusVisible: false }`; a focus a menu moves in answer
+to a press goes through `focusAfterPress`.

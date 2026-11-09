@@ -1,4 +1,5 @@
-import { openModal } from './modal.svelte';
+import { fireEvent } from '@testing-library/svelte';
+import { focusAfterPress, openModal } from './modal.svelte';
 
 const page = document.documentElement;
 
@@ -64,5 +65,49 @@ describe('openModal', () => {
     expect(page.classList).not.toContain('scroll-locked-gutter');
 
     close();
+  });
+});
+
+describe('focusAfterPress', () => {
+  let button: HTMLButtonElement;
+
+  beforeEach(() => {
+    button = document.createElement('button');
+    document.body.append(button);
+  });
+
+  afterEach(() => {
+    button.remove();
+    vi.restoreAllMocks();
+  });
+
+  it('moves the focus without a focus ring after a press of the pointer', async () => {
+    await fireEvent.pointerDown(button);
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+    focusAfterPress(button);
+
+    expect(document.activeElement).toBe(button);
+    // jsdom has no :focus-visible: the call tells whether the browser draws the ring.
+    expect(focus).toHaveBeenCalledExactlyOnceWith({ focusVisible: false });
+  });
+
+  it('moves the focus with its focus ring after a press of a key', async () => {
+    await fireEvent.keyDown(button, { key: 'Enter' });
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+    focusAfterPress(button);
+
+    expect(document.activeElement).toBe(button);
+    expect(focus).toHaveBeenCalledExactlyOnceWith({ focusVisible: true });
+  });
+
+  it('passes the other focus options on', async () => {
+    await fireEvent.pointerDown(button);
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+
+    focusAfterPress(button, { preventScroll: true });
+
+    expect(focus).toHaveBeenCalledExactlyOnceWith({ preventScroll: true, focusVisible: false });
   });
 });

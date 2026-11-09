@@ -79,6 +79,20 @@ export function lastPressByPointer(): boolean {
 }
 
 /**
+ * Moves the focus to `element` in answer to a press, as a menu moves it to a
+ * submenu or back to its row. The focus ring shows only when a key made the
+ * press: under a finger, a mouse or a pen, the focus moves quietly, where a
+ * plain focus call leaves the ring to the browser (Safari draws it on a tap).
+ * Does nothing without an element.
+ */
+export function focusAfterPress(
+  element: HTMLElement | null | undefined,
+  options: FocusOptions = {},
+): void {
+  element?.focus({ ...options, focusVisible: !lastPressByPointer() });
+}
+
+/**
  * The element a dialog's content wants focused as it opens, as an attachment
  * (`{@attach focusOnOpen}`). It takes the focus without a focus ring, whatever
  * opened the dialog: the ring shows once the keyboard moves within the box.
