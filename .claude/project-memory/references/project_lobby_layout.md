@@ -36,9 +36,12 @@ type: project
   refused clipboard shows the link in a selected read-only field.
 - Card actions are icon buttons with tooltips: `Add a deck` (plus),
   `Take {name} off this seat` (user-minus), `Leave your seat` (leave),
-  `Change deck` (pencil), `Remove deck` (trash); their icons end on the
-  card's content edge. The cross icon closes
-  things only (the top bar's Close the lobby, dialogs, a set chip's remove).
+  `Change deck` (pencil), `Remove deck` (trash). Every button of a seat
+  card, the name line's icon buttons and a slot's `Load` square and icon
+  buttons alike, ends its box on the card's content edge: one right edge
+  for all. On a card with decks side by side, a deck's line ends on its
+  column's edge. The cross icon closes things only (the top bar's Close
+  the lobby, dialogs, a set chip's remove).
 - **Scenario**, host (`ScenarioPicker.svelte`): the filter field, with no
   visible label, in the left column of the recap's two-column grid (as wide
   as Difficulty); then the scenarios as rows 44px tall (40px on a phone),
