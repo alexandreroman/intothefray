@@ -766,8 +766,11 @@ describe('the history panel on a large phone on its side', () => {
 
     const barRules = [...tableSource.matchAll(/\n {2}\.app\.dock-mode \.top \{([^}]*)\}/g)];
     const gutter = barRules.find((rule) => rule[1]?.includes('--bar-gutter-end'));
-    expect(gutter?.[1]).toMatch(/--bar-gutter-end: 8px;/);
+    // The app's gutter, 8px.
+    expect(gutter?.[1]).toMatch(/--bar-gutter-end: inherit;/);
     expect(gutter!.index).toBeGreaterThan(compactAt);
+    const appRule = /\n {2}\.app \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(appRule).toMatch(/--bar-gutter-end: 8px;/);
   });
 
   it('keeps the table and its bar clear of the right safe area, the rail clear of the left one', () => {

@@ -335,18 +335,18 @@
     align-items: center;
     gap: 8px;
     margin-left: auto;
-    --segmented-height: 38px;
+    --segmented-height: var(--top-bar-control);
     --segmented-bg: var(--panel);
     --segmented-pad: 12px;
     --segmented-weight: 600;
   }
 
-  /* Buttons in the row share one height: the pill matches them. */
+  /* Buttons in the row share one height (--top-bar-control, tokens.css): the pill matches them. */
   .pill {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    height: 38px;
+    height: var(--top-bar-control);
     padding: 0 13px;
     background: var(--panel);
     border: 1px solid var(--line);
@@ -361,10 +361,11 @@
     height: 17px;
   }
 
+  /* Square, taller in touch mode as a finger needs (tokens.css). */
   .icon-button {
     flex: none;
-    width: 38px;
-    height: 38px;
+    width: var(--top-bar-control);
+    height: var(--top-bar-control);
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -382,22 +383,6 @@
     width: 18px;
     height: 18px;
     display: block;
-  }
-
-  /* A finger needs taller targets: touch mode (TOUCH_MODE_QUERY, lib/screen). */
-  @media (hover: none) and (pointer: coarse) {
-    .actions {
-      --segmented-height: 44px;
-    }
-
-    .icon-button,
-    .pill {
-      height: 44px;
-    }
-
-    .icon-button {
-      width: 44px;
-    }
   }
 
   /*

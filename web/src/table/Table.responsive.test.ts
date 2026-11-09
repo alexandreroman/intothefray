@@ -1246,3 +1246,66 @@ describe('Table under a compact top bar', () => {
     expect(app.style.getPropertyValue('--bar-room')).toBe('0px');
   });
 });
+
+describe('Table history column under End game', () => {
+  // jsdom applies no stylesheet: the rules themselves are checked. End game is the top bar's last
+  // icon button, --top-bar-control square (tokens.css), --bar-gutter-end from the window's edge.
+  // Every top-level rule of the selector, as some selectors have several: their declarations.
+  function rule(source: string, selector: string): string {
+    const escaped = selector.replace(/[.()]/g, '\\$&');
+    const rules = source.matchAll(new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`, 'g'));
+    return [...rules].map((match) => match[1]).join('');
+  }
+
+  it("shares the bar's gutter with the whole app, the bar's own rule setting none", () => {
+    expect(rule(tableSource, '.app')).toMatch(/--bar-gutter-end: 8px;/);
+    expect(rule(tableSource, '.top')).not.toMatch(/--bar-gutter-end/);
+  });
+
+  it('keeps the same gutter in every mode but the short one with the column', () => {
+    // A short mouse window wider than 900px: the bar floats over the play area, on its gutter,
+    // the history column keeping the app's.
+    expect(rule(tableSource, '.app.compact .top')).toMatch(
+      /--bar-gutter-end: var\(--content-gutter\);/,
+    );
+    const narrow =
+      /@media \(max-width: 900px\) \{[^@]*?\n {4}\.app\.compact \.top \{([^}]*)\}/.exec(
+        tableSource,
+      )?.[1];
+    expect(narrow).toMatch(/--bar-gutter-end: inherit;/);
+    expect(rule(tableSource, '.app.dock-mode .top')).toMatch(/--bar-gutter-end: inherit;/);
+  });
+
+  it('collapses to a strip one bar control wide, with the gutter on either side and the border', () => {
+    const collapsed = rule(tableSource, '.app.history-collapsed');
+    expect(collapsed).toMatch(
+      /--strip-width: calc\(var\(--top-bar-control\) \+ 2 \* var\(--bar-gutter-end\) \+ 1px\);/,
+    );
+    expect(collapsed).toMatch(/grid-template-columns: minmax\(0, 1fr\) var\(--strip-width\);/);
+    expect(rule(tableSource, '.side')).toMatch(/border-left: 1px solid/);
+  });
+
+  it("sizes the strip's buttons and the collapse button as the bar's, on the gutter", () => {
+    for (const selector of ['.toggle', '.strip-undo button']) {
+      expect(rule(sidePanelSource, selector)).toMatch(/width: var\(--top-bar-control\);/);
+      expect(rule(sidePanelSource, selector)).toMatch(/height: var\(--top-bar-control\);/);
+    }
+    expect(rule(sidePanelSource, '.strip')).toMatch(/padding: 10px var\(--bar-gutter-end\) 0;/);
+    expect(rule(sidePanelSource, '.loghead')).toMatch(
+      /padding: 10px var\(--bar-gutter-end\) 0 18px;/,
+    );
+    // The token grows them on a tablet: no size of their own there.
+    expect(sidePanelSource).not.toMatch(/\.app\.tablet\) :is\(\.toggle/);
+  });
+
+  it("centres the strip's Undo on the expanded Undo's line", () => {
+    expect(rule(sidePanelSource, '.undo button')).toMatch(/height: var\(--undo-height\);/);
+    expect(rule(sidePanelSource, '.strip-undo')).toMatch(
+      /padding-bottom: calc\(var\(--edge-bottom\) \+ \(var\(--undo-height\) - var\(--top-bar-control\)\) \/ 2\);/,
+    );
+    expect(rule(sidePanelSource, '.undo,\n  .strip-undo')).toMatch(/--undo-height: 42px;/);
+    expect(rule(sidePanelSource, ':global(.app.tablet) :is(.undo, .strip-undo)')).toMatch(
+      /--undo-height: 44px;/,
+    );
+  });
+});

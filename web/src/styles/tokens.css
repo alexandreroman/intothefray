@@ -73,6 +73,20 @@
   --held-card-shadow: 2px 2px 6px 2px #000000a0, 8px 8px 21px 2px #00000066;
   /* The first player token lies flat, lit from above. */
   --token-shadow: drop-shadow(0 3px 4px #000c);
+
+  /*
+    The size of the top bar's controls, its icon buttons, its pill and its view switch alike
+    (TopBar). The table's history column shares it, so that its buttons stand under End game.
+    Taller in touch mode (below).
+  */
+  --top-bar-control: 38px;
+}
+
+/* A finger needs a 44px target: touch mode (TOUCH_MODE_QUERY, lib/screen.ts). */
+@media (hover: none) and (pointer: coarse) {
+  :root {
+    --top-bar-control: 44px;
+  }
 }
 
 /*
