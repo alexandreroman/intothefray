@@ -78,6 +78,17 @@ export function lastPressByPointer(): boolean {
   return pointerPressedLast;
 }
 
+/**
+ * The element a dialog's content wants focused as it opens, as an attachment
+ * (`{@attach focusOnOpen}`). It takes the focus without a focus ring, whatever
+ * opened the dialog: the ring shows once the keyboard moves within the box.
+ * Attachments run before the dialog moves the focus in, which then leaves it
+ * there.
+ */
+export function focusOnOpen(element: HTMLElement): void {
+  element.focus({ focusVisible: false });
+}
+
 /** The elements inside `root` that Tab reaches, in document order. */
 export function focusables(root: HTMLElement | undefined): HTMLElement[] {
   const selector = 'button:not(:disabled), input:not(:disabled), select, textarea, [tabindex]';
@@ -98,12 +109,24 @@ export function trapTab(event: KeyboardEvent, root: HTMLElement | undefined): vo
   // The root itself has the focus after a click on its text: Tab would leave from there.
   if (!all.some((element) => element === document.activeElement)) {
     event.preventDefault();
-    (event.shiftKey ? last : first).focus();
+    focusByTab(event.shiftKey ? last : first);
   } else if (event.shiftKey && document.activeElement === first) {
     event.preventDefault();
-    last.focus();
+    focusByTab(last);
   } else if (!event.shiftKey && document.activeElement === last) {
     event.preventDefault();
-    first.focus();
+    focusByTab(first);
   }
+}
+
+/**
+ * Focuses `element` as Tab would, with its focus ring: the dialog may have focused it quietly as it
+ * opened. Tab in a box with a single control wraps onto the control that has the focus already, which
+ * a focus call would leave as it is, still without its ring: it loses the focus first, to take it again.
+ */
+function focusByTab(element: HTMLElement): void {
+  if (element === document.activeElement) {
+    element.blur();
+  }
+  element.focus({ focusVisible: true });
 }

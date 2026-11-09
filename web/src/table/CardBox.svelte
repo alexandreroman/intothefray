@@ -189,7 +189,7 @@
    */
   function keepKeyboardDown(filter: HTMLInputElement): void {
     if (untrack(() => touchMode.current)) {
-      filter.closest<HTMLElement>('[role="dialog"]')?.focus();
+      filter.closest<HTMLElement>('[role="dialog"]')?.focus({ focusVisible: false });
     }
   }
 

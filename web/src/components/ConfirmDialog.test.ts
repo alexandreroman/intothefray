@@ -9,6 +9,10 @@ function renderDialog() {
 }
 
 describe('ConfirmDialog', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('confirms with its button, and focuses Cancel first', async () => {
     const { onconfirm, oncancel } = renderDialog();
     expect(screen.getByRole('alertdialog', { name: 'Sure?' })).toBeTruthy();
@@ -17,6 +21,17 @@ describe('ConfirmDialog', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Do it' }));
     expect(onconfirm).toHaveBeenCalledOnce();
     expect(oncancel).not.toHaveBeenCalled();
+  });
+
+  it('focuses Cancel as it opens without a focus ring', () => {
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    renderDialog();
+
+    const cancel = screen.getByRole('button', { name: 'Cancel' });
+    expect(document.activeElement).toBe(cancel);
+    // jsdom has no :focus-visible: the call tells whether the browser draws the ring.
+    expect(focus.mock.contexts).toEqual([cancel]);
+    expect(focus).toHaveBeenCalledWith({ focusVisible: false });
   });
 
   it('shows the confirmation as the main action', () => {
