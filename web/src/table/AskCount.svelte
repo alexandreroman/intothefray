@@ -1,8 +1,13 @@
 <!--
   "How many cards?": the app's own dialog for a number of cards, instead of
-  the browser's prompt. − value + (5 by default): the value is not typed but
-  stepped, with the buttons or the keys (arrows, + and −, Home and End).
-  Enter confirms; Escape, Cancel or a click outside cancels.
+  the browser's prompt. − value + (5 by default): the value is stepped with
+  the buttons or the keys (arrows, + and −, Home and End), or typed with the
+  digit keys anywhere in the box. The first digit replaces the value, the next
+  ones append to it, Backspace removes the last one. A typed value stays
+  between 1 and max: one above max shows max. A step starts from the typed
+  value, and the next digit replaces it again. There is no text field, so a
+  touch screen shows no keyboard. Enter confirms; Escape, Cancel or a click
+  outside cancels.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
@@ -30,6 +35,9 @@
   // svelte-ignore state_referenced_locally
   let count = $state(Math.max(1, Math.min(5, max)));
 
+  // Whether the digits typed append to the value; the first one replaces it.
+  let typing = false;
+
   // A max that drops below the value (the pile shrank) lowers it; one that rises leaves it.
   $effect(() => {
     const limit = max;
@@ -47,6 +55,31 @@
 
   function step(by: number): void {
     setCount(count + by);
+    typing = false;
+  }
+
+  function typeDigit(digit: string): void {
+    if (typing) {
+      setCount(Number(String(count) + digit));
+    } else if (digit === '0') {
+      // No leading zero: the value waits for its first digit.
+      return;
+    } else {
+      setCount(Number(digit));
+    }
+    typing = true;
+  }
+
+  // The last digit goes; without one left, the value is 1 and the next digit replaces it.
+  function eraseDigit(): void {
+    const digits = String(count);
+    if (digits.length > 1) {
+      setCount(Number(digits.slice(0, -1)));
+      typing = true;
+    } else {
+      setCount(1);
+      typing = false;
+    }
   }
 
   function confirm(): void {
@@ -65,6 +98,12 @@
     '−': -1,
   };
 
+  /** A digit key, of the main row or the numeric keypad, with no shortcut modifier. */
+  function isDigit(event: KeyboardEvent): boolean {
+    const modified = event.ctrlKey || event.metaKey || event.altKey;
+    return /^[0-9]$/.test(event.key) && !modified && !event.isComposing;
+  }
+
   function onKeydown(event: KeyboardEvent): void {
     const by = KEY_STEPS[event.key];
     // Enter on a button presses that button (Cancel, − or +), as the browser has it.
@@ -77,6 +116,13 @@
     } else if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault();
       setCount(event.key === 'Home' ? 1 : max);
+      typing = false;
+    } else if (isDigit(event)) {
+      event.preventDefault();
+      typeDigit(event.key);
+    } else if (event.key === 'Backspace') {
+      event.preventDefault();
+      eraseDigit();
     }
   }
 
@@ -143,7 +189,7 @@
     gap: 8px;
   }
 
-  /* Read only, as the token pill's value: nothing in it to select. */
+  /* Not a text field, as the token pill's value: nothing in it to select. */
   .value {
     min-width: 64px;
     text-align: center;
