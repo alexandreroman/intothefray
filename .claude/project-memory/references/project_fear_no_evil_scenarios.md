@@ -27,9 +27,19 @@ type: project
   with Disturbed Psyche and Establish Trust in play, Stop The Presses! with
   the Daily Bugle, The Getaway with Out Front (60129 face 0) and The Raft
   Breakout with Master Key (60143) in the villain row (set-level `inPlay`);
-  players attach them by hand. Players do the rest by hand: the Underling's
-  stage, Typhoid Mary's random side, the Protection Racket schemes per
-  player, Art Museum Heist's random Art attachment, The Getaway's speed
+  players attach them by hand.
+- Cards the setup text takes out of the encounter deck start in the
+  scenario's set-aside pile: Art Museum Heist's four Art attachments
+  (60122 to 60125) and Stop The Presses!'s four Daily Bugle supports
+  (60153 to 60156) through the set-level `setAside` of `sets.json`, and
+  Bullseye's Adamantium-Laced Spine (60068) through the scenario-level
+  `setAside` of `bullseye.json`, since the `underling` set kind takes no
+  set-level `setAside`. Players attach one Art at random to the villain and
+  shuffle the other three into the encounter deck, each player puts a
+  random Daily Bugle support into play and the others leave the game, and
+  Bullseye II's When Revealed finds the Spine there.
+- Players do the rest by hand: the Underling's stage, Typhoid Mary's random
+  side, the Protection Racket schemes per player, The Getaway's speed
   counters and the searches the 1A Setup texts name.
 
 **Why:** user decision: the Underling is the villain players identify

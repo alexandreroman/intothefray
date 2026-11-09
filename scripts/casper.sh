@@ -39,6 +39,28 @@ instance_name() {
 	printf '%s' "$name" | tr -c 'A-Za-z0-9._/-' '-'
 }
 
+# Start a worktree with a copy of the main checkout's card-source cache.
+# The cache never expires, so it is the source snapshot of the committed
+# packs/dist: make packs then regenerates from the same data instead of
+# downloading fresher upstream records. A copy, not a symlink, so that a
+# -refresh run in the workspace leaves the main checkout's cache intact.
+# The main checkout is the first entry of `git worktree list`.
+seed_pack_cache() {
+	main=$(git -C "$root" worktree list --porcelain 2>/dev/null | sed -n '1s/^worktree //p')
+	if [ -z "$main" ] || [ "$main" = "$root" ]; then
+		return 0
+	fi
+	if [ ! -d "$main/packs/.cache" ] || [ -e "$root/packs/.cache" ]; then
+		return 0
+	fi
+	# A partial copy would mix two snapshots: make packs would download the
+	# missing sources fresh. Remove it and let make packs start from scratch.
+	if ! cp -R "$main/packs/.cache" "$root/packs/.cache"; then
+		rm -rf "$root/packs/.cache"
+		echo "casper.sh: could not copy $main/packs/.cache" >&2
+	fi
+}
+
 # Give a worktree workspace its own ports, from the band Casper reserved
 # (CASPER_PORT .. CASPER_PORT + 9), and name its instance after the branch.
 # The main checkout has no CASPER_PORT: default ports, no instance name.
@@ -60,6 +82,7 @@ APP_INSTANCE=$instance
 ENV
 	fi
 	cd "$root"
+	seed_pack_cache
 	make web-install
 	go mod download
 }

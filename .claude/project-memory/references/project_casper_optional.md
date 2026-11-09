@@ -20,6 +20,13 @@ when detached). The single Casper command is the default one, `run`
 panel. The `teardown` hook removes the workspace's Redis and Caddy
 containers (`make app-down`) and clears the panel.
 
+The `setup` hook also copies the main checkout's `packs/.cache` (the
+first entry of `git worktree list`) into a worktree that has none. The
+cache never expires, so it is the source snapshot of the committed
+`packs/dist`: `make packs` in a workspace regenerates from the same data.
+It is a copy, never a symlink, so that a `-refresh` run in a workspace
+leaves the main checkout's cache intact.
+
 **Why:** the project must stay usable, unchanged, by anyone who does not run
 Casper.
 
