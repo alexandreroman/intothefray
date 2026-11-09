@@ -35,6 +35,10 @@ type CardView struct {
 	// came from. It is left out for every other card, whose home the client
 	// infers.
 	Home string `json:"home,omitempty"`
+	// SideDeck is the side deck a card of one belongs to (see
+	// Card.SideDeck), sent whatever its face, as Home is: the client offers
+	// that side deck, and no other, to put the card into.
+	SideDeck string `json:"sideDeck,omitempty"`
 }
 
 // PileView is a pile as one viewer sees it: the card list is only given for
@@ -410,5 +414,6 @@ func (c *Card) viewOf(stageKey string) CardView {
 	if ruledDeckID(c.Home) {
 		cv.Home = c.Home
 	}
+	cv.SideDeck = c.SideDeck
 	return cv
 }

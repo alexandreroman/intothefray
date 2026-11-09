@@ -277,7 +277,8 @@ describe('a group dropped on a deck of its owner', () => {
     card('patrol', { owner: -1, back: 'encounter' }),
     card('minion', { owner: -1, back: 'encounter' }),
     card('a'),
-    card('sense', { home: 'side:p0:0' }),
+    card('sense', { home: 'side:p0:0', sideDeck: 'side:p0:0' }),
+    card('sense2', { home: 'side:p0:0', sideDeck: 'side:p0:0' }),
   ];
   const view = makeView(cards, piles);
   const of = (units: string[]) => groupPileTargets(units, view).map((t) => [t.pile, t.drop]);
@@ -290,10 +291,11 @@ describe('a group dropped on a deck of its owner', () => {
     ]);
   });
 
-  it("offers the viewer's cards each of their decks, whatever their homes", () => {
-    expect(of(['a', 'sense'])).toEqual([
-      ['deck:p0', 'top'],
+  it("offers the viewer's cards the decks that take each of them: a side deck only its own cards", () => {
+    expect(of(['a', 'sense'])).toEqual([['deck:p0', 'top']]);
+    expect(of(['sense', 'sense2'])).toEqual([
       ['side:p0:0', 'top'],
+      ['deck:p0', 'top'],
     ]);
   });
 
@@ -305,9 +307,10 @@ describe('a group dropped on a deck of its owner', () => {
       ['encd', undefined],
     ]);
     // The Sense card's home is the Sense deck, the other card's Alex's deck: neither is home to both.
-    expect(exact(['a', 'sense'])).toEqual([
+    expect(exact(['a', 'sense'])).toEqual([['deck:p0', true]]);
+    expect(exact(['sense', 'sense2'])).toEqual([
+      ['side:p0:0', undefined],
       ['deck:p0', true],
-      ['side:p0:0', true],
     ]);
   });
 

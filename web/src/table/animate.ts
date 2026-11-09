@@ -1174,9 +1174,10 @@ type Under = Extract<Anim, { kind: 'under' }>;
 /**
  * The cards just put at the bottom of a deck that does not list them, as
  * they left the view and their home deck grew: those a new line says were
- * "put … at the bottom of" that deck (one card, or a group), and the side
- * cards tucked under a card that left the table, which go to the bottom of a
- * side deck without a discard pile (the line names only that card). Cards of
+ * "put … at the bottom of" that deck (one card, or a group; a card discarded
+ * to the bottom of its deck too), and the side cards tucked under a card that
+ * left the table, which go to the bottom of a side deck that never discards
+ * its cards or discards them there (the line names only that card). Cards of
  * the table or the viewer's hand only. A deck that lists the card (a side deck
  * showing its only card) shows it flying there instead (travelOf). The
  * viewer's own drop slips under too, from where it was dropped.
@@ -1205,12 +1206,18 @@ function slidUnder(lines: LogView[], view: View, before: TableView, after: Table
     const now = after.piles.find((pile) => pile.id === id);
     return was !== undefined && now !== undefined && now.count > was.count;
   };
+  // A side or scenario deck's card goes under its deck when that deck discards its cards nowhere, or
+  // to its own bottom (tuckedDestination).
+  const goesUnderHome = (was: CardView) => {
+    const discard = discardPileOf(was, after.piles);
+    return discard === null || discard === homeDeckOf(was);
+  };
   const tuckedAway = (was: CardView) =>
     acted &&
     was.parent !== undefined &&
     !onTable.has(was.parent) &&
     (isSideDeckId(homeDeckOf(was)) || isScenarioDeckId(homeDeckOf(was))) &&
-    discardPileOf(was, after.piles) === null;
+    goesUnderHome(was);
 
   const anims: Under[] = [];
   for (const was of before.cards) {

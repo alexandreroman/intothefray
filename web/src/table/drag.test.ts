@@ -1142,7 +1142,7 @@ describe('dropping a card on its deck', () => {
 
 describe('side decks', () => {
   // Alex (p0) plays Doctor Strange (Invocation, with a discard pile) and Daredevil's Sense deck
-  // (none); Sam (p1) has an Invocation deck too.
+  // (its cards discarded to its bottom); Sam (p1) has an Invocation deck too.
   const piles = [
     pile('deck:p0', { owner: 0 }),
     pile('disc:p0', { kind: 'discard', owner: 0, count: 0, cards: [] }),
@@ -1162,30 +1162,46 @@ describe('side decks', () => {
       label: 'Invocation',
       cards: ['inv-used'],
     }),
-    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+    pile('side:p0:1', {
+      kind: 'sideDeck',
+      owner: 0,
+      count: 5,
+      label: 'Sense',
+      discard: 'side:p0:1',
+    }),
     pile('side:p1:0', { kind: 'sideDeck', owner: 1, count: 5, label: 'Invocation' }),
   ];
   const cards = [
-    card('inv', { home: 'side:p0:0' }),
-    card('sense', { home: 'side:p0:1' }),
-    card('inv-top', { zone: 'pile', home: 'side:p0:0' }),
-    card('inv-used', { zone: 'pile', home: 'side:p0:0' }),
+    card('inv', { home: 'side:p0:0', sideDeck: 'side:p0:0' }),
+    card('sense', { home: 'side:p0:1', sideDeck: 'side:p0:1' }),
+    card('inv-top', { zone: 'pile', home: 'side:p0:0', sideDeck: 'side:p0:0' }),
+    card('inv-used', { zone: 'pile', home: 'side:p0:0', sideDeck: 'side:p0:0' }),
   ];
   const view = makeView({ cards, piles });
   const of = (drag: DragSource) => pileTargets(drag, view).map((t) => [t.pile, t.drop, t.label]);
 
   it('offers a side card the top of its side deck first, and its discard pile when it has one', () => {
+    // The other side deck takes none of its cards.
     expect(of({ kind: 'card', card: 'inv', x: 0, y: 0 })).toEqual([
       ['side:p0:0', 'top', 'Top of Invocation deck'],
       ['deck:p0', 'top', 'Top of deck'],
-      ['side:p0:1', 'top', 'Top of Sense deck'],
       ['sided:p0:0', 'discard', 'Discard'],
     ]);
-    // The Sense deck has no discard pile: no drop discards a Sense card.
+    // A Sense card is discarded to the bottom of its deck: a drop onto that deck puts it on top.
     expect(of({ kind: 'card', card: 'sense', x: 0, y: 0 })).toEqual([
       ['side:p0:1', 'top', 'Top of Sense deck'],
       ['deck:p0', 'top', 'Top of deck'],
-      ['side:p0:0', 'top', 'Top of Invocation deck'],
+    ]);
+  });
+
+  it('offers a side card back from the player deck its own side deck, a deck right over it', () => {
+    const visitor = card('visitor', { sideDeck: 'side:p0:1' });
+    const visited = makeView({ cards: [...cards, visitor], piles });
+    const targets = pileTargets({ kind: 'card', card: 'visitor', x: 0, y: 0 }, visited);
+    expect(targets.map((t) => [t.pile, t.drop, t.exact])).toEqual([
+      ['deck:p0', 'top', undefined],
+      ['side:p0:1', 'top', true],
+      ['disc:p0', 'discard', undefined],
     ]);
   });
 
@@ -1249,7 +1265,6 @@ describe('side decks', () => {
     expect(of({ kind: 'pile', pile: 'sided:p0:0', card: 'inv-used' })).toEqual([
       ['side:p0:0', 'top', 'Top of Invocation deck'],
       ['deck:p0', 'top', 'Top of deck'],
-      ['side:p0:1', 'top', 'Top of Sense deck'],
       ['sided:p0:0', 'discard', 'Discard'],
     ]);
     const top: DropRect = {
@@ -1409,7 +1424,7 @@ describe('a scenario deck without a discard pile of its own', () => {
   });
 });
 
-describe('a deck takes any card of its owner', () => {
+describe('a deck takes the cards of its owner', () => {
   // Red Skull's Side-scheme deck belongs to nobody, as the encounter deck does; Alex (p0) plays
   // Daredevil and his Sense deck, Sam (p1) Doctor Strange and his Invocation deck.
   const piles = [
@@ -1433,7 +1448,7 @@ describe('a deck takes any card of its owner', () => {
     // Hydra Patrol, a modular side scheme: its home is the encounter deck.
     card('patrol', { owner: -1, back: 'encounter' }),
     card('mine'),
-    card('sense', { home: 'side:p0:0' }),
+    card('sense', { home: 'side:p0:0', sideDeck: 'side:p0:0' }),
     card('theirs', { owner: 1 }),
     card('h1', { zone: 'hand' }),
   ];
@@ -1449,10 +1464,9 @@ describe('a deck takes any card of its owner', () => {
     ]);
   });
 
-  it("offers the viewer's card the top of each of their decks, side decks included", () => {
+  it("offers the viewer's card the top of their deck, and a side deck to its own cards only", () => {
     expect(of('mine')).toEqual([
       ['deck:p0', 'top', 'Top of deck'],
-      ['side:p0:0', 'top', 'Top of Sense deck'],
       ['disc:p0', 'discard', 'Discard'],
     ]);
     expect(of('sense')).toEqual([
@@ -1460,7 +1474,7 @@ describe('a deck takes any card of its owner', () => {
       ['deck:p0', 'top', 'Top of deck'],
     ]);
     const hand = pileTargets({ kind: 'hand', card: 'h1', hand: ['h1'], area: 'p0' }, view);
-    expect(hand.map((t) => t.pile)).toEqual(['deck:p0', 'side:p0:0', 'disc:p0']);
+    expect(hand.map((t) => t.pile)).toEqual(['deck:p0', 'disc:p0']);
   });
 
   it('takes a drop near the home deck, and only right over another deck', () => {
@@ -1496,13 +1510,13 @@ describe('a deck takes any card of its owner', () => {
       where: 'top',
       pile: 'sdeck:schemes',
     });
-    const sense: DropRect = { ...schemes, pile: 'side:p0:0', label: 'Top of Sense deck' };
-    const mine: DragSource = { kind: 'card', card: 'mine', x: 0, y: 0 };
-    expect(dropAction(mine, sense, AT_ORIGIN, DEAL_TO)).toEqual({
+    const deck: DropRect = { ...schemes, pile: 'deck:p0', label: 'Top of deck' };
+    const sense: DragSource = { kind: 'card', card: 'sense', x: 0, y: 0 };
+    expect(dropAction(sense, deck, AT_ORIGIN, DEAL_TO)).toEqual({
       kind: 'toDeck',
-      card: 'mine',
+      card: 'sense',
       where: 'top',
-      pile: 'side:p0:0',
+      pile: 'deck:p0',
     });
   });
 });

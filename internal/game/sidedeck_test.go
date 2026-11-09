@@ -62,7 +62,7 @@ func heroGame(t *testing.T, decks ...DeckChoice) *doFixture {
 
 // sideDeckFixture is a started game where Host plays Doctor Strange (p0,
 // with the Invocation deck and its discard pile) and Bob Daredevil (p1, with
-// the Sense deck and no discard pile).
+// the Sense deck, whose cards are discarded to its bottom).
 func sideDeckFixture(t *testing.T) *doFixture {
 	t.Helper()
 	cat := packstest.Catalog(t)
@@ -280,13 +280,14 @@ func TestSideDeckRoutes(t *testing.T) {
 			t.Errorf("discarded card in %q, want %s", c.Pile, invocationDiscard)
 		}
 	})
-	t.Run("a Sense card has no discard pile", func(t *testing.T) {
-		f := sideDeckFixture(t)
-		id := drawSide(t, f, "b", senseDeck, 1)
-		if err := f.do("b", Action{Kind: ActDiscard, Card: id}, at(2)); !errors.Is(err, ErrInvalid) {
+	t.Run("a Weather card has no discard pile", func(t *testing.T) {
+		f := heroGame(t, heroDeck(t, packstest.Catalog(t), stormIdentity, "Storm"))
+		weather := sideDeckID(0, 0)
+		id := drawSide(t, f, "h", weather, 1)
+		if err := f.do("h", Action{Kind: ActDiscard, Card: id}, at(2)); !errors.Is(err, ErrInvalid) {
 			t.Errorf("discard = %v, want ErrInvalid", err)
 		}
-		if err := f.do("b", Action{Kind: ActDiscardTop, Pile: senseDeck, N: 1}, at(3)); !errors.Is(err, ErrInvalid) {
+		if err := f.do("h", Action{Kind: ActDiscardTop, Pile: weather, N: 1}, at(3)); !errors.Is(err, ErrInvalid) {
 			t.Errorf("discard top = %v, want ErrInvalid", err)
 		}
 	})
@@ -469,6 +470,12 @@ func TestSideDeckViews(t *testing.T) {
 	if got := cards[plain].Home; got != "" {
 		t.Errorf("deck card in hand has home %q, want none", got)
 	}
+	if got := cards[sense].SideDeck; got != senseDeck {
+		t.Errorf("Sense card in hand belongs to %q, want %s", got, senseDeck)
+	}
+	if got := cards[plain].SideDeck; got != "" {
+		t.Errorf("deck card in hand belongs to side deck %q, want none", got)
+	}
 
 	// A face-down side card on the table hides its code, not its home: every
 	// viewer, its owner or not, sees which deck it came from.
@@ -476,7 +483,7 @@ func TestSideDeckViews(t *testing.T) {
 	f.g.Table.Cards[sense].FaceDown = true
 	for _, token := range []string{"h", "b", "nobody"} {
 		for _, cv := range f.g.ViewFor(token).Table.Cards {
-			if cv.ID == sense && (cv.Code != "" || cv.Home != senseDeck) {
+			if cv.ID == sense && (cv.Code != "" || cv.Home != senseDeck || cv.SideDeck != senseDeck) {
 				t.Errorf("%s sees the face-down Sense card as %+v, want its home only", token, cv)
 			}
 		}
@@ -484,34 +491,43 @@ func TestSideDeckViews(t *testing.T) {
 }
 
 // tuckedSenseFixture returns a game of Daredevil alone (p0, Sense deck
-// "side:p0:0" without a discard pile) and a Sense card drawn into his hand.
+// "side:p0:0", whose cards are discarded to its bottom) and a Sense card
+// drawn into his hand.
 func tuckedSenseFixture(t *testing.T) (f *doFixture, sense string) {
 	t.Helper()
 	f = heroGame(t, heroDeck(t, packstest.Catalog(t), daredevilIdentity, "Daredevil"))
 	return f, drawSide(t, f, "h", "side:p0:0", 1)
 }
 
-func TestTuckedSideCardWithoutDiscardGoesUnderItsDeck(t *testing.T) {
-	f, sense := tuckedSenseFixture(t)
-	f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
-	enemy := f.g.Table.revealedOn(PileEncounter)[0].ID
-	f.mustDo(t, "h", Action{Kind: ActPlay, Card: sense, Target: enemy}, at(3))
+// TestTuckedSideCardGoesUnderItsDeck discards an enemy a side card is tucked
+// under: the side card goes to the bottom of its deck, whether its deck
+// discards its cards there (Sense) or never discards them (Weather).
+func TestTuckedSideCardGoesUnderItsDeck(t *testing.T) {
+	for _, identity := range []string{daredevilIdentity, stormIdentity} {
+		t.Run(identity, func(t *testing.T) {
+			f := heroGame(t, heroDeck(t, packstest.Catalog(t), identity, identity))
+			side := drawSide(t, f, "h", "side:p0:0", 1)
+			f.mustDo(t, "h", Action{Kind: ActReveal}, at(2))
+			enemy := f.g.Table.revealedOn(PileEncounter)[0].ID
+			f.mustDo(t, "h", Action{Kind: ActPlay, Card: side, Target: enemy}, at(3))
 
-	f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(4))
-	sense = f.renamedID(t, sense)
+			f.mustDo(t, "h", Action{Kind: ActDiscard, Card: enemy}, at(4))
+			side = f.renamedID(t, side)
 
-	if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
-		t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
+			if c := f.g.Table.Cards[enemy]; c.Pile != PileEncounterDiscard {
+				t.Errorf("enemy in %q, want %s", c.Pile, PileEncounterDiscard)
+			}
+			if bottom := f.g.Table.Piles["side:p0:0"].Cards[0]; bottom != side {
+				t.Errorf("bottom of the side deck = %s, want %s", bottom, side)
+			}
+			checkIntegrity(t, f.g.Table)
+			checkHistory(t, f.g)
+			checkReplay(t, f)
+		})
 	}
-	if bottom := f.g.Table.Piles["side:p0:0"].Cards[0]; bottom != sense {
-		t.Errorf("bottom of the Sense deck = %s, want %s", bottom, sense)
-	}
-	checkIntegrity(t, f.g.Table)
-	checkHistory(t, f.g)
-	checkReplay(t, f)
 }
 
-func TestTuckedSideCardWithoutDiscardGoesUnderItsDeckInAGroup(t *testing.T) {
+func TestTuckedSideCardGoesUnderItsDeckInAGroup(t *testing.T) {
 	f, sense := tuckedSenseFixture(t)
 	hosts := topCards(f.g.Table.Piles["deck:p0"], 2)
 	f.mustDo(t, "h", Action{Kind: ActPlay, Pile: "deck:p0", X: 800, Y: 500}, at(2))

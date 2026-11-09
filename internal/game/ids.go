@@ -65,11 +65,12 @@ func addFreshIDs(t *Table, renames map[string]string, ids []string, rng *rand.Ra
 // renamedOnTheWay returns the cards a gives new ids as it takes a.Card out
 // of its place, so that nobody can tie the card that comes out later to the
 // one they saw go: every card a sends onto a deck, but one that lands on top
-// of a side deck that shows it, and a card taken into a hand out of a hand or
-// face down off the table. That covers the cards a card leaving the table
-// carries (see carried) that go to the bottom of a deck (see
-// tuckedDestination). The cards a shuffle into a deck gathers are left out:
-// the shuffle renames them (see reidentify).
+// of a side deck that shows it (see landsInSight), and a card taken into a
+// hand out of a hand or face down off the table. That covers a card
+// discarded to the bottom of its deck (see discardTo) and the cards a card
+// leaving the table carries (see carried) that go to the bottom of a deck
+// (see tuckedDestination). The cards a shuffle into a deck gathers are left
+// out: the shuffle renames them (see reidentify).
 func (t *Table) renamedOnTheWay(a Action) []string {
 	c, ok := t.Cards[a.Card]
 	if !ok {
@@ -78,11 +79,14 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 	var ids []string
 	switch a.Kind {
 	case ActToDeck:
-		// On a side deck that shows its top card, a card put on top, or under
-		// no card, lies in everybody's sight.
 		deck, ok := t.Piles[toDeckID(c, a)]
-		inSight := ok && deck.TopFaceUp && (a.Where == whereTop || len(deck.Cards) == 0)
+		inSight := ok && landsInSight(deck, a.Where)
 		if a.Where != whereShuffle && !inSight {
+			ids = append(ids, c.ID)
+		}
+	case ActDiscard:
+		deck, ok := t.Piles[t.discardPileID(c)]
+		if ok && deck.discardsToBottom() && !landsInSight(deck, whereBottom) {
 			ids = append(ids, c.ID)
 		}
 	case ActToHand:
@@ -96,11 +100,18 @@ func (t *Table) renamedOnTheWay(a Action) []string {
 			return nil
 		}
 		ids = append(ids, c.ID)
-	case ActDiscard, ActToPile:
+	case ActToPile:
 	default:
 		return nil
 	}
 	return append(ids, t.sentUnderDecks(c, a)...)
+}
+
+// landsInSight reports whether a card put into deck at where, its top or its
+// bottom, lies in everybody's sight: on a side deck that shows its top card,
+// on top of it, or under no card.
+func landsInSight(deck *Pile, where string) bool {
+	return deck.TopFaceUp && (where == whereTop || len(deck.Cards) == 0)
 }
 
 // sentUnderDecks returns the cards c carries (see carried) that go to the

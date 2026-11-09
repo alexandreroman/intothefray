@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/alexandreroman/intothefray/packs/packstest"
 )
 
 // The piles and cards sideSchemeFixture adds.
@@ -173,11 +175,11 @@ func TestEncounterCardOverARevealedCard(t *testing.T) {
 	checkHistory(t, f.g)
 }
 
-// TestPlayerCardOnItsSideDeck puts a card of the player's deck into their
-// face-up side deck: on top it stays in sight and keeps its id, at the bottom
-// of a deck holding cards it gets a new one. Either way the side deck becomes
-// its home.
-func TestPlayerCardOnItsSideDeck(t *testing.T) {
+// TestSideCardBackOnItsSideDeck puts an Invocation card on top of the
+// player's deck, draws it back, then returns it to its face-up side deck: on
+// top it stays in sight and keeps its id, at the bottom of a deck holding
+// cards it gets a new one. Either way the side deck is its home again.
+func TestSideCardBackOnItsSideDeck(t *testing.T) {
 	tests := []struct {
 		where   string
 		renamed bool
@@ -189,18 +191,23 @@ func TestPlayerCardOnItsSideDeck(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.where, func(t *testing.T) {
 			f := sideDeckFixture(t)
-			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
-			card := f.lastInHand("p0")
+			card := drawSide(t, f, "h", invocationDeck, 1)
 			name := f.nameOf(t, card)
+			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: whereTop, Pile: "deck:p0"}, at(2))
+			if c := f.g.Table.Cards[f.renamedID(t, card)]; c.Home != "deck:p0" {
+				t.Fatalf("home in the deck = %q, want deck:p0", c.Home)
+			}
+			f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(3))
+			card = f.lastInHand("p0")
 
-			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: tt.where, Pile: invocationDeck}, at(2))
+			f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: tt.where, Pile: invocationDeck}, at(4))
 
 			tb := f.g.Table
 			id := f.renamedID(t, card)
 			if renamed := id != card; renamed != tt.renamed {
 				t.Errorf("renamed = %t, want %t", renamed, tt.renamed)
 			}
-			if c := tb.Cards[id]; c.Pile != invocationDeck || c.Home != invocationDeck {
+			if c := tb.Cards[id]; c.Pile != invocationDeck || c.Home != invocationDeck || c.SideDeck != invocationDeck {
 				t.Errorf("card = %+v, want in %s, at home there", c, invocationDeck)
 			}
 			if got, want := f.lastLog().Text, strings.ReplaceAll(tt.line, "<name>", name); got != want {
@@ -211,6 +218,40 @@ func TestPlayerCardOnItsSideDeck(t *testing.T) {
 			checkReplay(t, f)
 		})
 	}
+}
+
+// TestSideDeckRefusesForeignCards refuses a card of the player's deck, and a
+// card of the player's other side deck, into a side deck, wherever it goes in
+// it: a side deck takes only the cards of its own set.
+func TestSideDeckRefusesForeignCards(t *testing.T) {
+	f := heroGame(t, heroDeck(t, packstest.Catalog(t), herculesIdentity, "Hercules"))
+	labor, gift := sideDeckID(0, 0), sideDeckID(0, 1)
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
+	deckCard := f.lastInHand("p0")
+	giftCard := drawSide(t, f, "h", gift, 2)
+	f.mustDo(t, "h", Action{Kind: ActPlay, Card: giftCard, X: 800, Y: 500}, at(3))
+	events := len(f.g.History.Events)
+
+	for _, card := range []string{deckCard, giftCard} {
+		for _, where := range []string{whereTop, whereBottom, whereShuffle} {
+			err := f.do("h", Action{Kind: ActToDeck, Card: card, Where: where, Pile: labor}, at(4))
+			if !errors.Is(err, ErrInvalid) {
+				t.Errorf("%s %s of %s: err = %v, want ErrInvalid", card, where, labor, err)
+			}
+		}
+	}
+	err := f.do("h", group(
+		Action{Kind: ActToDeck, Card: deckCard, Where: whereTop, Pile: labor},
+		Action{Kind: ActToDeck, Card: giftCard, Where: whereTop, Pile: labor},
+	), at(5))
+	if !errors.Is(err, ErrInvalid) {
+		t.Errorf("group onto %s: err = %v, want ErrInvalid", labor, err)
+	}
+	if len(f.g.History.Events) != events {
+		t.Error("a refused action was recorded")
+	}
+	// The Gift card still goes back to its own deck.
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: giftCard, Where: whereTop, Pile: gift}, at(6))
 }
 
 // TestToDeckRefusals refuses a deck that does not take the card: one of
@@ -339,8 +380,8 @@ func TestGroupOnTopOfScenarioDeck(t *testing.T) {
 }
 
 // tuckUnder has Bob tuck two cards under host: the top card of his Sense
-// deck, whose cards are never discarded, and a card of his deck, which goes
-// to his discard pile. It returns their ids.
+// deck, whose cards are discarded to its bottom, and a card of his deck,
+// which goes to his discard pile. It returns their ids.
 func (f *doFixture) tuckUnder(t *testing.T, host string) (senseCard, deckCard string) {
 	t.Helper()
 	senseCard = topCards(f.g.Table.Piles[senseDeck], 1)[0]
@@ -351,84 +392,61 @@ func (f *doFixture) tuckUnder(t *testing.T, host string) (senseCard, deckCard st
 	return senseCard, deckCard
 }
 
-// TestShuffleHostIntoAnotherDeck shuffles a card that two cards are tucked
-// under into a deck that is not its home. The tucked Sense card goes to its
-// own deck: among the shuffled cards when that deck is the one shuffled,
-// else at its bottom; either way under a new id. The tucked card of the
-// player's deck goes on top of their discard pile, as it is.
+// TestShuffleHostIntoAnotherDeck shuffles a Sense card that two cards are
+// tucked under into the player's deck, which is not its home. The tucked
+// Sense card goes to the bottom of its own deck under a new id; the tucked
+// card of the player's deck goes on top of their discard pile, as it is.
 func TestShuffleHostIntoAnotherDeck(t *testing.T) {
-	tests := []struct {
-		name     string
-		hostDeck string // the deck the host comes from, its home
-		into     string
-	}{
-		{"player card into the Sense deck", "deck:p1", senseDeck},
-		{"Sense card into the player deck", senseDeck, "deck:p1"},
+	f := sideDeckFixture(t)
+	host := topCards(f.g.Table.Piles[senseDeck], 1)[0]
+	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: senseDeck, X: 500, Y: 400}, at(1))
+	senseCard, deckCard := f.tuckUnder(t, host)
+
+	f.mustDo(t, "b", Action{Kind: ActToDeck, Card: host, Where: whereShuffle, Pile: "deck:p1"}, at(6))
+
+	tb := f.g.Table
+	hostID := f.renamedID(t, host)
+	if hostID == host {
+		t.Errorf("host %s keeps its id", host)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := sideDeckFixture(t)
-			host := topCards(f.g.Table.Piles[tt.hostDeck], 1)[0]
-			if tt.hostDeck == senseDeck {
-				f.mustDo(t, "b", Action{Kind: ActPlay, Pile: senseDeck, X: 500, Y: 400}, at(1))
-			} else {
-				f.mustDo(t, "b", Action{Kind: ActDraw, N: 1}, at(1))
-				f.mustDo(t, "b", Action{Kind: ActPlay, Card: host, X: 500, Y: 400}, at(2))
-			}
-			senseCard, deckCard := f.tuckUnder(t, host)
-
-			f.mustDo(t, "b", Action{Kind: ActToDeck, Card: host, Where: whereShuffle, Pile: tt.into}, at(6))
-
-			tb := f.g.Table
-			hostID := f.renamedID(t, host)
-			if hostID == host {
-				t.Errorf("host %s keeps its id", host)
-			}
-			if c := tb.Cards[hostID]; c == nil || c.Pile != tt.into || c.Home != tt.into {
-				t.Errorf("host = %+v, want in %s, at home there", c, tt.into)
-			}
-
-			senseID := f.renamedID(t, senseCard)
-			if senseID == senseCard {
-				t.Errorf("tucked Sense card %s keeps its id", senseCard)
-			}
-			sense := tb.Piles[senseDeck].Cards
-			if tt.into == senseDeck && !slices.Contains(sense, senseID) {
-				t.Errorf("%s = %v, want %s shuffled in", senseDeck, sense, senseID)
-			}
-			if tt.into != senseDeck && sense[0] != senseID {
-				t.Errorf("%s = %v, want %s at the bottom", senseDeck, sense, senseID)
-			}
-			if c := tb.Cards[senseID]; c == nil || c.Parent != "" || c.Home != senseDeck {
-				t.Errorf("tucked Sense card = %+v, want untucked, at home in %s", c, senseDeck)
-			}
-
-			if id := f.renamedID(t, deckCard); id != deckCard {
-				t.Errorf("tucked deck card %s gets the new id %s on its way to a face-up pile", deckCard, id)
-			}
-			if top := topCards(tb.Piles["disc:p1"], 1); !slices.Equal(top, []string{deckCard}) {
-				t.Errorf("top of disc:p1 = %v, want [%s]", top, deckCard)
-			}
-			checkIntegrity(t, tb)
-			checkHistory(t, f.g)
-			checkReplay(t, f)
-		})
+	if c := tb.Cards[hostID]; c == nil || c.Pile != "deck:p1" || c.Home != "deck:p1" || c.SideDeck != senseDeck {
+		t.Errorf("host = %+v, want in deck:p1, at home there, a card of %s", c, senseDeck)
 	}
+
+	senseID := f.renamedID(t, senseCard)
+	if senseID == senseCard {
+		t.Errorf("tucked Sense card %s keeps its id", senseCard)
+	}
+	if sense := tb.Piles[senseDeck].Cards; sense[0] != senseID {
+		t.Errorf("%s = %v, want %s at the bottom", senseDeck, sense, senseID)
+	}
+	if c := tb.Cards[senseID]; c == nil || c.Parent != "" || c.Home != senseDeck {
+		t.Errorf("tucked Sense card = %+v, want untucked, at home in %s", c, senseDeck)
+	}
+
+	if id := f.renamedID(t, deckCard); id != deckCard {
+		t.Errorf("tucked deck card %s gets the new id %s on its way to a face-up pile", deckCard, id)
+	}
+	if top := topCards(tb.Piles["disc:p1"], 1); !slices.Equal(top, []string{deckCard}) {
+		t.Errorf("top of disc:p1 = %v, want [%s]", top, deckCard)
+	}
+	checkIntegrity(t, tb)
+	checkHistory(t, f.g)
+	checkReplay(t, f)
 }
 
-// TestHostOnTopOfAnotherDeckDropsTuckedSenseCard puts a card of Bob's deck,
-// a Sense card tucked under it, on top of his Sense deck: the host lands on
-// top in sight, as it is, and the tucked card drops to the bottom of its own
-// deck under a new id.
-func TestHostOnTopOfAnotherDeckDropsTuckedSenseCard(t *testing.T) {
+// TestHostOnTopOfItsSideDeckDropsTuckedSenseCard puts a Sense card, another
+// Sense card tucked under it, on top of the Sense deck: the host lands on top
+// in sight, as it is, and the tucked card drops to the bottom of the deck
+// under a new id.
+func TestHostOnTopOfItsSideDeckDropsTuckedSenseCard(t *testing.T) {
 	f := sideDeckFixture(t)
-	f.mustDo(t, "b", Action{Kind: ActDraw, N: 1}, at(1))
-	host := f.lastInHand("p1")
-	f.mustDo(t, "b", Action{Kind: ActPlay, Card: host, X: 500, Y: 400}, at(2))
+	host := topCards(f.g.Table.Piles[senseDeck], 1)[0]
+	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: senseDeck, X: 500, Y: 400}, at(1))
 	senseCard := topCards(f.g.Table.Piles[senseDeck], 1)[0]
-	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: senseDeck, Target: host, X: 500, Y: 420}, at(3))
+	f.mustDo(t, "b", Action{Kind: ActPlay, Pile: senseDeck, Target: host, X: 500, Y: 420}, at(2))
 
-	f.mustDo(t, "b", Action{Kind: ActToDeck, Card: host, Where: whereTop, Pile: senseDeck}, at(4))
+	f.mustDo(t, "b", Action{Kind: ActToDeck, Card: host, Where: whereTop, Pile: senseDeck}, at(3))
 
 	tb := f.g.Table
 	if id := f.renamedID(t, host); id != host {
@@ -441,9 +459,6 @@ func TestHostOnTopOfAnotherDeckDropsTuckedSenseCard(t *testing.T) {
 	cards := tb.Piles[senseDeck].Cards
 	if cards[0] != senseID || cards[len(cards)-1] != host {
 		t.Errorf("%s = %v, want %s at the bottom and %s on top", senseDeck, cards, senseID, host)
-	}
-	if c := tb.Cards[host]; c.Home != senseDeck {
-		t.Errorf("host home = %q, want %s", c.Home, senseDeck)
 	}
 	checkIntegrity(t, tb)
 	checkHistory(t, f.g)
@@ -501,30 +516,29 @@ func TestToDeckRefusesTheOtherSeatsDeck(t *testing.T) {
 	}
 }
 
-// TestToDeckWithoutPileGoesToTheNewHome puts a card on top of the
-// Invocation deck, draws it back, then puts it at the bottom of its deck
-// naming none: it goes to the Invocation deck, its new home.
+// TestToDeckWithoutPileGoesToTheNewHome puts an Invocation card on top of
+// the player's deck, draws it back, then puts it at the bottom of its deck
+// naming none: it goes to the player's deck, its new home.
 func TestToDeckWithoutPileGoesToTheNewHome(t *testing.T) {
 	f := sideDeckFixture(t)
-	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(1))
-	card := f.lastInHand("p0")
-	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: whereTop, Pile: invocationDeck}, at(2))
-	drawSide(t, f, "h", invocationDeck, 3)
+	card := drawSide(t, f, "h", invocationDeck, 1)
+	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: whereTop, Pile: "deck:p0"}, at(2))
+	f.mustDo(t, "h", Action{Kind: ActDraw, N: 1}, at(3))
 	card = f.lastInHand("p0")
-	deckSize := len(f.g.Table.Piles["deck:p0"].Cards)
+	invocationSize := len(f.g.Table.Piles[invocationDeck].Cards)
 
 	f.mustDo(t, "h", Action{Kind: ActToDeck, Card: card, Where: whereBottom}, at(4))
 
 	tb := f.g.Table
 	id := f.renamedID(t, card)
-	if got := tb.Piles[invocationDeck].Cards[0]; got != id {
-		t.Errorf("bottom of %s = %s, want %s", invocationDeck, got, id)
+	if got := tb.Piles["deck:p0"].Cards[0]; got != id {
+		t.Errorf("bottom of deck:p0 = %s, want %s", got, id)
 	}
-	if c := tb.Cards[id]; c.Home != invocationDeck {
-		t.Errorf("home = %q, want %s", c.Home, invocationDeck)
+	if c := tb.Cards[id]; c.Home != "deck:p0" {
+		t.Errorf("home = %q, want deck:p0", c.Home)
 	}
-	if got := len(tb.Piles["deck:p0"].Cards); got != deckSize {
-		t.Errorf("deck:p0 holds %d cards, want %d", got, deckSize)
+	if got := len(tb.Piles[invocationDeck].Cards); got != invocationSize {
+		t.Errorf("%s holds %d cards, want %d", invocationDeck, got, invocationSize)
 	}
 	checkIntegrity(t, tb)
 	checkHistory(t, f.g)

@@ -258,6 +258,31 @@ func TestLoadRejectsEncounterDeckNotSelfContained(t *testing.T) {
 	}
 }
 
+func TestLoadAcceptsBottomDiscardRule(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, "scenarios"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	sets := `{"daredevil_sense_deck":{"side":{"label":"Sense","topFaceUp":true,"discard":"bottom","back":"player"}}}`
+	if err := os.WriteFile(filepath.Join(dir, "sets.json"), []byte(sets), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := Load(dir)
+	if err != nil {
+		t.Fatalf("got error %v, want none for a side deck discarding to its bottom", err)
+	}
+	if got := loaded.Sets["daredevil_sense_deck"].Side.Discard; got != pack.DiscardBottom {
+		t.Errorf("got discard rule %q, want %q", got, pack.DiscardBottom)
+	}
+
+	// A scenario with encounter decks of its own has no encounter discard
+	// pile: a deck discarding to its bottom needs none.
+	if err := loadScenario(t, `{"id":"x","villainSet":"x","selfContained":true,`+
+		`"decks":[{"key":"a","label":"A","sets":["s"],"encounter":true,"discard":"bottom"}],`+emptyStart+`}`); err != nil {
+		t.Fatalf("got error %v, want none for an encounter deck discarding to its bottom", err)
+	}
+}
+
 func TestLoadRejectsUnknownWith(t *testing.T) {
 	wantScenarioError(t, `{"id":"x","villainSet":"x","piles":[`+stageV+`],"start":{`+
 		`"standard":{"top":{"v":{"card":"1","face":0}}},`+

@@ -211,8 +211,8 @@ func checkScenarioDef(def ScenarioDef) error {
 	if encounter {
 		for _, deck := range def.Decks {
 			if deck.Discard == pack.DiscardOwner {
-				return fmt.Errorf("deck %q needs a discard rule (%q or %q): the scenario has no encounter discard pile",
-					deck.Key, pack.DiscardOwn, pack.DiscardNone)
+				return fmt.Errorf("deck %q needs a discard rule (%q, %q or %q): the scenario has no encounter discard pile",
+					deck.Key, pack.DiscardOwn, pack.DiscardNone, pack.DiscardBottom)
 			}
 		}
 	}

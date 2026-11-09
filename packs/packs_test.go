@@ -1225,7 +1225,7 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 			}},
 			{"60001", []sideDeck{
 				{"daredevil_sense_deck", pack.SideDeck{
-					Label: "Sense", TopFaceUp: true, Discard: pack.DiscardNone, Back: pack.BackPlayer,
+					Label: "Sense", TopFaceUp: true, Discard: pack.DiscardBottom, Back: pack.BackPlayer,
 				}},
 			}},
 		}

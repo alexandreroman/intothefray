@@ -5707,7 +5707,7 @@
       "side": {
         "label": "Sense",
         "topFaceUp": true,
-        "discard": "none",
+        "discard": "bottom",
         "back": "player"
       }
     },

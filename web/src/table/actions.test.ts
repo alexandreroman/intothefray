@@ -1251,7 +1251,7 @@ describe('a player with two decks', () => {
 });
 
 describe('side decks', () => {
-  // Alex (p0) has an Invocation deck with its discard pile and a Sense deck without one; Sam (p1)
+  // Alex (p0) has an Invocation deck with its discard pile and a Weather deck without one; Sam (p1)
   // has an Invocation deck.
   const sidePiles = [
     pile('deck:p0', { owner: 0, count: 30 }),
@@ -1273,7 +1273,7 @@ describe('side decks', () => {
       label: 'Invocation',
       cards: ['u'],
     }),
-    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense', topFaceUp: true }),
+    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Weather', topFaceUp: true }),
     pile('side:p1:0', {
       kind: 'sideDeck',
       owner: 1,
@@ -1292,7 +1292,7 @@ describe('side decks', () => {
   ];
   const sideCards = [
     card('inv', { home: 'side:p0:0' }),
-    card('sense', { home: 'side:p0:1' }),
+    card('weather', { home: 'side:p0:1' }),
     card('inv-top', { zone: 'pile', home: 'side:p0:0' }),
     // The cards of the side discard piles, which the server lists with the table's.
     card('u', { zone: 'pile', home: 'side:p0:0' }),
@@ -1420,15 +1420,94 @@ describe('side decks', () => {
   });
 
   it('a card of a side deck without a discard pile cannot be discarded', () => {
-    const items = itemsFor({ kind: 'card', id: 'sense' }, view());
+    const items = itemsFor({ kind: 'card', id: 'weather' }, view());
     expect(items.map((it) => it.id)).not.toContain('discard');
-    expect(item(items, 'moveTo').menu?.map((it) => it.label)).toContain('Bottom of Sense deck');
+    expect(item(items, 'moveTo').menu?.map((it) => it.label)).toContain('Bottom of Weather deck');
+  });
+});
+
+describe('a side deck discarding to its bottom', () => {
+  // Alex (p0) plays Daredevil, whose Sense deck takes its discarded cards under it, and has a
+  // Weather deck, whose cards are never discarded.
+  const piles = [
+    pile('deck:p0', { owner: 0, count: 30 }),
+    pile('disc:p0', { kind: 'discard', owner: 0, count: 0, cards: [] }),
+    pile('aside:p0', { kind: 'aside', owner: 0, count: 0, cards: [] }),
+    pile('side:p0:0', {
+      kind: 'sideDeck',
+      owner: 0,
+      count: 4,
+      label: 'Sense',
+      topFaceUp: true,
+      cards: ['top'],
+      discard: 'side:p0:0',
+    }),
+    pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Weather' }),
+  ];
+  const cards = [
+    card('mine'),
+    card('sense', { home: 'side:p0:0', sideDeck: 'side:p0:0' }),
+    card('weather', { home: 'side:p0:1', sideDeck: 'side:p0:1' }),
+    card('top', { zone: 'pile', home: 'side:p0:0', sideDeck: 'side:p0:0' }),
+    // A Sense card put into the player's deck, then drawn: its home is that deck.
+    card('visitor', { sideDeck: 'side:p0:0' }),
+  ];
+  const view = () => makeView({ cards, piles });
+
+  it('offers Discard 1 and Discard X on the Sense deck, which put its top cards under it', () => {
+    const items = itemsFor({ kind: 'pile', id: 'side:p0:0' }, view());
+    expect(groups(items)).toEqual([
+      ['draw1', 'drawN'],
+      ['lookTop', 'search'],
+      ['discard1', 'discardTop'],
+      ['shuffle'],
+    ]);
+    expect(actionOf(item(items, 'discard1'))).toEqual({
+      kind: 'discardTop',
+      pile: 'side:p0:0',
+      n: 1,
+    });
+    const discardTop = item(items, 'discardTop').run?.();
+    expect(discardTop && 'ask' in discardTop && discardTop.ask.make(2)).toEqual({
+      kind: 'discardTop',
+      pile: 'side:p0:0',
+      n: 2,
+    });
+  });
+
+  it('offers neither Discard 1 nor Discard X on the Weather deck', () => {
+    const ids = itemsFor({ kind: 'pile', id: 'side:p0:1' }, view()).map((it) => it.id);
+    expect(ids).not.toContain('discard1');
+    expect(ids).not.toContain('discardTop');
+  });
+
+  it('discards a Sense card, never a Weather card', () => {
+    const sense = itemsFor({ kind: 'card', id: 'sense' }, view());
+    expect(item(sense, 'discard')).toMatchObject({ key: 'X', altKeys: ['Backspace'] });
+    expect(actionOf(item(sense, 'discard'))).toEqual({ kind: 'discard', card: 'sense' });
+    expect(discardPileOf(card('sense', { home: 'side:p0:0' }), piles)).toBe('side:p0:0');
+
+    const weather = itemsFor({ kind: 'card', id: 'weather' }, view());
+    expect(weather.map((it) => it.id)).not.toContain('discard');
+  });
+
+  it('offers a side deck to its own cards only in Move to', () => {
+    const labels = (id: string) =>
+      menuOf(itemsFor({ kind: 'card', id }, view()), 'moveTo').map((it) => it.label);
+    for (const id of ['mine', 'visitor']) {
+      expect(labels(id)).toContain('Top of deck');
+      expect(
+        labels(id).filter((label) => label.includes('Sense') || label.includes('Weather')),
+      ).toEqual([]);
+    }
+    expect(labels('sense')).toContain('Bottom of Sense deck');
+    expect(labels('sense')).not.toContain('Bottom of Weather deck');
   });
 });
 
 describe('a selected group', () => {
   // Alex's three cards, listed out of their drawing order (z), an encounter
-  // card, Sam's card, Alex's identity, two cards of Alex's Sense deck and one
+  // card, Sam's card, Alex's identity, two cards of Alex's Weather deck and one
   // tucked under c1.
   const groupCards = [
     card('c2', { z: 2 }),
@@ -1446,7 +1525,7 @@ describe('a selected group', () => {
       cards: groupCards,
       piles: [
         ...makeView().table!.piles,
-        pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Sense' }),
+        pile('side:p0:1', { kind: 'sideDeck', owner: 0, count: 5, label: 'Weather' }),
       ],
     });
 
@@ -1579,12 +1658,12 @@ describe('a selected group', () => {
   });
 
   it('one shared side deck names it, mixed homes read decks', () => {
-    const sense = groupItems('s1', ['s1', 's2']);
-    // The Sense deck has no discard pile: no Discard either.
-    expect(sense.map((it) => it.id)).not.toContain('discard');
-    const senseLabels = menuOf(sense, 'moveTo').map((it) => it.label);
-    expect(senseLabels).toContain('Top of Sense deck');
-    expect(senseLabels).toContain('Bottom of Sense deck');
+    const weather = groupItems('s1', ['s1', 's2']);
+    // The Weather deck has no discard pile: no Discard either.
+    expect(weather.map((it) => it.id)).not.toContain('discard');
+    const weatherLabels = menuOf(weather, 'moveTo').map((it) => it.label);
+    expect(weatherLabels).toContain('Top of Weather deck');
+    expect(weatherLabels).toContain('Bottom of Weather deck');
 
     const mixed = menuOf(groupItems('c1', ['c1', 's1']), 'moveTo').map((it) => it.label);
     expect(mixed).toContain('Top of decks');

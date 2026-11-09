@@ -38,7 +38,7 @@
   },
   "doctor_strange_invocation_deck": {"side": {"label": "Invocation", "topFaceUp": true, "discard": "own", "back": "player"}},
   "storm_weather_deck": {"side": {"label": "Weather", "discard": "none", "back": "player"}},
-  "daredevil_sense_deck": {"side": {"label": "Sense", "topFaceUp": true, "discard": "none", "back": "player"}},
+  "daredevil_sense_deck": {"side": {"label": "Sense", "topFaceUp": true, "discard": "bottom", "back": "player"}},
   "hercules_labor_deck": {"side": {"label": "Labor", "discard": "none", "back": "player"}},
   "hercules_gift_deck": {"side": {"label": "Gift", "discard": "none", "back": "encounter"}},
   "iceman": {"setAside": ["46002"]},

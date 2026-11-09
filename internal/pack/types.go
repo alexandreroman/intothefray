@@ -38,14 +38,18 @@ const (
 	// Skull's side schemes, each Wrecking Crew encounter deck).
 	DiscardOwn DiscardRule = "own"
 	// DiscardNone never discards the cards: one tucked under a card leaving
-	// the table goes to the bottom of its deck (Weather, Sense, Labor, Gift).
+	// the table goes to the bottom of its deck (Weather, Labor, Gift).
 	DiscardNone DiscardRule = "none"
+	// DiscardBottom puts a discarded card at the bottom of its deck: the
+	// cards discarded from the deck's top go under it, and so does a card
+	// tucked under a card leaving the table (Sense).
+	DiscardBottom DiscardRule = "bottom"
 )
 
 // Valid reports whether r is one of the supported discard rules.
 func (r DiscardRule) Valid() bool {
 	switch r {
-	case DiscardOwner, DiscardOwn, DiscardNone:
+	case DiscardOwner, DiscardOwn, DiscardNone, DiscardBottom:
 		return true
 	default:
 		return false
