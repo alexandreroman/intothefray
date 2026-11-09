@@ -19,6 +19,7 @@ type: project
 - `web/src/lib/fullscreen.ts` locks Escape with the Keyboard Lock API while
   in fullscreen, and leaves fullscreen itself on an Escape no layer
   prevented.
+- An iPad never goes fullscreen (see [[project_ipad_fullscreen]]).
 
 **Why:** a browser in fullscreen takes Escape to leave it: an open dialog
 or menu then stays open.

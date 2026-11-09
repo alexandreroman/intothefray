@@ -6,16 +6,20 @@
   import { motionMs } from '../lib/motion';
   import { playerName } from '../lib/names';
   import { NewsState } from '../lib/newsState.svelte';
-  import { setToken } from '../lib/prefs';
+  import { isIPad, isStandalone } from '../lib/platform';
+  import { getPref, setPref, setToken } from '../lib/prefs';
   import { gamePath, go } from '../lib/router.svelte';
   import { fetchGamesInProgress } from '../lib/stats';
   import Icon from '../components/Icon.svelte';
+  import HomeScreenDialog from '../components/HomeScreenDialog.svelte';
   import Logo from '../components/Logo.svelte';
   import WhatsNewDialog from '../components/WhatsNewDialog.svelte';
   import { lastPressByPointer } from '../components/modal.svelte';
 
-  /** How long the banner takes to leave, folding up as it fades out. */
-  const BANNER_LEAVE_MS = 220;
+  /** How long a banner takes to come or leave, unfolding as it fades in or folding up as it fades out. */
+  const BANNER_FOLD_MS = 220;
+  /** Set once the Home Screen banner is dismissed: it never shows again in this browser. */
+  const HOME_SCREEN_BANNER_KEY = 'itf-home-screen-banner';
   /** How long the count of games in progress takes to fade in once it arrives. */
   const GAMES_FADE_MS = 400;
 
@@ -74,6 +78,26 @@
     focusNewsButton(lastPressByPointer());
   }
 
+  // An iPad cannot keep fullscreen (see TopBar): in a browser tab, a banner tells how to add the app
+  // to the Home Screen, where it opens full screen. One banner at a time: it waits until the news
+  // banner is gone, its leave played out. The device and the way the page was opened are read once:
+  // neither changes during a visit.
+  const offersHomeScreen = isIPad() && !isStandalone();
+  let homeScreenBannerDismissed = $state(getPref(HOME_SCREEN_BANNER_KEY) !== null);
+  let newsBannerGone = $state(news.bannerEntry === undefined);
+  const showsHomeScreenBanner = $derived(
+    offersHomeScreen && !homeScreenBannerDismissed && newsBannerGone,
+  );
+  // Opening the explanation leaves the banner in place: the player may come back to it.
+  let explainingHomeScreen = $state(false);
+
+  /** Dismisses the Home Screen banner for good, handing the focus on as the news banner does. */
+  function dismissHomeScreenBanner(): void {
+    homeScreenBannerDismissed = true;
+    setPref(HOME_SCREEN_BANNER_KEY, 'dismissed');
+    focusNewsButton(lastPressByPointer());
+  }
+
   /** Focuses the What's new button, without a focus ring after a press of the pointer (see Dialog). */
   function focusNewsButton(byPointer: boolean): void {
     if (byPointer) {
@@ -83,10 +107,10 @@
     }
   }
 
-  /** The banner leaves by folding up as it fades out; at once under reduced motion. */
-  function bannerLeave(node: Element): TransitionConfig {
+  /** A banner comes by unfolding as it fades in, and leaves the other way; at once under reduced motion. */
+  function bannerFold(node: Element): TransitionConfig {
     const folding = slide(node, {
-      duration: motionMs(BANNER_LEAVE_MS),
+      duration: motionMs(BANNER_FOLD_MS),
       easing: cubicOut,
     });
     // The opacity follows the slide's styles, overriding the slide's own, which only fades at the
@@ -141,13 +165,31 @@
         <!-- As wide as the button row: the banner ends where its last button does. -->
         <div class="row">
           {#if news.bannerEntry}
-            <aside class="banner" aria-label="Latest news" out:bannerLeave>
+            <aside
+              class="banner"
+              aria-label="Latest news"
+              out:bannerFold
+              onoutroend={() => (newsBannerGone = true)}
+            >
               <!-- The news itself opens the dialog: a button that reads as the banner's text. -->
               <button class="open" onclick={() => openWhatsNew(true)}>
                 <span class="label">New:</span> <span class="title">{news.bannerEntry.title}</span>
               </button>
               <button class="btn-ghost dismiss" aria-label="Dismiss" onclick={dismissBanner}
                 ><Icon name="cross" /></button
+              >
+            </aside>
+          {/if}
+          {#if showsHomeScreenBanner}
+            <aside class="banner" aria-label="Home Screen tip" transition:bannerFold>
+              <button class="open" onclick={() => (explainingHomeScreen = true)}>
+                <span class="label">Play full screen:</span>
+                <span class="title">add Into the Fray to your Home Screen.</span>
+              </button>
+              <button
+                class="btn-ghost dismiss"
+                aria-label="Dismiss"
+                onclick={dismissHomeScreenBanner}><Icon name="cross" /></button
               >
             </aside>
           {/if}
@@ -236,6 +278,10 @@
 
 {#if shownUnread}
   <WhatsNewDialog entries={news.entries} unread={shownUnread} onclose={closeWhatsNew} />
+{/if}
+
+{#if explainingHomeScreen}
+  <HomeScreenDialog onclose={() => (explainingHomeScreen = false)} />
 {/if}
 
 <style>
@@ -450,7 +496,10 @@
     border: 2px solid var(--table-bg);
   }
 
-  /* The newest unread entry, in a slim strip over the buttons; the text wraps on a phone. */
+  /*
+    A slim strip over the buttons, the newest unread entry or, on an iPad, the Home Screen tip; the
+    text wraps on a phone.
+  */
   .banner {
     /* Sized by the row, never sizing it: its text wraps rather than widening the row. */
     contain: inline-size;

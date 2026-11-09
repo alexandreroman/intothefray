@@ -27,7 +27,8 @@
     | 'megaphone'
     | 'user-minus'
     | 'leave'
-    | 'trash';
+    | 'trash'
+    | 'share';
 </script>
 
 <script lang="ts">
@@ -184,6 +185,10 @@
   {:else if name === 'trash'}
     <!-- A bin with its lid. -->
     <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+  {:else if name === 'share'}
+    <!-- iOS's Share: an arrow rising out of a box open at the top. -->
+    <path d="M9 9.5H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2" />
+    <path d="M12 2.5v12M8.5 6 12 2.5 15.5 6" />
   {:else if name === 'back'}
     <!-- An arrow pointing left. -->
     <path d="M19 12H5M11 6l-6 6 6 6" />
