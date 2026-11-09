@@ -44,7 +44,7 @@ describe('AskCount', () => {
     expect(onconfirm).toHaveBeenCalledWith(5);
   });
 
-  it('shows a value that cannot be typed into', () => {
+  it('shows the value without a text field', () => {
     const { dialog, value } = renderAsk();
     expect(within(dialog).queryByRole('textbox')).toBeNull();
     expect(value.querySelector('input')).toBeNull();
@@ -107,6 +107,85 @@ describe('AskCount', () => {
     expect(shown(value)).toBe('30');
     await fireEvent.keyDown(value, { key: 'Home' });
     expect(shown(value)).toBe('1');
+  });
+
+  it('a typed digit replaces the value, and Enter confirms it', async () => {
+    const { value, onconfirm } = renderAsk();
+
+    expect(await fireEvent.keyDown(value, { key: '6' })).toBe(false);
+    expect(shown(value)).toBe('6');
+
+    await fireEvent.keyDown(value, { key: 'Enter' });
+    expect(onconfirm).toHaveBeenCalledWith(6);
+  });
+
+  it('the next digits append, from the main row or the keypad', async () => {
+    const { value } = renderAsk();
+
+    await fireEvent.keyDown(value, { key: '1' });
+    await fireEvent.keyDown(value, { key: '2' });
+    expect(shown(value)).toBe('12');
+
+    await fireEvent.keyDown(value, { key: 'Home' });
+    await fireEvent.keyDown(value, { key: '2', code: 'Numpad2' });
+    await fireEvent.keyDown(value, { key: '6', code: 'Numpad6' });
+    expect(shown(value)).toBe('26');
+  });
+
+  it('Backspace removes the last digit, down to 1 that the next digit replaces', async () => {
+    const { value } = renderAsk();
+
+    await fireEvent.keyDown(value, { key: '1' });
+    await fireEvent.keyDown(value, { key: '2' });
+    expect(await fireEvent.keyDown(value, { key: 'Backspace' })).toBe(false);
+    expect(shown(value)).toBe('1');
+
+    await fireEvent.keyDown(value, { key: 'Backspace' });
+    expect(shown(value)).toBe('1');
+    await fireEvent.keyDown(value, { key: '7' });
+    expect(shown(value)).toBe('7');
+  });
+
+  it('a typed value above the maximum shows the maximum', async () => {
+    const { value, onconfirm } = renderAsk(8);
+
+    await fireEvent.keyDown(value, { key: '1' });
+    expect(shown(value)).toBe('1');
+    await fireEvent.keyDown(value, { key: '2' });
+    expect(shown(value)).toBe('8');
+
+    await fireEvent.keyDown(value, { key: 'Enter' });
+    expect(onconfirm).toHaveBeenCalledWith(8);
+  });
+
+  it('ignores a leading 0, but not a 0 after a digit', async () => {
+    const { value } = renderAsk();
+
+    await fireEvent.keyDown(value, { key: '0' });
+    expect(shown(value)).toBe('5');
+    await fireEvent.keyDown(value, { key: '1' });
+    await fireEvent.keyDown(value, { key: '0' });
+    expect(shown(value)).toBe('10');
+  });
+
+  it('a step starts from the typed value, and the next digit replaces it', async () => {
+    const { value } = renderAsk();
+
+    await fireEvent.keyDown(value, { key: '1' });
+    await fireEvent.keyDown(value, { key: '2' });
+    await fireEvent.keyDown(value, { key: 'ArrowUp' });
+    expect(shown(value)).toBe('13');
+
+    await fireEvent.keyDown(value, { key: '4' });
+    expect(shown(value)).toBe('4');
+  });
+
+  it('digits with Ctrl or Meta are left to the browser', async () => {
+    const { value } = renderAsk();
+
+    expect(await fireEvent.keyDown(value, { key: '2', ctrlKey: true })).toBe(true);
+    expect(await fireEvent.keyDown(value, { key: '2', metaKey: true })).toBe(true);
+    expect(shown(value)).toBe('5');
   });
 
   it('quick clicks on − and + start no text selection', async () => {
