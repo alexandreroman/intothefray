@@ -18,8 +18,19 @@ type: project
   up to 500px tall), the bar floats over the play area only: its icons sit
   on the play area's 24px gutter and the history panel runs from the top
   of the window.
+- The history column's collapse and expand buttons, and the collapsed
+  strip's Undo, stand under End game: same size (`--top-bar-control`,
+  tokens.css: 38px, 44px in touch mode) and same 8px gutter
+  (`--bar-gutter-end` on `.app`); the strip is one control wide plus both
+  gutters and its 1px border, and its Undo sits on the expanded Undo's
+  line. On the short screen above, End game stands over the play area and
+  the history buttons keep this same geometry at the window's edge.
 
-**Why:** a bar whose edges match the content reads as part of the page.
+**Why:** a bar whose edges match the content reads as part of the page;
+the history buttons in End game's column read as one column of controls.
 
 **How to apply:** a new screen with a top bar sets its column width and
 gutter for the bar too; changing a screen's gutter moves both together.
+Resizing the bar's controls or the table's gutter goes through
+`--top-bar-control` and `--bar-gutter-end`, never a literal, so the
+history column follows.
