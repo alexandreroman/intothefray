@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import Seats from './Seats.svelte';
+import seatsSource from './Seats.svelte?raw';
 import { cutShort } from '../../lib/overflowTip.testing';
 import { mockScreen, type TestScreen } from '../../lib/screen.testing';
+import { declarations } from '../../styles/tokens.testing';
 import type { DeckView, PlayerView, View, YouView } from '../../lib/types';
 
 // Whether the viewer prefers reduced motion, as each test chooses.
@@ -505,5 +507,31 @@ describe('Seats in motion', () => {
 
     expect(document.querySelectorAll('.seat')).toHaveLength(3);
     expect(animate).not.toHaveBeenCalled();
+  });
+});
+
+describe('a press on the seats', () => {
+  /** The declarations of a rule of the seats' stylesheet, at the given indent. */
+  function rule(selector: string, indent: number): string[] {
+    const escaped = selector.replace(/[.()[\]]/g, (char) => `\\${char}`);
+    return declarations(
+      new RegExp(`\\n {${indent}}${escaped} \\{([^}]*)\\}`).exec(seatsSource)?.[1],
+    );
+  }
+
+  it("gives the add-a-deck tool and a free seat their hover's look, outside any media query", () => {
+    const enabled = ":not(:disabled, [aria-disabled='true'])";
+    expect(rule(`.tool.add:active${enabled}`, 2)).toEqual([
+      'border-color: var(--sel)',
+      'color: var(--sel)',
+    ]);
+    expect(rule(`.tool.add:active${enabled}`, 2)).toEqual(rule(`.tool.add:hover${enabled}`, 4));
+    expect(rule('button.free:active:not(:disabled)', 2)).toEqual([
+      'background: none',
+      'border-color: var(--pc)',
+    ]);
+    expect(rule('button.free:active:not(:disabled)', 2)).toEqual(
+      rule('button.free:hover:not(:disabled)', 4),
+    );
   });
 });

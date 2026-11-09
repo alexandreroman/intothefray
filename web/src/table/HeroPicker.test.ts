@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import HeroPicker, { type HeroEntry } from './HeroPicker.svelte';
 import pickerSource from './HeroPicker.svelte?raw';
+import { hasNoTapHighlight } from '../styles/tokens.testing';
 
 const SPIDER_MAN: HeroEntry = {
   seat: 0,
@@ -159,9 +160,13 @@ describe('HeroPicker', () => {
     expect(rule('.step')).not.toMatch(/min-width/);
   });
 
-  it('lays no square tap highlight over a tapped entry: the sliding ring is the feedback', () => {
-    // The entries' rule, `.item, .item:hover`, found by its last selector.
-    expect(rule('.item:hover')).toContain('-webkit-tap-highlight-color: transparent;');
+  it('lays no square tap highlight nor press surface over a tapped entry: the sliding ring is the feedback', () => {
+    expect(hasNoTapHighlight()).toBe(true);
+    // The entries' rule, `.item, .item:hover, .item:active`, found by its last selector: no button's
+    // hover or press surface (tokens.css).
+    expect(pickerSource).toMatch(/\n {2}\.item,\n {2}\.item:hover,\n {2}\.item:active \{/);
+    expect(rule('.item:active')).toMatch(/background: none;/);
+    expect(rule('.item:active')).toMatch(/border: 0;/);
   });
 
   it('shows the hand size of each entry in its badge', () => {

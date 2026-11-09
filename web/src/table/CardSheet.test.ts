@@ -16,6 +16,7 @@ import { MOVE_EASING, TILT_MS } from './motion.svelte';
 import type { ContextEntry, ContextHeader } from './contextItems';
 import type { SheetCounter, StackCard } from './inspector';
 import { stubImageDecode } from '../lib/decodeImage.testing';
+import { declarations, hasNoTapHighlight } from '../styles/tokens.testing';
 
 // Whether the viewer prefers reduced motion; the tests of the motion turn it on and off.
 const motion = vi.hoisted(() => ({ reduced: false }));
@@ -744,6 +745,21 @@ describe('CardSheet', () => {
       expect(layer.inert).toBe(true);
       expect(countersSource).toMatch(/\.layer\[inert\] \.tokens,[^}]*pointer-events: none;/);
     });
+
+    it('rings a pressed chip as its open one, keeping its own rim', () => {
+      /** The declarations of every rule of the counters' stylesheet that ends with a pressed chip. */
+      function pressed(chip: 'tok' | 'st'): string[] {
+        const rules = countersSource.matchAll(
+          new RegExp(`\\n {2}button\\.${chip}:active \\{([^}]*)\\}`, 'g'),
+        );
+        return [...rules].flatMap((match) => declarations(match[1]));
+      }
+
+      expect(countersSource).toMatch(/\n {2}\.tok\.open,\n {2}button\.tok:active \{/);
+      expect(countersSource).toMatch(/\n {2}\.st\.open,\n {2}button\.st:active \{/);
+      expect(pressed('tok')).toContain('border-color: var(--rim)');
+      expect(pressed('st')).toContain('border-color: #0008');
+    });
   });
 
   describe('the exhausted tilt', () => {
@@ -1335,8 +1351,9 @@ describe('CardSheet', () => {
       expect(onpick.mock.calls).toEqual([['armor'], ['hidden']]);
     });
 
-    it('lays no tap highlight over a tapped neighbour as it glides to the middle', () => {
-      expect(rule('.slide')).toContain('-webkit-tap-highlight-color: transparent;');
+    it('lays no tap highlight nor press look over a tapped neighbour as it glides to the middle', () => {
+      expect(hasNoTapHighlight()).toBe(true);
+      expect(sheetSource).not.toMatch(/\.slide[^{]*:active/);
     });
 
     /**

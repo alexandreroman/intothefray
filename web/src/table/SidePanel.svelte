@@ -326,6 +326,11 @@
     cursor: pointer;
   }
 
+  /* Pressed, as under the pointer: a tap's feedback. */
+  .e:active {
+    background: var(--line-hover);
+  }
+
   @media (hover: hover) {
     .e:hover {
       background: var(--line-hover);

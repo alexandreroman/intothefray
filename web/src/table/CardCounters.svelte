@@ -348,8 +348,9 @@
     transition: none;
   }
 
-  /* Its pill open: the chip is ringed, as a hovered one on the table. */
-  .tok.open {
+  /* Its pill open, or the chip pressed: it is ringed, as a hovered one on the table. */
+  .tok.open,
+  button.tok:active {
     box-shadow:
       inset 0 1px 1px #ffffff80,
       inset 0 -2px 3px #0000004d,
@@ -357,10 +358,23 @@
       0 2px 6px #000000a0;
   }
 
-  .st.open {
+  .st.open,
+  button.st:active {
     box-shadow:
       0 0 0 2px #fff,
       0 2px 4px #0009;
+  }
+
+  /*
+    Pressed, a chip keeps its own rim (counters.css), where every button's press would brighten it
+    (tokens.css); the press surface lies under the chip's opaque gradient, unseen.
+  */
+  button.tok:active {
+    border-color: var(--rim);
+  }
+
+  button.st:active {
+    border-color: #0008;
   }
 
   /* The pill: TokenPill.svelte's look, with buttons a finger can take (44 px). */

@@ -986,7 +986,9 @@
     box-shadow: 0 0 0 2px var(--sel);
   }
 
-  .tile.hovered .img::before {
+  /* Under the pointer, or pressed (a tap's feedback), a tile is ringed; a disabled stage takes no press. */
+  .tile.hovered .img::before,
+  .tile:not(.lifting) .img:active:not(:disabled)::before {
     box-shadow:
       0 0 0 2px #ffffffb0,
       0 0 22px 6px #ffffff38;

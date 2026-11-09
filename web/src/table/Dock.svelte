@@ -247,6 +247,11 @@
     background: none;
   }
 
+  /* With no surface of its own in the rail, it takes the wash of the ghost buttons beside it when pressed. */
+  .rail .handbtn:active {
+    background-color: var(--hover-wash);
+  }
+
   /* The drop target of a dragged card: a dashed outline in the selection blue. */
   .handbtn.drop {
     justify-content: center;

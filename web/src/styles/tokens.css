@@ -106,6 +106,16 @@ body {
 }
 
 /*
+  No tap highlight from the browser: it is a square over the tapped element, whatever its rounded
+  corners, and cannot be rounded. Inherited, it is off everywhere: each control gives its own press
+  look instead (the button rules below, a component's :active rules), or has its own feedback (a
+  switch's sliding indicator, a card's lift).
+*/
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
   While a dialog is open, the page under it does not scroll (modal.svelte.ts). Hidden, its
   overflow keeps the scroll offset; no rubber band either (iOS). A classic scrollbar's room
   stays (the gutter class), so the content does not widen under the dialog.
@@ -127,8 +137,12 @@ html.scroll-locked-gutter {
   - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
     or a box); a lighter red on hover, and a yellow ring under a mouse; it sinks when pressed.
   Hovers apply only under a real hover: a tap on a touch screen leaves none behind.
-  A disabled button has no hover. A pressed or "on" state set by a component keeps its look
-  and gives its own hover.
+  A press shows the hover's look, under any pointer: on a touch screen it is the tap's feedback,
+  which follows the button's rounded corners; under a mouse the button is hovered already, so
+  nothing changes. Its selectors weigh as the hover's, so that it wins wherever the hover wins.
+  A switch's options take no press (:where() adds no weight): the sliding indicator is the feedback.
+  A disabled button has no hover and no press. A pressed or "on" state set by a component keeps
+  its look and gives its own hover, and its own press.
   A label never wraps.
 */
 button {
@@ -157,6 +171,11 @@ button {
   }
 }
 
+button:active:not(:disabled, [aria-disabled='true'], :where([data-indicator] ~ button)) {
+  background-color: var(--hover);
+  border-color: var(--muted);
+}
+
 .btn-ghost {
   background: transparent;
   border-color: transparent;
@@ -168,6 +187,12 @@ button {
     border-color: transparent;
     color: var(--text);
   }
+}
+
+.btn-ghost:active:not(:disabled, [aria-disabled='true'], :where([data-indicator] ~ button)) {
+  background-color: var(--hover-wash);
+  border-color: transparent;
+  color: var(--text);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -197,8 +222,6 @@ button {
 }
 
 [data-indicator] ~ button {
-  /* The browser's tap highlight is square over the option: the sliding indicator is the feedback. */
-  -webkit-tap-highlight-color: transparent;
   transition:
     color 0.2s ease-out,
     opacity 0.2s ease-out,
@@ -359,12 +382,17 @@ select:focus {
   );
 }
 
-/* The button stays transparent on hover too: the standard button's hover surface would show
-   at the rounded corners. The hover red is on the panel. */
+/* The button stays transparent on hover and pressed too: the standard button's hover and press
+   surface would show at the rounded corners, a rectangle around the panel. The hover and press
+   reds are on the panel. */
 @media (hover: hover) {
   .btn-primary:hover:not(:disabled, [aria-disabled='true']) {
     background: transparent;
   }
+}
+
+.btn-primary:active:not(:disabled, [aria-disabled='true']) {
+  background: transparent;
 }
 
 /* The main action of a dialog or a box, sized as the buttons next to it. */
@@ -644,7 +672,7 @@ a.btn-primary {
 
 /*
   A link in the text, as there is no global link style: underlined, in --link-color (the soft text
-  by default), brighter on hover.
+  by default), brighter on hover, and pressed (a tap's feedback, as a button's).
 */
 .text-link {
   color: var(--link-color, var(--text-soft));
@@ -661,6 +689,11 @@ a.btn-primary {
     color: var(--text);
     text-decoration-color: currentColor;
   }
+}
+
+.text-link:active {
+  color: var(--text);
+  text-decoration-color: currentColor;
 }
 
 .text-link:focus-visible {

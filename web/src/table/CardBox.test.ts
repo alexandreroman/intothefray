@@ -649,6 +649,13 @@ describe('CardBox', () => {
     expect(tile('c3').classList).toContain('hovered');
   });
 
+  it('rings a pressed tile as a hovered one, but a disabled stage or a tile being moved', () => {
+    // A tap's feedback, with no hover on a touch screen: the hover's ring, a shadow (no filter on a card).
+    const ring = /\n {2}\.tile\.hovered \.img::before,\n {2}([^{]*) \{([^}]*)\}/.exec(boxSource);
+    expect(ring?.[1]).toBe('.tile:not(.lifting) .img:active:not(:disabled)::before');
+    expect(ring?.[2]).toContain('box-shadow:');
+  });
+
   it("opens a tile's menu at the pointer on a click, headed with its pile and place", async () => {
     await renderTable(makeView({ private: SEARCH }));
     await clickTile('c3', 140, 210);

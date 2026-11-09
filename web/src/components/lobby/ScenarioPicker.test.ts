@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import ScenarioPicker from './ScenarioPicker.svelte';
 import pickerSource from './ScenarioPicker.svelte?raw';
+import { declarations, hasNoTapHighlight } from '../../styles/tokens.testing';
 import type { Lang } from '../../lib/lang';
 import type { Index, LobbyConfig, View, YouView } from '../../lib/types';
 import type { Rect } from '../../lib/rect';
@@ -812,11 +813,17 @@ describe('ScenarioPicker villain list', () => {
     expect(screen.queryByRole('button', { name: 'Show fewer' })).toBeNull();
   });
 
-  it("lays no square tap highlight over a tapped row: the chosen row's outline and wash are the feedback", () => {
-    // jsdom applies no stylesheet: the rows' rule itself is checked.
-    const rowRule = /\n {2}\.vrow \{([^}]*)\}/.exec(pickerSource)?.[1] ?? '';
+  it("lays no square tap highlight over a tapped row, and gives a pressed chosen row its hover's wash", () => {
+    // jsdom applies no stylesheet: the rules themselves are checked.
+    const pressed = /\n {2}\.vrow\.on:active \{([^}]*)\}/.exec(pickerSource)?.[1];
+    const hovered = /\n {4}\.vrow\.on:hover \{([^}]*)\}/.exec(pickerSource)?.[1];
 
-    expect(rowRule).toContain('-webkit-tap-highlight-color: transparent;');
+    expect(hasNoTapHighlight()).toBe(true);
+    expect(declarations(pressed)).toEqual([
+      'background: color-mix(in srgb, var(--sel) 22%, transparent)',
+      'border-color: var(--sel)',
+    ]);
+    expect(declarations(pressed)).toEqual(declarations(hovered));
   });
 
   describe('folded', () => {

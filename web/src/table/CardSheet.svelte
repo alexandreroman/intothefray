@@ -1108,14 +1108,13 @@
     width: calc((100% - var(--slide-w)) / 2 - var(--gap));
   }
 
-  /* A tapped neighbour gets no highlight over it: it lights up as it glides to the middle. */
+  /* A tapped neighbour takes no press look: it lights up as it glides to the middle. */
   .slide {
     position: relative;
     flex: none;
     width: var(--slide-w);
     aspect-ratio: var(--face-ratio);
     scroll-snap-align: center;
-    -webkit-tap-highlight-color: transparent;
   }
 
   .slide.dim {

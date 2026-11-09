@@ -1,13 +1,12 @@
 // The page around the app on a touch screen: its viewport, the web app manifest that lets a game added to
 // the home screen run full screen, no pinch zoom on the table, and card boxes that keep the keyboard down.
 
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { render, screen, within } from '@testing-library/svelte';
 import indexHtml from '../index.html?raw';
 import manifestSource from '../public/manifest.webmanifest?raw';
 import { renderPage } from '../seo';
 import { DESKTOP, mockScreen, PHONE } from './lib/screen.testing';
+import { declarations, hasNoTapHighlight, tokensCss, tokensRule } from './styles/tokens.testing';
 import CardBox from './table/CardBox.svelte';
 import { card, pile, playingView } from './table/fixtures.testing';
 
@@ -61,9 +60,6 @@ describe('the web app manifest', () => {
   });
 });
 
-// Read from the disk: Vitest hands a stylesheet over empty, even raw.
-const tokensCss = readFileSync(path.join(import.meta.dirname, 'styles/tokens.css'), 'utf8');
-
 describe('the table page on a touch screen', () => {
   it('pans but never pinch-zooms: the table has its own zoom', () => {
     const touchRules = /@media \(hover: none\) and \(pointer: coarse\) \{([\s\S]*?)\n\}/.exec(
@@ -81,10 +77,65 @@ describe('the table page on a touch screen', () => {
   });
 });
 
-describe('a switch on a touch screen', () => {
-  it('lays no square tap highlight over a tapped option: the sliding indicator is the feedback', () => {
-    const optionRule = /\n\[data-indicator\] ~ button \{([^}]*)\}/.exec(tokensCss)?.[1];
-    expect(optionRule).toContain('-webkit-tap-highlight-color: transparent;');
+describe('a press on a touch screen', () => {
+  const ENABLED = ":not(:disabled, [aria-disabled='true'], :where([data-indicator] ~ button))";
+
+  it("lays no tap highlight anywhere: the browser's is a square, whatever the rounded corners", () => {
+    expect(hasNoTapHighlight()).toBe(true);
+  });
+
+  it("gives a pressed button its hover's look, outside any media query, so under a finger too", () => {
+    const hover = /button:hover:not\(:disabled, \[aria-disabled='true'\]\) \{([^}]*)\}/.exec(
+      tokensCss,
+    )?.[1];
+    const press = tokensRule(`button:active${ENABLED}`);
+
+    expect(declarations(press)).toEqual([
+      'background-color: var(--hover)',
+      'border-color: var(--muted)',
+    ]);
+    expect(declarations(press)).toEqual(declarations(hover));
+  });
+
+  it("gives a pressed ghost button its hover's wash", () => {
+    const hover = /\.btn-ghost:hover:not\(:disabled, \[aria-disabled='true'\]\) \{([^}]*)\}/.exec(
+      tokensCss,
+    )?.[1];
+    const press = tokensRule(`.btn-ghost:active${ENABLED}`);
+
+    expect(declarations(press)).toEqual([
+      'background-color: var(--hover-wash)',
+      'border-color: transparent',
+      'color: var(--text)',
+    ]);
+    expect(declarations(press)).toEqual(declarations(hover));
+  });
+
+  it('keeps a pressed primary button transparent: no rectangle shows around its slanted panel', () => {
+    expect(tokensRule(".btn-primary:active:not(:disabled, [aria-disabled='true'])")).toContain(
+      'background: transparent;',
+    );
+    // Its own press, the deep red, is on the panel.
+    expect(
+      tokensRule(".btn-primary:active:not(:disabled, [aria-disabled='true'])::before"),
+    ).toContain('background: var(--accent-deep);');
+  });
+
+  it('shades no switch option: the sliding indicator is the feedback', () => {
+    // Both presses, the standard and the ghost one, leave out the options of a switch, with no
+    // weight of their own (:where).
+    const presses = tokensCss.match(/^(button|\.btn-ghost):active.*\{$/gm) ?? [];
+    expect(presses).toHaveLength(2);
+    for (const selector of presses) {
+      expect(selector).toContain(':where([data-indicator] ~ button)');
+    }
+    expect(tokensRule('[data-indicator] ~ button')).not.toMatch(/(background|border-color):/);
+    expect(tokensCss).not.toMatch(/\[data-indicator\] ~ button:active/);
+  });
+
+  it('brightens a pressed text link, as under the pointer', () => {
+    expect(tokensRule('.text-link:active')).toContain('color: var(--text);');
+    expect(tokensRule('.text-link:active')).toContain('text-decoration-color: currentColor;');
   });
 });
 
