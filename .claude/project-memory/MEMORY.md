@@ -106,3 +106,4 @@
 - [Full-bleed favicon](references/project_favicon.md) — one opaque icon for tabs and search; favicon.ico (32x32) declared before favicon.svg
 - [A press shows the hover's look](references/project_press_looks.md) — no tap highlight; :active = hover look, rounded; own-feedback elements none
 - [Count dialog takes typed digits](references/project_count_dialog.md) — "How many cards?": digits typed, no text field
+- [Pages end with their content](references/project_page_height.md) — dvh or fixed inset 0; absolute boxes in columns need a positioned row

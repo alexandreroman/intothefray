@@ -788,8 +788,12 @@
   /*
     A row reaches past its column by its padding and border on both sides, so its icon starts on the
     pack's name, the filter and the box's other content, and its check ends with the pack's rule.
+    Positioned, it holds its absolutely positioned label (.sr-only): with no positioned box inside
+    the columns, WebKit places that label as if the columns were stacked into one, far below its
+    row, and the page grows by the difference.
   */
   .vrow {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
