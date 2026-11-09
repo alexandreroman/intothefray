@@ -508,15 +508,15 @@
   }
 
   /*
-    The icon buttons reach into the card's padding by their own (8px), so their 16px icons end on
-    its edge, as a deck slot's do (DeckLoader), and above and below the name line, so the card is no
-    taller than that line.
+    The icon buttons' boxes end on the card's content edge, as a deck slot's Load square does
+    (DeckLoader). Above and below the name line, they reach into the card's padding, so the card is
+    no taller than that line.
   */
   .tools {
     flex: none;
     display: flex;
     gap: 2px;
-    margin: -6px -8px -6px 0;
+    margin: -6px 0;
   }
 
   .tool {

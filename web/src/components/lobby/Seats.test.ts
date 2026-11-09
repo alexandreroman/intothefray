@@ -510,15 +510,13 @@ describe('Seats in motion', () => {
   });
 });
 
-describe('a press on the seats', () => {
-  /** The declarations of a rule of the seats' stylesheet, at the given indent. */
-  function rule(selector: string, indent: number): string[] {
-    const escaped = selector.replace(/[.()[\]]/g, (char) => `\\${char}`);
-    return declarations(
-      new RegExp(`\\n {${indent}}${escaped} \\{([^}]*)\\}`).exec(seatsSource)?.[1],
-    );
-  }
+/** The declarations of a rule of the seats' stylesheet, at the given indent. */
+function rule(selector: string, indent: number): string[] {
+  const escaped = selector.replace(/[.()[\]]/g, (char) => `\\${char}`);
+  return declarations(new RegExp(`\\n {${indent}}${escaped} \\{([^}]*)\\}`).exec(seatsSource)?.[1]);
+}
 
+describe('a press on the seats', () => {
   it("gives the add-a-deck tool and a free seat their hover's look, outside any media query", () => {
     const enabled = ":not(:disabled, [aria-disabled='true'])";
     expect(rule(`.tool.add:active${enabled}`, 2)).toEqual([
@@ -533,5 +531,15 @@ describe('a press on the seats', () => {
     expect(rule('button.free:active:not(:disabled)', 2)).toEqual(
       rule('button.free:hover:not(:disabled)', 4),
     );
+  });
+});
+
+describe("the tools of a seat's name line", () => {
+  // Their boxes, not only their icons, end on the card's content edge, as a deck slot's Load square
+  // does; only above and below the line do they reach into the card's padding.
+  it("end on the card's content edge", () => {
+    expect(rule('.tools', 2).filter((declaration) => declaration.startsWith('margin'))).toEqual([
+      'margin: -6px 0',
+    ]);
   });
 });
