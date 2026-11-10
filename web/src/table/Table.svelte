@@ -2640,6 +2640,7 @@
         : undefined}
       scroller={wrap}
       autoHide={!dockMode}
+      reload
       bind:hidden={() => barHidden, (hidden) => (scrolledAway = hidden)}
     />
   </div>

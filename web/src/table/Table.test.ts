@@ -8,6 +8,7 @@ import surfaceSource from './Surface.svelte?raw';
 import markerSource from './MarkerToken.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { cutShort } from '../lib/overflowTip.testing';
+import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
 import type { CardView as TableCard, Index, PackFace, PileView, View } from '../lib/types';
 import {
   card,
@@ -1086,6 +1087,15 @@ describe('Table', () => {
       view: { ...makeView(), you: spectatorYou() },
     });
     expect(surface().querySelectorAll('.card.grab')).toHaveLength(0);
+  });
+
+  it('offers Reload in its top bar when the app is opened from the Home Screen', async () => {
+    setDevice(IPAD, true);
+    onTestFinished(resetDevice);
+    render(Table, { session: fakeSession(), view: makeView() });
+    await catalogLoaded();
+
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
   });
 
   it('end game asks for confirmation (host only)', async () => {

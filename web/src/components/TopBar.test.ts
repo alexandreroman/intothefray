@@ -461,9 +461,9 @@ describe('TopBar on an iPad', () => {
     ]);
   });
 
-  it('offers no Fullscreen opened from the Home Screen either, only Reload', () => {
+  it('offers no Fullscreen opened from the Home Screen either, only Reload on the table', () => {
     setDevice(IPAD, true);
-    const { container } = render(TopBar, { onend: () => {} });
+    const { container } = render(TopBar, { onend: () => {}, reload: true });
 
     expect(actionNames(container)).toEqual(['Reload', 'End game']);
   });
@@ -486,15 +486,32 @@ describe('TopBar Reload', () => {
     resetDevice();
   });
 
+  // The table's bar, which offers Reload.
+  const TABLE_BAR = { onend: () => {}, reload: true } as const;
+
+  // The most crowded table bar: two decks show the view switch, and an Android app keeps the
+  // Fullscreen API. The spectator count, in the list, is hidden this narrow (CSS).
+  const CROWDED_TABLE = {
+    ...TABLE_BAR,
+    spectators: 2,
+    viewMode: 'all',
+    onviewmode: () => {},
+    readyAll: { disabled: false, run: () => {} },
+  } as const;
+
+  // The narrowest phone, and the narrowest common Android phone, upright.
+  const NARROW_PHONE = { width: 320, height: 640, touch: true };
+  const ANDROID_PHONE = { width: 360, height: 780, touch: true };
+
   it('offers no Reload in a browser tab, which has its own', () => {
-    render(TopBar, { onend: () => {} });
+    render(TopBar, TABLE_BAR);
 
     expect(screen.queryByRole('button', { name: 'Reload' })).toBeNull();
   });
 
-  it("offers Reload opened from the Home Screen, as Safari's flag tells, before End game", () => {
+  it("offers Reload on the table opened from the Home Screen, as Safari's flag tells, before End game", () => {
     setDevice(IPAD, true);
-    const { container } = render(TopBar, { onend: () => {} });
+    const { container } = render(TopBar, TABLE_BAR);
 
     const reload = screen.getByRole('button', { name: 'Reload' });
     expect(reload.dataset.tip).toBe('Reload');
@@ -503,21 +520,14 @@ describe('TopBar Reload', () => {
     expect(actionNames(container)).toEqual(['Reload', 'End game']);
   });
 
-  // The most crowded table bar: two decks show the view switch, and an Android app keeps the
-  // Fullscreen API. The spectator count, in the list, is hidden this narrow (CSS).
-  const CROWDED_TABLE = {
-    spectators: 2,
-    viewMode: 'all',
-    onviewmode: () => {},
-    readyAll: { disabled: false, run: () => {} },
-    onend: () => {},
-  } as const;
+  it('offers no Reload on a bar that does not ask for it, opened from the Home Screen', () => {
+    setDevice(IPAD, true);
+    render(TopBar, { onend: () => {} });
 
-  // The narrowest phone, and the narrowest common Android phone, upright.
-  const NARROW_PHONE = { width: 320, height: 640, touch: true };
-  const ANDROID_PHONE = { width: 360, height: 780, touch: true };
+    expect(screen.queryByRole('button', { name: 'Reload' })).toBeNull();
+  });
 
-  it("gives Fullscreen's slot to Reload in the standalone display mode under 360px", () => {
+  it("gives Fullscreen's slot to Reload on the table in the standalone display mode under 360px", () => {
     mockScreen({ ...NARROW_PHONE, standalone: true });
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, CROWDED_TABLE);
@@ -531,11 +541,19 @@ describe('TopBar Reload', () => {
     ]);
   });
 
+  it('keeps Fullscreen under 360px in the standalone display mode on a bar that offers no Reload', () => {
+    mockScreen({ ...NARROW_PHONE, standalone: true });
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, { onend: () => {} });
+
+    expect(actionNames(container)).toEqual(['Fullscreen', 'End game']);
+  });
+
   it('gives the slot to Exit fullscreen under 360px while fullscreen is on, back to Reload after', async () => {
     mockScreen({ ...NARROW_PHONE, standalone: true });
     document.documentElement.requestFullscreen = vi.fn();
     setFullscreenElement('fullscreenElement', document.documentElement);
-    const { container } = render(TopBar, { onend: () => {} });
+    const { container } = render(TopBar, TABLE_BAR);
     expect(actionNames(container)).toEqual(['Exit fullscreen', 'End game']);
 
     setFullscreenElement('fullscreenElement', null);
@@ -543,7 +561,7 @@ describe('TopBar Reload', () => {
     expect(actionNames(container)).toEqual(['Reload', 'End game']);
   });
 
-  it('offers both Fullscreen and Reload in the standalone display mode from 360px', () => {
+  it('offers both Fullscreen and Reload on the table in the standalone display mode from 360px', () => {
     mockScreen({ ...ANDROID_PHONE, standalone: true });
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, CROWDED_TABLE);
@@ -558,7 +576,7 @@ describe('TopBar Reload', () => {
     ]);
   });
 
-  it('keeps Fullscreen and offers no Reload in a browser tab under 360px', () => {
+  it('keeps Fullscreen and offers no Reload on the table in a browser tab under 360px', () => {
     mockScreen(NARROW_PHONE);
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, CROWDED_TABLE);
@@ -574,7 +592,7 @@ describe('TopBar Reload', () => {
 
   it('reloads the page on a click, keeping no focus after a pointer click', async () => {
     setDevice(IPAD, true);
-    render(TopBar);
+    render(TopBar, { reload: true });
     const reload = screen.getByRole('button', { name: 'Reload' });
 
     reload.focus();
