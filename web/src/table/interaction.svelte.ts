@@ -214,12 +214,23 @@ class TableInteraction {
   #counterTimer: ReturnType<typeof setTimeout> | undefined;
   #landingTimer: ReturnType<typeof setTimeout> | undefined;
 
-  /** Follows the pointer, to tell real hovers from the ones a redraw fires. */
+  /**
+   * Follows a mouse or a pen, to tell real hovers from the ones a redraw
+   * fires. A finger leaves no pointer at rest: once lifted, it points at
+   * nothing, and the card it dropped must not stay hovered under it.
+   */
   pointerMoved(event: PointerEvent): void {
+    if (event.pointerType === 'touch') {
+      this.#pointer = { x: NaN, y: NaN };
+      return;
+    }
     this.#pointer = { x: event.clientX, y: event.clientY };
   }
 
-  /** Where the pointer was last seen on the screen; not a number before it moved. */
+  /**
+   * Where a mouse or a pen was last seen on the screen; not a number before it
+   * moved, nor after a finger moved.
+   */
   get pointer(): { x: number; y: number } {
     return { ...this.#pointer };
   }

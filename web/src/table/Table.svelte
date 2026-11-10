@@ -1217,7 +1217,8 @@
    * Hovers what a new view put under a pointer at rest, whoever acted: the
    * card or hand card there, or nothing once the hovered card went from under
    * it. The ring, the preview and the keys follow. A hovered card turning over
-   * or in stays hovered: the pointer still rests on it, edge-on.
+   * or in stays hovered: the pointer still rests on it, edge-on. Nothing
+   * after a finger moved: a finger leaves no pointer at rest.
    */
   function rehoverUnderPointer(): void {
     const { x, y } = interaction.pointer;
