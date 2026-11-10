@@ -233,6 +233,23 @@ describe('hovering the table', () => {
     },
   );
 
+  it('hovers no card a new view puts where a finger last moved: it leaves no pointer at rest', async () => {
+    const { rerender } = await renderTable();
+    // The finger drags a card there, then lifts.
+    await fireEvent.pointerMove(window, { pointerType: 'touch', clientX: 500, clientY: 60 });
+
+    // The card drawn next lands at that spot.
+    vi.spyOn(document, 'elementFromPoint').mockImplementation(() => placed('arrived'));
+    const view = makeView();
+    view.table!.cards.push(card('arrived', { code: '01002', x: 500 }));
+    await rerender({ view });
+    // The rehover of a new view runs once its motion has played, which jsdom does at once.
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(interaction.hovered).toBeNull();
+    expect(placed('arrived').classList.contains('hovered')).toBe(false);
+  });
+
   it('ignores the pointerenter a zoom fires under a resting pointer', async () => {
     await renderTable();
     await fireEvent.pointerMove(window, { clientX: 40, clientY: 60 });

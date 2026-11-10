@@ -29,12 +29,18 @@ type: project
   element tapped last until the next tap elsewhere, which would read as a
   focus that stayed. The hand fan's `.hcard:hover` layout rules are the
   exception (see [[project_hand_sizes]]).
+- A new view hovers what lies under a mouse or a pen at rest
+  (`rehoverUnderPointer` in `Table.svelte`): the white hover ring follows
+  the card that lands there. A finger leaves no pointer at rest:
+  `interaction.pointerMoved` records no touch coordinates, so a new view
+  never rings the card a finger dropped or tapped.
 - Keyboard navigation (Tab order, `:focus-visible` styling) is untouched.
 
 **Why:** `preventDefault()` on `pointerdown` (no text selection, no native
 image drag) also cancels the browser's focus move. The last clicked button
 then stays focused, shows its focus ring at the first table key, and Space
-or Enter activate it again (fullscreen toggles).
+or Enter activate it again (fullscreen toggles). A lifted finger points at
+nothing: a ring on the card under its last spot reads as a stuck outline.
 
 **How to apply:** a new hover look goes under `@media (hover: hover)`.
 A new `pointerdown` handler that calls
@@ -42,3 +48,5 @@ A new `pointerdown` handler that calls
 `releaseFocus(event.currentTarget)` after it.
 A new chrome icon button outside dialogs and menus takes
 `{@attach pointerBlur}`.
+Code that hovers from a remembered pointer position reads
+`interaction.pointer`, which is not a number after a touch.
