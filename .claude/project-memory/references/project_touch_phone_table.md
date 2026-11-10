@@ -233,9 +233,10 @@ type: project
     else on the card does.
 - The page has `viewport-fit=cover` and every screen keeps clear of the
   safe areas, its top bar included (the bar's edges follow the content
-  column's safe padding). A web app manifest (`display: standalone`,
+  column's safe padding). A web app manifest (`display: fullscreen`,
   `start_url` and `scope` `./`, the site root under the base path) lets
-  the app run full screen from the home screen on iOS; its icon opens
+  the app run full screen once installed, from the Android launcher or the
+  iOS Home Screen (see [[project_home_screen_status_bar]]); its icon opens
   Home, whatever page was added, since a game expires after 24 h. The
   icons' render recipe is in DEVELOPMENT.md (see [[project_favicon]]).
 

@@ -6,7 +6,7 @@ import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { setFullscreenElement } from '../lib/fullscreen.testing';
 import { reloadPage } from '../lib/platform';
-import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
+import { IPAD, resetDevice, setDevice, setInstalledApp } from '../lib/platform.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 import { TOUCH_MODE_QUERY } from '../lib/screen';
 import { tokensCss } from '../styles/tokens.testing';
@@ -529,7 +529,8 @@ describe('TopBar Reload', () => {
   });
 
   it("gives Fullscreen's slot to Reload on the table in the standalone display mode under 360px", () => {
-    mockScreen({ ...NARROW_PHONE, standalone: true });
+    mockScreen(NARROW_PHONE);
+    setInstalledApp('standalone');
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, CROWDED_TABLE);
 
@@ -543,7 +544,8 @@ describe('TopBar Reload', () => {
   });
 
   it('keeps Fullscreen under 360px in the standalone display mode on a bar that offers no Reload', () => {
-    mockScreen({ ...NARROW_PHONE, standalone: true });
+    mockScreen(NARROW_PHONE);
+    setInstalledApp('standalone');
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, { onend: () => {} });
 
@@ -551,7 +553,8 @@ describe('TopBar Reload', () => {
   });
 
   it('gives the slot to Exit fullscreen under 360px while fullscreen is on, back to Reload after', async () => {
-    mockScreen({ ...NARROW_PHONE, standalone: true });
+    mockScreen(NARROW_PHONE);
+    setInstalledApp('standalone');
     document.documentElement.requestFullscreen = vi.fn();
     setFullscreenElement('fullscreenElement', document.documentElement);
     const { container } = render(TopBar, TABLE_BAR);
@@ -563,7 +566,8 @@ describe('TopBar Reload', () => {
   });
 
   it('offers both Fullscreen and Reload on the table in the standalone display mode from 360px', () => {
-    mockScreen({ ...ANDROID_PHONE, standalone: true });
+    mockScreen(ANDROID_PHONE);
+    setInstalledApp('standalone');
     document.documentElement.requestFullscreen = vi.fn();
     const { container } = render(TopBar, CROWDED_TABLE);
 
@@ -575,6 +579,55 @@ describe('TopBar Reload', () => {
       'Reload',
       'End game',
     ]);
+  });
+
+  it('offers no Fullscreen in the fullscreen installed app, only Reload on the table, under 360px', () => {
+    mockScreen(NARROW_PHONE);
+    setInstalledApp('fullscreen');
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, CROWDED_TABLE);
+
+    expect(actionNames(container)).toEqual([
+      '2 spectators',
+      'Table view',
+      'Ready all cards',
+      'Reload',
+      'End game',
+    ]);
+  });
+
+  it('offers no Fullscreen in the fullscreen installed app, only Reload on the table, from 360px', () => {
+    mockScreen(ANDROID_PHONE);
+    setInstalledApp('fullscreen');
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, CROWDED_TABLE);
+
+    expect(actionNames(container)).toEqual([
+      '2 spectators',
+      'Table view',
+      'Ready all cards',
+      'Reload',
+      'End game',
+    ]);
+  });
+
+  it('offers no Fullscreen in the fullscreen installed app on a bar that offers no Reload', () => {
+    mockScreen(ANDROID_PHONE);
+    setInstalledApp('fullscreen');
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, { onend: () => {} });
+
+    expect(actionNames(container)).toEqual(['End game']);
+  });
+
+  it('offers no Reload in a browser tab in fullscreen, which the fullscreen display mode matches too', () => {
+    // Fullscreen pressed in a tab: the live query matches, but the page was launched in a tab.
+    mockScreen({ ...ANDROID_PHONE, displayMode: 'fullscreen' });
+    document.documentElement.requestFullscreen = vi.fn();
+    setFullscreenElement('fullscreenElement', document.documentElement);
+    const { container } = render(TopBar, TABLE_BAR);
+
+    expect(actionNames(container)).toEqual(['Exit fullscreen', 'End game']);
   });
 
   it('keeps Fullscreen and offers no Reload on the table in a browser tab under 360px', () => {

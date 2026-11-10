@@ -1,6 +1,7 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
 import { installEscapeLock } from './lib/fullscreen';
+import { markInstalledApp } from './lib/platform';
 import { applyTheme, storedTheme } from './lib/theme';
 import { installVisibleArea } from './lib/visibleArea';
 import './styles/tokens.css';
@@ -11,6 +12,8 @@ if (!target) {
 }
 
 applyTheme(storedTheme());
+// Read once, before any screen: how the page was launched does not change (lib/platform).
+markInstalledApp();
 // For the page's whole life: fullscreen may be entered from any screen.
 installEscapeLock();
 // For the page's whole life too: a text field of any screen brings up the on-screen keyboard.

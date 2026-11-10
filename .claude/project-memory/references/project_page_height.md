@@ -13,9 +13,9 @@ type: project
   Chrome on iOS reports `100vh` and `100lvh` taller than anything it shows
   (768 px for a visible 688 px on an iPad in landscape, its toolbar's
   80 px), so a height in `vh` or `lvh` there gives empty scroll room.
-  The installed web app's `html` (`min-height: 100lvh` under
-  `display-mode: standalone`) is the one exception, as it has no toolbar
-  (see [[project_home_screen_status_bar]]).
+  The installed web app's `html` (`min-height: 100lvh` on
+  `:root[data-installed]`, either display mode) is the one exception, as
+  it has no toolbar (see [[project_home_screen_status_bar]]).
 - An absolutely positioned element inside a CSS multi-column container
   (`column-count`) has a positioned ancestor inside the columns. The
   lobby's villain list (`.vlist` in `ScenarioPicker.svelte`) is in

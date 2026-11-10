@@ -35,6 +35,23 @@ Casper.
 (`PORT`, `WEB_PORT`, `REDIS_PORT`, `APP_INSTANCE`). A value set in `.env`
 or `.env.local` wins over `.env.casper`, as `make dev` loads both.
 
+## Stack targets in a worktree use its ports
+
+`make` reads `.env` and `.env.local`, never `.env.casper`: only
+`scripts/casper.sh dev` (`casper run`) and `teardown` load it. A bare
+`make app-up`, `make infra-up` or `make dev` in a worktree takes the
+default ports (web 8080, server 9000, Redis 6379) and compose project,
+those of the main checkout, and serves the URL a reviewer does not
+expect. In a worktree that has `.env.casper`, start the hot-reload stack
+with `casper run`; for any other stack target, export the file first
+(`set -a; . ./.env.casper; set +a; make app-up`), then check the
+published ports (`docker ps`) against `WEB_PORT` before giving a URL.
+`make app-down` needs the same export, or it targets the wrong project.
+
+**Why:** the user chose a note over wiring the Makefile to `.env.casper`
+(the build files never mention Casper) or a `scripts/casper.sh make`
+wrapper.
+
 ## Instance name in the tab title
 
 `APP_INSTANCE` is a generic, optional build-time variable holding only an

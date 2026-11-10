@@ -30,7 +30,7 @@
 - [Automated setup scope](references/project_setup_scope.md) — scheme on 1A, environments and printed side schemes placed, no threat
 - [Replayable board state](references/project_replayable_state.md) — seed at start, full action history, snapshots every 10 actions
 - [Moving card stacks](references/project_stack_moves.md) — chain down-right, first card on a scheme centred; a deck top dropped on a card joins it
-- [Optional Casper support](references/project_casper_optional.md) — wiring only in .casper.json and scripts/casper.sh; APP_INSTANCE names the tab
+- [Optional Casper support](references/project_casper_optional.md) — wiring in .casper.json, casper.sh; export .env.casper before make
 - [Caddy as the local web server](references/project_caddy_entry_point.md) — Caddy serves web/dist from disk, single local entry point
 - [mise pins the frontend toolchain](references/project_mise_versions.md) — root mise.toml pins node/pnpm; package.json engines is a floor
 - [Random player name](references/project_player_name.md) — no name prompt; random "Adjective Noun" name in itf-name; 16 chars, no emoji
@@ -73,7 +73,7 @@
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
 - [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json: the Linked player cards of a deck card
 - [Escape in fullscreen](references/project_escape_in_fullscreen.md) — Escape-closing layers preventDefault; lib/fullscreen locks Escape (Chromium)
-- [Fullscreen on iPad and the Home Screen app](references/project_ipad_fullscreen.md) — iPad: no Fullscreen, Home Screen banner; table Reload
+- [Fullscreen on iPad and the Home Screen app](references/project_ipad_fullscreen.md) — iPad: no Fullscreen, Home Screen banner; installed: Reload
 - [Deck load acknowledgement](references/project_deck_load_ack.md) — deckSet acks setDeck with a version; only it confirms a load; one load at a time
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC/HP per card; menu + pill, no keys; ±99
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
@@ -110,4 +110,4 @@
 - [Count dialog takes typed digits](references/project_count_dialog.md) — "How many cards?": digits typed, no text field
 - [Pages end with their content](references/project_page_height.md) — dvh or fixed inset 0; absolute boxes in columns need a positioned row
 - [Dialogs take the focus without a focus ring](references/project_dialog_focus.md) — quiet focus on open, focusOnOpen; menus: focusAfterPress
-- [Home Screen status bar](references/project_home_screen_status_bar.md) — black-translucent; --status-room (inset + 24px blur) on every top; 100lvh html
+- [Home Screen status bar](references/project_home_screen_status_bar.md) — fullscreen manifest; data-installed; --status-room; 100lvh

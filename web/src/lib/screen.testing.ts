@@ -5,13 +5,14 @@ import { tick } from 'svelte';
 
 /**
  * A window the media queries are asked about, in px; `touch` is a touch screen's finger, and
- * `standalone` a page opened from the Home Screen rather than in a browser tab.
+ * `displayMode` what (display-mode) matches, `browser` by default. The query alone does not make
+ * the installed app, which is marked at launch: see `setInstalledApp` (lib/platform.testing).
  */
 export interface TestScreen {
   width: number;
   height: number;
   touch?: boolean;
-  standalone?: boolean;
+  displayMode?: 'browser' | 'standalone' | 'fullscreen';
 }
 
 /** Whether one feature of a media query, as "max-width: 900px", holds on that screen. */
@@ -32,7 +33,7 @@ function holds(feature: string, on: TestScreen): boolean {
     case 'pointer':
       return value === (on.touch ? 'coarse' : 'fine');
     case 'display-mode':
-      return value === (on.standalone ? 'standalone' : 'browser');
+      return value === (on.displayMode ?? 'browser');
     default:
       // prefers-reduced-motion and the like.
       return false;

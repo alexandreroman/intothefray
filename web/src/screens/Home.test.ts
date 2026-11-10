@@ -3,7 +3,7 @@ import { tick } from 'svelte';
 import Home from './Home.svelte';
 import { createGame } from '../lib/api';
 import { NEWS, type NewsEntry } from '../lib/news';
-import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
+import { IPAD, resetDevice, setDevice, setInstalledApp } from '../lib/platform.testing';
 import { getPref, getToken } from '../lib/prefs';
 import { fetchGamesInProgress } from '../lib/stats';
 
@@ -491,6 +491,13 @@ describe('Home', () => {
 
     it('does not show on an iPad opened from the Home Screen', () => {
       setDevice(IPAD, true);
+      render(Home);
+      expect(banner()).toBeNull();
+    });
+
+    it('does not show on an iPad in the fullscreen installed app either', () => {
+      setDevice(IPAD);
+      setInstalledApp('fullscreen');
       render(Home);
       expect(banner()).toBeNull();
     });
