@@ -592,14 +592,21 @@
   // away as the table scrolls down; in dock mode it always shows.
   let scrolledAway = $state(false);
   const barHidden = $derived(scrolledAway && !dockMode);
-  // The safe area at the top of the screen, in px (the notch of a phone held upright), measured: in
-  // dock mode the top bar sits below it.
+  // The room at the top of the screen, in px (--status-room, tokens.css: the notch of a phone held
+  // upright, the status bar of a Home Screen app), measured: the top bar sits below it, its
+  // background behind it.
   let safeTop = $state(0);
-  // The top bar's height, in px, with the notch above it in dock mode.
-  const barHeight = $derived(TOP_BAR_HEIGHT + (dockMode ? safeTop : 0));
+  // The top bar's height, in px, with that room above it.
+  const barHeight = $derived(TOP_BAR_HEIGHT + safeTop);
   // The room the bar keeps at the start of the table, and over the top of the play area, in px.
+  // Slid away, it leaves that room, which the status band covers (.status-band).
   const barStart = $derived(small.current ? barHeight : 0);
-  const barRoom = $derived(small.current && !barHidden ? barHeight : 0);
+  const barRoom = $derived.by(() => {
+    if (!small.current) {
+      return 0;
+    }
+    return barHidden ? safeTop : barHeight;
+  });
 
   // The table's visible size, in px.
   let visibleWidth = $state(0);
@@ -2851,10 +2858,13 @@
       onundo={undo}
       onhistory={openHistory}
     />
-    <!-- The safe areas under the dock and over the table, measured (safeBottom, safeTop). -->
+    <!-- The safe area under the dock, measured (safeBottom). -->
     <div class="safe-bottom" aria-hidden="true" bind:clientHeight={safeBottom}></div>
-    <div class="safe-top" aria-hidden="true" bind:clientHeight={safeTop}></div>
   {/if}
+  <!-- The status bar's room over the table, measured (safeTop): the top bar's room includes it. -->
+  <div class="safe-top" aria-hidden="true" bind:clientHeight={safeTop}></div>
+  <!-- The status bar's backdrop, the table's own (App.svelte draws the other screens'). -->
+  <div class="status-band" aria-hidden="true"></div>
 
   {#if handSheetShown && selected !== null}
     <HandSheet
@@ -3377,18 +3387,6 @@
     stroke-width: 2;
   }
 
-  /*
-    Dock mode: the top bar always shows, below the notch, its background behind the notch too; the
-    table keeps the room of both at its start (--bar-start). Over the table, as the bar itself
-    (TopBar.svelte, 100): positioned, or the scroller would cover its background.
-  */
-  .app.dock-mode .top {
-    position: relative;
-    z-index: 100;
-    padding-top: env(safe-area-inset-top);
-    background: var(--bg);
-  }
-
   /* With the bar at the bottom, the bottom of the table scrolls out from under the dock. */
   .app.dock-mode .table {
     padding-bottom: var(--table-bottom);
@@ -3410,14 +3408,31 @@
     pointer-events: none;
   }
 
-  /* The safe area at the top of the screen, likewise. */
+  /* The status bar's room at the top of the screen (tokens.css), likewise. */
   .safe-top {
     position: fixed;
     left: 0;
     top: 0;
     width: 0;
-    height: env(safe-area-inset-top);
+    height: var(--status-room);
     visibility: hidden;
+    pointer-events: none;
+  }
+
+  /*
+    The top bar's background behind the status bar of a Home Screen app, as the table scrolls under a
+    slid bar. In .app's stacking context: over the play area, the top bar (100), the hand (2600), the
+    drag layer (3000) and the arrow hint (3500); under the token pill (4500), the menus (5000), the
+    sheets (5500) and the dialogs (5600), whose scrims dim it.
+  */
+  .status-band {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--status-room);
+    z-index: 4000;
+    background: var(--bg);
     pointer-events: none;
   }
 
@@ -3459,6 +3474,14 @@
     --bar-gutter-end: var(--content-gutter);
     grid-area: table;
     align-self: start;
+  }
+
+  /*
+    Running from the top of the window, the history column starts below the status bar's room
+    (tokens.css), as the bar's row does: its buttons stay level with End game.
+  */
+  .app.compact .side {
+    padding-top: var(--status-room);
   }
 
   /*

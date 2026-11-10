@@ -74,6 +74,25 @@ describe('safe areas', () => {
     expect(source).toContain('env(safe-area-inset-right)');
   });
 
+  // A Home Screen app on iOS draws the page under the status bar, whose room is the top safe area.
+  it.each(['./Lobby.svelte', './Options.svelte', './About.svelte'])(
+    '%s starts on the top bar, which keeps below the status bar of a Home Screen app',
+    (file) => {
+      expect(sources[file]!).toContain('<TopBar');
+    },
+  );
+
+  it('starts the home page below the status bar of a Home Screen app, having no top bar', () => {
+    const home = /\n {2}\.home \{([^}]*)\}/.exec(sources['./Home.svelte']!)?.[1];
+    expect(home).toMatch(/padding-top: var\(--status-room\);/);
+  });
+
+  it('keeps the end screen and the connection status below the status bar of a Home Screen app', () => {
+    expect(sources['./Ended.svelte']!).toContain('max(24px, var(--status-room))');
+    const status = /\n {2}\.status \{([^}]*)\}/.exec(sources['./Game.svelte']!)?.[1];
+    expect(status).toMatch(/top: calc\(12px \+ var\(--status-room\)\);/);
+  });
+
   // Options and About end on a bottom padding taller than the home indicator.
   it.each(['./Home.svelte', './Lobby.svelte', './Ended.svelte'])(
     '%s keeps its last line, or its start bar, clear of the home indicator',

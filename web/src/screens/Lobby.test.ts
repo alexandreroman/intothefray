@@ -3,6 +3,7 @@ import { tick } from 'svelte';
 import Lobby from './Lobby.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { loadIndex } from '../lib/catalog';
+import { MENU_EDGE } from '../lib/dropdown';
 import { GameSession } from '../lib/session.svelte';
 import { FakeWebSocket } from '../lib/socket.testing';
 import type {
@@ -1041,6 +1042,66 @@ describe('Lobby', () => {
       const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Deck link' });
       expect(field.value).toBe('https://example.com/deck/1');
       expect(screen.getByRole('alert').textContent).toBe('This deck link is not valid.');
+    });
+  });
+});
+
+describe('Lobby Add a set menu under the status bar', () => {
+  // jsdom lays nothing out: the button sits 230 px down a window 400 px tall, the menu is 200 px
+  // tall, and the top bar has scrolled away. Above the button, the menu would end 26 px from the top.
+  const BUTTON_TOP = 230;
+  const STATUS_BAR = 32;
+
+  beforeEach(() => {
+    vi.stubGlobal('innerHeight', 400);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this.classList.contains('menu')) {
+        return new DOMRect(0, 0, 240, 200);
+      }
+      if (this.classList.contains('add-wrap') || this.classList.contains('add')) {
+        return new DOMRect(100, BUTTON_TOP, 120, 30);
+      }
+      return new DOMRect();
+    });
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.classList.contains('menu') ? 200 : 0;
+    });
+    // The top bar pads its top by the top safe area (TopBar.svelte), which jsdom has no env() for.
+    const computed = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) =>
+      element.tagName === 'HEADER'
+        ? ({ paddingTop: `${STATUS_BAR}px` } as CSSStyleDeclaration)
+        : computed(element, pseudo),
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('never opens into the status bar of a Home Screen app once the top bar is away', async () => {
+    renderLobby({
+      config: {
+        scenario: 'rhino',
+        difficulty: 'standard',
+        standard: 'standard',
+        expert: '',
+        modulars: [],
+      },
+    });
+
+    await fireEvent.click(await screen.findByRole('button', { name: '+ Add a set' }));
+
+    await vi.waitFor(() => {
+      const menu = document.querySelector<HTMLElement>('.menu.placed');
+      expect(menu).not.toBeNull();
+      // Cut to the room under the status bar, its menu edge off it.
+      expect(BUTTON_TOP + Number.parseFloat(menu!.style.top)).toBe(STATUS_BAR + MENU_EDGE);
     });
   });
 });

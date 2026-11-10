@@ -53,9 +53,10 @@
 {/if}
 
 <style>
+  /* Below the status bar of a Home Screen app, and its backdrop (App.svelte). */
   .status {
     position: fixed;
-    top: 12px;
+    top: calc(12px + var(--status-room));
     margin: 0;
     left: 50%;
     transform: translateX(-50%);

@@ -167,7 +167,7 @@
 <header
   class:auto-hide={small.current}
   class:hidden
-  style:height="{TOP_BAR_HEIGHT}px"
+  style:--bar-row="{TOP_BAR_HEIGHT}px"
   onfocusin={focusEntered}
   onfocusout={focusLeft}
 >
@@ -274,8 +274,14 @@
 {/if}
 
 <style>
-  /* The background and the border span the window. */
+  /*
+   * The background and the border span the window. A Home Screen app on iOS draws the page under
+   * the status bar: the background runs up behind it, and the bar's row (--bar-row) sits below the
+   * room it takes (--status-room, tokens.css: 0 in a browser tab and on a desktop).
+   */
   header {
+    height: calc(var(--bar-row) + var(--status-room));
+    padding-top: var(--status-room);
     background: var(--bg);
     border-bottom: 1px solid var(--panel-2);
   }
@@ -284,7 +290,8 @@
    * On a small screen it sticks to the top of a scrolling page, over the content but under the
    * connection status (Game.svelte, 200), the dialogs (5600) and the tooltips (6000), and slides
    * out of view while the page scrolls down:
-   * its border box, border included, goes. The content scrolls into the room it leaves.
+   * its border box, the status bar's room and the border included, goes. The content scrolls into the
+   * room it leaves.
    */
   header.auto-hide {
     position: sticky;

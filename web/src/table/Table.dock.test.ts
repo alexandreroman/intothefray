@@ -819,9 +819,15 @@ describe('the top bar in dock mode', () => {
 
     expect(app().style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT + NOTCH}px`);
     expect(app().style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT + NOTCH}px`);
-    // jsdom lays nothing out: the bar's own rule is checked.
-    const bar = /\n {2}\.app\.dock-mode \.top \{([^}]*)\}/.exec(tableSource)?.[1];
-    expect(bar).toMatch(/padding-top: env\(safe-area-inset-top\);/);
+    // jsdom lays nothing out: the rules are checked. The top bar pads by the notch itself
+    // (TopBar.test.ts): the table adds none of its own, or the notch would count twice.
+    const barRules = [...tableSource.matchAll(/\n {2}\.app\.dock-mode \.top \{([^}]*)\}/g)];
+    for (const rule of barRules) {
+      expect(rule[1]).not.toMatch(/safe-area-inset-top|--status-room/);
+    }
+    expect(/\n {2}\.top \{([^}]*)\}/.exec(tableSource)?.[1]).not.toMatch(
+      /safe-area-inset-top|--status-room/,
+    );
   });
 
   it('keeps its room at the top with a mouse on a narrow window', async () => {

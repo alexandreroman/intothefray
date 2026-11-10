@@ -36,6 +36,11 @@ import zoomSource from './ZoomControl.svelte?raw';
 import menuSource from './ContextMenu.svelte?raw';
 import surfaceSource from './Surface.svelte?raw';
 import handSource from './Hand.svelte?raw';
+import arrowHintSource from './ArrowHint.svelte?raw';
+import dragLayerSource from './DragLayer.svelte?raw';
+import tokenPillSource from './TokenPill.svelte?raw';
+import sheetSource from '../components/Sheet.svelte?raw';
+import dialogSource from '../components/Dialog.svelte?raw';
 import { card, fakeSession, pile, playingView, seated, spectatorYou } from './fixtures.testing';
 
 vi.mock('../lib/catalog', async (importOriginal) => ({
@@ -1103,8 +1108,32 @@ describe('Table under a compact top bar', () => {
     expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT}px`);
   });
 
+  it('keeps the status bar of a Home Screen app over the bar, clear of the overlays when it slides', async () => {
+    // A Home Screen app on iOS reports the status bar's room as the top safe area: the bar sits
+    // below it, and the overlays at the top of the play area stay clear of it with the bar away.
+    const STATUS_BAR = 32;
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('safe-top') ? STATUS_BAR : 0;
+    });
+    mockScreen(PHONE_MOUSE);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    FakeResizeObserver.resizeAll();
+    await tick();
+    const app = container.querySelector<HTMLElement>('.app')!;
+    expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT + STATUS_BAR}px`);
+    expect(app.style.getPropertyValue('--bar-room')).toBe(`${TOP_BAR_HEIGHT + STATUS_BAR}px`);
+
+    await scrollTable(container.querySelector<HTMLElement>('.tablewrap')!, 400);
+    expect(container.querySelector('header')?.classList).toContain('hidden');
+    expect(app.style.getPropertyValue('--bar-room')).toBe(`${STATUS_BAR}px`);
+    expect(app.style.getPropertyValue('--bar-start')).toBe(`${TOP_BAR_HEIGHT + STATUS_BAR}px`);
+  });
+
   it('keeps an empty table from scrolling under the bar', () => {
-    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(2000);
+    // Every element 2000px tall, but the top safe area, 0 as in a browser tab.
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('safe-top') ? 0 : 2000;
+    });
     const surfaceHeight = () =>
       parseFloat(document.querySelector<HTMLElement>('.surface')!.style.height);
 
@@ -1225,6 +1254,10 @@ describe('Table under a compact top bar', () => {
       tableSource,
     )?.[1];
     expect(narrowRule).toMatch(/grid-template-areas: 'table';/);
+    // Running from the top of the window, the column starts below the status bar of a Home Screen
+    // app, as the bar's row does.
+    const sideRule = /\n {2}\.app\.compact \.side \{([^}]*)\}/.exec(tableSource)?.[1];
+    expect(sideRule).toMatch(/padding-top: var\(--status-room\);/);
   });
 
   it('leaves the bar in its own row on a tablet, without the history column', () => {
@@ -1312,5 +1345,51 @@ describe('Table history column under End game', () => {
     expect(rule(sidePanelSource, ':global(.app.tablet) :is(.undo, .strip-undo)')).toMatch(
       /--undo-height: 44px;/,
     );
+  });
+});
+
+describe('Table status bar band', () => {
+  // jsdom has no env() and applies no stylesheet: the rules themselves are checked.
+  /** The z-index of a top-level rule of a component. */
+  function zIndexOf(source: string, selector: string): number {
+    const escaped = selector.replace(/[.]/g, '\\.');
+    const rule = new RegExp(`\\n {2}${escaped} \\{([^}]*)\\}`).exec(source)?.[1] ?? '';
+    return Number(/z-index: (\d+);/.exec(rule)?.[1]);
+  }
+
+  it("lies behind the status bar of a Home Screen app, in the table's own stacking context", () => {
+    mockScreen(TABLET);
+    const { container } = render(Table, { session: fakeSession(), view: makeView() });
+    const band = container.querySelector('.app > .status-band');
+    expect(band?.getAttribute('aria-hidden')).toBe('true');
+
+    const rule = /\n {2}\.status-band \{([^}]*)\}/.exec(tableSource)?.[1] ?? '';
+    expect(rule).toMatch(/position: fixed;/);
+    expect(rule).toMatch(/top: 0;/);
+    expect(rule).toMatch(/height: var\(--status-room\);/);
+    expect(rule).toMatch(/background: var\(--bg\);/);
+    expect(rule).toMatch(/pointer-events: none;/);
+  });
+
+  it('stands over the table and what it carries, under its token pill, menus, sheets and dialogs', () => {
+    const band = zIndexOf(tableSource, '.status-band');
+    // The top bar (TopBar.svelte, 100), the raised hand, the drag layer and the arrow hint.
+    for (const under of [
+      100,
+      zIndexOf(handSource, '.hand.open'),
+      zIndexOf(dragLayerSource, '.draglayer'),
+      zIndexOf(arrowHintSource, '.arrowhint'),
+    ]) {
+      expect(band).toBeGreaterThan(under);
+    }
+    // The scrims of the sheets and the dialogs dim it.
+    for (const over of [
+      zIndexOf(tokenPillSource, '.tokpill'),
+      zIndexOf(menuSource, '.table-menu'),
+      zIndexOf(sheetSource, '.veil'),
+      zIndexOf(dialogSource, '.backdrop'),
+    ]) {
+      expect(band).toBeLessThan(over);
+    }
   });
 });

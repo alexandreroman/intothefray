@@ -140,12 +140,15 @@
   let topBar = $state<HTMLElement>();
 
   // The room the scenario's Add a set menu stays within: the window, less what the top bar covers
-  // at the top (nothing once it is slid or scrolled away).
+  // at the top, or once it is slid or scrolled away, the status bar's room (--status-room,
+  // tokens.css), which the bar pads its top by (TopBar.svelte).
   function menuRoom(): Rect {
-    const topBarBottom = topBar?.firstElementChild?.getBoundingClientRect().bottom ?? 0;
+    const header = topBar?.firstElementChild;
+    const topBarBottom = header?.getBoundingClientRect().bottom ?? 0;
+    const topInset = header ? parseFloat(getComputedStyle(header).paddingTop) || 0 : 0;
     return {
       left: 0,
-      top: Math.max(0, topBarBottom),
+      top: Math.max(topInset, topBarBottom),
       right: window.innerWidth,
       bottom: window.innerHeight,
     };

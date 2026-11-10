@@ -440,7 +440,7 @@
     less the handle (28 px) and the bottom padding.
   */
   .sheet.dock {
-    --sheet-max: calc(100dvh - env(safe-area-inset-top));
+    --sheet-max: calc(100dvh - var(--status-room));
     --sheet-room: calc(var(--sheet-max) - 40px - env(safe-area-inset-bottom));
     max-width: none;
     max-height: var(--sheet-max);
