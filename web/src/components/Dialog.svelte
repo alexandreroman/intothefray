@@ -192,7 +192,7 @@
   /* A flex row rather than a grid: the box's size is then the backdrop's, never its content's. */
   .backdrop.fill {
     display: flex;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    padding: var(--status-room) env(safe-area-inset-right) env(safe-area-inset-bottom)
       env(safe-area-inset-left);
   }
 

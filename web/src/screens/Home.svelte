@@ -290,6 +290,11 @@
     --content-max: 1240px;
     --content-gutter: 24px;
     position: relative;
+    /*
+      No top bar to keep clear of the status bar of a Home Screen app (App.svelte): the page starts
+      below it, the capsule of games in progress included.
+    */
+    padding-top: var(--status-room);
     /* The fanned cards reach past a narrow screen: they are cut, never scrolled to. */
     overflow: hidden;
     /* Measured by the column layout's query (at the end): the page's width, without a scrollbar. */

@@ -114,7 +114,7 @@ describe('Dialog', () => {
       expect(box.classList).toContain('fill');
       expect(box.parentElement?.classList).toContain('fill');
       expect(rule('.backdrop.fill')).toContain(
-        'padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)',
+        'padding: var(--status-room) env(safe-area-inset-right) env(safe-area-inset-bottom)',
       );
       expect(rule('.backdrop.fill')).toContain('display: flex;');
       const fill = rule('.box.fill');

@@ -388,7 +388,7 @@ describe('Sheet', () => {
       // Its content decides its height under that limit: no limit of its own.
       expect(sheet.style.maxHeight).toBe('');
       const dock = rule('.sheet.dock');
-      expect(dock).toContain('--sheet-max: calc(100dvh - env(safe-area-inset-top));');
+      expect(dock).toContain('--sheet-max: calc(100dvh - var(--status-room));');
       expect(dock).toContain('max-height: var(--sheet-max);');
       expect(dock).toContain('max-width: none;');
     });

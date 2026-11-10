@@ -85,6 +85,22 @@
     in the middle of the one before End game.
   */
   --top-bar-gap: 8px;
+
+  /*
+    The room at the top of the screen that content keeps clear of: the top safe area (the notch,
+    the status bar of a Home Screen app, 0 elsewhere). Every top inset uses it, never env() itself.
+  */
+  --status-room: env(safe-area-inset-top);
+}
+
+/*
+  The installed app's status bar blurs the page 24px past its safe area (iPadOS): those 24px are
+  kept clear too, only where there is a safe area (the min() is 0 when it is).
+*/
+@media (display-mode: standalone) {
+  :root {
+    --status-room: calc(env(safe-area-inset-top) + min(24px, env(safe-area-inset-top) * 100));
+  }
 }
 
 /* A finger needs a 44px target: touch mode (TOUCH_MODE_QUERY, lib/screen.ts). */
@@ -137,6 +153,18 @@ html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
+}
+
+/*
+  The installed app on iPadOS shortens the window by the status bar's height when the document is
+  shorter than the screen (the table, Home), leaving an empty band at the bottom: a document at
+  least 100lvh tall keeps it whole. Installed only: in a browser tab, lvh can be taller than what
+  shows and would add scroll room (Chrome on iOS).
+*/
+@media (display-mode: standalone) {
+  html {
+    min-height: 100lvh;
+  }
 }
 
 /*

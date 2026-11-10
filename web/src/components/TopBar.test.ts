@@ -10,6 +10,7 @@ import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 import { TOUCH_MODE_QUERY } from '../lib/screen';
 import { tokensCss } from '../styles/tokens.testing';
+import { TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
 
 // Only the reload is faked: jsdom cannot reload the page, nor spy on its location.
 vi.mock('../lib/platform', async (importOriginal) => ({
@@ -815,6 +816,20 @@ describe('TopBar safe areas', () => {
     const end =
       'max(var(--bar-gutter-end,var(--content-gutter,24px)),var(--bar-inset-right,env(safe-area-inset-right)))';
     expect(padding).toBe(start + end);
+  });
+
+  it('runs its background up behind the status bar, its row as tall as ever below it', () => {
+    // A Home Screen app on iOS draws the page under the status bar, whose room is the top safe
+    // area (0 elsewhere). jsdom has no env(): the rule itself is checked.
+    const rule = /\n {2}header \{([^}]*)\}/.exec(barSource)?.[1] ?? '';
+    expect(rule).toMatch(/height: calc\(var\(--bar-row\) \+ var\(--status-room\)\);/);
+    expect(rule).toMatch(/padding-top: var\(--status-room\);/);
+    expect(rule).toMatch(/background: var\(--bg\);/);
+    expect(/\n {2}\.bar \{([^}]*)\}/.exec(barSource)?.[1]).toMatch(/height: 100%;/);
+
+    const { container } = render(TopBar);
+    const header = container.querySelector<HTMLElement>('header')!;
+    expect(header.style.getPropertyValue('--bar-row')).toBe(`${TOP_BAR_HEIGHT}px`);
   });
 });
 

@@ -1,6 +1,8 @@
 // The page around the app on a touch screen: its viewport, the web app manifest that lets a game added to
 // the home screen run full screen, no pinch zoom on the table, and card boxes that keep the keyboard down.
 
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { render, screen, within } from '@testing-library/svelte';
 import indexHtml from '../index.html?raw';
 import manifestSource from '../public/manifest.webmanifest?raw';
@@ -20,8 +22,12 @@ describe('the page', () => {
     expect(indexHtml).toContain('<link rel="manifest" href="%BASE_URL%manifest.webmanifest" />');
     expect(indexHtml).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
     expect(indexHtml).toContain('<meta name="mobile-web-app-capable" content="yes" />');
+  });
+
+  it('runs the page under the status bar, which reports the room it takes as the top safe area', () => {
+    // With "black", iPadOS 27 draws the status bar over the page and reports no top safe area.
     expect(indexHtml).toContain(
-      '<meta name="apple-mobile-web-app-status-bar-style" content="black" />',
+      '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />',
     );
   });
 
@@ -32,6 +38,47 @@ describe('the page', () => {
       expect(html).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
       expect(html).toContain('viewport-fit=cover');
     }
+  });
+});
+
+describe('the room at the top of the screen', () => {
+  it('is the top safe area, one token for every top inset', () => {
+    const root = /^:root \{([^}]*)\}/.exec(tokensCss)?.[1];
+    expect(root).toMatch(/--status-room: env\(safe-area-inset-top\);/);
+  });
+
+  it("keeps clear of the installed app's status bar blur, 24px past its safe area, where it has one", () => {
+    const standalone = /@media \(display-mode: standalone\) \{\s*:root \{([^}]*)\}/.exec(
+      tokensCss,
+    )?.[1];
+    expect(standalone).toContain(
+      '--status-room: calc(env(safe-area-inset-top) + min(24px, env(safe-area-inset-top) * 100));',
+    );
+  });
+
+  it('is read through the token alone, never from env() itself', () => {
+    // Test files are left out: they name the env() they check against.
+    const root = path.join(import.meta.dirname);
+    const offenders = readdirSync(root, { recursive: true, encoding: 'utf8' })
+      .filter((file) => /\.(svelte|ts|css)$/.test(file) && !/\.(test|testing)\.ts$/.test(file))
+      .filter((file) =>
+        readFileSync(path.join(root, file), 'utf8').includes('safe-area-inset-top'),
+      );
+    expect(offenders).toEqual([path.join('styles', 'tokens.css')]);
+  });
+
+  it('keeps the installed app full height, its document at least as tall as the screen', () => {
+    // iPadOS shortens the window of a document shorter than the screen by the status bar's height.
+    const standalone = /@media \(display-mode: standalone\) \{\s*html \{([^}]*)\}/.exec(
+      tokensCss,
+    )?.[1];
+    expect(declarations(standalone)).toEqual(['min-height: 100lvh']);
+    // The base rule comes first, or its 100% would win.
+    expect(tokensCss.indexOf('min-height: 100lvh')).toBeGreaterThan(
+      tokensCss.indexOf('min-height: 100%;'),
+    );
+    // Nowhere else: in a browser tab, lvh can be taller than what shows.
+    expect(tokensCss.match(/: 100lvh;/g)).toHaveLength(1);
   });
 });
 

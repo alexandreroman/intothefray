@@ -110,3 +110,4 @@
 - [Count dialog takes typed digits](references/project_count_dialog.md) — "How many cards?": digits typed, no text field
 - [Pages end with their content](references/project_page_height.md) — dvh or fixed inset 0; absolute boxes in columns need a positioned row
 - [Dialogs take the focus without a focus ring](references/project_dialog_focus.md) — quiet focus on open, focusOnOpen; menus: focusAfterPress
+- [Home Screen status bar](references/project_home_screen_status_bar.md) — black-translucent; --status-room (inset + 24px blur) on every top; 100lvh html
