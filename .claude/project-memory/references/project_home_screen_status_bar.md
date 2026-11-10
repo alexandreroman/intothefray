@@ -16,6 +16,13 @@ type: project
 - In the installed app, iPadOS blurs the page under the status bar and
   24 px past its safe area (on a 32 pt inset: dimmed 0–32, a gradient
   blur 32–56, sharp from about 58). The page cannot turn the blur off.
+- No page setting hides the status bar. The manifest's `"display"` is
+  `standalone`: with `fullscreen`, iPadOS 27 matches `(display-mode:
+  fullscreen)` yet keeps the status bar, its 32 pt inset and its blur, so
+  it gives no room back and misses the `standalone` rules below.
+- The 56 pt above the bar's row (32 pt inset + 24 px) is the room the
+  blur needs (user decision): a smaller margin gains 3–4 pt at most
+  before the top of the bar's buttons blurs.
 - `--status-room` (`tokens.css`) is the single source for the room at the
   top: `env(safe-area-inset-top)`, plus 24 px under
   `(display-mode: standalone)` when the inset is non-zero. Every top inset
