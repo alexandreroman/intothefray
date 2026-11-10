@@ -88,19 +88,22 @@
 
   /*
     The room at the top of the screen that content keeps clear of: the top safe area (the notch,
-    the status bar of a Home Screen app, 0 elsewhere). Every top inset uses it, never env() itself.
+    a camera cutout, the status bar of an installed app, 0 elsewhere). Every top inset uses it,
+    never env() itself.
   */
   --status-room: env(safe-area-inset-top);
 }
 
 /*
-  The installed app's status bar blurs the page 24px past its safe area (iPadOS): those 24px are
-  kept clear too, only where there is a safe area (the min() is 0 when it is).
+  The plain safe area keeps content clear of a notch, a camera cutout or a status bar. On Apple's
+  devices, the installed app's status bar also blurs the page 24px past it (in either display
+  mode: iPadOS keeps its status bar in fullscreen too): those 24px are kept clear too, only where
+  there is a safe area (the min() is 0 when it is). Android has no such blur: a punch-hole camera
+  in the fullscreen display mode gets the plain safe area. Marked at launch (lib/platform), never
+  a live display-mode query: a browser tab in fullscreen matches (display-mode: fullscreen) too.
 */
-@media (display-mode: standalone) {
-  :root {
-    --status-room: calc(env(safe-area-inset-top) + min(24px, env(safe-area-inset-top) * 100));
-  }
+:root[data-installed][data-status-blur] {
+  --status-room: calc(env(safe-area-inset-top) + min(24px, env(safe-area-inset-top) * 100));
 }
 
 /* A finger needs a 44px target: touch mode (TOUCH_MODE_QUERY, lib/screen.ts). */
@@ -156,15 +159,15 @@ html {
 }
 
 /*
-  The installed app on iPadOS shortens the window by the status bar's height when the document is
-  shorter than the screen (the table, Home), leaving an empty band at the bottom: a document at
-  least 100lvh tall keeps it whole. Installed only: in a browser tab, lvh can be taller than what
-  shows and would add scroll room (Chrome on iOS).
+  The installed app on iPadOS, in either display mode, shortens the window by the status bar's
+  height when the document is shorter than the screen (the table, Home), leaving an empty band at
+  the bottom: a document at least 100lvh tall keeps it whole. Installed only, as marked at launch:
+  in a browser tab, lvh can be taller than what shows and would add scroll room (Chrome on iOS).
+  It wins over the html, body rule above by its specificity (:root and an attribute).
+  Any installed app gets it, Apple's or not.
 */
-@media (display-mode: standalone) {
-  html {
-    min-height: 100lvh;
-  }
+:root[data-installed] {
+  min-height: 100lvh;
 }
 
 /*

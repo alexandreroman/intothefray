@@ -73,7 +73,7 @@
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
 - [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json: the Linked player cards of a deck card
 - [Escape in fullscreen](references/project_escape_in_fullscreen.md) — Escape-closing layers preventDefault; lib/fullscreen locks Escape (Chromium)
-- [Fullscreen on iPad and the Home Screen app](references/project_ipad_fullscreen.md) — iPad: no Fullscreen, Home Screen banner; table Reload
+- [Fullscreen on iPad and the Home Screen app](references/project_ipad_fullscreen.md) — iPad: no Fullscreen, Home Screen banner; installed: Reload
 - [Deck load acknowledgement](references/project_deck_load_ack.md) — deckSet acks setDeck with a version; only it confirms a load; one load at a time
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC/HP per card; menu + pill, no keys; ±99
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
@@ -110,4 +110,4 @@
 - [Count dialog takes typed digits](references/project_count_dialog.md) — "How many cards?": digits typed, no text field
 - [Pages end with their content](references/project_page_height.md) — dvh or fixed inset 0; absolute boxes in columns need a positioned row
 - [Dialogs take the focus without a focus ring](references/project_dialog_focus.md) — quiet focus on open, focusOnOpen; menus: focusAfterPress
-- [Home Screen status bar](references/project_home_screen_status_bar.md) — black-translucent; --status-room (inset + 24px blur) on every top; 100lvh html
+- [Home Screen status bar](references/project_home_screen_status_bar.md) — fullscreen manifest; data-installed; --status-room; 100lvh

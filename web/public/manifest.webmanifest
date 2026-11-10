@@ -3,7 +3,7 @@
   "short_name": "Into the Fray",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#0d111b",
   "theme_color": "#0d111b",
   "icons": [

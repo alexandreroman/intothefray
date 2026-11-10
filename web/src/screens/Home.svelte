@@ -6,7 +6,7 @@
   import { motionMs } from '../lib/motion';
   import { playerName } from '../lib/names';
   import { NewsState } from '../lib/newsState.svelte';
-  import { isIPad, isStandalone } from '../lib/platform';
+  import { isIPad, isInstalledApp } from '../lib/platform';
   import { getPref, setPref, setToken } from '../lib/prefs';
   import { gamePath, go } from '../lib/router.svelte';
   import { fetchGamesInProgress } from '../lib/stats';
@@ -80,9 +80,9 @@
 
   // An iPad cannot keep fullscreen (see TopBar): in a browser tab, a banner tells how to add the app
   // to the Home Screen, where it opens full screen. One banner at a time: it waits until the news
-  // banner is gone, its leave played out. The device and the way the page was opened are read once:
-  // neither changes during a visit.
-  const offersHomeScreen = isIPad() && !isStandalone();
+  // banner is gone, its leave played out. The installed app, in either display mode, has no banner.
+  // The device and the way the page was opened are read once: neither changes during a visit.
+  const offersHomeScreen = isIPad() && !isInstalledApp();
   let homeScreenBannerDismissed = $state(getPref(HOME_SCREEN_BANNER_KEY) !== null);
   let newsBannerGone = $state(news.bannerEntry === undefined);
   const showsHomeScreenBanner = $derived(

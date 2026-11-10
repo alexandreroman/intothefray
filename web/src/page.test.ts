@@ -48,12 +48,14 @@ describe('the room at the top of the screen', () => {
   });
 
   it("keeps clear of the installed app's status bar blur, 24px past its safe area, where it has one", () => {
-    const standalone = /@media \(display-mode: standalone\) \{\s*:root \{([^}]*)\}/.exec(
-      tokensCss,
-    )?.[1];
-    expect(standalone).toContain(
-      '--status-room: calc(env(safe-area-inset-top) + min(24px, env(safe-area-inset-top) * 100));',
-    );
+    // Marked at launch (main.ts), in either display mode: a browser tab in fullscreen matches
+    // (display-mode: fullscreen) too. Apple's status bar alone blurs: an Android camera cutout
+    // gets the plain safe area.
+    expect(declarations(tokensRule(':root[data-installed][data-status-blur]'))).toEqual([
+      '--status-room: calc(env(safe-area-inset-top) + min(24px, env(safe-area-inset-top) * 100))',
+    ]);
+    // Never a live display-mode query, which a browser tab in fullscreen would match.
+    expect(tokensCss).not.toMatch(/@media[^{]*display-mode/);
   });
 
   it('is read through the token alone, never from env() itself', () => {
@@ -69,14 +71,7 @@ describe('the room at the top of the screen', () => {
 
   it('keeps the installed app full height, its document at least as tall as the screen', () => {
     // iPadOS shortens the window of a document shorter than the screen by the status bar's height.
-    const standalone = /@media \(display-mode: standalone\) \{\s*html \{([^}]*)\}/.exec(
-      tokensCss,
-    )?.[1];
-    expect(declarations(standalone)).toEqual(['min-height: 100lvh']);
-    // The base rule comes first, or its 100% would win.
-    expect(tokensCss.indexOf('min-height: 100lvh')).toBeGreaterThan(
-      tokensCss.indexOf('min-height: 100%;'),
-    );
+    expect(declarations(tokensRule(':root[data-installed]'))).toEqual(['min-height: 100lvh']);
     // Nowhere else: in a browser tab, lvh can be taller than what shows.
     expect(tokensCss.match(/: 100lvh;/g)).toHaveLength(1);
   });
@@ -85,10 +80,10 @@ describe('the room at the top of the screen', () => {
 describe('the web app manifest', () => {
   const manifest = JSON.parse(manifestSource);
 
-  it('names the app and opens it standalone, in the ink colour', () => {
+  it('names the app and opens it full screen, in the ink colour', () => {
     expect(manifest.name).toBe('Into the Fray');
     expect(manifest.short_name).toBe('Into the Fray');
-    expect(manifest.display).toBe('standalone');
+    expect(manifest.display).toBe('fullscreen');
     expect(manifest.background_color).toBe('#0d111b');
     expect(manifest.theme_color).toBe('#0d111b');
   });

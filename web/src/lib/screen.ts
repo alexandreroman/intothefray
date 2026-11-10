@@ -46,7 +46,7 @@ export const PHONE_QUERY = '(max-width: 600px)';
 
 /**
  * A bar narrower than the narrowest common Android phone, under 360px wide: the table's top bar in
- * an app opened from the Home Screen has no room there for both Fullscreen and Reload, which then
- * share one slot (TopBar.svelte).
+ * the standalone installed app has no room there for both Fullscreen and Reload, which then share
+ * one slot (TopBar.svelte).
  */
 export const NARROW_BAR_QUERY = '(max-width: 359px)';
