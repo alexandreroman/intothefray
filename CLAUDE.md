@@ -43,7 +43,7 @@ make packs        # card packs; needs packs/images/manifest.json
   `packs.go`
 - `web/` — Svelte SPA (standalone pnpm project) and its `Caddyfile`;
   `seo.ts` writes the share previews at build, `images/` holds the
-  sources of the share images and the touch icon
+  sources of the share images and the touch and maskable icons
 - `Dockerfile`, `compose.yaml` — server image and local stack
 - `mise.toml` — pinned node and pnpm versions (local and CI)
 - `scripts/`, `.casper.json` — optional Casper workspace support

@@ -99,10 +99,14 @@ describe('the web app manifest', () => {
     expect(manifest.scope).toBe('./');
   });
 
-  it('offers the logo at 192 and 512 px, uncropped: it has no room for a maskable safe zone', () => {
+  it('offers the logo at 192 and 512 px, once to show whole and once to mask, in separate files', () => {
+    // Android crops a maskable icon to the launcher's shape, so its mark keeps to the safe zone;
+    // the `any` icons keep the mark at full size. One file per purpose, never "any maskable".
     expect(manifest.icons).toEqual([
       { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: 'icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+      { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ]);
   });
 });
