@@ -5,10 +5,17 @@ import barSource from './TopBar.svelte?raw';
 import { route } from '../lib/router.svelte';
 import { cutShort } from '../lib/overflowTip.testing';
 import { setFullscreenElement } from '../lib/fullscreen.testing';
+import { reloadPage } from '../lib/platform';
 import { IPAD, resetDevice, setDevice } from '../lib/platform.testing';
 import { DESKTOP, LANDSCAPE_PHONE, mockScreen, PHONE, TABLET } from '../lib/screen.testing';
 import { TOUCH_MODE_QUERY } from '../lib/screen';
 import { tokensCss } from '../styles/tokens.testing';
+
+// Only the reload is faked: jsdom cannot reload the page, nor spy on its location.
+vi.mock('../lib/platform', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../lib/platform')>()),
+  reloadPage: vi.fn(),
+}));
 
 // jsdom has no Fullscreen API: each test installs the one it needs, as own
 // properties that shadow nothing and are simply deleted afterwards.
@@ -25,6 +32,13 @@ afterEach(() => {
     Reflect.deleteProperty(document, name);
   }
 });
+
+/** The names of the bar's actions, in their order. */
+function actionNames(container: HTMLElement): string[] {
+  return [...container.querySelectorAll('.actions > *')].map(
+    (element) => element.getAttribute('aria-label') ?? '',
+  );
+}
 
 /**
  * A refused fullscreen request. A bare rejection would not prove a handler is
@@ -429,12 +443,6 @@ describe('TopBar on an iPad', () => {
     resetDevice();
   });
 
-  function actionNames(container: HTMLElement): string[] {
-    return [...container.querySelectorAll('.actions > *')].map(
-      (element) => element.getAttribute('aria-label') ?? '',
-    );
-  }
-
   it('offers no Fullscreen in a browser tab, and nothing in its place', () => {
     setDevice(IPAD);
     const { container } = render(TopBar, {
@@ -453,17 +461,126 @@ describe('TopBar on an iPad', () => {
     ]);
   });
 
-  it('offers no Fullscreen opened from the Home Screen either', () => {
+  it('offers no Fullscreen opened from the Home Screen either, only Reload', () => {
     setDevice(IPAD, true);
     const { container } = render(TopBar, { onend: () => {} });
 
-    expect(actionNames(container)).toEqual(['End game']);
+    expect(actionNames(container)).toEqual(['Reload', 'End game']);
   });
 
   it('keeps Fullscreen on another touch screen', () => {
     const { container } = render(TopBar, { onend: () => {} });
 
     expect(actionNames(container)).toEqual(['Fullscreen', 'End game']);
+  });
+});
+
+describe('TopBar Reload', () => {
+  beforeEach(() => {
+    vi.mocked(reloadPage).mockClear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    resetDevice();
+  });
+
+  it('offers no Reload in a browser tab, which has its own', () => {
+    render(TopBar, { onend: () => {} });
+
+    expect(screen.queryByRole('button', { name: 'Reload' })).toBeNull();
+  });
+
+  it("offers Reload opened from the Home Screen, as Safari's flag tells, before End game", () => {
+    setDevice(IPAD, true);
+    const { container } = render(TopBar, { onend: () => {} });
+
+    const reload = screen.getByRole('button', { name: 'Reload' });
+    expect(reload.dataset.tip).toBe('Reload');
+    expect(reload.hasAttribute('title')).toBe(false);
+    expect(reload.querySelector('svg')?.dataset.icon).toBe('reload');
+    expect(actionNames(container)).toEqual(['Reload', 'End game']);
+  });
+
+  // The most crowded table bar: two decks show the view switch, and an Android app keeps the
+  // Fullscreen API. The spectator count, in the list, is hidden this narrow (CSS).
+  const CROWDED_TABLE = {
+    spectators: 2,
+    viewMode: 'all',
+    onviewmode: () => {},
+    readyAll: { disabled: false, run: () => {} },
+    onend: () => {},
+  } as const;
+
+  // The narrowest phone, and the narrowest common Android phone, upright.
+  const NARROW_PHONE = { width: 320, height: 640, touch: true };
+  const ANDROID_PHONE = { width: 360, height: 780, touch: true };
+
+  it("gives Fullscreen's slot to Reload in the standalone display mode under 360px", () => {
+    mockScreen({ ...NARROW_PHONE, standalone: true });
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, CROWDED_TABLE);
+
+    expect(actionNames(container)).toEqual([
+      '2 spectators',
+      'Table view',
+      'Ready all cards',
+      'Reload',
+      'End game',
+    ]);
+  });
+
+  it('gives the slot to Exit fullscreen under 360px while fullscreen is on, back to Reload after', async () => {
+    mockScreen({ ...NARROW_PHONE, standalone: true });
+    document.documentElement.requestFullscreen = vi.fn();
+    setFullscreenElement('fullscreenElement', document.documentElement);
+    const { container } = render(TopBar, { onend: () => {} });
+    expect(actionNames(container)).toEqual(['Exit fullscreen', 'End game']);
+
+    setFullscreenElement('fullscreenElement', null);
+    await fireEvent(document, new Event('fullscreenchange'));
+    expect(actionNames(container)).toEqual(['Reload', 'End game']);
+  });
+
+  it('offers both Fullscreen and Reload in the standalone display mode from 360px', () => {
+    mockScreen({ ...ANDROID_PHONE, standalone: true });
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, CROWDED_TABLE);
+
+    expect(actionNames(container)).toEqual([
+      '2 spectators',
+      'Table view',
+      'Ready all cards',
+      'Fullscreen',
+      'Reload',
+      'End game',
+    ]);
+  });
+
+  it('keeps Fullscreen and offers no Reload in a browser tab under 360px', () => {
+    mockScreen(NARROW_PHONE);
+    document.documentElement.requestFullscreen = vi.fn();
+    const { container } = render(TopBar, CROWDED_TABLE);
+
+    expect(actionNames(container)).toEqual([
+      '2 spectators',
+      'Table view',
+      'Ready all cards',
+      'Fullscreen',
+      'End game',
+    ]);
+  });
+
+  it('reloads the page on a click, keeping no focus after a pointer click', async () => {
+    setDevice(IPAD, true);
+    render(TopBar);
+    const reload = screen.getByRole('button', { name: 'Reload' });
+
+    reload.focus();
+    await fireEvent.click(reload, { detail: 1 });
+    expect(reloadPage).toHaveBeenCalledOnce();
+    expect(document.activeElement).not.toBe(reload);
   });
 });
 

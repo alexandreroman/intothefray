@@ -8,14 +8,19 @@
   import { overflowTip } from '../lib/overflowTip';
   import { pointerBlur } from '../lib/releaseFocus';
   import { ScrollAutoHide, TOP_BAR_HEIGHT } from '../lib/autoHide.svelte';
-  import { PHONE_QUERY, SMALL_SCREEN_QUERY, TOUCH_MODE_QUERY } from '../lib/screen';
+  import {
+    NARROW_BAR_QUERY,
+    PHONE_QUERY,
+    SMALL_SCREEN_QUERY,
+    TOUCH_MODE_QUERY,
+  } from '../lib/screen';
   import {
     canFullscreen,
     isFullscreen,
     onFullscreenChange,
     toggleFullscreen,
   } from '../lib/fullscreen';
-  import { isIPad } from '../lib/platform';
+  import { isIPad, isStandalone, reloadPage } from '../lib/platform';
 
   let {
     spectators = 0,
@@ -119,15 +124,29 @@
   // instead, where it opens full screen with no browser bars.
   const fullscreenSupported = canFullscreen() && !isIPad();
 
+  // Opened from the Home Screen, the app has no browser bar to reload it from, and pulling the page
+  // down does not reliably refresh it: the bar offers a Reload of its own. A browser tab has the
+  // browser's. Read once, as lib/platform says.
+  const standalone = isStandalone();
+
   let fullscreen = $state(isFullscreen());
   const touch = new MediaQuery(TOUCH_MODE_QUERY);
   const phone = new MediaQuery(PHONE_QUERY);
+  const narrowBar = new MediaQuery(NARROW_BAR_QUERY);
+  // Under 360px, the installed app's bar has no room for both Fullscreen and Reload: they share one
+  // slot, which goes to Reload. Already without browser bars, the app gains only the status bar
+  // from Fullscreen, while Reload has no other place. While fullscreen is on, the slot goes to Exit
+  // fullscreen, or a viewer without an Escape key could not leave it.
+  const sharedSlot = $derived(standalone && narrowBar.current);
   // A finger keeps Fullscreen at every width: a phone needs the room it gives the most. A narrow
   // mouse window drops it, unless it is on, or a viewer without an Escape key could not leave it.
   const showFullscreen = $derived(
-    fullscreenSupported && (touch.current || !phone.current || fullscreen),
+    fullscreenSupported &&
+      (touch.current || !phone.current || fullscreen) &&
+      (!sharedSlot || fullscreen),
   );
   const fullscreenLabel = $derived(fullscreen ? 'Exit fullscreen' : 'Fullscreen');
+  const showReload = $derived(standalone && !(sharedSlot && showFullscreen));
 
   function syncFullscreen(): void {
     fullscreen = isFullscreen();
@@ -209,6 +228,17 @@
           {@attach pointerBlur}
         >
           <Icon name={fullscreen ? 'exit-fullscreen' : 'fullscreen'} />
+        </button>
+      {/if}
+      {#if showReload}
+        <button
+          class="icon-button"
+          aria-label="Reload"
+          data-tip="Reload"
+          onclick={reloadPage}
+          {@attach pointerBlur}
+        >
+          <Icon name="reload" />
         </button>
       {/if}
       {#if onend}
@@ -392,8 +422,11 @@
 
   /*
    * A narrow bar drops its least useful items first: the crumb, then the
-   * spectator count. A mouse window also drops Fullscreen (showFullscreen). The
-   * logo and End game always stay. The items follow the width only: the bar
+   * spectator count. A mouse window also drops Fullscreen (showFullscreen).
+   * Under 360px, an app opened from the Home Screen keeps one slot for
+   * Fullscreen and Reload (NARROW_BAR_QUERY, lib/screen): Reload, or Exit
+   * fullscreen while fullscreen is on (sharedSlot). The logo and End game
+   * always stay, End game last. The items follow the width only: the bar
    * also hides on scroll on a short screen (SMALL_SCREEN_QUERY, lib/screen), a
    * phone on its side, which has the room for all of them.
    */

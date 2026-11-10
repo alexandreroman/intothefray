@@ -3,11 +3,15 @@
 
 import { tick } from 'svelte';
 
-/** A window the media queries are asked about, in px; `touch` is a touch screen's finger. */
+/**
+ * A window the media queries are asked about, in px; `touch` is a touch screen's finger, and
+ * `standalone` a page opened from the Home Screen rather than in a browser tab.
+ */
 export interface TestScreen {
   width: number;
   height: number;
   touch?: boolean;
+  standalone?: boolean;
 }
 
 /** Whether one feature of a media query, as "max-width: 900px", holds on that screen. */
@@ -27,6 +31,8 @@ function holds(feature: string, on: TestScreen): boolean {
       return value === (on.touch ? 'none' : 'hover');
     case 'pointer':
       return value === (on.touch ? 'coarse' : 'fine');
+    case 'display-mode':
+      return value === (on.standalone ? 'standalone' : 'browser');
     default:
       // prefers-reduced-motion and the like.
       return false;

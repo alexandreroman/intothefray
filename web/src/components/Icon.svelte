@@ -13,6 +13,7 @@
     | 'arrow-right'
     | 'undo'
     | 'history'
+    | 'reload'
     | 'ready-all'
     | 'trophy'
     | 'hourglass'
@@ -92,6 +93,13 @@
     <!-- A clock face. -->
     <circle cx="12" cy="12" r="9" />
     <path d="M12 7.5V12l3 2" />
+  {:else if name === 'reload'}
+    <!--
+      A browser's Reload: an arrow going clockwise almost all the way round, its head at the top
+      right. Cut at three quarters, the circle reads as a C.
+    -->
+    <path d="M20.5 12a8.5 8.5 0 1 1-2.5-6l1.5 1.5" />
+    <path d="M19.5 3v4.5H15" />
   {:else if name === 'ready-all'}
     <!--
       Exhaust the other way round: the card tilted to the right as exhausted (faint, dashed) turns
