@@ -153,8 +153,9 @@ follows the same rules, except that other URLs get `index.html` with a
 200. Search engines read `robots.txt` at the root of a domain only.
 
 The share images, `web/public/og/home.png` and `invite.png`
-(1200×630), and `web/public/apple-touch-icon.png` (180×180) are
-screenshots of the HTML pages in `web/images/`, which are not published.
+(1200×630), the touch icon `web/public/apple-touch-icon.png` (180×180)
+and the web app manifest's icons are screenshots of the HTML pages in
+`web/images/`, which are not published.
 After a change to one of them, render it again with headless Chrome
 (`chrome` stands for the Chrome or Chromium binary), here the home
 image:
@@ -185,6 +186,24 @@ for size in 192 512; do
 done
 ```
 
+`maskable-icon.html` gives the manifest's maskable icons,
+`public/icon-maskable-192.png` and `public/icon-maskable-512.png`, the
+same way. Android crops them to the launcher's shape, so they are
+full-bleed `#0D111B` and keep the mark within the safe zone, a centred
+circle whose radius is 40 % of the icon size; the `any` icons keep it
+within their inscribed circle:
+
+```bash
+cd web
+for size in 192 512; do
+  chrome --headless --disable-gpu --hide-scrollbars \
+    --window-size=180,180 \
+    --force-device-scale-factor="$(echo "scale=6; $size/180" | bc)" \
+    --screenshot="public/icon-maskable-$size.png" \
+    "file://$PWD/images/maskable-icon.html"
+done
+```
+
 `web/public/favicon.ico` (16, 32 and 48 px) is served at `/favicon.ico`;
 the pages declare it (`sizes="32x32"`) before `favicon.svg`, since Google
 Search takes no SVG favicon. After a change to `favicon.svg`, render it
@@ -200,7 +219,7 @@ magick /tmp/favicon.png -alpha off \
 ```
 
 Every icon is full-bleed, with no transparent corners, and keeps the mark
-within its inscribed circle.
+within its inscribed circle, or within the safe zone for a maskable icon.
 
 ## Architecture
 

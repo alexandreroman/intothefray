@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        margin: 0;
+      }
+      html,
+      body {
+        width: 180px;
+        height: 180px;
+        overflow: hidden;
+        background: #0d111b;
+      }
+      svg {
+        display: block;
+        margin: 26px;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="128" height="128" viewBox="0 0 64 64">
+      <defs>
+        <clipPath id="t"><polygon points="0,0 64,0 64,19 35,29 39,33 0,45" /></clipPath>
+        <clipPath id="b"><polygon points="0,45 39,33 35,29 64,19 64,64 0,64" /></clipPath>
+      </defs>
+      <g transform="rotate(-12 32 32)">
+        <rect
+          x="15"
+          y="8"
+          width="34"
+          height="48"
+          rx="4.5"
+          fill="#ff4438"
+          clip-path="url(#t)"
+          transform="translate(-1.6 -1.6)"
+        />
+        <rect
+          x="15"
+          y="8"
+          width="34"
+          height="48"
+          rx="4.5"
+          fill="#c9241b"
+          clip-path="url(#b)"
+          transform="translate(1.6 1.6)"
+        />
+        <path
+          fill="#ffce3a"
+          d="M57 14.5 L58.3 18.7 L62.5 20 L58.3 21.3 L57 25.5 L55.7 21.3 L51.5 20 L55.7 18.7 Z"
+        />
+      </g>
+    </svg>
+  </body>
+</html>
