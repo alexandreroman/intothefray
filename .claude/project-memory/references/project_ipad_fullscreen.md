@@ -1,10 +1,10 @@
 ---
-name: "Fullscreen on iPad"
-description: "iPad: no Fullscreen button; Home shows an Add to Home Screen banner in a browser tab, news first"
+name: "Fullscreen on iPad and the Home Screen app"
+description: "iPad: no Fullscreen button; Home shows an Add to Home Screen banner in a browser tab; standalone: Reload in the table bar"
 type: project
 ---
 
-# Fullscreen on iPad
+# Fullscreen on iPad and the Home Screen app
 
 - An iPad, in any of its browsers, gets no Fullscreen button in the top
   bar, opened from the Home Screen too. `web/src/lib/platform.ts` tells an
@@ -22,6 +22,13 @@ type: project
   `itf-home-screen-banner`: the banner never shows again in that browser.
 - The Home Screen app runs standalone, with no browser bars, through the
   web app manifest (see [[project_touch_phone_table]]).
+- Standalone, on any device, the table's top bar shows a Reload icon
+  button (`reload` icon, `data-tip` "Reload") just before End game; it
+  reloads the page at once, with no confirmation. It belongs to the table
+  only (TopBar's `reload` prop): the lobby, Options and About bars, and a
+  browser tab, have none. Under 360px wide (`NARROW_BAR_QUERY`) Reload and
+  Fullscreen share one slot: Reload, or Exit fullscreen while fullscreen
+  is on (see [[project_top_bar_auto_hide]]).
 
 **Why:** every iPad browser is WebKit, and in element fullscreen WebKit
 asks to leave it at every key pressed, on a hardware or on-screen
@@ -29,7 +36,13 @@ keyboard (table shortcuts, digits in the count dialog); a page cannot turn
 that off. The Home Screen app gives the whole screen without it. The hint
 lives on Home (user decision): the Home Screen app starts at Home and iOS
 gives it storage of its own, so a game in progress does not follow it;
-the moment to add it is before a game.
+the moment to add it is before a game. The Home Screen app has no
+browser bar to reload from and pull-to-refresh is unreliable there, so
+the table offers Reload of its own; a reload during a game is safe (the
+browser keeps the seat tokens, `itf-tokens`, and the game reconnects),
+and only a game in progress needs it (user decision). Under 360px the
+busiest table bar has no room for both buttons; standalone, Fullscreen
+gains only the status bar, so Reload takes its slot.
 
 **How to apply:** a new full-screen feature skips iPads (`isIPad()`);
 other iPad-only guidance goes through the same helpers, never a width or

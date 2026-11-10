@@ -73,7 +73,7 @@
 - [Commit reporting](references/project_commit_reporting.md) — GET /api/version, VITE_COMMIT, Options shows app and server commits
 - [Cards set aside by a deck card](references/project_deck_set_aside.md) — curated `setAside` in cards.json: the Linked player cards of a deck card
 - [Escape in fullscreen](references/project_escape_in_fullscreen.md) — Escape-closing layers preventDefault; lib/fullscreen locks Escape (Chromium)
-- [Fullscreen on iPad](references/project_ipad_fullscreen.md) — no Fullscreen on iPad; Home banner: Add to Home Screen, tab only, news first
+- [Fullscreen on iPad and the Home Screen app](references/project_ipad_fullscreen.md) — iPad: no Fullscreen, Home Screen banner; table Reload
 - [Deck load acknowledgement](references/project_deck_load_ack.md) — deckSet acks setDeck with a version; only it confirms a load; one load at a time
 - [Stat modifier tokens](references/project_stat_modifiers.md) — signed ATK/THW/DEF/SCH/REC/HP per card; menu + pill, no keys; ±99
 - [Retaliate status carries a value](references/project_retaliate_status.md) — count = Retaliate X; key R; tab "Retaliate 2"
