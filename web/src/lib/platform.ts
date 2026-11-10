@@ -1,5 +1,6 @@
 // The device and the way the page was opened, where the top bar needs them. Both stay the same for
-// the page's whole life: they are read once, never followed.
+// the page's whole life: they are read once, never followed. And the reload that a page opened from
+// the Home Screen has no browser bar for.
 
 /** What `isIPadDevice` reads of the navigator. */
 export interface DeviceHints {
@@ -39,4 +40,12 @@ export function isStandalone(): boolean {
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(display-mode: standalone)').matches;
   return displayMode || (navigator as StandaloneNavigator).standalone === true;
+}
+
+/**
+ * Reloads the page, as a browser's Reload does. A function of its own, so that a test can stand in
+ * for it: jsdom's location cannot be replaced, nor its reload spied on.
+ */
+export function reloadPage(): void {
+  location.reload();
 }
