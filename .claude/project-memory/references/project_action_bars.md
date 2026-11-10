@@ -89,7 +89,11 @@ type: project
   touch, a tap on the lowered hand raises and pins it; a tap on a card then
   lifts it to read it (a hand card plays and discards by drag and drop);
   a tap on the table, Esc, a downward swipe, a drop on the
-  table or a dialog lowers it.
+  table or a dialog lowers it. The card a tap lifted goes down as soon
+  as a drag of a hand card starts: another card of the fan (reordered
+  or played) or the lifted card itself, which lands unselected
+  (`lift()` in `interaction.svelte.ts`). A mouse or a pen never selects
+  a hand card, so its hover is unaffected.
   In dock mode the hand is a carousel sheet (see
   [[project_touch_phone_table]]).
 - A hand card dragged back over its own fan reorders the hand: the fan
@@ -119,6 +123,8 @@ type: project
 **Why:** a UX review against DragnCards and OCTGN; the user chose one
 complete, labelled menu per card, pile and box tile. A one-card hand has
 nothing to reorder, so its fan offers no place for its card (user
+decision). A drag in the hand is a new gesture: the card lifted to be
+read drops back into the fan rather than stay popped over it (user
 decision). A card often takes several counters at once (damage, threat,
 Tough ×2, +2 ATK), so the three counter submenus stay open for another
 click, all alike (user decision).
