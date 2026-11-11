@@ -23,7 +23,8 @@ type: project
   to two stacked drop-shadows, landscape corners for a landscape card),
   and the hand sheet's carousel cards.
 - A table card or pile held up casts `--lifted-card-shadow`
-  (`3px 4px 12px 0 #00000059, 9px 12px 28px 0 #00000038`): its drag ghosts
+  (`inset 0 0 0 999px #0000005c, 3px 4px 12px 0 #00000059,
+  9px 12px 28px 0 #00000038`): its drag ghosts
   (`.card.ghost`, landed ones and other players' included), a card or pile
   held under a finger (`.card.armed`), and a dropped card while it settles
   (`#settle`, `#slideAndSettle` in `motion.svelte.ts` hold it on the shade
@@ -32,7 +33,11 @@ type: project
   layer: offset by `LIFT_SHADE` over another card, `--card-shadow` or
   `--held-card-shadow` darkens the card below in a hard dark band along the
   edge (down to about 30 % brightness); the lifted shadow keeps it above
-  60 %, fading out smoothly.
+  60 %, fading out smoothly. Offset by `LIFT_SHADE`, the shade's box sticks
+  out about 3px past the card's right and bottom edges, where a box-shadow is
+  cut away inside its own box: the inset layer fills the box with the
+  shadow's tone at its edge, so no pale strip shows between the card and its
+  shadow. At rest the box lies under the card and the fill never shows.
   A filter on a moving element is blurred again on every frame, per card.
   An element that does not itself move may carry a filter (the preview art,
   the remote cursors): it is drawn once into its moving parent's layer.

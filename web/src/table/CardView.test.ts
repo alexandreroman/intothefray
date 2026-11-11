@@ -5,6 +5,7 @@ import { interaction } from './interaction.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox } from './layout';
 import { card } from './fixtures.testing';
+import { tokensCss } from '../styles/tokens.testing';
 
 const HERO_BACK = 'https://img.intothefray.xyz/assets/back-player.avif';
 
@@ -414,5 +415,12 @@ describe('the shadow of a table card held up', () => {
 
   it('casts the lifted shadow while a hold lifts it in place', () => {
     expect(rule('.card.armed')).toContain('--shade-shadow: var(--lifted-card-shadow);');
+  });
+
+  // Offset by LIFT_SHADE, the shade's box sticks out past the card's edge, where a box-shadow is
+  // cut away: without a fill, a pale strip of the card below would show between card and shadow.
+  it('fills the part of its shade that sticks out past the card with the shadow', () => {
+    const lifted = /--lifted-card-shadow:\s*([^;]*);/.exec(tokensCss)?.[1];
+    expect(lifted).toMatch(/^inset 0 0 0 /);
   });
 });
