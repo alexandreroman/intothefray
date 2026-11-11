@@ -1135,6 +1135,17 @@
     return () => page.classList.remove('fixed-screen');
   });
 
+  // On a phone the page pinch-zooms (.dock-screen in tokens.css): the table never zooms itself there.
+  // Portalled sheets sit outside .app, so the page carries dock mode for the touch-action rules.
+  $effect(() => {
+    if (!dockMode) {
+      return;
+    }
+    const page = document.documentElement;
+    page.classList.add('dock-screen');
+    return () => page.classList.remove('dock-screen');
+  });
+
   // ---- Animations ----
 
   // The view the table was last drawn from: the next one is animated from it.
@@ -2502,7 +2513,7 @@
    * Zooms around a point of the screen, keeping the table point under it in
    * place. Without a point, zooms from the left edge, so the decks and
    * identities stay in view. Dock mode does not zoom, nor remember a zoom: a
-   * phone always shows its fit, and a pinch only moves the table about.
+   * phone always shows its fit, and its fingers pinch-zoom the page instead.
    */
   async function setZoom(wanted: number, pointX?: number, pointY?: number): Promise<void> {
     if (dockMode) {
@@ -2541,12 +2552,11 @@
   // What a double tap does not zoom on: an element of the table, which a tap acts on.
   const NOT_EMPTY = '.card, .marker, [data-counter], .chip, button';
 
-  // Touch mode: two fingers pinch-zoom the table and pan it, and a double tap on an empty spot
-  // toggles between 100 % and 150 % (touchZoom.ts). The zoom they choose is remembered, as the
-  // buttons' is. In dock mode they zoom nothing (setZoom), but two fingers still pan the table and
-  // the page itself never pinch-zooms.
+  // Touch mode on a tablet: two fingers pinch-zoom the table and pan it, and a double tap on an empty
+  // spot toggles between 100 % and 150 % (touchZoom.ts). The zoom they choose is remembered, as the
+  // buttons' is. In dock mode the fingers are the browser's, which pinch-zooms the page.
   const fingerZoom = touchZoom({
-    enabled: () => touchMode.current,
+    enabled: () => touchMode.current && !dockMode,
     zoom: () => zoom,
     setZoom: (wanted, x, y) => {
       wheelTarget = null;

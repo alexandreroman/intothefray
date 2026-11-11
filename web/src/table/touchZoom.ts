@@ -1,6 +1,6 @@
 // Zoom with the fingers on the table scroller: two fingers pinch-zoom around their midpoint and pan
 // with it, and a double tap on an empty spot toggles between the readable zoom (100 %) and the close-up one
-// (150 %). The page itself never pinch-zooms: iOS's gesturestart is prevented.
+// (150 %). Where they apply, the page does not pinch-zoom over the scroller: iOS's gesturestart is prevented.
 
 import type { Attachment } from 'svelte/attachments';
 import { doubleTapZoom, HOLD_SLOP, isDoubleTap, pinchZoom, type Tap } from './gestures';

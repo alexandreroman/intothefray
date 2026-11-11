@@ -463,6 +463,11 @@
     touch-action: none;
   }
 
+  /* On a phone (dock mode), two fingers on it pinch-zoom the page; one still drags the sheet. */
+  :global(html.dock-screen) .grab {
+    touch-action: pinch-zoom;
+  }
+
   .grab::after {
     content: '';
     position: absolute;

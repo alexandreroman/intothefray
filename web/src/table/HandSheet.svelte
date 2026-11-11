@@ -5,12 +5,13 @@
   inspector, a refused Discard is left out rather than greyed, since a finger
   never sees a tooltip saying why: Play then takes the whole line.
 
-  The carousel scrolls sideways only (touch-action: pan-x), so a finger moving
-  up on a card is a press the drag layer turns into a drag of that card, as on
-  the fan: the carousel is marked up like Hand.svelte (.hand with the seat,
-  .hcard with its id, .fan holding the face), where DragLayer.svelte measures
-  the card and its slots. Its data-carousel tells the drag layer that a finger
-  moving sideways scrolls it rather than drags the card, as the fan's would.
+  One finger scrolls the carousel sideways only, and two pinch-zoom the page
+  (touch-action: pan-x pinch-zoom), so a finger moving up on a card is a press
+  the drag layer turns into a drag of that card, as on the fan: the carousel
+  is marked up like Hand.svelte (.hand with the seat, .hcard with its id, .fan
+  holding the face), where DragLayer.svelte measures the card and its slots.
+  Its data-carousel tells the drag layer that a finger moving sideways scrolls
+  it rather than drags the card, as the fan's would.
   The sheet closes once the drag starts, and the card goes on to the table
   under the finger. A finger moving down on a card drags the sheet down
   instead (Sheet.svelte), as anywhere else on it: the drag layer lets such a
@@ -262,7 +263,7 @@
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    touch-action: pan-x;
+    touch-action: pan-x pinch-zoom;
   }
 
   .hand::-webkit-scrollbar {
@@ -286,7 +287,7 @@
     width: var(--card-w);
     aspect-ratio: 185 / 259;
     scroll-snap-align: center;
-    touch-action: pan-x;
+    touch-action: pan-x pinch-zoom;
   }
 
   /*

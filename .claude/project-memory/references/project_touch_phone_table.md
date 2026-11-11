@@ -1,6 +1,6 @@
 ---
 name: "Touch and phone table"
-description: "Touch mode: inspector sheet, hold to drag, pinch; tablets: inspector follows the orientation, History sheet, 44 px targets; dock mode on small touch screens: dock, hand carousel, small cards"
+description: "Touch mode: inspector sheet, hold to drag; tablets: table pinch-zoom, inspector follows the orientation, History sheet, 44 px targets; dock mode on small touch screens: dock, hand carousel, small cards, page pinch-zoom"
 type: project
 ---
 
@@ -93,10 +93,15 @@ type: project
   - On tablets, two fingers pinch-zoom and pan (`touchZoom.ts`) and a
     double tap on an empty spot toggles between 100 % and 150 % (from any
     other zoom it goes to 150 %).
-    Pinch and double tap belong to tablets only: phones (dock mode) never
-    zoom (no pinch, no double tap, a saved `itf-zoom` ignored), and
-    one-finger scrolling stays. The page itself never pinch-zooms on the
-    table screen.
+    Pinch and double tap belong to tablets only, where the page itself
+    only pans (`touch-action: pan-x pan-y`, `gesturestart` prevented on
+    the table) as the table zooms itself. On phones (dock mode) the table
+    never zooms (no table pinch, no double tap, a saved `itf-zoom`
+    ignored) and one-finger scrolling stays; two fingers are the
+    browser's and pinch-zoom the whole page, everywhere on the table
+    screen: `html.dock-screen` with `touch-action: manipulation`, and
+    `pinch-zoom` allowed on cards, piles, markers, sheet handles, card
+    box tiles and the hand carousel.
   - Card boxes do not focus their filter, so no keyboard pops up.
   - No card preview and no keyboard-shortcuts button (the keys still
     work); the top bar's buttons are 44 px high (`TopBar.svelte`), the
