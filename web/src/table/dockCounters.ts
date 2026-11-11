@@ -18,7 +18,7 @@
 // exhausted card turns its layout with it.
 
 import type { CardView } from '../lib/types';
-import { MODIFIERS, statusCount, STATUSES, withSign, type TokenName } from './actions';
+import { MODIFIER_BADGES, statusCount, STATUSES, withSign, type TokenName } from './actions';
 
 /** The font size of every number, status initial and modifier: the readable floor on a phone. */
 const NUMBER_PX = 11;
@@ -215,7 +215,7 @@ function placeModifiers(
   measure: MeasureText,
 ): Group<PlacedModifier> {
   const room = region.right - region.minX;
-  const badges = MODIFIERS.filter((name) => (mods[name] ?? 0) !== 0).map((name) => {
+  const badges = MODIFIER_BADGES.filter((name) => (mods[name] ?? 0) !== 0).map((name) => {
     const value = withSign(mods[name] ?? 0);
     const stat = name.toUpperCase();
     return { name, value, stat, w: chipWidthOf(`${value} ${stat}`, measure) };

@@ -8,8 +8,12 @@ type: project
 
 - A card in play carries signed stat modifiers (`Card.Mods`, action kind
   `modifier`) on "atk", "thw", "def", "sch", "rec" and "hp" (hit
-  points, badge "HP"), in that order: the printed stat column, then HP.
-  They are bookkeeping only: no rules effect.
+  points, badge "HP"). They are bookkeeping only: no rules effect.
+- The menu and `modifierNames` list them atk, thw, def, sch, rec, hp:
+  the printed stat column, then HP. The badges show ATK, SCH, THW, DEF,
+  REC, HP from the bottom up (in a row, from the left), the same on the
+  table, in dock mode and in the inspector, from `MODIFIER_BADGES`
+  (web/src/table/actions.ts); the DOM keeps that order, ATK first.
 - A modifier is clamped to ±99 and deleted at 0; like tokens and
   statuses, modifiers are cleared when the card leaves the table. At ±99
   the client offers no step further: the menu greys that ±1 entry with
@@ -35,8 +39,9 @@ type: project
 such as a hero's +1 DEF or a villain's −1 ATK.
 
 **How to apply:** keep `modifierNames` (internal/game/apply.go) and
-`MODIFIERS` (web/src/table/actions.ts) in step, and `MAX_COUNT` (same
-file) equal to the server's `maxCount`, its clamp; a new counter kind
-mirrors every place `ActToken` and the counter target kinds are handled,
-and decides whether it carries over on a stage change
+`MODIFIERS` (web/src/table/actions.ts) in step, `MODIFIER_BADGES` (same
+file) a permutation of `MODIFIERS` and the only source of badge order,
+and `MAX_COUNT` (same file) equal to the server's `maxCount`, its clamp;
+a new counter kind mirrors every place `ActToken` and the counter target
+kinds are handled, and decides whether it carries over on a stage change
 (see [[project_stage_carry_over]]).

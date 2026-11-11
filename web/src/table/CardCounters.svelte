@@ -23,7 +23,7 @@
     CORNER_TOKENS,
     counterName,
     MAX_COUNT,
-    MODIFIERS,
+    MODIFIER_BADGES,
     statusCount,
     STATUSES,
     THREAT_TOKENS,
@@ -80,7 +80,7 @@
     ),
   );
   const modifiers = $derived(
-    MODIFIERS.flatMap((name) =>
+    MODIFIER_BADGES.flatMap((name) =>
       counters.filter((counter) => counter.kind === 'modifier' && counter.name === name),
     ),
   );
