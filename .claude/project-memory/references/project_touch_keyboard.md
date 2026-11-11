@@ -1,6 +1,6 @@
 ---
 name: "On-screen keyboard keeps the UI in sight"
-description: "One code path for iOS and Android: the visual viewport drives dialogs and menus; 16 px fields; no focus that pops a keyboard on touch"
+description: "One code path for iOS and Android: the visual viewport drives dialogs, the Add a set menu and the context menu; 16 px fields; no focus that pops a keyboard on touch"
 type: project
 ---
 
@@ -25,6 +25,11 @@ type: project
   keyboard.
 - The lobby's Add a set menu is placed within the visible area and placed
   again as it changes.
+- The table's context menu (cards, piles, card box tiles) stays within its
+  bounds and the visible area. As the visible area changes (a keyboard
+  closing after a tap on a card box tile), it is placed again from the same
+  point, its open submenu too, rather than closed: its bounds, a card box's
+  grid, grow and shrink with the visible area.
 - On any coarse pointer, text fields and selects are 16 px
   (`tokens.css`): iOS zooms the page into a smaller focused field and stays
   zoomed after the keyboard closes.

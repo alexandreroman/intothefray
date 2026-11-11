@@ -5,6 +5,7 @@ import menuSource from './ContextMenu.svelte?raw';
 import tableSource from './Table.svelte?raw';
 import { interaction, LONG_PRESS_MS } from './interaction.svelte';
 import { knownCard, loadGameCards } from '../lib/catalog';
+import { mockVisualViewport } from '../lib/visibleArea.testing';
 import type { CardView as TableCard, PackFace, PileView, View } from '../lib/types';
 import {
   card,
@@ -226,6 +227,40 @@ describe('the context menu', () => {
     await rightClick(placed('mine'), 950, 80);
 
     expect(contextMenu()?.style.left).toBe('750px');
+  });
+
+  it('is placed again, its submenu too, as the on-screen keyboard closes', async () => {
+    // A keyboard is up: the part of the window the user sees ends at 300.
+    const viewport = mockVisualViewport({ height: 300 });
+    await renderTable();
+    // Its bounds shrink with the visible area, as a card box's grid does under the keyboard.
+    const measure = vi.mocked(HTMLElement.prototype.getBoundingClientRect);
+    const laidOut = measure.getMockImplementation()!;
+    measure.mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains('tablewrap')) {
+        return domRect(0, 50, 1000, viewport.height - 50);
+      }
+      return laidOut.call(this);
+    });
+    // Each menu is 400 tall, more than the room left above the keyboard.
+    vi.spyOn(Element.prototype, 'scrollHeight', 'get').mockImplementation(function (this: Element) {
+      return this.classList.contains('table-menu') ? 400 : 0;
+    });
+
+    await rightClick(placed('mine'));
+    const menu = contextMenu()!;
+    await fireEvent.click(menuItem(menu, 'Move to'));
+    const submenu = screen.getByRole('menu', { name: 'Move to' });
+    // Cut to what is left above the keyboard: 300 - 8 - 80, and 300 - 8 - (50 + 8).
+    expect(menu.style.maxHeight).toBe('212px');
+    expect(submenu.style.maxHeight).toBe('234px');
+
+    // The keyboard closes: only the visual viewport resizes, and both menus show whole.
+    viewport.resize({ height: window.innerHeight });
+    await tick();
+    expect(contextMenu()).toBe(menu);
+    expect(menu.style.maxHeight).toBe('');
+    expect(submenu.style.maxHeight).toBe('');
   });
 
   it('runs a chosen item, then closes', async () => {
