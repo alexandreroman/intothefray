@@ -123,6 +123,7 @@ describe('the table page on a touch screen', () => {
   it('leaves no hover look on the button tapped last, which a touch screen keeps hovered', () => {
     expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*button:hover/);
     expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*\.btn-ghost:hover/);
+    expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*\.btn-icon\.accent:hover/);
     expect(tokensCss).toMatch(/@media \(hover: hover\) \{\s*\.btn-primary:hover/);
     // A rule outside any media query starts its line.
     expect(tokensCss).not.toMatch(/^\S*:hover/m);
@@ -166,6 +167,18 @@ describe('a press on a touch screen', () => {
       'border-color: transparent',
       'color: var(--text)',
     ]);
+    expect(declarations(press)).toEqual(declarations(hover));
+  });
+
+  it("gives a pressed accent icon button its hover's lit edge, over the ghost's", () => {
+    const enabled = ":not(:disabled, [aria-disabled='true'])";
+    const hover =
+      /\.btn-icon\.accent:hover:not\(:disabled, \[aria-disabled='true'\]\) \{([^}]*)\}/.exec(
+        tokensCss,
+      )?.[1];
+    const press = tokensRule(`.btn-icon.accent:active${enabled}`);
+
+    expect(declarations(press)).toEqual(['border-color: var(--sel)', 'color: var(--sel)']);
     expect(declarations(press)).toEqual(declarations(hover));
   });
 

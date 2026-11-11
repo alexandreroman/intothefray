@@ -255,7 +255,7 @@
     <div class="tools">
       {#if canAdd}
         <button
-          class="btn-ghost tool add"
+          class="btn-ghost btn-icon accent"
           data-tip="Add a deck"
           aria-label="Add a deck"
           aria-disabled={addLocked}
@@ -267,7 +267,7 @@
       {#if canRemove}
         {@const tip = `Take ${player.name} off this seat`}
         <button
-          class="btn-ghost tool"
+          class="btn-ghost btn-icon"
           data-tip={tip}
           aria-label={tip}
           onclick={() => onremove(player.color)}
@@ -277,7 +277,7 @@
       {/if}
       {#if canLeave}
         <button
-          class="btn-ghost tool"
+          class="btn-ghost btn-icon"
           data-tip="Leave your seat"
           aria-label="Leave your seat"
           onclick={onleave}
@@ -508,7 +508,7 @@
   }
 
   /*
-    The icon buttons' boxes end on the card's content edge, as a deck slot's Load square does
+    The icon buttons' boxes end on the card's content edge, as a deck slot's Load does
     (DeckLoader). Above and below the name line, they reach into the card's padding, so the card is
     no taller than that line.
   */
@@ -517,41 +517,6 @@
     display: flex;
     gap: 2px;
     margin: -6px 0;
-  }
-
-  .tool {
-    flex: none;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border-radius: 8px;
-    color: var(--muted);
-    display: grid;
-    place-items: center;
-  }
-
-  .tool :global(svg) {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2;
-  }
-
-  .tool.add {
-    color: var(--sel);
-    border-color: var(--line-strong);
-  }
-
-  /* Pressed, as under the pointer: its edge lights up too. */
-  .tool.add:active:not(:disabled, [aria-disabled='true']) {
-    border-color: var(--sel);
-    color: var(--sel);
-  }
-
-  @media (hover: hover) {
-    .tool.add:hover:not(:disabled, [aria-disabled='true']) {
-      border-color: var(--sel);
-      color: var(--sel);
-    }
   }
 
   /*

@@ -117,11 +117,11 @@
           bind:value={url}
           bind:this={input}
         />
-        <!-- A square as tall as the field; while its load is in flight, the spinner takes the
-             icon's place. aria-disabled rather than disabled meanwhile: the button keeps the
-             focus. -->
+        <!-- An icon button as the seat's Add a deck, in the accent; while its load is in flight, the
+             spinner takes the icon's place. aria-disabled rather than disabled meanwhile: the
+             button keeps the focus. -->
         <button
-          class="btn load"
+          class="btn-ghost btn-icon accent"
           type="submit"
           data-tip={loadLabel}
           aria-label={loadLabel}
@@ -136,7 +136,7 @@
         </button>
         {#if changingFrom !== null}
           <button
-            class="btn-ghost tool"
+            class="btn-ghost btn-icon"
             type="button"
             data-tip="Cancel"
             aria-label="Cancel"
@@ -181,7 +181,7 @@
       <DeckNames heroName={deck.heroName ?? ''} deckName={deck.deckName ?? ''} />
       <div class="tools">
         <button
-          class="btn-ghost tool"
+          class="btn-ghost btn-icon"
           data-tip={changeLabel}
           aria-label={changeLabel}
           onclick={() => (changingFrom = signature)}
@@ -197,7 +197,7 @@
 {#snippet remove()}
   {#if onremove}
     <button
-      class="btn-ghost tool"
+      class="btn-ghost btn-icon"
       type="button"
       data-tip={removeLabel}
       aria-label={removeLabel}
@@ -238,19 +238,6 @@
     flex: 1;
     min-width: 0;
     margin-right: 4px;
-  }
-
-  /* `.btn.load` outweighs the lobby's `.btn` padding. */
-  .form .btn.load {
-    flex: none;
-    width: 44px;
-    padding: 0;
-  }
-
-  .load :global(svg) {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2;
   }
 
   /* A ring with one side left open, turning. */
@@ -294,28 +281,11 @@
   }
 
   /* The slot's icon buttons, change and remove, side by side: their boxes end on the card's content
-     edge, as the Load square does. */
+     edge, as Load's does. */
   .tools {
     flex: none;
     display: flex;
     gap: 2px;
-  }
-
-  .tool {
-    flex: none;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border-radius: 8px;
-    color: var(--muted);
-    display: grid;
-    place-items: center;
-  }
-
-  .tool :global(svg) {
-    width: 16px;
-    height: 16px;
-    stroke-width: 2;
   }
 
   .err {

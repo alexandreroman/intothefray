@@ -80,7 +80,7 @@
 - [Acceleration token](references/project_acceleration_token.md) — token "acc": menu and pill only; Fray red, upward double chevron, by the threat
 - [Hand card sizes](references/project_hand_sizes.md) — raised: 80 % of the preview (tablet 65 %); boxes alike, ≤ 160 px, 3 rows if tall; resting 82 %
 - [Scrolling lists fade at their edges](references/project_scroll_fade.md) — card boxes, Add a set menu, What's new: scrollFade
-- [Lobby layout](references/project_lobby_layout.md) — one column: Players (seat per deck), Scenario (folded villain list, recap), Start
+- [Lobby layout](references/project_lobby_layout.md) — one column: Players (seat per deck, 32px .btn-icon tools), Scenario, Start
 - [Add a set menu groups by pack](references/project_modular_menu.md) — sets under sticky pack names; ★ in their pack; name filter field
 - [Close is the main button of a card box](references/project_card_box_close.md) — Close is primary in every card box footer; other buttons secondary
 - [Face-down cards](references/project_face_down_cards.md) — Flip toggles single-faced cards, turns stage cards over; hidden-deck Play lands face up
