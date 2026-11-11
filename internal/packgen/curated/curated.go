@@ -69,9 +69,12 @@ type ScenarioDef struct {
 
 // SetDef completes a generated set with hand-written setup data.
 type SetDef struct {
-	// InPlay lists, per difficulty, the cards of the set that start in play
-	// instead of in the encounter deck (the "Setup." keyword, or a main scheme
-	// set's own setup environment).
+	// InPlay lists, per difficulty, the cards of the set that start in play:
+	// an encounter set's instead of in the encounter deck, in the villain's
+	// row (the "Setup." keyword, or a main scheme set's own setup
+	// environment); a hero set's instead of in its player's deck, in its
+	// player's row (the identity's "Setup:" permanents, as Spectrum's energy
+	// forms).
 	InPlay map[pack.Difficulty][]pack.FaceRef `json:"inPlay,omitempty"`
 	// Unlisted keeps the set out of the lobby, e.g. the PvP standard set.
 	Unlisted bool `json:"unlisted,omitempty"`

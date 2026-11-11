@@ -955,6 +955,55 @@ func TestEmbeddedMadTitansShadow(t *testing.T) {
 	}
 }
 
+// TestEmbeddedSpectrumEnergyForms checks Monica Rambeau's "Setup: Put all 3
+// energy form upgrades into play": Gamma, Photon and Pulsar lie face up in
+// Spectrum's row, the players turning them facedown by hand, and stay out of
+// her deck although her deck list names them.
+func TestEmbeddedSpectrumEnergyForms(t *testing.T) {
+	cat := packstest.Catalog(t)
+	forms := []string{"21002", "21003", "21004"}
+	others := []string{"21005", "21006", "21007"}
+
+	deck := game.DeckChoice{Name: "Spectrum", Hero: "21001a", HeroName: "Spectrum"}
+	deck.Cards = append(deck.Cards, game.DeckEntry{Code: "21001a", Qty: 1})
+	for _, code := range slices.Concat(forms, others) {
+		deck.Cards = append(deck.Cards, game.DeckEntry{Code: code, Qty: 1})
+	}
+	table := startEmbeddedDecks(t, cat, game.DefaultConfig(cat, "rhino"), deck).Table
+
+	var identity *game.Card
+	for _, c := range table.Cards {
+		if c.Identity {
+			identity = c
+		}
+	}
+	if identity == nil || identity.Code != "21001" {
+		t.Fatalf("identity = %+v, want Spectrum", identity)
+	}
+	for _, code := range forms {
+		if got := placesOf(table, code); !slices.Equal(got, []string{"table"}) {
+			t.Errorf("copies of %s lie in %v, want one on the table", code, got)
+		}
+		for _, c := range table.Cards {
+			if c.Code != code {
+				continue
+			}
+			if c.Owner != 0 || c.Y != identity.Y || c.X <= identity.X {
+				t.Errorf("%s at (%d, %d) owned by %d, want in Spectrum's row right of her identity at (%d, %d)",
+					code, c.X, c.Y, c.Owner, identity.X, identity.Y)
+			}
+			if c.Face != 0 || c.FaceDown {
+				t.Errorf("%s on face %d, face down %v, want face up on face 0", code, c.Face, c.FaceDown)
+			}
+		}
+	}
+	for _, code := range others {
+		if got := placesOf(table, code); !slices.Equal(got, []string{"deck:p0"}) {
+			t.Errorf("copies of %s lie in %v, want one in deck:p0", code, got)
+		}
+	}
+}
+
 // scenarioRef returns the index entry of the scenario id, and fails the test
 // when the index has none.
 func scenarioRef(t *testing.T, cat *pack.Catalog, id string) pack.ScenarioRef {
@@ -1040,15 +1089,26 @@ func checkEmbeddedSetCopies(t *testing.T, cat *pack.Catalog, table *game.Table, 
 }
 
 // startEmbeddedGame starts a game with the given lobby configuration and one
-// deck of each hero, the first the host's, the others each another player's.
+// empty deck of each hero (see startEmbeddedDecks).
 func startEmbeddedGame(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, heroes ...string) *game.Game {
+	t.Helper()
+	decks := make([]game.DeckChoice, 0, len(heroes))
+	for _, hero := range heroes {
+		decks = append(decks, game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero})
+	}
+	return startEmbeddedDecks(t, cat, cfg, decks...)
+}
+
+// startEmbeddedDecks starts a game with the given lobby configuration and
+// decks, the first the host's, the others each another player's.
+func startEmbeddedDecks(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, decks ...game.DeckChoice) *game.Game {
 	t.Helper()
 	g, err := game.NewGame("g1", "h", "Host", time.Unix(0, 0))
 	if err != nil {
 		t.Fatal(err)
 	}
 	tokens := []string{"h"}
-	for i := 1; i < len(heroes); i++ {
+	for i := 1; i < len(decks); i++ {
 		token := fmt.Sprintf("p%d", i)
 		if _, err := g.Join(token, fmt.Sprintf("Player %d", i)); err != nil {
 			t.Fatal(err)
@@ -1058,9 +1118,8 @@ func startEmbeddedGame(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, he
 	if err := g.Configure("h", cfg, cat); err != nil {
 		t.Fatal(err)
 	}
-	for i, hero := range heroes {
-		choice := game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero}
-		if err := g.SetDeck(tokens[i], 0, choice, cat); err != nil {
+	for i, deck := range decks {
+		if err := g.SetDeck(tokens[i], 0, deck, cat); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -1278,6 +1337,9 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
+	// An encounter set starts its cards in the villain's row, a hero set in
+	// its player's row (Spectrum's energy forms): either way, only its own
+	// cards, on a face they have.
 	t.Run("set in-play cards resolve", func(t *testing.T) {
 		for _, file := range files {
 			for _, set := range file.Sets {
@@ -1288,6 +1350,23 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 							t.Errorf("set %s starts card %s in play, which it does not list", set.Code, ref.Card)
 						}
 					}
+				}
+			}
+		}
+	})
+
+	// A hero's Setup does not depend on the difficulty: a hero set that lists
+	// in-play cards lists the same ones for both, so that neither difficulty
+	// leaves them in the deck.
+	t.Run("hero set in-play cards are the same at both difficulties", func(t *testing.T) {
+		for _, file := range files {
+			for _, set := range file.Sets {
+				if set.Kind != pack.SetKindHero || len(set.InPlay) == 0 {
+					continue
+				}
+				standard, expert := set.InPlay[pack.Standard], set.InPlay[pack.Expert]
+				if len(standard) == 0 || !slices.Equal(standard, expert) {
+					t.Errorf("hero set %s in play: standard %v, expert %v, want the same cards", set.Code, standard, expert)
 				}
 			}
 		}
@@ -1454,6 +1533,24 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 		for _, tt := range tests {
 			if got := sets[tt.set].SetAside; !slices.Equal(got, tt.want) {
 				t.Errorf("set %s set-aside cards = %v, want %v", tt.set, got, tt.want)
+			}
+		}
+	})
+
+	// Only Spectrum's Setup puts fixed cards in play; Storm's starting
+	// Weather card is the player's choice and stays manual.
+	t.Run("in-play cards", func(t *testing.T) {
+		forms := []pack.FaceRef{{Card: "21002"}, {Card: "21003"}, {Card: "21004"}}
+		want := map[string]map[pack.Difficulty][]pack.FaceRef{
+			"spectrum": {pack.Standard: forms, pack.Expert: forms},
+		}
+		for _, code := range slices.Sorted(maps.Keys(sets)) {
+			set := sets[code]
+			if set.Kind != pack.SetKindHero {
+				continue
+			}
+			if !maps.EqualFunc(set.InPlay, want[code], slices.Equal) {
+				t.Errorf("hero set %s in play = %v, want %v", code, set.InPlay, want[code])
 			}
 		}
 	})
