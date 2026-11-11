@@ -64,11 +64,13 @@
   --card-shadow:
     2px 2px 4px 2px #000000c3, 8px 8px 22px 2px #000000c5, 17px 17px 43px 2px #00000047;
   /*
-    A card in the hand, a hand card dragged, a card flying: the same light, a shorter shadow, cast as --card-shadow
-    is, from a shade 2px inside the card's edge. Drawn once with the card, it moves with it, where a filter on a moving
-    card blurs again on every frame. The values match two stacked drop-shadows (2px 2px 3px #000000a0, then
-    7px 7px 10px #00000060): the second one, cast from the card and the first shadow together, falls a little further
-    and darker than its own values say.
+    A card in the hand, a hand card dragged, a card flying, a table card or pile held up (dragged, held under a finger,
+    settling after a drop): the same light, a shorter shadow, cast as --card-shadow is, from a shade 2px inside the
+    card's edge. Held up, a table card's shade is offset (LIFT_SHADE), and the tight first layer of --card-shadow,
+    hidden at the card's edge at rest, would fall past it as a hard dark band on the card below. Drawn once with the
+    card, it moves with it, where a filter on a moving card blurs again on every frame. The values match two stacked
+    drop-shadows (2px 2px 3px #000000a0, then 7px 7px 10px #00000060): the second one, cast from the card and the
+    first shadow together, falls a little further and darker than its own values say.
   */
   --held-card-shadow: 2px 2px 6px 2px #000000a0, 8px 8px 21px 2px #00000066;
   /* The first player token lies flat, lit from above. */
@@ -866,7 +868,9 @@ a.btn-primary {
 /*
   A card's shadow, cast from a shade 2px inside its edge, under its face, with the card's corners (see
   --card-shadow). A card held up, in the hand, dragged from it or flying, casts the shorter one: its component
-  sets --shade-shadow to --held-card-shadow. A component's own rules, scoped, outrank this one.
+  sets --shade-shadow to --held-card-shadow. So does a table card or pile held up, dragged, held under a finger or
+  settling after a drop (motion.svelte.ts): offset with the lift, the resting shadow's tight first layer would fall
+  as a hard dark band on the card below. A component's own rules, scoped, outrank this one.
 */
 .shade {
   position: absolute;

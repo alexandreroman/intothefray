@@ -1226,6 +1226,12 @@ describe('Table animations', () => {
             ],
             { duration: 220 },
           ],
+          // The held shadow until the shade is back under it: its resting one, offset, would fall
+          // as a hard dark band.
+          [
+            [{ boxShadow: 'var(--held-card-shadow)' }, { boxShadow: 'var(--held-card-shadow)' }],
+            { duration: 0.55 * 220 },
+          ],
         ]);
         // Upright as its ghost was: it does not turn.
         expect(rotatesOf('b')).toEqual([]);
@@ -1313,7 +1319,10 @@ describe('Table animations', () => {
           expect(turns.map(([frames]) => frames.map((frame) => frame.transform))).toEqual([
             ['perspective(700px) rotateY(90deg)', 'perspective(700px) rotateY(0deg)'],
           ]);
-          expect(animationsOf(`${placed('c7')} > .shade`)).toHaveLength(1);
+          const shadeMoves = animationsOf(`${placed('c7')} > .shade`).filter(
+            ([frames]) => frames[0]?.translate,
+          );
+          expect(shadeMoves).toHaveLength(1);
         } finally {
           spy.mockRestore();
         }

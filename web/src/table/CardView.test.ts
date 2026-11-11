@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import CardView from './CardView.svelte';
+import cardSource from './CardView.svelte?raw';
 import { interaction } from './interaction.svelte';
 import type { CardView as TableCard, PackFace } from '../lib/types';
 import { cardBox } from './layout';
@@ -13,6 +14,12 @@ function tableCard(extra: Partial<TableCard> = {}): TableCard {
 
 function face(extra: Partial<PackFace> = {}): PackFace {
   return { name: 'Spider-Man', type: 'hero', size: 'std', images: ['spidey.png'], ...extra };
+}
+
+/** The declarations of a top-level rule of CardView.svelte's style, by its exact selector. */
+function rule(selector: string): string {
+  const pattern = new RegExp(`\\n {2}${selector.replace(/[.]/g, '\\.')} \\{([^}]*)\\}`);
+  return pattern.exec(cardSource)?.[1] ?? '';
 }
 
 function cardElement(container: HTMLElement): HTMLElement {
@@ -396,5 +403,17 @@ describe('a press on a card', () => {
 
     expect(interaction.held?.element).toEqual({ kind: 'card', id: 'c1' });
     expect(document.activeElement).toBe(field);
+  });
+});
+
+// Offset by LIFT_SHADE, the resting shadow's tight first layer would fall past the card's edge as a
+// hard dark band on the card below.
+describe('the shadow of a table card held up', () => {
+  it('casts the held shadow from every drag ghost', () => {
+    expect(rule('.card.ghost')).toContain('--shade-shadow: var(--held-card-shadow);');
+  });
+
+  it('casts the held shadow while a hold lifts it in place', () => {
+    expect(rule('.card.armed')).toContain('--shade-shadow: var(--held-card-shadow);');
   });
 });

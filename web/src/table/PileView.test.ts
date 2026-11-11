@@ -70,6 +70,13 @@ describe('PileView', () => {
     expect(pileSource).not.toMatch(/filter:/);
   });
 
+  // Offset by LIFT_SHADE, the resting shadow's tight first layer would fall past the card's edge as
+  // a hard dark band on the card below.
+  it('casts the held shadow while a hold lifts its card in place', () => {
+    const armed = /\n {2}\.card\.armed \{([^}]*)\}/.exec(pileSource)?.[1];
+    expect(armed).toContain('--shade-shadow: var(--held-card-shadow);');
+  });
+
   it('draws the ring of the player who previews it inside itself, so that it follows the pile', () => {
     interaction.previewByOthers(new Map([['enc', 2]]));
     try {
