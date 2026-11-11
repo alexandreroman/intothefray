@@ -37,7 +37,7 @@
 - [Standard and Expert set setup](references/project_set_setup.md) — Setup-keyword cards in play via sets.json; Dreadpool set aside; unlisted sets
 - [Cards excluded from a set](references/project_set_exclude.md) — sets.json `exclude` drops a source's misfiled card (Shang-Chi 10098)
 - [Villains from another set](references/project_set_villains.md) — sets.json `villains`, `imageCard`: Marauders images for NeXt Evolution
-- [Hero side decks](references/project_hero_side_decks.md) — own set only; Invocation "own", Sense "bottom", others "none"; set-aside hero cards
+- [Hero side decks](references/project_hero_side_decks.md) — own set only; Invocation "own", Sense "bottom", others "none"; set-aside, in-play hero cards
 - [Per-game card pool](references/project_card_pool.md) — table loads GET /api/games/{id}/cards; SPA ships pack index only
 - [Card image preload](references/project_image_preload.md) — browser-native: low-priority Image per pool face; immutable CDN cache
 - [Compression: HTTP by the proxy, WebSocket by the backend](references/project_no_backend_compression.md) — WebSocket deflate, no context takeover
@@ -57,6 +57,7 @@
 - [Fear No Evil scenarios](references/project_fear_no_evil_scenarios.md) — Kingpin, Underlings as villains; scheme set; Art, Bugle, Spine aside
 - [Green Goblin scenarios](references/project_green_goblin_scenarios.md) — Risky Business, Mutagen Formula curated; Goblin Thralls by hand
 - [Galaxy's Most Wanted scenarios](references/project_galaxys_most_wanted_scenarios.md) — five scenarios curated; Milano, Power Stone placed
+- [Mad Titan's Shadow scenarios](references/project_mad_titans_shadow_scenarios.md) — five curated; Infinity Stone deck; Loki's pick manual
 - [Scenario out-of-play areas](references/project_scenario_areas.md) — curated `areas` (The Collection): public pile, star chip before victory
 - [Campaign player card backs](references/project_campaign_card_backs.md) — faction campaign + player card type gets the player back
 - [Rise of Red Skull scenarios](references/project_red_skull_scenarios.md) — five villains curated; weapons and side-scheme decks; searches manual

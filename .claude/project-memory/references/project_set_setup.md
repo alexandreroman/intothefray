@@ -20,7 +20,8 @@ Service and Snitches Get Stitches, Mad Titan's Shadow, Mutant Genesis
 (with its Brawler, Commander, Defender and Peacekeeper sets) and NeXt
 Evolution campaign sets, and Age of Apocalypse's campaign sets (Campaign,
 both sets; Age of Apocalypse; Mission; Overseer). Crossbones' Experimental
-Weapons deck is unlisted as well: it is not a modular set. A set counts as
+Weapons deck and Mad Titan's Shadow's Infinity Gauntlet are unlisted as
+well: they are scenario sets, not modular sets. A set counts as
 campaign-only on the evidence of its box's rulebook, its cards' `campaign`
 faction and Cerebro's Campaign Set type together: Defenders and the
 Registration and Resistance sets (Civil War, a box with no campaign mode),
