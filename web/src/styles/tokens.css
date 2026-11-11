@@ -832,10 +832,15 @@ a.btn-primary {
 
 /*
   Touch mode (TOUCH_MODE_QUERY in lib/screen.ts, which this query must match): the table page, fixed to the screen
-  (Table.svelte), pans but never pinch-zooms, as the table zooms itself.
+  (Table.svelte). On a tablet the table zooms itself, so the page only pans. On a phone (dock mode, .dock-screen)
+  the table never zooms itself, so the page pinch-zooms; manipulation keeps the browser's double-tap zoom off.
 */
 @media (hover: none) and (pointer: coarse) {
   html.fixed-screen {
     touch-action: pan-x pan-y;
+  }
+
+  html.fixed-screen.dock-screen {
+    touch-action: manipulation;
   }
 }

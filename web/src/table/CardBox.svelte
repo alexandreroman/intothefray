@@ -944,6 +944,11 @@
     touch-action: none;
   }
 
+  /* On a phone (dock mode), two fingers on it pinch-zoom the page; one still reorders. */
+  :global(html.dock-screen) .img.movable {
+    touch-action: pinch-zoom;
+  }
+
   .tile.pick:not(.shown) .img {
     cursor: pointer;
   }

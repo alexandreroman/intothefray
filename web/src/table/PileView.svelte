@@ -163,6 +163,11 @@
     touch-action: pan-x pan-y;
   }
 
+  /* On a phone (dock mode), two fingers on it pinch-zoom the page. */
+  :global(html.dock-screen) .card {
+    touch-action: manipulation;
+  }
+
   /*
     A hold lifts it in place (.armed) only in touch mode: it eases up, and back down when let go, moved or not.
     Pushed aside with its frame by a drag (dock mode), it glides as the surface says (--shift-glide).

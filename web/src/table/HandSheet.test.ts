@@ -226,8 +226,8 @@ describe('HandSheet', () => {
     }
   });
 
-  it('scrolls sideways only, leaving vertical moves to the drag', () => {
-    expect(rule('.hand')).toContain('touch-action: pan-x;');
+  it('scrolls sideways only, leaving vertical moves to the drag and two fingers to the page zoom', () => {
+    expect(rule('.hand')).toContain('touch-action: pan-x pinch-zoom;');
     expect(rule('.hand')).toContain('scroll-snap-type: x mandatory;');
     expect(rule('.hcard')).toContain('scroll-snap-align: center;');
   });

@@ -93,6 +93,11 @@
     touch-action: pan-x pan-y;
   }
 
+  /* On a phone (dock mode), two fingers on it pinch-zoom the page. */
+  :global(html.dock-screen) .marker {
+    touch-action: manipulation;
+  }
+
   /* Dock mode: the element is the marker's drawn box, and its art is zoomed by the same scale. */
   .marker.scaled > :global(*) {
     zoom: var(--scale);

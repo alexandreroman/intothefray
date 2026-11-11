@@ -1,5 +1,6 @@
 // The page around the app on a touch screen: its viewport, the web app manifest that lets a game added to
-// the home screen run full screen, no pinch zoom on the table, and card boxes that keep the keyboard down.
+// the home screen run full screen, a table page that pinch-zooms on a phone only, and card boxes that keep
+// the keyboard down.
 
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -107,13 +108,16 @@ describe('the web app manifest', () => {
 });
 
 describe('the table page on a touch screen', () => {
-  it('pans but never pinch-zooms: the table has its own zoom', () => {
+  it('pans only on a tablet, whose table has its own zoom, and pinch-zooms on a phone (dock mode)', () => {
     // tokens.css has several touch blocks: the one of the table page is among them.
     const touchBlocks = tokensCss.matchAll(
       /@media \(hover: none\) and \(pointer: coarse\) \{([\s\S]*?)\n\}/g,
     );
     const touchRules = [...touchBlocks].map((block) => block[1]).join('');
     expect(touchRules).toMatch(/html\.fixed-screen \{\s*touch-action: pan-x pan-y;\s*\}/);
+    expect(touchRules).toMatch(
+      /html\.fixed-screen\.dock-screen \{\s*touch-action: manipulation;\s*\}/,
+    );
   });
 
   it('leaves no hover look on the button tapped last, which a touch screen keeps hovered', () => {

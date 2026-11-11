@@ -1716,25 +1716,34 @@ describe('the zoom in dock mode', () => {
     return document.querySelector<HTMLElement>('.tablewrap')!;
   }
 
-  /** Fingers touching `target` at those points. */
-  function touch(target: EventTarget, type: string, points: { x: number; y: number }[]): void {
+  /** Fingers touching `target` at those points: the event, cancelable, once dispatched. */
+  function touch(target: EventTarget, type: string, points: { x: number; y: number }[]): Event {
     const event = new Event(type, { bubbles: true, cancelable: true });
     const touches = points.map((p) => ({ clientX: p.x, clientY: p.y }));
     Object.defineProperty(event, 'touches', { value: type === 'touchend' ? [] : touches });
     Object.defineProperty(event, 'changedTouches', { value: touches });
     target.dispatchEvent(event);
+    return event;
   }
 
-  /** Two fingers spread apart on the table: a pinch out. */
-  function pinchOut(): void {
-    touch(scroller(), 'touchstart', [
+  /** Two fingers spread apart on the table, a pinch out: its touchstart and touchmove. */
+  function pinchOut(): Event[] {
+    const start = touch(scroller(), 'touchstart', [
       { x: 100, y: 100 },
       { x: 200, y: 100 },
     ]);
-    touch(scroller(), 'touchmove', [
+    const move = touch(scroller(), 'touchmove', [
       { x: 75, y: 100 },
       { x: 225, y: 100 },
     ]);
+    return [start, move];
+  }
+
+  /** iOS's own pinch on the table: the gesturestart, cancelable, once dispatched. */
+  function gestureStart(): Event {
+    const event = new Event('gesturestart', { bubbles: true, cancelable: true });
+    scroller().dispatchEvent(event);
+    return event;
   }
 
   async function doubleTap(): Promise<void> {
@@ -1788,30 +1797,55 @@ describe('the zoom in dock mode', () => {
     visible = { w: 300, h: 844 };
     await renderTable();
 
-    pinchOut();
+    const events = pinchOut();
     await tick();
 
     expect(shownZoom()).toBe('0.87');
     expect(storedZoom()).toBeNull();
+    expect(events.map((event) => event.defaultPrevented)).toEqual([false, false]);
   });
 
-  it('pans the table with two fingers', async () => {
+  it('leaves two fingers to the browser, which pinch-zooms the page', async () => {
     mockScreen(PHONE);
     await renderTable();
     scroller().scrollLeft = 50;
     scroller().scrollTop = 50;
 
-    touch(scroller(), 'touchstart', [
+    const start = touch(scroller(), 'touchstart', [
       { x: 100, y: 100 },
       { x: 200, y: 100 },
     ]);
-    touch(scroller(), 'touchmove', [
+    const move = touch(scroller(), 'touchmove', [
       { x: 90, y: 80 },
       { x: 190, y: 80 },
     ]);
 
-    expect(scroller().scrollLeft).toBe(60);
-    expect(scroller().scrollTop).toBe(70);
+    expect(start.defaultPrevented).toBe(false);
+    expect(move.defaultPrevented).toBe(false);
+    expect(gestureStart().defaultPrevented).toBe(false);
+    // The table does not pan itself under the fingers.
+    expect(scroller().scrollLeft).toBe(50);
+    expect(scroller().scrollTop).toBe(50);
+  });
+
+  it('marks the page as a phone screen while the table shows, for its touch-action', async () => {
+    const page = document.documentElement;
+    mockScreen(PHONE);
+    const { unmount } = await renderTable();
+    expect(page.classList).toContain('dock-screen');
+
+    unmount();
+    expect(page.classList).not.toContain('dock-screen');
+  });
+
+  it.each([
+    ['a touch tablet', TOUCH_TABLET],
+    ['a desktop', DESKTOP],
+  ])('does not mark the page as a phone screen on %s', async (_name, size) => {
+    mockScreen(size);
+    await renderTable();
+
+    expect(document.documentElement.classList).not.toContain('dock-screen');
   });
 
   it('does not zoom on a double tap', async () => {
@@ -1829,11 +1863,14 @@ describe('the zoom in dock mode', () => {
     mockScreen(TOUCH_TABLET);
     await renderTable();
 
-    pinchOut();
+    const events = pinchOut();
     await tick();
 
     expect(storedZoom()).toBe(1.5);
     expect(shownZoom()).toBe('1.5');
+    // The page does not pinch-zoom over the table's own zoom.
+    expect(events.map((event) => event.defaultPrevented)).toEqual([true, true]);
+    expect(gestureStart().defaultPrevented).toBe(true);
   });
 
   it.each([
