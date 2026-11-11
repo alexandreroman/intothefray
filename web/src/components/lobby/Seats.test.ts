@@ -517,13 +517,8 @@ function rule(selector: string, indent: number): string[] {
 }
 
 describe('a press on the seats', () => {
-  it("gives the add-a-deck tool and a free seat their hover's look, outside any media query", () => {
-    const enabled = ":not(:disabled, [aria-disabled='true'])";
-    expect(rule(`.tool.add:active${enabled}`, 2)).toEqual([
-      'border-color: var(--sel)',
-      'color: var(--sel)',
-    ]);
-    expect(rule(`.tool.add:active${enabled}`, 2)).toEqual(rule(`.tool.add:hover${enabled}`, 4));
+  // The add-a-deck tool is an accent icon button, whose press is checked with the stylesheet's.
+  it("gives a free seat its hover's look, outside any media query", () => {
     expect(rule('button.free:active:not(:disabled)', 2)).toEqual([
       'background: none',
       'border-color: var(--pc)',
@@ -535,8 +530,8 @@ describe('a press on the seats', () => {
 });
 
 describe("the tools of a seat's name line", () => {
-  // Their boxes, not only their icons, end on the card's content edge, as a deck slot's Load square
-  // does; only above and below the line do they reach into the card's padding.
+  // Their boxes, not only their icons, end on the card's content edge, as a deck slot's Load does;
+  // only above and below the line do they reach into the card's padding.
   it("end on the card's content edge", () => {
     expect(rule('.tools', 2).filter((declaration) => declaration.startsWith('margin'))).toEqual([
       'margin: -6px 0',

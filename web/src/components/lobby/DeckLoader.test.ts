@@ -101,6 +101,16 @@ describe('DeckLoader', () => {
     expect(onload).toHaveBeenCalledExactlyOnceWith('https://example.com/deck/1');
   });
 
+  it("draws Load as the seat's add-a-deck button: an accent icon button, not a raised one", () => {
+    renderLoader(waiting);
+
+    const button = screen.getByRole('button', { name: 'Load' });
+    expect([...button.classList]).toEqual(
+      expect.arrayContaining(['btn-ghost', 'btn-icon', 'accent']),
+    );
+    expect(button.classList).not.toContain('btn');
+  });
+
   it('numbers the load button of one of several decks', () => {
     renderLoader(waiting, { slot: 2 });
 
@@ -450,7 +460,7 @@ describe('DeckLoader in motion', () => {
 
 describe('the icon buttons of a slot', () => {
   // jsdom lays nothing out, so the stylesheet's rules for the buttons and their row are checked:
-  // with no margin, their boxes end on the card's content edge, as the Load square does.
+  // with no margin, their boxes end on the card's content edge, as Load's does.
   it("end on the card's content edge", () => {
     const toolRules = [...deckLoaderSource.matchAll(/\n {2}[^\n{]*\.tools? \{([^}]*)\}/g)];
     const margins = toolRules

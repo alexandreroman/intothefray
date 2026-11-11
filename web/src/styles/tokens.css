@@ -189,6 +189,9 @@ html.scroll-locked-gutter {
   - standard (this rule): rounded, raised ink; a lighter surface and a brighter edge on hover;
     every action but the main one, in a dialog too (Cancel, Close);
   - .btn-ghost: no surface of its own (icons, ×, toolbar and menu items); a light wash on hover;
+  - .btn-icon, with .btn-ghost: a 32px square holding one muted icon, no label (a seat's or a
+    deck slot's tools); .accent draws its edge and icon in the selection colour, an invitation to
+    act (Add a deck, Load), its edge lighting up on hover; disabled, it takes the muted colour;
   - .btn-primary: the one main action of a screen, a dialog or a box (.compact in a dialog
     or a box); a lighter red on hover, and a yellow ring under a mouse; it sinks when pressed.
   Hovers apply only under a real hover: a tap on a touch screen leaves none behind.
@@ -248,6 +251,50 @@ button:active:not(:disabled, [aria-disabled='true'], :where([data-indicator] ~ b
   background-color: var(--hover-wash);
   border-color: transparent;
   color: var(--text);
+}
+
+.btn-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+
+/* The element outweighs the size the Icon component gives itself (its svg and a scoped class). */
+button.btn-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+/*
+  The accent's two classes outweigh .btn-ghost's transparent edge; its hover and press, a class
+  more than the ghost's, keep the selection colour where the ghost's would turn the icon to --text.
+*/
+.btn-icon.accent {
+  border-color: var(--line-strong);
+  color: var(--sel);
+}
+
+/* Disabled, it reads as the other disabled icon buttons, not as an invitation. */
+.btn-icon.accent:is(:disabled, [aria-disabled='true']) {
+  color: var(--muted);
+}
+
+@media (hover: hover) {
+  .btn-icon.accent:hover:not(:disabled, [aria-disabled='true']) {
+    border-color: var(--sel);
+    color: var(--sel);
+  }
+}
+
+.btn-icon.accent:active:not(:disabled, [aria-disabled='true']) {
+  border-color: var(--sel);
+  color: var(--sel);
 }
 
 @media (prefers-reduced-motion: reduce) {

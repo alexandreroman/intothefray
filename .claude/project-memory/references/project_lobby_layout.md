@@ -29,17 +29,20 @@ type: project
   `Lobby.svelte` passes as the `ownSlot` snippet. A slot is one 44px line in
   every state (empty, loading, loaded, changing), so nothing under it moves: the
   field (its label visually hidden, the deck number in the placeholder), the
-  square `Load` button (arrow-right icon, a spinner while loading), then
+  `Load` button (arrow-right icon, a spinner while loading), then
   `Cancel` (undo icon) while changing or the trash on an empty slot of several;
   loaded, the hero line. Only an error adds lines. Free seats are dashed cards
   (`Take this seat` for a spectator). The box header holds `Copy invite link`; a
   refused clipboard shows the link in a selected read-only field.
 - Card actions are icon buttons with tooltips: `Add a deck` (plus),
   `Take {name} off this seat` (user-minus), `Leave your seat` (leave),
-  `Change deck` (pencil), `Remove deck` (trash). Every button of a seat
-  card, the name line's icon buttons and a slot's `Load` square and icon
-  buttons alike, ends its box on the card's content edge: one right edge
-  for all. On a card with decks side by side, a deck's line ends on its
+  `Change deck` (pencil), `Remove deck` (trash), and a slot's `Load` and
+  `Cancel`. They are all one size and kind: 32px squares of the shared
+  `.btn-icon` class (`tokens.css`); `Add a deck` and `Load` take its
+  `.accent` look (edge and icon in signal blue, muted when disabled).
+  Every button of a seat card, the name line's icon buttons and a slot's
+  icon buttons alike, ends its box on the card's content edge: one right
+  edge for all. On a card with decks side by side, a deck's line ends on its
   column's edge. The cross icon closes things only (the top bar's Close
   the lobby, dialogs, a set chip's remove).
 - **Scenario**, host (`ScenarioPicker.svelte`): the filter field, with no
