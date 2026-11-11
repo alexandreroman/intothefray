@@ -519,6 +519,7 @@ describe('the context menu', () => {
       'Search',
       'Discard 1',
       'Discard X',
+      'Set aside X',
       'Shuffle',
     ]);
     expect(menuItem(menu, 'Draw 1').classList).toContain('default');
@@ -1136,6 +1137,7 @@ describe('what the menu runs', () => {
       'Search',
       'Discard 1',
       'Discard X',
+      'Set aside X',
       'Shuffle',
     ]);
     const reveal = menuItem(contextMenu()!, 'Reveal');

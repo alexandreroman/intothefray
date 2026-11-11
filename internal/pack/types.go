@@ -176,6 +176,11 @@ type Set struct {
 	// instead of in the encounter deck (the "Setup." keyword, or a main scheme
 	// set's own setup environment).
 	InPlay map[Difficulty][]FaceRef `json:"inPlay,omitempty"`
+	// Setup lists the cards a hero set's identity Setup puts in play, which
+	// start in their player's row right of the identity instead of in the
+	// deck (Spectrum's energy forms). Unlike InPlay, it does not depend on the
+	// difficulty.
+	Setup []FaceRef `json:"setup,omitempty"`
 	// Unlisted sets are left out of the lobby, e.g. the PvP standard set.
 	Unlisted bool      `json:"unlisted,omitempty"`
 	Side     *SideDeck `json:"side,omitempty"` // hero_special set used as a side deck

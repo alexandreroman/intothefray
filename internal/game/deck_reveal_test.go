@@ -206,7 +206,7 @@ func TestDrawFromASideDeckTakesTheRevealedCardFirst(t *testing.T) {
 }
 
 func TestTopCountsTakeTheRevealedCard(t *testing.T) {
-	for _, kind := range []Kind{ActDraw, ActDiscardTop} {
+	for _, kind := range []Kind{ActDraw, ActDiscardTop, ActAsideTop} {
 		f := newDoFixture(t)
 		f.revealTop(t, "h", "deck:p0", 1)
 		all := len(f.g.Table.Piles["deck:p0"].Cards) + 1
@@ -506,6 +506,9 @@ func TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard(t *testing.T) {
 		{"discard the top", "deck:p0", func(*doFixture, string) Action {
 			return Action{Kind: ActDiscardTop, Pile: "deck:p0", N: 1}
 		}},
+		{"set the top aside", "deck:p0", func(*doFixture, string) Action {
+			return Action{Kind: ActAsideTop, Pile: "deck:p0", N: 1}
+		}},
 		{"put on top", "deck:p0", func(_ *doFixture, drawn string) Action {
 			return Action{Kind: ActToDeck, Card: drawn, Where: whereTop}
 		}},
@@ -523,6 +526,9 @@ func TestCoveringRenamesTheCardsTuckedUnderTheRevealedCard(t *testing.T) {
 		{"deal", "", func(*doFixture, string) Action { return Action{Kind: ActDeal, Area: "p0", X: 600, Y: 400} }},
 		{"discard the encounter top", "", func(*doFixture, string) Action {
 			return Action{Kind: ActDiscardTop, Pile: PileEncounter, N: 1}
+		}},
+		{"set the encounter top aside", "", func(*doFixture, string) Action {
+			return Action{Kind: ActAsideTop, Pile: PileEncounter, N: 1}
 		}},
 		{"shuffle the encounter deck", "", func(*doFixture, string) Action {
 			return Action{Kind: ActShuffle, Pile: PileEncounter}

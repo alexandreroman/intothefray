@@ -149,8 +149,8 @@ func TestEmbeddedCoreSet(t *testing.T) {
 				supported++
 			}
 		}
-		if supported != 22 {
-			t.Errorf("supported scenarios = %d, want 22", supported)
+		if supported != 27 {
+			t.Errorf("supported scenarios = %d, want 27", supported)
 		}
 	})
 }
@@ -782,6 +782,229 @@ func TestEmbeddedGalaxysMostWanted(t *testing.T) {
 	}
 }
 
+// TestEmbeddedMadTitansShadow checks the five scenarios of The Mad Titan's
+// Shadow: their stages (two villains and two main schemes for Tower Defense),
+// the cards they start in play or set aside, the Infinity Gauntlet set Thanos
+// and Loki require, whose Gauntlet starts in play and whose stones make a deck
+// of their own, and that set's absence from the lobby.
+func TestEmbeddedMadTitansShadow(t *testing.T) {
+	cat := packstest.Catalog(t)
+
+	const stoneDeck, stoneDiscard = "sdeck:infinity_stones", "sdisc:infinity_stones"
+	stones := []string{"21130", "21131", "21132", "21133", "21134", "21135"}
+
+	tests := []struct {
+		scenario string
+		// standard and expert are the cards each stage starts on, by stage
+		// key, at each difficulty.
+		standard map[string]pack.FaceRef
+		expert   map[string]pack.FaceRef
+		inPlay   []pack.FaceRef
+		setAside []string
+		sets     []string
+		// table lists the cards setup lays on the table: the scenario's
+		// in-play cards and the Setup cards of the sets it requires. The
+		// other cards of those sets lie in the encounter deck, but the
+		// stones, which lie in the Infinity Stone deck.
+		table []string
+		// hasStones tells whether the scenario has the Infinity Stone deck.
+		hasStones bool
+	}{
+		{
+			scenario: "ebony_maw",
+			standard: map[string]pack.FaceRef{"villain": {Card: "21071"}, "scheme": {Card: "21074"}},
+			expert:   map[string]pack.FaceRef{"villain": {Card: "21072"}, "scheme": {Card: "21074"}},
+		},
+		{
+			// Focused Defense lies by Corvus Glaive's scheme, marking the
+			// active villain; Avengers Tower starts on its stronghold side.
+			scenario: "tower_defense",
+			standard: map[string]pack.FaceRef{
+				"proxima":        {Card: "21092"},
+				"proxima_scheme": {Card: "21098"},
+				"corvus":         {Card: "21095"},
+				"corvus_scheme":  {Card: "21099"},
+			},
+			expert: map[string]pack.FaceRef{
+				"proxima":        {Card: "21093"},
+				"proxima_scheme": {Card: "21098"},
+				"corvus":         {Card: "21096"},
+				"corvus_scheme":  {Card: "21099"},
+			},
+			inPlay: []pack.FaceRef{{Card: "21101", Face: 0, With: "corvus_scheme"}, {Card: "21100", Face: 0}},
+			table:  []string{"21100", "21101"},
+		},
+		{
+			scenario:  "thanos",
+			standard:  map[string]pack.FaceRef{"villain": {Card: "21111"}, "scheme": {Card: "21114"}},
+			expert:    map[string]pack.FaceRef{"villain": {Card: "21112"}, "scheme": {Card: "21114"}},
+			sets:      []string{"infinity_gauntlet"},
+			table:     []string{"21129"},
+			hasStones: true,
+		},
+		{
+			// Odin lies by the main scheme, captive side up, for the players
+			// to attach; Gjallerbru, Skurge, Hall of Nastrond and Nidhogg wait
+			// aside.
+			scenario: "hela",
+			standard: map[string]pack.FaceRef{"villain": {Card: "21136"}, "scheme": {Card: "21138"}},
+			expert:   map[string]pack.FaceRef{"villain": {Card: "21137"}, "scheme": {Card: "21138"}},
+			inPlay: []pack.FaceRef{
+				{Card: "21139", Face: 0, With: "scheme"}, {Card: "21140", Face: 0}, {Card: "21143", Face: 0},
+			},
+			setAside: []string{"21142", "21144", "21141", "21145"},
+			table:    []string{"21139", "21140", "21143"},
+		},
+		{
+			// Both difficulties start on the same Loki; the players swap him
+			// for a random one by hand.
+			scenario:  "loki",
+			standard:  map[string]pack.FaceRef{"villain": {Card: "21160"}, "scheme": {Card: "21165"}},
+			expert:    map[string]pack.FaceRef{"villain": {Card: "21160"}, "scheme": {Card: "21165"}},
+			inPlay:    []pack.FaceRef{{Card: "21167", Face: 0}},
+			sets:      []string{"infinity_gauntlet"},
+			table:     []string{"21129", "21167"},
+			hasStones: true,
+		},
+	}
+
+	t.Run("index", func(t *testing.T) {
+		for _, tt := range tests {
+			ref := scenarioRef(t, cat, tt.scenario)
+			if !ref.Supported || ref.SelfContained || ref.Pack != "mts" || !slices.Equal(ref.Sets, tt.sets) {
+				t.Errorf("%s ref = %+v, want supported, not self-contained, in pack mts, with sets %v",
+					tt.scenario, ref, tt.sets)
+			}
+		}
+		if set, ok := cat.Set("infinity_gauntlet"); !ok || !set.Unlisted {
+			t.Errorf("set infinity_gauntlet = %+v, want unlisted", set)
+		}
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.scenario+"/starts", func(t *testing.T) {
+			scenario, ok := cat.Scenario(tt.scenario)
+			if !ok {
+				t.Fatalf("scenario %s not found", tt.scenario)
+			}
+			tops := map[pack.Difficulty]map[string]pack.FaceRef{pack.Standard: tt.standard, pack.Expert: tt.expert}
+			for difficulty, top := range tops {
+				start := scenario.Start[difficulty]
+				if !maps.Equal(start.Top, top) {
+					t.Errorf("%s tops = %v, want %v", difficulty, start.Top, top)
+				}
+				if !slices.Equal(start.InPlay, tt.inPlay) {
+					t.Errorf("%s in play = %v, want %v", difficulty, start.InPlay, tt.inPlay)
+				}
+			}
+			if !slices.Equal(scenario.SetAside, tt.setAside) {
+				t.Errorf("set aside = %v, want %v", scenario.SetAside, tt.setAside)
+			}
+			if !slices.Equal(scenario.Sets, tt.sets) {
+				t.Errorf("sets = %v, want %v", scenario.Sets, tt.sets)
+			}
+		})
+
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scenario+"/"+string(difficulty), func(t *testing.T) {
+				cfg := game.LobbyConfig{Scenario: tt.scenario, Difficulty: difficulty, Modulars: []string{}}
+				table := startEmbeddedGame(t, cat, cfg, "01001a").Table
+
+				if tt.hasStones {
+					deck := table.Piles[stoneDeck]
+					if deck == nil {
+						t.Fatalf("no pile %s", stoneDeck)
+					}
+					if deck.Discard != stoneDiscard || table.Piles[stoneDiscard] == nil {
+						t.Errorf("%s discards to %q, want the existing pile %s", stoneDeck, deck.Discard, stoneDiscard)
+					}
+				}
+				// Each card lies in one place only: a card on the table, set
+				// aside or in the Infinity Stone deck is out of the encounter
+				// deck.
+				want := encounterPlaces(t, cat, tt.sets)
+				for _, code := range tt.table {
+					want[code] = []string{"table"}
+				}
+				for _, code := range tt.setAside {
+					want[code] = []string{game.PileScenarioAside}
+				}
+				if tt.hasStones {
+					for _, code := range stones {
+						want[code] = []string{stoneDeck}
+					}
+				}
+				for code, places := range want {
+					if got := placesOf(table, code); !slices.Equal(got, places) {
+						t.Errorf("copies of %s lie in %v, want %v", code, got, places)
+					}
+				}
+			})
+		}
+	}
+
+	// With the sets a lobby would bring, every card of the encounter sets,
+	// the stones of the Infinity Stone deck among them, exists exactly as many
+	// times as printed.
+	for _, tt := range tests {
+		for _, difficulty := range []pack.Difficulty{pack.Standard, pack.Expert} {
+			t.Run(tt.scenario+"/"+string(difficulty)+"/copies", func(t *testing.T) {
+				checkLobbyCopies(t, cat, tt.scenario, difficulty)
+			})
+		}
+	}
+}
+
+// TestEmbeddedSpectrumEnergyForms checks Monica Rambeau's "Setup: Put all 3
+// energy form upgrades into play, facedown.": Gamma, Photon and Pulsar lie in
+// Spectrum's row, face up since a face-down table card hides its code even
+// from its owner, the players turning them over by hand, and stay out of her
+// deck although her deck list names them.
+func TestEmbeddedSpectrumEnergyForms(t *testing.T) {
+	cat := packstest.Catalog(t)
+	forms := []string{"21002", "21003", "21004"}
+	others := []string{"21005", "21006", "21007"}
+
+	deck := game.DeckChoice{Name: "Spectrum", Hero: "21001a", HeroName: "Spectrum"}
+	deck.Cards = append(deck.Cards, game.DeckEntry{Code: "21001a", Qty: 1})
+	for _, code := range slices.Concat(forms, others) {
+		deck.Cards = append(deck.Cards, game.DeckEntry{Code: code, Qty: 1})
+	}
+	table := startEmbeddedDecks(t, cat, game.DefaultConfig(cat, "rhino"), deck).Table
+
+	var identity *game.Card
+	for _, c := range table.Cards {
+		if c.Identity {
+			identity = c
+		}
+	}
+	if identity == nil || identity.Code != "21001" {
+		t.Fatalf("identity = %+v, want Spectrum", identity)
+	}
+	for _, code := range forms {
+		if got := placesOf(table, code); !slices.Equal(got, []string{"table"}) {
+			t.Errorf("copies of %s lie in %v, want one on the table", code, got)
+		}
+		for _, c := range table.Cards {
+			if c.Code != code {
+				continue
+			}
+			if c.Owner != 0 || c.Y != identity.Y || c.X <= identity.X {
+				t.Errorf("%s at (%d, %d) owned by %d, want in Spectrum's row right of her identity at (%d, %d)",
+					code, c.X, c.Y, c.Owner, identity.X, identity.Y)
+			}
+			if c.Face != 0 || c.FaceDown {
+				t.Errorf("%s on face %d, face down %v, want face up on face 0", code, c.Face, c.FaceDown)
+			}
+		}
+	}
+	for _, code := range others {
+		if got := placesOf(table, code); !slices.Equal(got, []string{"deck:p0"}) {
+			t.Errorf("copies of %s lie in %v, want one in deck:p0", code, got)
+		}
+	}
+}
+
 // scenarioRef returns the index entry of the scenario id, and fails the test
 // when the index has none.
 func scenarioRef(t *testing.T, cat *pack.Catalog, id string) pack.ScenarioRef {
@@ -867,15 +1090,26 @@ func checkEmbeddedSetCopies(t *testing.T, cat *pack.Catalog, table *game.Table, 
 }
 
 // startEmbeddedGame starts a game with the given lobby configuration and one
-// deck of each hero, the first the host's, the others each another player's.
+// empty deck of each hero (see startEmbeddedDecks).
 func startEmbeddedGame(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, heroes ...string) *game.Game {
+	t.Helper()
+	decks := make([]game.DeckChoice, 0, len(heroes))
+	for _, hero := range heroes {
+		decks = append(decks, game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero})
+	}
+	return startEmbeddedDecks(t, cat, cfg, decks...)
+}
+
+// startEmbeddedDecks starts a game with the given lobby configuration and
+// decks, the first the host's, the others each another player's.
+func startEmbeddedDecks(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, decks ...game.DeckChoice) *game.Game {
 	t.Helper()
 	g, err := game.NewGame("g1", "h", "Host", time.Unix(0, 0))
 	if err != nil {
 		t.Fatal(err)
 	}
 	tokens := []string{"h"}
-	for i := 1; i < len(heroes); i++ {
+	for i := 1; i < len(decks); i++ {
 		token := fmt.Sprintf("p%d", i)
 		if _, err := g.Join(token, fmt.Sprintf("Player %d", i)); err != nil {
 			t.Fatal(err)
@@ -885,9 +1119,8 @@ func startEmbeddedGame(t *testing.T, cat *pack.Catalog, cfg game.LobbyConfig, he
 	if err := g.Configure("h", cfg, cat); err != nil {
 		t.Fatal(err)
 	}
-	for i, hero := range heroes {
-		choice := game.DeckChoice{Name: "Deck", Hero: hero, HeroName: hero}
-		if err := g.SetDeck(tokens[i], 0, choice, cat); err != nil {
+	for i, deck := range decks {
+		if err := g.SetDeck(tokens[i], 0, deck, cat); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -1025,27 +1258,35 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
-	// Players resolve the stage 1A "Setup:" text themselves, so the main
-	// scheme starts on its first face, never already advanced to 1B. A
-	// scenario played with a main scheme set has none of its own.
+	// Players resolve the stage 1A "Setup:" text themselves, so every main
+	// scheme stage starts on its first face, never already advanced to 1B.
+	// A scenario has at least one main scheme stage (Tower Defense has one per
+	// villain), unless it is played with a main scheme set, which brings it.
 	t.Run("main schemes start on their first face", func(t *testing.T) {
 		for _, file := range files {
 			for _, scenario := range file.Scenarios {
 				for difficulty, start := range scenario.Start {
-					scheme, ok := start.Top["scheme"]
-					if len(scenario.MainSchemes) > 0 {
-						if ok {
-							t.Errorf("scenario %s %s has a main scheme and main scheme sets", scenario.ID, difficulty)
+					schemes := 0
+					for _, top := range start.Top {
+						card, _, err := catalog.Card(top.Card)
+						if err != nil || len(card.Faces) == 0 {
+							continue // reported by "scenarios resolve"
 						}
-						continue
+						if card.Faces[0].Type != pack.FaceTypeMainScheme {
+							continue
+						}
+						schemes++
+						if top.Face != 0 {
+							t.Errorf("scenario %s %s starts its main scheme %s on face %d, want face 0",
+								scenario.ID, difficulty, top.Card, top.Face)
+						}
 					}
-					if !ok {
+					hasSchemeSets := len(scenario.MainSchemes) > 0
+					if hasSchemeSets && schemes > 0 {
+						t.Errorf("scenario %s %s has a main scheme and main scheme sets", scenario.ID, difficulty)
+					}
+					if !hasSchemeSets && schemes == 0 {
 						t.Errorf("scenario %s %s has no main scheme", scenario.ID, difficulty)
-						continue
-					}
-					if scheme.Face != 0 {
-						t.Errorf("scenario %s %s starts its main scheme %s on face %d, want face 0",
-							scenario.ID, difficulty, scheme.Card, scheme.Face)
 					}
 				}
 			}
@@ -1053,12 +1294,13 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 	})
 
 	// The only cards placed in play are the cards a scenario's printed setup
-	// puts in play, environments and side schemes (Criminal Enterprise, Ultron
-	// Drones, Public Support, Day of Reckoning), and the attachments it gives
-	// a villain, laid out with that villain's stage for the players to attach
-	// (Ronan's Universal Weapon): any other card stays in the encounter deck
-	// for the players.
-	t.Run("scenario in-play cards are environments, side schemes or stage attachments", func(t *testing.T) {
+	// puts in play: environments and side schemes (Criminal Enterprise, Ultron
+	// Drones, Public Support, Day of Reckoning), the minions it reveals (Hela's
+	// Garm), and the cards it attaches to a stage, attachments or allies, laid
+	// out with that stage for the players to attach (Ronan's Universal Weapon,
+	// Tower Defense's Focused Defense, Hela's captive Odin). Any other card
+	// stays in the encounter deck for the players.
+	t.Run("scenario in-play cards are environments, side schemes, minions or stage attachments", func(t *testing.T) {
 		for _, file := range files {
 			for _, scenario := range file.Scenarios {
 				for difficulty, start := range scenario.Start {
@@ -1068,11 +1310,11 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 							continue // reported by "scenarios resolve"
 						}
 						switch got := card.Faces[ref.Face].Type; {
-						case got == "environment" || got == "side_scheme":
-						case got == "attachment" && ref.With != "":
+						case got == "environment" || got == "side_scheme" || got == "minion":
+						case (got == "attachment" || got == "ally") && ref.With != "":
 						default:
-							t.Errorf("scenario %s %s starts %s face %d in play, a %s, "+
-								"want an environment, a side scheme or an attachment with a stage",
+							t.Errorf("scenario %s %s starts %s face %d in play, a %s, want an environment, "+
+								"a side scheme, a minion, or an attachment or an ally with a stage",
 								scenario.ID, difficulty, ref.Card, ref.Face, got)
 						}
 					}
@@ -1096,15 +1338,20 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
+	// An encounter set starts its cards in the villain's row, a hero set's
+	// Setup in its player's row (Spectrum's energy forms): either way, only
+	// its own cards, on a face they have.
 	t.Run("set in-play cards resolve", func(t *testing.T) {
 		for _, file := range files {
 			for _, set := range file.Sets {
-				for _, refs := range set.InPlay {
-					for _, ref := range refs {
-						requireFace(t, "set "+set.Code, ref)
-						if !slices.Contains(set.Cards, ref.Card) {
-							t.Errorf("set %s starts card %s in play, which it does not list", set.Code, ref.Card)
-						}
+				refs := slices.Clone(set.Setup)
+				for _, difficultyRefs := range set.InPlay {
+					refs = append(refs, difficultyRefs...)
+				}
+				for _, ref := range refs {
+					requireFace(t, "set "+set.Code, ref)
+					if !slices.Contains(set.Cards, ref.Card) {
+						t.Errorf("set %s starts card %s in play, which it does not list", set.Code, ref.Card)
 					}
 				}
 			}
@@ -1272,6 +1519,23 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 		for _, tt := range tests {
 			if got := sets[tt.set].SetAside; !slices.Equal(got, tt.want) {
 				t.Errorf("set %s set-aside cards = %v, want %v", tt.set, got, tt.want)
+			}
+		}
+	})
+
+	// Only Spectrum's Setup puts fixed cards in play; Storm's starting
+	// Weather card is the player's choice and stays manual.
+	t.Run("setup cards", func(t *testing.T) {
+		want := map[string][]pack.FaceRef{
+			"spectrum": {{Card: "21002"}, {Card: "21003"}, {Card: "21004"}},
+		}
+		for _, code := range slices.Sorted(maps.Keys(sets)) {
+			set := sets[code]
+			if set.Kind != pack.SetKindHero {
+				continue
+			}
+			if !slices.Equal(set.Setup, want[code]) {
+				t.Errorf("hero set %s setup cards = %v, want %v", code, set.Setup, want[code])
 			}
 		}
 	})

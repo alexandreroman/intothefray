@@ -34,8 +34,10 @@ type: project
   classic main scheme at 460.
 - The first player token (two heroes or more, see
   [[project_first_player_token]]) starts right of the first player's identity,
-  40 units past its right edge (clear of it when exhausted), centred on
-  its height to the grid: (460, 510) on a row without side piles. The
+  or of the last card its hero's set starts in play after it (Spectrum's
+  energy forms, 40 apart), 40 units past its right edge (clear of it when
+  exhausted), centred on the identity's height to the grid: (460, 510) on a
+  row without side piles or in-play cards. The
   active counter starts under its villain card (20 right of the card's
   left edge, 23 below it, its top at 210). A played card avoids every
   marker, so the first player's first played card lands past the token.

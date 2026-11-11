@@ -45,6 +45,7 @@
   "valk": {"setAside": ["25002"]},
   "rogue": {"setAside": ["38002"]},
   "ironheart": {"setAside": ["29002", "29003"]},
+  "spectrum": {"setup": [{"card": "21002", "face": 0}, {"card": "21003", "face": 0}, {"card": "21004", "face": 0}]},
   "taskmaster": {"exclude": ["10098"]},
   "morlock_siege": {"villains": ["marauders"]},
   "on_the_run": {"villains": ["marauders"], "imageCard": "40074"},
@@ -68,6 +69,13 @@
   "challenge": {"unlisted": true},
   "badoon_headhunter": {"unlisted": true},
   "mts_campaign": {"unlisted": true},
+  "infinity_gauntlet": {
+    "unlisted": true,
+    "inPlay": {
+      "standard": [{"card": "21129", "face": 0}],
+      "expert": [{"card": "21129", "face": 0}]
+    }
+  },
   "shield_tech": {"unlisted": true},
   "bad_publicity": {"unlisted": true},
   "community_service": {"unlisted": true},

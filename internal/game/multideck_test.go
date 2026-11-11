@@ -41,16 +41,18 @@ func (f *doFixture) lastEvent(t *testing.T) Event {
 	return events[len(events)-1]
 }
 
-// identityOf returns the id of the identity card of seat, on the table.
+// identityOf returns the id of the identity card of seat, on the table. A
+// hero's Setup cards lie on the table too (see putHeroInPlay): only the card
+// marked as the identity counts.
 func identityOf(t *testing.T, g *Game, seat int) string {
 	t.Helper()
 	for _, id := range slices.Sorted(maps.Keys(g.Table.Cards)) {
 		c := g.Table.Cards[id]
-		if c.Zone == ZoneTable && c.Owner == seat {
+		if c.Zone == ZoneTable && c.Owner == seat && c.Identity {
 			return id
 		}
 	}
-	t.Fatalf("seat %d has no card on the table", seat)
+	t.Fatalf("seat %d has no identity on the table", seat)
 	return ""
 }
 

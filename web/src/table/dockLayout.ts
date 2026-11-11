@@ -230,7 +230,8 @@ function travelsWith(item: DockItem, id: string, byId: ReadonlyMap<string, DockI
 }
 
 // A marker lies by a card when its box comes at most this close to the card's, in table units: the
-// first player token starts 40 right of its identity, the active counter 23 under its villain.
+// first player token starts 40 right of its identity (or of the last card setup puts in play after
+// it, as Spectrum's energy forms), the active counter 23 under its villain.
 const MARKER_REACH = 60;
 
 /** How far apart two boxes lie: the widest gap between them along either axis, 0 when they overlap. */

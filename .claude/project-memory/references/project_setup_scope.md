@@ -9,16 +9,22 @@ type: project
 "Set up the table" places the villains and the main scheme on their stage
 1A face, builds and shuffles the encounter deck (with each hero's
 obligation) and the scenario's own decks, sets aside nemesis sets, puts
-each identity in play (alter-ego face) and shuffles each player deck. The
-scenario cards placed in play are the environments the scenario puts into
-play as it starts (Criminal Enterprise, Ultron Drones, Public Support) and
-the side schemes its printed setup puts in play (the Wrecking Crew's four
-signature side schemes, The Red House). Setup places no threat and no
-token on any card. Players do the rest by hand: they resolve the 1A Setup
-text, advance the scheme to 1B, place the starting threat of every scheme
-in play, place counters, draw their opening hand and mulligan. Any other
-card a Setup text names (Klaw's Defense Network, Mutagen Formula's Goblin
-Thralls) stays in the encounter deck.
+each identity in play (alter-ego face), with the fixed cards its
+identity's Setup puts in play (Spectrum's energy forms, see
+[[project_hero_side_decks]]), and shuffles each player deck. The scenario
+cards placed in play are the environments the scenario puts into play as
+it starts (Criminal Enterprise, Ultron Drones, Public Support), the side
+schemes and minions its printed setup puts in play (the Wrecking Crew's
+four signature side schemes, The Red House, Hela's Gnipahellir and
+Garm), and the attachments or allies it attaches to a stage, laid out by
+that stage for the players to attach (Ronan's Universal Weapon, Tower
+Defense's Focused Defense, Hela's captive Odin). Setup places no threat
+and no token on any card. Players do the rest by hand: they resolve the
+1A Setup text, advance the scheme to 1B, place the starting threat of
+every scheme in play, place counters, draw their opening hand and
+mulligan. A card a Setup text has players search for or reveal from a
+deck (Klaw's Defense Network, Mutagen Formula's Goblin Thralls, Tower
+Defense's Black Order Besiegers) stays in the encounter deck.
 
 The faces' `handSize` and `startingThreat` stay in the packs as
 informational data: nothing reads them, since setup draws no hand and
@@ -37,7 +43,9 @@ no gain.
 **How to apply:** never add an automatic opening draw or automatic threat;
 the Draw… and token actions cover them, and the cards' `handSize` and
 `startingThreat` data is informational. A curated scenario starts its
-scheme on face 0 and lists only environments, side schemes and
-attachments laid out `with` a stage (Ronan's Universal Weapon) in
-`start.inPlay`; `packs/packs_test.go` checks both. See
+scheme on face 0 and lists in `start.inPlay` only environments, side
+schemes, minions its printed setup reveals (Hela's Garm), and attachments
+or allies laid out `with` a stage for the players to attach (Ronan's
+Universal Weapon, Hela's captive Odin); `packs/packs_test.go` checks
+both. See
 [[project_scenario_decks]].

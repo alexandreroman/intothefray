@@ -37,10 +37,13 @@ import (
 // hero with side decks lays them out after its discard pile, each followed by
 // its own discard pile if it has one, sidePileStepX apart as the deck and the
 // discard pile are. The identity then lies pileZoneGap after the end of the
-// last pile, taken up to the grid: without side piles, it sits at 300.
+// last pile, taken up to the grid: without side piles, it sits at 300. The
+// cards the hero's set starts in play (Spectrum's energy forms) follow the
+// identity, inPlayGap apart as cards in play are.
 // In a game of two seats or more, the first player token lies right of the
-// first player's identity, inPlayGap past it, centred on its height
-// (firstPlayerSpot); a single seat has no token.
+// first player's identity, or of the last card in play after it, inPlayGap
+// past it, centred on the identity's height (firstPlayerSpot); a single seat
+// has no token.
 // Things sit rowContentY below the top of their row, leaving room for the
 // client's owner label above the piles. Out-of-play piles (victory display, scenario areas,
 // set-aside cards) keep a position for the model, on the first pile of their row (outOfPlayX), but
@@ -209,8 +212,9 @@ func setNames(cat *pack.Catalog, codes []string) ([]string, error) {
 
 // newEmptyTable returns a table with every pile of the villain and of every
 // seat, all empty. It has no first player token: setupPlayer places one beside
-// the identity of seat 0 when the game has several seats. Table cards take
-// Zs from 1 up: the web app renders a card's Z as its z-index.
+// the identity of seat 0, past the cards its hero's set starts in play, when
+// the game has several seats. Table cards take Zs from 1 up: the web app
+// renders a card's Z as its z-index.
 func newEmptyTable(seatCount int) *Table {
 	t := &Table{
 		Cards: map[string]*Card{},
@@ -847,14 +851,16 @@ func cardHeight(size pack.Size) int {
 }
 
 // firstPlayerSpot returns where the first player token of a game of several
-// seats starts, beside the first player's identity lying at (x, y) on a face of the given size:
-// inPlayGap past its right edge, as a card in play would lie, so that the
-// token stays clear of the identity even when it is exhausted, and centred on
-// its height. x is taken up to the grid as a card in play's is, y to the
-// nearest grid line: on a portrait identity, 40 below its top.
-func firstPlayerSpot(identitySize pack.Size, x, y int) Point {
+// seats starts, beside the first player's cards: the identity, lying at y on
+// a face of the given size, and the cards in play after it, the last one
+// ending at right. The token lies inPlayGap past right, as a card in play
+// would lie, so that it stays clear of that card even when it is exhausted,
+// and is centred on the identity's height. x is taken up to the grid as a card
+// in play's is, y to the nearest grid line: on a portrait identity, 40 below
+// its top.
+func firstPlayerSpot(identitySize pack.Size, y, right int) Point {
 	return Point{
-		X: ceilToGrid(x + cardWidth(identitySize) + inPlayGap),
+		X: ceilToGrid(right + inPlayGap),
 		Y: snap(y + (cardHeight(identitySize)-firstPlayerTokenHeight)/2),
 	}
 }
@@ -864,9 +870,10 @@ func ceilToGrid(v int) int {
 	return (v + gridSize - 1) / gridSize * gridSize
 }
 
-// setupPlayer creates the identity, the nemesis cards, the obligation, the
-// empty side piles and the shuffled deck of one seat. The cards of the side
-// piles and the set-aside cards come later (see setupSideCards).
+// setupPlayer creates the identity, the cards its hero's set starts in play,
+// the nemesis cards, the obligation, the empty side piles and the shuffled
+// deck of one seat. The cards of the side piles and the set-aside cards come
+// later (see setupSideCards).
 func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if deck.Hero == "" {
 		return invalid("the deck has no hero")
@@ -897,9 +904,14 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	x := ceilToGrid(pileX(1+sidePiles) + portraitWidth + pileZoneGap)
 	y := rowY(playerRow(seat))
 	b.placeOnTable(identity, face, x, y)
+	inPlay := b.heroInPlay(hero)
+	right, err := b.putHeroInPlay(seat, inPlay, x+cardWidth(identityDef.Faces[face].Size))
+	if err != nil {
+		return err
+	}
 	// The first player token passes from hero to hero: a single seat has none.
 	if seat == 0 && b.seats > 1 {
-		spot := firstPlayerSpot(identityDef.Faces[face].Size, x, y)
+		spot := firstPlayerSpot(identityDef.Faces[face].Size, y, right)
 		b.table.FirstPlayer = &spot
 	}
 
@@ -916,8 +928,9 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		}
 	}
 
-	// Set-aside and side deck cards are created apart (see setupSideCards),
-	// even when the deck list names them.
+	// Set-aside and side deck cards are created apart (see setupSideCards)
+	// and the hero's in-play cards lie on the table: none of them goes in the
+	// deck, however many copies the deck list names.
 	apart, err := b.setAsideCodes(hero, deck)
 	if err != nil {
 		return err
@@ -927,6 +940,13 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 		return err
 	}
 	apart = append(apart, sideCodes...)
+	for _, ref := range inPlay {
+		code, err := b.canonical(ref.Card)
+		if err != nil {
+			return err
+		}
+		apart = append(apart, code)
+	}
 	for _, entry := range deck.Cards {
 		code, err := b.canonical(entry.Code)
 		if err != nil {
@@ -945,6 +965,44 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	}
 	b.shuffle(deckID)
 	return nil
+}
+
+// heroInPlay returns the cards hero's set starts in play: its identity's
+// "Setup:" permanents, as Spectrum's energy forms, whatever the difficulty.
+func (b *tableBuilder) heroInPlay(hero pack.Hero) []pack.FaceRef {
+	set, ok := b.cat.Set(hero.Set)
+	if !ok {
+		return nil
+	}
+	return set.Setup
+}
+
+// putHeroInPlay creates one copy of each card of refs, owned by seat and at
+// home in its deck, and puts it face up on its given face in seat's row, from
+// left to right, inPlayGap past the right edge of the card before it, taken up
+// to the grid; right is the right edge of the identity. Monica Rambeau reads
+// "Setup: Put all 3 energy form upgrades into play, facedown.", but the forms
+// start face up, since a face-down table card hides its code from everyone, its
+// owner included, and the three would look alike; the players turn them over
+// by hand. Only a hero with such cards draws ids for them, so the others keep
+// the same card ids for a seed. It returns the right edge of the last card in
+// the row.
+func (b *tableBuilder) putHeroInPlay(seat int, refs []pack.FaceRef, right int) (int, error) {
+	deckID := playerDeckID(PlayerArea(seat))
+	y := rowY(playerRow(seat))
+	for _, ref := range refs {
+		c, def, err := b.newCard(ref.Card, seat, deckID)
+		if err != nil {
+			return 0, err
+		}
+		if ref.Face < 0 || ref.Face >= len(def.Faces) {
+			return 0, invalid("card %s has no face %d", def.Code, ref.Face)
+		}
+		x := ceilToGrid(right + inPlayGap)
+		b.placeOnTable(c, ref.Face, x, y)
+		right = x + cardWidth(def.Faces[ref.Face].Size)
+	}
+	return right, nil
 }
 
 // pileX returns the x of the pile at index i of a player's row: 0 for the

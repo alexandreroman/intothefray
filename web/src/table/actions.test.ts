@@ -818,7 +818,7 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop'],
+      ['discard1', 'discardTop', 'asideTop'],
       ['shuffle'],
     ]);
     expect(items.some((it) => it.reason !== undefined)).toBe(false);
@@ -882,6 +882,23 @@ describe('actionsFor', () => {
       ok: 'Discard',
     });
     expect(discardTop.ask.make(2)).toEqual({ kind: 'discardTop', pile: 'deck:p0', n: 2 });
+
+    // Set aside X, Discard X's twin, has no key.
+    const asideTopItem = item(items, 'asideTop');
+    expect(asideTopItem).toMatchObject({ label: 'Set aside X' });
+    expect(asideTopItem.key).toBeUndefined();
+    const asideTop = asideTopItem.run?.();
+    if (!asideTop || !('ask' in asideTop)) {
+      throw new Error('Set aside X must ask how many cards');
+    }
+    expect(asideTop.ask).toMatchObject({
+      title: 'Set aside from the top',
+      question: 'How many cards from the top of your deck are set aside?',
+      pile: 'deck:p0',
+      max: 30,
+      ok: 'Set aside',
+    });
+    expect(asideTop.ask.make(15)).toEqual({ kind: 'asideTop', pile: 'deck:p0', n: 15 });
     expect(actionOf(item(items, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'deck:p0' });
   });
 
@@ -917,7 +934,7 @@ describe('actionsFor', () => {
         ],
       });
       const items = itemsFor({ kind: 'pile', id }, view);
-      const asks = ['drawN', 'lookTop', 'discardTop'].filter((it) =>
+      const asks = ['drawN', 'lookTop', 'discardTop', 'asideTop'].filter((it) =>
         items.some((i) => i.id === it),
       );
       for (const ask of asks) {
@@ -954,7 +971,7 @@ describe('actionsFor', () => {
     expect(groups(items)).toEqual([
       ['reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop'],
+      ['discard1', 'discardTop', 'asideTop'],
       ['shuffle'],
     ]);
     const reveal = item(items, 'reveal');
@@ -972,6 +989,14 @@ describe('actionsFor', () => {
     expect(discardTop && 'ask' in discardTop && discardTop.ask.question).toBe(
       'How many cards from the top of the encounter deck go to the discard pile?',
     );
+    const asideTop = item(items, 'asideTop').run?.();
+    if (!asideTop || !('ask' in asideTop)) {
+      throw new Error('Set aside X must ask how many cards');
+    }
+    expect(asideTop.ask.question).toBe(
+      'How many cards from the top of the encounter deck are set aside?',
+    );
+    expect(asideTop.ask.make(3)).toEqual({ kind: 'asideTop', pile: 'enc', n: 3 });
     expect(actionOf(item(items, 'shuffle'))).toEqual({ kind: 'shuffle', pile: 'enc' });
   });
 
@@ -1207,7 +1232,7 @@ describe('a player with two decks', () => {
     expect(groups(deck)).toEqual([
       ['draw1', 'drawN', 'reveal'],
       ['lookTop', 'search'],
-      ['discard1', 'discardTop'],
+      ['discard1', 'discardTop', 'asideTop'],
       ['shuffle'],
     ]);
 
@@ -1789,5 +1814,47 @@ describe('the discard pile of an encounter card', () => {
     expect(
       discardPileOf(card('a', { owner: -1 }), [pile('encd', { kind: 'encounterDiscard' })]),
     ).toBe('encd');
+  });
+});
+
+describe('Set aside X', () => {
+  const ids = (id: string, view = makeView()) =>
+    itemsFor({ kind: 'pile', id }, view).map((it) => it.id);
+
+  it('comes right after Discard X on the own deck and the encounter deck', () => {
+    for (const id of ['deck:p0', 'enc']) {
+      const deck = ids(id);
+      expect(deck.indexOf('asideTop'), id).toBe(deck.indexOf('discardTop') + 1);
+    }
+  });
+
+  it("is not offered on another player's deck", () => {
+    const result = actionsFor({ kind: 'pile', id: 'deck:p1' }, makeView(), 'en');
+    expect(Array.isArray(result)).toBe(false);
+  });
+
+  it('is not offered on a side deck, a scenario deck or a scenario encounter deck', () => {
+    const view = makeView();
+    view.table!.piles.push(
+      pile('side:p0:0', { kind: 'sideDeck', owner: 0, count: 5, label: 'Invocation' }),
+      pile('sided:p0:0', { kind: 'sideDiscard', owner: 0, count: 0, label: 'Invocation' }),
+      pile('sdeck:x', { kind: 'scenarioDeck', count: 2, label: 'Experimental Weapons' }),
+      pile('enc:w', { kind: 'encounter', count: 3, label: 'Wrecker' }),
+      pile('encd:w', { kind: 'encounterDiscard', count: 0, label: 'Wrecker' }),
+    );
+    for (const id of ['side:p0:0', 'sdeck:x', 'enc:w']) {
+      expect(ids(id, view), id).not.toContain('asideTop');
+    }
+  });
+
+  it("sets aside from the deck of the player's other seat", () => {
+    const view = makeView();
+    view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };
+    const asideTop = item(itemsFor({ kind: 'pile', id: 'deck:p1' }, view), 'asideTop').run?.();
+    expect(asideTop && 'ask' in asideTop && asideTop.ask.make(2)).toEqual({
+      kind: 'asideTop',
+      pile: 'deck:p1',
+      n: 2,
+    });
   });
 });

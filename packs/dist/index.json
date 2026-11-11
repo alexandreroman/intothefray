@@ -784,7 +784,7 @@
       "name": "Ebony Maw",
       "pack": "mts",
       "image": "https://img.intothefray.xyz/cards/en/21071.f5dc8101ffbc.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "armies_of_titan",
         "black_order"
@@ -800,7 +800,7 @@
       "name": "Tower Defense",
       "pack": "mts",
       "image": "https://img.intothefray.xyz/cards/en/21092.0a70339ebaff.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "armies_of_titan"
       ],
@@ -815,10 +815,13 @@
       "name": "Thanos",
       "pack": "mts",
       "image": "https://img.intothefray.xyz/cards/en/21111.8252aff93173.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "black_order",
         "children_of_thanos"
+      ],
+      "sets": [
+        "infinity_gauntlet"
       ]
     },
     {
@@ -826,7 +829,7 @@
       "name": "Hela",
       "pack": "mts",
       "image": "https://img.intothefray.xyz/cards/en/21136a.d0ce7407b31a.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "frost_giants",
         "legions_of_hel"
@@ -837,10 +840,13 @@
       "name": "Loki",
       "pack": "mts",
       "image": "https://img.intothefray.xyz/cards/en/21160.0e0488f50a07.avif",
-      "supported": false,
+      "supported": true,
       "recommended": [
         "enchantress",
         "frost_giants"
+      ],
+      "sets": [
+        "infinity_gauntlet"
       ]
     },
     {
@@ -1708,17 +1714,6 @@
       "localized": {
         "fr": {
           "name": "Géants de Glace"
-        }
-      }
-    },
-    {
-      "code": "infinity_gauntlet",
-      "name": "Infinity Gauntlet",
-      "pack": "mts",
-      "kind": "modular",
-      "localized": {
-        "fr": {
-          "name": "Gant de l'Infini"
         }
       }
     },

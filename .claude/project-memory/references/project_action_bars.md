@@ -44,11 +44,12 @@ type: project
   Ready. A card whose face is unknown (face down, not in the catalog)
   keeps Exhaust (`canExhaust` in actions.ts).
 - Pile entries: own deck Draw 1 (W), Draw X (⇧W), Reveal (R) │ Top X
-  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X) │ Shuffle (U);
-  encounter deck Reveal (R) │ Top X, Search │ Discard 1, Discard X │
-  Shuffle; own discard pile (an own side discard pile too) Take top card
-  to hand (H) │ Search (K) │ Shuffle into deck; any other discard pile
-  Search, plus Shuffle into deck where the viewer may use it. Take top
+  (L), Search (K) │ Discard 1 (X or ⌫), Discard X (⇧X), Set aside X │
+  Shuffle (U); encounter deck Reveal (R) │ Top X, Search │ Discard 1,
+  Discard X, Set aside X │ Shuffle; own discard pile (an own side
+  discard pile too) Take top card to hand (H) │ Search (K) │ Shuffle
+  into deck; any other discard pile Search, plus Shuffle into deck where
+  the viewer may use it. Take top
   card to hand is the own discard pile's default, as Draw 1 is the own
   deck's; it sends `toHand` for the top card, which goes to its owner's
   hand, and is refused (greyed with its reason, left out of the
@@ -75,6 +76,12 @@ type: project
   side card's Move to names its deck ("Top of Sense deck"); a card whose
   deck discards nowhere (Weather, Labor, Gift) has no Discard, and X and
   Backspace do nothing on it (see [[project_discard_destinations]]).
+- Set aside X (`asideTop`, no key) moves the top X cards of an own deck
+  to its owner's set-aside pile, of the classic encounter deck to the
+  scenario's, in one action with one history line ("set aside the top 17
+  cards of their deck"); the end state is X "Set aside" moves. Side
+  decks and scenario decks have none. The player types X: the table
+  computes no "half of the deck" (Balance the Scales).
 - Card keys beside the menu: E exhaust, F flip (a stage card with
   several faces too), X discard (Backspace too), H hand, B bottom of
   deck (a side card's side deck), V change card (villain / main

@@ -23,7 +23,15 @@ without one: every card of the set gets that classic back
 deck's name, since no source hosts an image of the printed one. The
 cards a hero set lists in `setAside` (Iceman's Frostbite, Valkyrie's Death-Glow,
 Rogue's Touched, Ironheart's other versions) go to the player's set-aside pile.
-Storm's starting Weather card and other heroes' Setup permanents stay manual.
+A hero set's `setup` (one list, whatever the difficulty; packgen accepts it
+on hero sets only and refuses `inPlay` there) names the fixed cards its
+identity's Setup puts in play: one copy each starts face up in the player's
+row, right of the identity, out of the deck however many the deck list names
+(Spectrum's Gamma, Photon and Pulsar). Monica Rambeau's Setup puts them in
+play facedown, but a face-down table card hides its code from everyone, its
+owner included, so three face-down forms would look alike: they start face
+up and players turn them over by hand. A Setup that lets the player choose
+stays manual: Storm picks her starting Weather card by hand.
 
 **Why:** the rules give a dedicated discard only to the Invocation deck;
 Sense cards return under their deck (Matt Murdock), Weather supports are

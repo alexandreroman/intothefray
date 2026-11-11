@@ -7,6 +7,7 @@ import severalDecks from '../assets/news/2026-10-29-several-decks.webp';
 import redSkull from '../assets/news/2026-11-01-red-skull.webp';
 import shareLink from '../assets/news/2026-11-03-share-link.webp';
 import galaxysMostWanted from '../assets/news/2026-11-05-galaxys-most-wanted.webp';
+import madTitansShadow from '../assets/news/2026-11-11-mad-titans-shadow.webp';
 
 /** One piece of news: a feature the players can use. */
 export interface NewsEntry {
@@ -25,6 +26,14 @@ export interface NewsEntry {
 
 /** Every entry, newest first (news.test.ts checks it). */
 export const NEWS: NewsEntry[] = [
+  {
+    id: '2026-11-11-mad-titans-shadow',
+    title: "The Mad Titan's Shadow scenarios",
+    text:
+      'Thanos wants the Infinity Stones: stop Ebony Maw, defend Avengers Tower against Proxima Midnight and ' +
+      'Corvus Glaive, face the Mad Titan himself, then Hela and Loki.',
+    image: { src: madTitansShadow, alt: 'The Thanos villain card on the table' },
+  },
   {
     id: '2026-11-05-galaxys-most-wanted',
     title: "The Galaxy's Most Wanted scenarios",
