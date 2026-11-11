@@ -37,9 +37,22 @@ type Card struct {
 	// OctgnID names the card's images in the OCTGN image packs. The faces of a
 	// card, and its reprints, share it.
 	OctgnID string `json:"octgn_id"`
+	// Text is the card text in the language of the site, RealText its
+	// English text. Both may hold HTML tags.
+	Text     string `json:"text"`
+	RealText string `json:"real_text"`
 	// ImageHost is the host ImageSrc is relative to, BaseURL when empty. A
 	// record taken from another source keeps the host of that source.
 	ImageHost string `json:"-"`
+}
+
+// EnglishText returns the English card text: RealText, or Text when the
+// record has no RealText.
+func (c Card) EnglishText() string {
+	if c.RealText != "" {
+		return c.RealText
+	}
+	return c.Text
 }
 
 // Pack describes a marvelcdb pack.

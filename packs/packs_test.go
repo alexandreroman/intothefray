@@ -1660,3 +1660,20 @@ func TestEmbeddedImagesOnCDN(t *testing.T) {
 		t.Errorf("and %d more images off the CDN", len(offenders)-shown)
 	}
 }
+
+// TestEmbeddedStartingCards checks that exactly the cards with the Starting
+// keyword are marked Starting: the four Innate upgrades.
+func TestEmbeddedStartingCards(t *testing.T) {
+	var got []string
+	for _, file := range loadPackFiles(t) {
+		for _, card := range file.Cards {
+			if card.Starting {
+				got = append(got, card.Code)
+			}
+		}
+	}
+	slices.Sort(got)
+	if want := []string{"60038", "61034", "61036", "61037"}; !slices.Equal(got, want) {
+		t.Errorf("Starting cards = %v, want %v", got, want)
+	}
+}

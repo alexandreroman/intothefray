@@ -128,7 +128,10 @@ const mainSchemeStageLabel = "Main scheme"
 
 // Start builds the table with the standard setup and begins the game. No
 // opening hand is drawn: players draw their own, since some heroes and cards
-// change it. All the randomness of the game, setup and actions alike, derives
+// change it. The Starting cards of each deck (see pack.Card.Starting) are the
+// only cards setup puts in a hand: the player may add them to it before
+// drawing, and discards them by hand if they would rather not. All the
+// randomness of the game, setup and actions alike, derives
 // from seed, so that the game can be replayed (see Replay).
 func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.Time) error {
 	if err := g.requireHost(hostToken); err != nil {
@@ -871,9 +874,9 @@ func ceilToGrid(v int) int {
 }
 
 // setupPlayer creates the identity, the cards its hero's set starts in play,
-// the nemesis cards, the obligation, the empty side piles and the shuffled
-// deck of one seat. The cards of the side piles and the set-aside cards come
-// later (see setupSideCards).
+// the nemesis cards, the obligation, the empty side piles, the Starting cards
+// in the seat's hand and the shuffled deck of one seat. The cards of the side
+// piles and the set-aside cards come later (see setupSideCards).
 func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	if deck.Hero == "" {
 		return invalid("the deck has no hero")
@@ -956,11 +959,16 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 			continue
 		}
 		for range entry.Qty {
-			c, _, err := b.newCard(code, seat, deckID)
+			c, def, err := b.newCard(code, seat, deckID)
 			if err != nil {
 				return err
 			}
-			b.pushToPile(deckID, c)
+			// A Starting card begins in the hand, still at home in the deck.
+			if def.Starting {
+				b.table.addToHand(area, c)
+			} else {
+				b.pushToPile(deckID, c)
+			}
 		}
 	}
 	b.shuffle(deckID)

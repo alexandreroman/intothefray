@@ -11,6 +11,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/alexandreroman/intothefray/internal/pack"
 	"github.com/alexandreroman/intothefray/internal/packgen/cdn"
@@ -61,6 +62,7 @@ func buildCards(
 			Quantity: max(first.Quantity, 1),
 			Aliases:  aliasesOf(code, entries, reprintsByCard[code]),
 			SetAside: overrides[code].SetAside,
+			Starting: isStarting(entries),
 		})
 	}
 
@@ -69,6 +71,36 @@ func buildCards(
 	}
 	slices.SortFunc(unsupported, func(a, b report.Unsupported) int { return cmp.Compare(a.Code, b.Code) })
 	return cards, unsupported
+}
+
+// startingKeyword opens the text of a card with the Starting keyword: "You may
+// add this card to your hand before drawing your starting hand."
+const startingKeyword = "Starting."
+
+// isStarting reports whether the card has the Starting keyword: the English
+// text of one of its faces opens with it, past any leading HTML tags and
+// white space. The word elsewhere in the text, as in "starting hand", does not
+// count.
+func isStarting(entries []marvelcdb.Card) bool {
+	return slices.ContainsFunc(entries, func(entry marvelcdb.Card) bool {
+		return strings.HasPrefix(trimLeadingTags(entry.EnglishText()), startingKeyword)
+	})
+}
+
+// trimLeadingTags returns text without the HTML tags and the white space it
+// opens with.
+func trimLeadingTags(text string) string {
+	for {
+		text = strings.TrimLeftFunc(text, unicode.IsSpace)
+		if !strings.HasPrefix(text, "<") {
+			return text
+		}
+		end := strings.Index(text, ">")
+		if end < 0 {
+			return text
+		}
+		text = text[end+1:]
+	}
 }
 
 // cerebroIDsOf maps the upper-case id of each Cerebro card to its id as

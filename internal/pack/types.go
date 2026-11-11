@@ -121,6 +121,9 @@ type Card struct {
 	Quantity int      `json:"quantity"`
 	Aliases  []string `json:"aliases,omitempty"`  // face codes and reprint codes resolving here
 	SetAside []string `json:"setAside,omitempty"` // player card: cards a deck with it sets aside at setup
+	// Starting marks a player card with the Starting keyword: setup puts it in
+	// its seat's hand.
+	Starting bool `json:"starting,omitempty"`
 }
 
 // FaceOfType returns the index of the first face of the card of the given

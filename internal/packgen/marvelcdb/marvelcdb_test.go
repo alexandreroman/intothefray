@@ -38,6 +38,8 @@ func TestDecodeMarvelcdbCard(t *testing.T) {
 		BaseThreat:      &zero,
 		BaseThreatFixed: true,
 		OctgnID:         "1687b8a9-9630-4800-b297-03c5001e8ee9",
+		Text:            "<b>If this stage is completed, the players lose the game.</b>",
+		RealText:        "<b>If this stage is completed, the players lose the game.</b>",
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("card = %+v, want %+v", got, want)
@@ -72,5 +74,24 @@ func TestFetchUsesEndpoints(t *testing.T) {
 	}
 	if want := []Pack{{Code: "core", Name: "Core Set", Position: 1}}; !reflect.DeepEqual(packs, want) {
 		t.Errorf("packs = %+v, want %+v", packs, want)
+	}
+}
+
+func TestEnglishTextPrefersRealText(t *testing.T) {
+	tests := []struct {
+		name string
+		card Card
+		want string
+	}{
+		{"real text", Card{Text: "Départ.", RealText: "Starting."}, "Starting."},
+		{"text only", Card{Text: "Starting."}, "Starting."},
+		{"no text", Card{}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.card.EnglishText(); got != tt.want {
+				t.Errorf("EnglishText() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
