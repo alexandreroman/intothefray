@@ -1,0 +1,102 @@
+{
+  "id": "tower_defense",
+  "villainSet": "tower_defense",
+  "piles": [
+    {
+      "key": "proxima",
+      "label": "Proxima Midnight",
+      "cards": [
+        "21092",
+        "21093",
+        "21094"
+      ]
+    },
+    {
+      "key": "proxima_scheme",
+      "label": "Proxima Midnight's scheme",
+      "cards": [
+        "21098"
+      ]
+    },
+    {
+      "key": "corvus",
+      "label": "Corvus Glaive",
+      "cards": [
+        "21095",
+        "21096",
+        "21097"
+      ]
+    },
+    {
+      "key": "corvus_scheme",
+      "label": "Corvus Glaive's scheme",
+      "cards": [
+        "21099"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "proxima": {
+          "card": "21092",
+          "face": 0
+        },
+        "proxima_scheme": {
+          "card": "21098",
+          "face": 0
+        },
+        "corvus": {
+          "card": "21095",
+          "face": 0
+        },
+        "corvus_scheme": {
+          "card": "21099",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "21101",
+          "face": 0,
+          "with": "corvus_scheme"
+        },
+        {
+          "card": "21100",
+          "face": 0
+        }
+      ]
+    },
+    "expert": {
+      "top": {
+        "proxima": {
+          "card": "21093",
+          "face": 0
+        },
+        "proxima_scheme": {
+          "card": "21098",
+          "face": 0
+        },
+        "corvus": {
+          "card": "21096",
+          "face": 0
+        },
+        "corvus_scheme": {
+          "card": "21099",
+          "face": 0
+        }
+      },
+      "inPlay": [
+        {
+          "card": "21101",
+          "face": 0,
+          "with": "corvus_scheme"
+        },
+        {
+          "card": "21100",
+          "face": 0
+        }
+      ]
+    }
+  }
+}

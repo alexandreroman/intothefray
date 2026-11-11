@@ -4941,7 +4941,22 @@
         "21133",
         "21134",
         "21135"
-      ]
+      ],
+      "inPlay": {
+        "expert": [
+          {
+            "card": "21129",
+            "face": 0
+          }
+        ],
+        "standard": [
+          {
+            "card": "21129",
+            "face": 0
+          }
+        ]
+      },
+      "unlisted": true
     },
     {
       "code": "legions_of_hel",
@@ -5118,6 +5133,418 @@
       "set": "warlock",
       "obligation": "21066",
       "nemesis": "warlock_nemesis"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "ebony_maw",
+      "name": "Ebony Maw",
+      "pack": "mts",
+      "villainSet": "ebony_maw",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "21071",
+            "21072",
+            "21073"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "21074",
+            "21075"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "21074",
+              "face": 0
+            },
+            "villain": {
+              "card": "21072",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "21074",
+              "face": 0
+            },
+            "villain": {
+              "card": "21071",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "armies_of_titan",
+        "black_order"
+      ]
+    },
+    {
+      "id": "tower_defense",
+      "name": "Tower Defense",
+      "pack": "mts",
+      "villainSet": "tower_defense",
+      "piles": [
+        {
+          "key": "proxima",
+          "label": "Proxima Midnight",
+          "cards": [
+            "21092",
+            "21093",
+            "21094"
+          ]
+        },
+        {
+          "key": "proxima_scheme",
+          "label": "Proxima Midnight's scheme",
+          "cards": [
+            "21098"
+          ]
+        },
+        {
+          "key": "corvus",
+          "label": "Corvus Glaive",
+          "cards": [
+            "21095",
+            "21096",
+            "21097"
+          ]
+        },
+        {
+          "key": "corvus_scheme",
+          "label": "Corvus Glaive's scheme",
+          "cards": [
+            "21099"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "corvus": {
+              "card": "21096",
+              "face": 0
+            },
+            "corvus_scheme": {
+              "card": "21099",
+              "face": 0
+            },
+            "proxima": {
+              "card": "21093",
+              "face": 0
+            },
+            "proxima_scheme": {
+              "card": "21098",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "21101",
+              "face": 0,
+              "with": "corvus_scheme"
+            },
+            {
+              "card": "21100",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "corvus": {
+              "card": "21095",
+              "face": 0
+            },
+            "corvus_scheme": {
+              "card": "21099",
+              "face": 0
+            },
+            "proxima": {
+              "card": "21092",
+              "face": 0
+            },
+            "proxima_scheme": {
+              "card": "21098",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "21101",
+              "face": 0,
+              "with": "corvus_scheme"
+            },
+            {
+              "card": "21100",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "armies_of_titan"
+      ]
+    },
+    {
+      "id": "thanos",
+      "name": "Thanos",
+      "pack": "mts",
+      "villainSet": "thanos",
+      "sets": [
+        "infinity_gauntlet"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "21111",
+            "21112",
+            "21113"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "21114",
+            "21115"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "21114",
+              "face": 0
+            },
+            "villain": {
+              "card": "21112",
+              "face": 0
+            }
+          }
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "21114",
+              "face": 0
+            },
+            "villain": {
+              "card": "21111",
+              "face": 0
+            }
+          }
+        }
+      },
+      "recommended": [
+        "black_order",
+        "children_of_thanos"
+      ],
+      "decks": [
+        {
+          "key": "infinity_stones",
+          "label": "Infinity Stone",
+          "cards": [
+            "21130",
+            "21131",
+            "21132",
+            "21133",
+            "21134",
+            "21135"
+          ],
+          "discard": "own"
+        }
+      ]
+    },
+    {
+      "id": "hela",
+      "name": "Hela",
+      "pack": "mts",
+      "villainSet": "hela",
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "21136",
+            "21137"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "21138"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "21138",
+              "face": 0
+            },
+            "villain": {
+              "card": "21137",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "21139",
+              "face": 0,
+              "with": "scheme"
+            },
+            {
+              "card": "21140",
+              "face": 0
+            },
+            {
+              "card": "21143",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "21138",
+              "face": 0
+            },
+            "villain": {
+              "card": "21136",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "21139",
+              "face": 0,
+              "with": "scheme"
+            },
+            {
+              "card": "21140",
+              "face": 0
+            },
+            {
+              "card": "21143",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "setAside": [
+        "21142",
+        "21144",
+        "21141",
+        "21145"
+      ],
+      "recommended": [
+        "frost_giants",
+        "legions_of_hel"
+      ]
+    },
+    {
+      "id": "loki",
+      "name": "Loki",
+      "pack": "mts",
+      "villainSet": "loki",
+      "sets": [
+        "infinity_gauntlet"
+      ],
+      "piles": [
+        {
+          "key": "villain",
+          "label": "Villain",
+          "cards": [
+            "21160",
+            "21161",
+            "21162",
+            "21163",
+            "21164"
+          ]
+        },
+        {
+          "key": "scheme",
+          "label": "Main scheme",
+          "cards": [
+            "21165"
+          ]
+        }
+      ],
+      "start": {
+        "expert": {
+          "top": {
+            "scheme": {
+              "card": "21165",
+              "face": 0
+            },
+            "villain": {
+              "card": "21160",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "21167",
+              "face": 0
+            }
+          ]
+        },
+        "standard": {
+          "top": {
+            "scheme": {
+              "card": "21165",
+              "face": 0
+            },
+            "villain": {
+              "card": "21160",
+              "face": 0
+            }
+          },
+          "inPlay": [
+            {
+              "card": "21167",
+              "face": 0
+            }
+          ]
+        }
+      },
+      "recommended": [
+        "enchantress",
+        "frost_giants"
+      ],
+      "decks": [
+        {
+          "key": "infinity_stones",
+          "label": "Infinity Stone",
+          "cards": [
+            "21130",
+            "21131",
+            "21132",
+            "21133",
+            "21134",
+            "21135"
+          ],
+          "discard": "own"
+        }
+      ]
     }
   ]
 }

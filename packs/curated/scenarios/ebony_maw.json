@@ -1,0 +1,49 @@
+{
+  "id": "ebony_maw",
+  "villainSet": "ebony_maw",
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "21071",
+        "21072",
+        "21073"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "21074",
+        "21075"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "21071",
+          "face": 0
+        },
+        "scheme": {
+          "card": "21074",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "21072",
+          "face": 0
+        },
+        "scheme": {
+          "card": "21074",
+          "face": 0
+        }
+      }
+    }
+  }
+}

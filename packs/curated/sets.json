@@ -68,6 +68,13 @@
   "challenge": {"unlisted": true},
   "badoon_headhunter": {"unlisted": true},
   "mts_campaign": {"unlisted": true},
+  "infinity_gauntlet": {
+    "unlisted": true,
+    "inPlay": {
+      "standard": [{"card": "21129", "face": 0}],
+      "expert": [{"card": "21129", "face": 0}]
+    }
+  },
   "shield_tech": {"unlisted": true},
   "bad_publicity": {"unlisted": true},
   "community_service": {"unlisted": true},

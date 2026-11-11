@@ -1,0 +1,67 @@
+{
+  "id": "thanos",
+  "villainSet": "thanos",
+  "sets": [
+    "infinity_gauntlet"
+  ],
+  "decks": [
+    {
+      "key": "infinity_stones",
+      "label": "Infinity Stone",
+      "cards": [
+        "21130",
+        "21131",
+        "21132",
+        "21133",
+        "21134",
+        "21135"
+      ],
+      "discard": "own"
+    }
+  ],
+  "piles": [
+    {
+      "key": "villain",
+      "label": "Villain",
+      "cards": [
+        "21111",
+        "21112",
+        "21113"
+      ]
+    },
+    {
+      "key": "scheme",
+      "label": "Main scheme",
+      "cards": [
+        "21114",
+        "21115"
+      ]
+    }
+  ],
+  "start": {
+    "standard": {
+      "top": {
+        "villain": {
+          "card": "21111",
+          "face": 0
+        },
+        "scheme": {
+          "card": "21114",
+          "face": 0
+        }
+      }
+    },
+    "expert": {
+      "top": {
+        "villain": {
+          "card": "21112",
+          "face": 0
+        },
+        "scheme": {
+          "card": "21114",
+          "face": 0
+        }
+      }
+    }
+  }
+}
