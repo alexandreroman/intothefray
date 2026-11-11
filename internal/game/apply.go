@@ -157,6 +157,8 @@ func applyKind(t *Table, a Action) error {
 		return applyDeal(t, a)
 	case ActDiscardTop:
 		return applyDiscardTop(t, a)
+	case ActAsideTop:
+		return applyAsideTop(t, a)
 	case ActShuffle:
 		return applyShuffle(t, a)
 	case ActShuffleBack:
@@ -1361,7 +1363,7 @@ func (t *Table) actedDeck(a Action, hand Area) string {
 	switch a.Kind {
 	case ActDraw:
 		return drawDeckID(a, hand)
-	case ActDiscardTop, ActReorderTop, ActShuffle:
+	case ActDiscardTop, ActAsideTop, ActReorderTop, ActShuffle:
 		return a.Pile
 	case ActDeal:
 		return cmp.Or(a.Pile, PileEncounter)
@@ -1494,6 +1496,42 @@ func applyDiscardTop(t *Table, a Action) error {
 	}
 	renameInViews(t, a.Renames)
 	renameCards(t, a.Renames)
+	return nil
+}
+
+// asideOf returns the id of the set-aside pile the top cards of deck are set
+// aside to: the seat's own for a player's deck, the scenario's for the
+// encounter deck, and empty for any other pile. A card a player sets aside by
+// hand goes to the same piles (asidePileOf in web/src/table/actions.ts).
+func asideOf(deck *Pile) string {
+	switch {
+	case deck.ID == PileEncounter:
+		return PileScenarioAside
+	case deck.Kind == KindDeck:
+		return playerAsideID(PlayerArea(deck.Owner))
+	default:
+		return ""
+	}
+}
+
+// applyAsideTop sets the recorded cards aside, wherever they are in the deck
+// (see applyDraw), in the recorded order: the same as so many set-asides of
+// the deck's top card (see applyToPile), each card keeping its owner and home.
+func applyAsideTop(t *Table, a Action) error {
+	deck, err := t.pile(a.Pile)
+	if err != nil {
+		return err
+	}
+	aside, ok := t.Piles[asideOf(deck)]
+	if !ok {
+		return invalid("pile %q has no set-aside pile", deck.ID)
+	}
+	if err := checkInPile(deck, a.Cards); err != nil {
+		return err
+	}
+	for _, id := range a.Cards {
+		t.putOnPile(aside, t.Cards[id])
+	}
 	return nil
 }
 

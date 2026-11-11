@@ -311,6 +311,9 @@ func (n narrator) describe(a Action) (logLine, bool) {
 		}
 		text := join(words("discarded "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
 		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
+	case ActAsideTop:
+		text := join(words("set aside "+topCount(len(a.Cards))+" of "), n.pile(a.Pile))
+		return logLine{text: text, cards: n.visibleCards(a.Cards...)}, true
 	case ActShuffle:
 		return logLine{text: join(words("shuffled "), n.pile(a.Pile))}, true
 	case ActShuffleBack:

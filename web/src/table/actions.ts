@@ -138,8 +138,8 @@ const GROUP_POINT = 3;
 
 // Groups of a pile, in menu order: its main action (Draw, Reveal, Take top card
 // to hand), the ways to look at its cards, the rarer actions (Discard 1,
-// Discard X), then a deck's Shuffle on its own, apart from the entries that
-// move cards.
+// Discard X, Set aside X), then a deck's Shuffle on its own, apart from the
+// entries that move cards.
 const GROUP_MAIN = 0;
 const GROUP_LOOK = 1;
 const GROUP_MORE = 2;
@@ -1072,6 +1072,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
         searchItem(pile),
         discardOneItem(pile),
         discardTopItem(pile, 'your deck', context.table),
+        ...asideTopItems(pile, 'your deck', context.table),
         shuffleItem(pile),
       ];
     case 'sideDeck': {
@@ -1107,7 +1108,7 @@ function pileActions(pile: PileView, context: Context): ActionItem[] | { text: s
       if (deckDiscardOf(pile, context.table.piles) !== null) {
         items.push(discardOneItem(pile), discardTopItem(pile, pileName, context.table));
       }
-      items.push(shuffleItem(pile));
+      items.push(...asideTopItems(pile, pileName, context.table), shuffleItem(pile));
       return items;
     }
     case 'discard':
@@ -1305,6 +1306,47 @@ function discardTopItem(pile: PileView, pileName: string, table: TableView): Act
       },
     }),
   };
+}
+
+/**
+ * The set-aside pile the top cards of a deck go to (asideOf in internal/game/apply.go): the
+ * seat's own for a player's deck, the scenario's for the classic encounter deck, none for any
+ * other deck.
+ */
+function deckAsideOf(pile: PileView): string | null {
+  if (pile.id === PILE_ENCOUNTER) {
+    return PILE_SCENARIO_ASIDE;
+  }
+  return pile.kind === 'deck' ? asideId(pile.owner) : null;
+}
+
+/**
+ * Set aside X, Discard X's twin: the top cards of a deck go out of play, to its set-aside pile,
+ * in one action. No key. Offered only on a deck whose set-aside pile is on the table, so an
+ * empty list for any other. pileName is how the question names the pile.
+ */
+function asideTopItems(pile: PileView, pileName: string, table: TableView): ActionItem[] {
+  const aside = deckAsideOf(pile);
+  if (aside === null || !hasPile(table, aside)) {
+    return [];
+  }
+  return [
+    {
+      id: 'asideTop',
+      label: 'Set aside X',
+      group: GROUP_MORE,
+      run: () => ({
+        ask: {
+          title: 'Set aside from the top',
+          question: `How many cards from the top of ${pileName} are set aside?`,
+          pile: pile.id,
+          max: countLimit(pile, table),
+          ok: 'Set aside',
+          make: (n) => ({ kind: 'asideTop', pile: pile.id, n }),
+        },
+      }),
+    },
+  ];
 }
 
 function shuffleItem(pile: PileView): ActionItem {

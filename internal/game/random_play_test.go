@@ -126,7 +126,12 @@ func randomAction(r *rand.Rand, t *Table, seat int) Action {
 		}
 		return a
 	case 11:
-		return Action{Kind: ActDiscardTop, Pile: oneOf(PileEncounter, deck), N: 1 + r.IntN(2)}
+		// Half the time the top cards are set aside instead.
+		kind := ActDiscardTop
+		if r.IntN(2) == 0 {
+			kind = ActAsideTop
+		}
+		return Action{Kind: kind, Pile: oneOf(PileEncounter, deck), N: 1 + r.IntN(2)}
 	case 12, 13:
 		return Action{Kind: ActMove, Card: pick(onTable), X: x, Y: y}
 	case 14:

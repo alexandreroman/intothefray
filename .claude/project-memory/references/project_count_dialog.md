@@ -1,15 +1,16 @@
 ---
 name: "Count dialog takes typed digits"
-description: "\"How many cards?\" (Draw X, Top X, Discard X): stepped or typed with digit keys; no text field"
+description: "\"How many cards?\" (Draw X, Top X, Discard X, Set aside X): stepped or typed with digit keys; no text field"
 type: project
 ---
 
 # Count dialog takes typed digits
 
-- The "How many cards?" dialog (Draw X, Top X, Discard X) shows its value
-  in a spinbutton, not a text field: − and + buttons, arrows, + and −,
-  Home and End step it; the digit keys (main row or keypad, no Ctrl, Meta
-  or Alt) type it, wherever the focus is in the box.
+- The "How many cards?" dialog (Draw X, Top X, Discard X, Set aside X)
+  shows its value in a spinbutton, not a text field: − and + buttons,
+  arrows, + and −, Home and End step it; the digit keys (main row or
+  keypad, no Ctrl, Meta or Alt) type it, wherever the focus is in the
+  box.
 - The first digit replaces the value (a leading 0 is ignored), the next
   ones append; Backspace removes the last digit, and on a single digit
   sets 1 and the next digit replaces it. Delete does nothing.

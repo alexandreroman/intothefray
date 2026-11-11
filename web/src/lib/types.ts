@@ -361,6 +361,7 @@ export type ActionKind =
   | 'reveal'
   | 'deal'
   | 'discardTop'
+  | 'asideTop' // the top `n` cards of `pile`, a deck, set aside out of play
   | 'shuffle'
   | 'shuffleBack'
   | 'shuffleIn'

@@ -35,6 +35,7 @@ const (
 	ActReveal      Kind = "reveal"
 	ActDeal        Kind = "deal"
 	ActDiscardTop  Kind = "discardTop"
+	ActAsideTop    Kind = "asideTop"
 	ActShuffle     Kind = "shuffle"
 	ActShuffleBack Kind = "shuffleBack"
 	ActShuffleIn   Kind = "shuffleIn"
@@ -274,6 +275,8 @@ func resolveKind(original, t *Table, who actor, a Action, rng *rand.Rand) (Actio
 		return resolveHandOrder(who, a)
 	case ActDiscardTop:
 		return resolveDiscardTop(t, who, a, rng)
+	case ActAsideTop:
+		return resolveAsideTop(t, who, a)
 	case ActReorderTop:
 		return resolveReorderTop(original, t, who, a, rng)
 	case ActShuffle:
@@ -376,7 +379,7 @@ func checkLimits(a Action) error {
 	if isCounter && (a.Delta < -maxCount || a.Delta > maxCount) {
 		return invalid("delta %d is out of range", a.Delta)
 	}
-	if a.Kind == ActDiscardTop {
+	if a.Kind == ActDiscardTop || a.Kind == ActAsideTop {
 		return checkCount(a.N)
 	}
 	return nil
@@ -721,6 +724,25 @@ func resolveDiscardTop(t *Table, who actor, a Action, rng *rand.Rand) (Action, e
 		a.Renames = map[string]string{}
 		addFreshIDs(t, a.Renames, a.Cards, rng)
 	}
+	return a, nil
+}
+
+// resolveAsideTop records the cards to set aside, top first. Only a deck with
+// a set-aside pile to take them can be set aside from (see asideOf): a
+// player's deck or the encounter deck. The cards stay in sight on their way,
+// a set-aside pile showing them to everyone, so they keep their ids.
+func resolveAsideTop(t *Table, who actor, a Action) (Action, error) {
+	pile, err := ownPile(t, who, a.Pile)
+	if err != nil {
+		return a, err
+	}
+	if _, ok := t.Piles[asideOf(pile)]; !ok {
+		return a, invalid("pile %q has no set-aside pile", pile.ID)
+	}
+	if a.N > len(pile.Cards) {
+		return a, invalid("cannot set aside %d cards from pile %q", a.N, pile.ID)
+	}
+	a.Cards = topCards(pile, a.N)
 	return a, nil
 }
 
