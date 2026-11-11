@@ -1226,10 +1226,13 @@ describe('Table animations', () => {
             ],
             { duration: 220 },
           ],
-          // The held shadow until the shade is back under it: its resting one, offset, would fall
-          // as a hard dark band.
+          // The lifted shadow until the shade is back under it, soft over the card below, then its
+          // resting one.
           [
-            [{ boxShadow: 'var(--held-card-shadow)' }, { boxShadow: 'var(--held-card-shadow)' }],
+            [
+              { boxShadow: 'var(--lifted-card-shadow)' },
+              { boxShadow: 'var(--lifted-card-shadow)' },
+            ],
             { duration: 0.55 * 220 },
           ],
         ]);

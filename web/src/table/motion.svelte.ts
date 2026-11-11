@@ -42,10 +42,10 @@ import { seatOf } from './seats';
 export const LIFT_SCALE = 1.06;
 export const LIFT_SHADE = '5px 5px';
 /**
- * The shadow a table card casts while its shade is held up off it (tokens.css): its resting one,
- * offset by LIFT_SHADE, would fall past its edge as a hard dark band on the card below.
+ * The shadow a table card casts while its shade is held up off it (--lifted-card-shadow, tokens.css):
+ * soft and light, so that over another card it falls as a soft shadow, not a dark band.
  */
-const HELD_SHADOW = 'var(--held-card-shadow)';
+const LIFTED_SHADOW = 'var(--lifted-card-shadow)';
 /**
  * The viewer's own drop settles on the table once the view shows it: down from its lift, dipping a
  * little below its size (SETTLE_DIP, at SETTLE_DIPS_AT), its shadow back under it, upright.
@@ -2144,10 +2144,10 @@ class TableMotion {
         options,
         subject,
       );
-      // Held, it casts the held shadow until it is back under the card, then its resting one.
+      // Held, it casts the lifted shadow until it is back under the card, then its resting one.
       this.#run(
         shade,
-        [{ boxShadow: HELD_SHADOW }, { boxShadow: HELD_SHADOW }],
+        [{ boxShadow: LIFTED_SHADOW }, { boxShadow: LIFTED_SHADOW }],
         { duration: SETTLE_DIPS_AT * SETTLE_MS },
         subject,
       );
@@ -2226,10 +2226,10 @@ class TableMotion {
           options,
           subject,
         );
-        // Held, it casts the held shadow until it is back under the card, then its resting one.
+        // Held, it casts the lifted shadow until it is back under the card, then its resting one.
         this.#run(
           shade,
-          [{ boxShadow: HELD_SHADOW }, { boxShadow: HELD_SHADOW }],
+          [{ boxShadow: LIFTED_SHADOW }, { boxShadow: LIFTED_SHADOW }],
           { duration: dips * duration },
           subject,
         );

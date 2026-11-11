@@ -535,8 +535,8 @@ describe("the viewer's own drop slid into its slot in dock mode", () => {
     ]);
   });
 
-  // Offset by LIFT_SHADE, the resting shadow's tight first layer would fall as a hard dark band.
-  it('casts the held shadow until its shadow is back under it, then its resting one', async () => {
+  // Soft and light, the lifted shadow falls on the card below as a soft shadow, not a dark band.
+  it('casts the lifted shadow until its shadow is back under it, then its resting one', async () => {
     const app = page(true);
     landedGhost(app, 'a', { left: 150, top: 300 });
 
@@ -545,7 +545,7 @@ describe("the viewer's own drop slid into its slot in dock mode", () => {
     const shade = placed.querySelector('.shade')!;
     expect(playedOn(shade)).toHaveLength(2);
     expect(onProperty(shade, 'boxShadow')).toEqual([
-      [{ boxShadow: 'var(--held-card-shadow)' }, { boxShadow: 'var(--held-card-shadow)' }],
+      [{ boxShadow: 'var(--lifted-card-shadow)' }, { boxShadow: 'var(--lifted-card-shadow)' }],
       { duration: expect.closeTo(DIPS * DURATION, 6) },
     ]);
   });

@@ -196,11 +196,11 @@
 
   /*
     Armed by a hold, held up in place as the card dragged from it will be (--lift-scale, --lift-shade), casting the
-    held shadow (tokens.css) as that card does.
+    lifted shadow (tokens.css) as that card does.
   */
   .card.armed {
     scale: var(--lift-scale);
-    --shade-shadow: var(--held-card-shadow);
+    --shade-shadow: var(--lifted-card-shadow);
   }
 
   .card.armed .shade {

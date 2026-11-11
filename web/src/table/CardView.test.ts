@@ -406,14 +406,13 @@ describe('a press on a card', () => {
   });
 });
 
-// Offset by LIFT_SHADE, the resting shadow's tight first layer would fall past the card's edge as a
-// hard dark band on the card below.
+// Soft and light, the lifted shadow falls on the card below as a soft shadow, not a dark band.
 describe('the shadow of a table card held up', () => {
-  it('casts the held shadow from every drag ghost', () => {
-    expect(rule('.card.ghost')).toContain('--shade-shadow: var(--held-card-shadow);');
+  it('casts the lifted shadow from every drag ghost', () => {
+    expect(rule('.card.ghost')).toContain('--shade-shadow: var(--lifted-card-shadow);');
   });
 
-  it('casts the held shadow while a hold lifts it in place', () => {
-    expect(rule('.card.armed')).toContain('--shade-shadow: var(--held-card-shadow);');
+  it('casts the lifted shadow while a hold lifts it in place', () => {
+    expect(rule('.card.armed')).toContain('--shade-shadow: var(--lifted-card-shadow);');
   });
 });

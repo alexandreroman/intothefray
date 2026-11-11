@@ -367,12 +367,12 @@
   }
 
   /*
-    Armed by a hold, held up in place as its ghost will be (--lift-scale, --lift-shade), casting the held shadow
+    Armed by a hold, held up in place as its ghost will be (--lift-scale, --lift-shade), casting the lifted shadow
     (tokens.css) as its ghost does.
   */
   .card.armed {
     scale: var(--lift-scale);
-    --shade-shadow: var(--held-card-shadow);
+    --shade-shadow: var(--lifted-card-shadow);
   }
 
   .card.armed .shade {
@@ -385,8 +385,8 @@
     --lift-shade: LIFT_SCALE and LIFT_SHADE in motion.svelte.ts) and sway with the pointer about
     their middle (--sway, sway.ts), on the scale and rotate properties: apart from the transform
     of an exhausted card. Another player's are held up a little, upright, their shadow under them.
-    Every ghost casts the held shadow (tokens.css): the resting one, offset with the lift, would
-    fall as a hard dark band on the card below.
+    Every ghost casts the lifted shadow (tokens.css): soft and light, so that over another card
+    it falls as a soft shadow, not a dark band.
     Let go (landed), the viewer's own ghost stays held up where it landed: the view that shows
     the card settles it on the table from there (motion.svelte.ts).
     A ghost lies at its layer's corner and takes its place on translate (inline): a pointer move
@@ -400,7 +400,7 @@
     scale: var(--lift-scale, 1.04);
     rotate: var(--sway, 0deg);
     transition: scale 0.14s ease-out;
-    --shade-shadow: var(--held-card-shadow);
+    --shade-shadow: var(--lifted-card-shadow);
   }
 
   .card.ghost .shade {

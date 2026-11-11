@@ -22,14 +22,17 @@ type: project
   (their component sets `--shade-shadow` to `--held-card-shadow`, fitted
   to two stacked drop-shadows, landscape corners for a landscape card),
   and the hand sheet's carousel cards.
-- A table card or pile held up casts `--held-card-shadow` too: its drag
-  ghosts (`.card.ghost`, landed ones and other players' included), a card
-  or pile held under a finger (`.card.armed`), and a dropped card while it
-  settles (`#settle`, `#slideAndSettle` in `motion.svelte.ts` hold it on the
-  shade with a constant `boxShadow` animation, two equal keyframes, that
-  ends as the shade is back under the card). The tight first layer of
-  `--card-shadow`, offset by `LIFT_SHADE`, falls past the card's edge as a
-  hard dark band on the card below.
+- A table card or pile held up casts `--lifted-card-shadow`
+  (`3px 4px 12px 0 #00000059, 9px 12px 28px 0 #00000038`): its drag ghosts
+  (`.card.ghost`, landed ones and other players' included), a card or pile
+  held under a finger (`.card.armed`), and a dropped card while it settles
+  (`#settle`, `#slideAndSettle` in `motion.svelte.ts` hold it on the shade
+  with a constant `boxShadow` animation, two equal keyframes, that ends as
+  the shade is back under the card). It is soft and light, with no tight
+  layer: offset by `LIFT_SHADE` over another card, `--card-shadow` or
+  `--held-card-shadow` darkens the card below in a hard dark band along the
+  edge (down to about 30 % brightness); the lifted shadow keeps it above
+  60 %, fading out smoothly.
   A filter on a moving element is blurred again on every frame, per card.
   An element that does not itself move may carry a filter (the preview art,
   the remote cursors): it is drawn once into its moving parent's layer.
