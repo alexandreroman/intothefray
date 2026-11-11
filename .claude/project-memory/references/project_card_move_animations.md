@@ -75,7 +75,8 @@ type: project
 - Cards feel physical, discreetly. A card held up off the table (dragged,
   turning over, flying) is 6 % larger (`LIFT_SCALE`) and its `.shade`
   falls 5 px down and to the right (`LIFT_SHADE`): the light comes from
-  the top left. Both constants live in `motion.svelte.ts`; the drag layer
+  the top left. Held up, a table card casts the lifted shadow
+  (`--lifted-card-shadow`, see [[project_card_paint_cost]]). Both constants live in `motion.svelte.ts`; the drag layer
   hands them to the ghosts' CSS as `--lift-scale` and `--lift-shade`.
 - The viewer's own drag ghosts sway with the pointer's horizontal speed
   (`sway.ts`): a spring-damped lean, clockwise to the right, ±6° at most,

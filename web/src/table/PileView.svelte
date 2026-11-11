@@ -194,9 +194,13 @@
     cursor: default;
   }
 
-  /* Armed by a hold, held up in place as the card dragged from it will be (--lift-scale, --lift-shade). */
+  /*
+    Armed by a hold, held up in place as the card dragged from it will be (--lift-scale, --lift-shade), casting the
+    lifted shadow (tokens.css) as that card does.
+  */
   .card.armed {
     scale: var(--lift-scale);
+    --shade-shadow: var(--lifted-card-shadow);
   }
 
   .card.armed .shade {

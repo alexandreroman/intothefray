@@ -524,16 +524,29 @@ describe("the viewer's own drop slid into its slot in dock mode", () => {
 
     const placed = await lay(app);
 
-    expect(playedOn(placed.querySelector('.shade')!)).toEqual([
+    expect(onProperty(placed.querySelector('.shade')!, 'translate')).toEqual([
       [
-        [
-          { translate: LIFT_SHADE },
-          { translate: LIFT_SHADE, offset: expect.closeTo(SETTLES, 6), easing: 'ease-in' },
-          { translate: '0px 0px', offset: expect.closeTo(DIPS, 6) },
-          { translate: '0px 0px' },
-        ],
-        { duration: DURATION },
+        { translate: LIFT_SHADE },
+        { translate: LIFT_SHADE, offset: expect.closeTo(SETTLES, 6), easing: 'ease-in' },
+        { translate: '0px 0px', offset: expect.closeTo(DIPS, 6) },
+        { translate: '0px 0px' },
       ],
+      { duration: DURATION },
+    ]);
+  });
+
+  // Soft and light, the lifted shadow falls on the card below as a soft shadow, not a dark band.
+  it('casts the lifted shadow until its shadow is back under it, then its resting one', async () => {
+    const app = page(true);
+    landedGhost(app, 'a', { left: 150, top: 300 });
+
+    const placed = await lay(app);
+
+    const shade = placed.querySelector('.shade')!;
+    expect(playedOn(shade)).toHaveLength(2);
+    expect(onProperty(shade, 'boxShadow')).toEqual([
+      [{ boxShadow: 'var(--lifted-card-shadow)' }, { boxShadow: 'var(--lifted-card-shadow)' }],
+      { duration: expect.closeTo(DIPS * DURATION, 6) },
     ]);
   });
 

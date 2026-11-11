@@ -70,6 +70,12 @@ describe('PileView', () => {
     expect(pileSource).not.toMatch(/filter:/);
   });
 
+  // Soft and light, the lifted shadow falls on the card below as a soft shadow, not a dark band.
+  it('casts the lifted shadow while a hold lifts its card in place', () => {
+    const armed = /\n {2}\.card\.armed \{([^}]*)\}/.exec(pileSource)?.[1];
+    expect(armed).toContain('--shade-shadow: var(--lifted-card-shadow);');
+  });
+
   it('draws the ring of the player who previews it inside itself, so that it follows the pile', () => {
     interaction.previewByOthers(new Map([['enc', 2]]));
     try {
