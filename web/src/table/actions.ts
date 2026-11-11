@@ -1322,12 +1322,12 @@ function deckAsideOf(pile: PileView): string | null {
 
 /**
  * Set aside X, Discard X's twin: the top cards of a deck go out of play, to its set-aside pile,
- * in one action. No key. Offered only on a deck whose set-aside pile is on the table, so an
- * empty list for any other. pileName is how the question names the pile.
+ * in one action. No key. An empty list for a deck without a set-aside pile. pileName is how the
+ * question names the pile.
  */
 function asideTopItems(pile: PileView, pileName: string, table: TableView): ActionItem[] {
   const aside = deckAsideOf(pile);
-  if (aside === null || !hasPile(table, aside)) {
+  if (aside === null) {
     return [];
   }
   return [

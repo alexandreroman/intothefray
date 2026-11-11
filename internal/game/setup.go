@@ -148,13 +148,7 @@ func (g *Game) Start(hostToken string, cat *pack.Catalog, seed uint64, now time.
 
 	// The table is built apart so that a failed setup leaves the lobby intact.
 	seats := g.seatCount()
-	b := &tableBuilder{
-		cat:        cat,
-		rng:        setupRNG(seed),
-		table:      newEmptyTable(seats),
-		seats:      seats,
-		difficulty: g.Config.Difficulty,
-	}
+	b := &tableBuilder{cat: cat, rng: setupRNG(seed), table: newEmptyTable(seats), seats: seats}
 	scenario, err := b.setupScenario(g.Config)
 	if err != nil {
 		return err
@@ -258,9 +252,6 @@ type tableBuilder struct {
 	table *Table
 	// seats is the number of seats at the table.
 	seats int
-	// difficulty is the game's difficulty, which picks the cards a hero's set
-	// starts in play.
-	difficulty pack.Difficulty
 	// inPlayRight is the right edge of the last thing put in the villain's
 	// row (a pile, a stage card or a card in play), 0 before the first one.
 	inPlayRight int
@@ -976,23 +967,26 @@ func (b *tableBuilder) setupPlayer(seat int, deck *DeckChoice) error {
 	return nil
 }
 
-// heroInPlay returns the cards hero's set starts in play at the game's
-// difficulty: its identity's "Setup:" permanents, as Spectrum's energy forms.
+// heroInPlay returns the cards hero's set starts in play: its identity's
+// "Setup:" permanents, as Spectrum's energy forms, whatever the difficulty.
 func (b *tableBuilder) heroInPlay(hero pack.Hero) []pack.FaceRef {
 	set, ok := b.cat.Set(hero.Set)
 	if !ok {
 		return nil
 	}
-	return set.InPlay[b.difficulty]
+	return set.Setup
 }
 
 // putHeroInPlay creates one copy of each card of refs, owned by seat and at
 // home in its deck, and puts it face up on its given face in seat's row, from
 // left to right, inPlayGap past the right edge of the card before it, taken up
-// to the grid; right is the right edge of the identity. The players turn a
-// card facedown by hand when its text says so. Only a hero with such cards
-// draws ids for them, so the others keep the same card ids for a seed. It
-// returns the right edge of the last card in the row.
+// to the grid; right is the right edge of the identity. Monica Rambeau reads
+// "Setup: Put all 3 energy form upgrades into play, facedown.", but the forms
+// start face up, since a face-down table card hides its code from everyone, its
+// owner included, and the three would look alike; the players turn them over
+// by hand. Only a hero with such cards draws ids for them, so the others keep
+// the same card ids for a seed. It returns the right edge of the last card in
+// the row.
 func (b *tableBuilder) putHeroInPlay(seat int, refs []pack.FaceRef, right int) (int, error) {
 	deckID := playerDeckID(PlayerArea(seat))
 	y := rowY(playerRow(seat))

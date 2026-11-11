@@ -273,6 +273,7 @@ describe('contextItems', () => {
       '---',
       'Discard 1 [X]',
       'Discard X [⇧X]',
+      'Set aside X',
       '---',
       'Shuffle [U]',
     ]);

@@ -1847,13 +1847,6 @@ describe('Set aside X', () => {
     }
   });
 
-  it('is not offered on a deck whose set-aside pile is not on the table', () => {
-    const view = makeView();
-    view.table!.piles = view.table!.piles.filter((p) => p.id !== 'aside:p0' && p.id !== 'saside');
-    expect(ids('deck:p0', view)).not.toContain('asideTop');
-    expect(ids('enc', view)).not.toContain('asideTop');
-  });
-
   it("sets aside from the deck of the player's other seat", () => {
     const view = makeView();
     view.you = { role: 'player', name: 'Alex', color: 0, host: true, areas: ['p0', 'p1'] };

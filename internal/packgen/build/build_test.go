@@ -572,6 +572,27 @@ func TestBuildMergesSideDecksAndSetAsideCards(t *testing.T) {
 	}
 }
 
+func TestBuildMergesHeroSetupCards(t *testing.T) {
+	setup := []pack.FaceRef{{Card: "09013", Face: 0}}
+	in := heroSetsInputs(t, map[string]curated.SetDef{"spider_man": {Setup: setup}})
+
+	result, err := Build(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sets := make(map[string]pack.Set)
+	for _, set := range result.Packs[0].Sets {
+		sets[set.Code] = set
+	}
+	if got := sets["spider_man"]; !slices.Equal(got.Setup, setup) || got.InPlay != nil {
+		t.Errorf("got spider_man %+v, want setup cards %v and no in-play cards", got, setup)
+	}
+	if got := sets["rhino"]; got.Setup != nil {
+		t.Errorf("got rhino %+v, want it untouched", got)
+	}
+}
+
 func TestBuildGivesSideDeckCardsTheirSharedBack(t *testing.T) {
 	in := heroSetsInputs(t, map[string]curated.SetDef{
 		"spider_man_web_deck":  {Side: &pack.SideDeck{Label: "Web", Back: pack.BackPlayer}},
@@ -643,6 +664,40 @@ func TestBuildRejectsInvalidHeroSetDefs(t *testing.T) {
 			"set-aside card listed twice",
 			map[string]curated.SetDef{"bomb_scare": {SetAside: []string{"01110", "01110"}}},
 			"curated set bomb_scare: set-aside card 01110 is listed twice",
+		},
+		{
+			"setup cards on a hero_special set",
+			map[string]curated.SetDef{"spider_man_web_deck": {Setup: []pack.FaceRef{{Card: "09010"}}}},
+			"curated set spider_man_web_deck: setup cards need a hero set, not a hero_special set",
+		},
+		{
+			"setup cards on a modular set",
+			map[string]curated.SetDef{"bomb_scare": {Setup: []pack.FaceRef{{Card: "01110"}}}},
+			"curated set bomb_scare: setup cards need a hero set, not a modular set",
+		},
+		{
+			"setup card of another set",
+			map[string]curated.SetDef{"spider_man": {Setup: []pack.FaceRef{{Card: "09012"}}}},
+			"curated set spider_man: setup card 09012 is not in the set",
+		},
+		{
+			"unknown setup card",
+			map[string]curated.SetDef{"spider_man": {Setup: []pack.FaceRef{{Card: "09999"}}}},
+			"curated set spider_man: setup card 09999 is not in the set",
+		},
+		{
+			"setup card face out of range",
+			map[string]curated.SetDef{"spider_man": {Setup: []pack.FaceRef{{Card: "09013", Face: 1}}}},
+			"curated set spider_man: setup card 09013 has no face 1",
+		},
+		{
+			// A hero's Setup does not depend on the difficulty: it has one
+			// list, setup.
+			"in-play cards on a hero set",
+			map[string]curated.SetDef{"spider_man": {InPlay: map[pack.Difficulty][]pack.FaceRef{
+				pack.Standard: {{Card: "09013"}},
+			}}},
+			"curated set spider_man: in-play cards need an encounter set",
 		},
 	}
 	for _, tt := range tests {

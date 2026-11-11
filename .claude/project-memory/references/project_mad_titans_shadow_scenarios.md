@@ -8,10 +8,11 @@ type: project
 
 - The five scenarios of The Mad Titan's Shadow (`mts`) are curated: Ebony
   Maw, Tower Defense (Proxima Midnight and Corvus Glaive), Thanos, Hela
-  and Loki. Each starts on stage I in Standard and stage II in Expert,
-  its main schemes on their first card, face 0; Hela has one
-  double-sided villain card per difficulty (Hela A 21136, Hela B 21137).
-  None is self-contained; the modular sets come from Cerebro.
+  and Loki. Ebony Maw, Tower Defense and Thanos start on stage I in
+  Standard and stage II in Expert; Hela has one double-sided villain
+  card per difficulty (Hela A 21136, Hela B 21137); Loki starts on 21160
+  at both. Main schemes start on their first card, face 0. None is
+  self-contained; the modular sets come from Cerebro.
 - Tower Defense lays out four stages: Proxima Midnight, her scheme Under
   Siege (21098), Corvus Glaive, his scheme The Armies of Thanos (21099,
   on 2A, as the 1A Setup reveals it). Focused Defense (21101) lies by

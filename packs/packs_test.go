@@ -956,9 +956,10 @@ func TestEmbeddedMadTitansShadow(t *testing.T) {
 }
 
 // TestEmbeddedSpectrumEnergyForms checks Monica Rambeau's "Setup: Put all 3
-// energy form upgrades into play": Gamma, Photon and Pulsar lie face up in
-// Spectrum's row, the players turning them facedown by hand, and stay out of
-// her deck although her deck list names them.
+// energy form upgrades into play, facedown.": Gamma, Photon and Pulsar lie in
+// Spectrum's row, face up since a face-down table card hides its code even
+// from its owner, the players turning them over by hand, and stay out of her
+// deck although her deck list names them.
 func TestEmbeddedSpectrumEnergyForms(t *testing.T) {
 	cat := packstest.Catalog(t)
 	forms := []string{"21002", "21003", "21004"}
@@ -1337,36 +1338,21 @@ func TestEmbeddedDataInvariants(t *testing.T) {
 		}
 	})
 
-	// An encounter set starts its cards in the villain's row, a hero set in
-	// its player's row (Spectrum's energy forms): either way, only its own
-	// cards, on a face they have.
+	// An encounter set starts its cards in the villain's row, a hero set's
+	// Setup in its player's row (Spectrum's energy forms): either way, only
+	// its own cards, on a face they have.
 	t.Run("set in-play cards resolve", func(t *testing.T) {
 		for _, file := range files {
 			for _, set := range file.Sets {
-				for _, refs := range set.InPlay {
-					for _, ref := range refs {
-						requireFace(t, "set "+set.Code, ref)
-						if !slices.Contains(set.Cards, ref.Card) {
-							t.Errorf("set %s starts card %s in play, which it does not list", set.Code, ref.Card)
-						}
+				refs := slices.Clone(set.Setup)
+				for _, difficultyRefs := range set.InPlay {
+					refs = append(refs, difficultyRefs...)
+				}
+				for _, ref := range refs {
+					requireFace(t, "set "+set.Code, ref)
+					if !slices.Contains(set.Cards, ref.Card) {
+						t.Errorf("set %s starts card %s in play, which it does not list", set.Code, ref.Card)
 					}
-				}
-			}
-		}
-	})
-
-	// A hero's Setup does not depend on the difficulty: a hero set that lists
-	// in-play cards lists the same ones for both, so that neither difficulty
-	// leaves them in the deck.
-	t.Run("hero set in-play cards are the same at both difficulties", func(t *testing.T) {
-		for _, file := range files {
-			for _, set := range file.Sets {
-				if set.Kind != pack.SetKindHero || len(set.InPlay) == 0 {
-					continue
-				}
-				standard, expert := set.InPlay[pack.Standard], set.InPlay[pack.Expert]
-				if len(standard) == 0 || !slices.Equal(standard, expert) {
-					t.Errorf("hero set %s in play: standard %v, expert %v, want the same cards", set.Code, standard, expert)
 				}
 			}
 		}
@@ -1539,18 +1525,17 @@ func TestEmbeddedHeroSetup(t *testing.T) {
 
 	// Only Spectrum's Setup puts fixed cards in play; Storm's starting
 	// Weather card is the player's choice and stays manual.
-	t.Run("in-play cards", func(t *testing.T) {
-		forms := []pack.FaceRef{{Card: "21002"}, {Card: "21003"}, {Card: "21004"}}
-		want := map[string]map[pack.Difficulty][]pack.FaceRef{
-			"spectrum": {pack.Standard: forms, pack.Expert: forms},
+	t.Run("setup cards", func(t *testing.T) {
+		want := map[string][]pack.FaceRef{
+			"spectrum": {{Card: "21002"}, {Card: "21003"}, {Card: "21004"}},
 		}
 		for _, code := range slices.Sorted(maps.Keys(sets)) {
 			set := sets[code]
 			if set.Kind != pack.SetKindHero {
 				continue
 			}
-			if !maps.EqualFunc(set.InPlay, want[code], slices.Equal) {
-				t.Errorf("hero set %s in play = %v, want %v", code, set.InPlay, want[code])
+			if !slices.Equal(set.Setup, want[code]) {
+				t.Errorf("hero set %s setup cards = %v, want %v", code, set.Setup, want[code])
 			}
 		}
 	})

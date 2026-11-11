@@ -229,6 +229,9 @@ func applySetDefs(
 		if err := checkInPlay(*set, def.InPlay, faceCounts); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
+		if err := checkHeroSetup(*set, def.Setup, faceCounts); err != nil {
+			return fmt.Errorf("curated set %s: %w", code, err)
+		}
 		if err := checkSide(*set, def.Side); err != nil {
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
@@ -244,6 +247,7 @@ func applySetDefs(
 			return fmt.Errorf("curated set %s: %w", code, err)
 		}
 		set.InPlay = def.InPlay
+		set.Setup = def.Setup
 		set.Unlisted = def.Unlisted
 		set.Side = def.Side
 		set.SetAside = def.SetAside
@@ -447,16 +451,42 @@ func checkCardSetAside(
 }
 
 // checkInPlay makes sure every in-play card belongs to the set and has the
-// face it starts on.
+// face it starts on. A hero set lists the cards its Setup puts in play under
+// setup instead, which does not depend on the difficulty (see checkHeroSetup).
 func checkInPlay(set pack.Set, inPlay map[pack.Difficulty][]pack.FaceRef, faceCounts map[string]int) error {
+	if len(inPlay) > 0 && set.Kind == pack.SetKindHero {
+		return errors.New("in-play cards need an encounter set: a hero set lists its Setup cards under setup")
+	}
 	for _, difficulty := range slices.Sorted(maps.Keys(inPlay)) {
-		for _, ref := range inPlay[difficulty] {
-			if !slices.Contains(set.Cards, ref.Card) {
-				return fmt.Errorf("%s in-play card %s is not in the set", difficulty, ref.Card)
-			}
-			if !hasFace(ref, faceCounts) {
-				return fmt.Errorf("%s in-play card %s has no face %d", difficulty, ref.Card, ref.Face)
-			}
+		if err := checkStartingCards(set, string(difficulty)+" in-play", inPlay[difficulty], faceCounts); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// checkHeroSetup makes sure the cards a set's Setup puts in play are on a hero
+// set, the only one whose identity setup reads them from, and that each one
+// belongs to the set and has the face it starts on.
+func checkHeroSetup(set pack.Set, setup []pack.FaceRef, faceCounts map[string]int) error {
+	if len(setup) == 0 {
+		return nil
+	}
+	if set.Kind != pack.SetKindHero {
+		return fmt.Errorf("setup cards need a %s set, not a %s set", pack.SetKindHero, set.Kind)
+	}
+	return checkStartingCards(set, "setup", setup, faceCounts)
+}
+
+// checkStartingCards makes sure every card of refs belongs to the set and has
+// the face it starts on; what names the list in the errors.
+func checkStartingCards(set pack.Set, what string, refs []pack.FaceRef, faceCounts map[string]int) error {
+	for _, ref := range refs {
+		if !slices.Contains(set.Cards, ref.Card) {
+			return fmt.Errorf("%s card %s is not in the set", what, ref.Card)
+		}
+		if !hasFace(ref, faceCounts) {
+			return fmt.Errorf("%s card %s has no face %d", what, ref.Card, ref.Face)
 		}
 	}
 	return nil

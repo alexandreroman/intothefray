@@ -9,8 +9,9 @@ import (
 )
 
 // spectrumIdentity is Spectrum, whose set starts her three energy form
-// upgrades in play: Monica Rambeau's "Setup: Put all 3 energy form upgrades
-// into play".
+// upgrades in play: Monica Rambeau reads "Setup: Put all 3 energy form
+// upgrades into play, facedown.". They start face up, since a face-down table
+// card hides its code even from its owner (see putHeroInPlay).
 const spectrumIdentity = "21001"
 
 // energyForms are Gamma, Photon and Pulsar, in the order setup lays them out.
