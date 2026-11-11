@@ -818,7 +818,8 @@
         }
       ],
       "back": "player",
-      "quantity": 1
+      "quantity": 1,
+      "starting": true
     },
     {
       "code": "61035",
@@ -864,7 +865,8 @@
         }
       ],
       "back": "player",
-      "quantity": 1
+      "quantity": 1,
+      "starting": true
     },
     {
       "code": "61037",
@@ -887,7 +889,8 @@
         }
       ],
       "back": "player",
-      "quantity": 1
+      "quantity": 1,
+      "starting": true
     },
     {
       "code": "61038",

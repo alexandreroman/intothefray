@@ -15,8 +15,8 @@ rules.
   then as spectators
 - **Bring your decks**: load marvelcdb.com decks, one to four per player
 - **Automated setup**: pick a scenario, a difficulty and modular sets;
-  villain, schemes, decks and hero side decks are laid out for you, and
-  players resolve the rest by hand
+  villain, schemes, decks and hero side decks are laid out for you,
+  Starting cards go to their hand, and players resolve the rest by hand
 - **See what others do**: live cursors, pings, arrows, history, and every
   card that changes place travels there
 - **Group moves, undo and keyboard shortcuts** (`?` at the table)

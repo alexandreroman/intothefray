@@ -41,6 +41,7 @@ export interface PackCard {
   quantity: number;
   aliases?: string[];
   setAside?: string[]; // player card: cards a deck with it sets aside at setup
+  starting?: boolean; // player card with the Starting keyword: setup puts it in its seat's hand
 }
 
 export interface PackRef {

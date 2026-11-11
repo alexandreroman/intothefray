@@ -392,3 +392,51 @@ func TestReprintsOfUnsupportedRootAreReported(t *testing.T) {
 		t.Errorf("unsupported = %+v, want %+v", unsupported, want)
 	}
 }
+
+func TestStartingKeyword(t *testing.T) {
+	tests := []struct {
+		name     string
+		realText string
+		text     string
+		want     bool
+	}{
+		{"keyword first", "Starting. <i>(You may add this card to your hand.)</i>\nYour hero gets +1 DEF.", "", true},
+		{"after tags and spaces", " <p><b>Starting.</b> (<i>You may add this card.</i>)", "", true},
+		{"text without real text", "", "Starting. (<i>You may add this card.</i>)", true},
+		{"starting hand mid-text", "<b>Setup</b>: Search your deck for this card and add it to your starting hand.", "", false},
+		{"starting threat mid-text", "<b>When Revealed</b>: Place starting threat on this scheme.", "", false},
+		{"word without the period", "Starting threat: 3.", "", false},
+		{"no text", "", "", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			record := marvelcdb.Card{
+				Code:     "60038",
+				Name:     "Innate Reflexes",
+				TypeCode: "upgrade",
+				PackCode: "test",
+				Quantity: 1,
+				Text:     tt.text,
+				RealText: tt.realText,
+			}
+			records := []marvelcdb.Card{record}
+			cards, _ := buildCards(records, nil, manifestFor(records))
+
+			if got := findCard(t, cards, "test", "60038").Starting; got != tt.want {
+				t.Errorf("Starting = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStartingOnAnyFace(t *testing.T) {
+	records := []marvelcdb.Card{
+		{Code: "90001a", Name: "Front", TypeCode: "upgrade", PackCode: "test", Quantity: 1, LinkedTo: "90001b"},
+		{Code: "90001b", Name: "Back", TypeCode: "upgrade", PackCode: "test", Quantity: 1, RealText: "Starting."},
+	}
+	cards, _ := buildCards(records, nil, manifestFor(records))
+
+	if !findCard(t, cards, "test", "90001").Starting {
+		t.Error("Starting = false, want true for a card whose second face has the keyword")
+	}
+}

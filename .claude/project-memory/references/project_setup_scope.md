@@ -22,9 +22,11 @@ Defense's Focused Defense, Hela's captive Odin). Setup places no threat
 and no token on any card. Players do the rest by hand: they resolve the
 1A Setup text, advance the scheme to 1B, place the starting threat of
 every scheme in play, place counters, draw their opening hand and
-mulligan. A card a Setup text has players search for or reveal from a
-deck (Klaw's Defense Network, Mutagen Formula's Goblin Thralls, Tower
-Defense's Black Order Besiegers) stays in the encounter deck.
+mulligan. The one card setup puts in a hand is a deck's Starting card
+(see [[project_starting_cards]]). A card a Setup text has players search
+for or reveal from a deck (Klaw's Defense Network, Mutagen Formula's
+Goblin Thralls, Tower Defense's Black Order Besiegers) stays in the
+encounter deck.
 
 The faces' `handSize` and `startingThreat` stay in the packs as
 informational data: nothing reads them, since setup draws no hand and
