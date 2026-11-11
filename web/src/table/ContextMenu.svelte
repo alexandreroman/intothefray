@@ -7,8 +7,11 @@
   hover or on a click. A chosen entry closes it, but for a counter entry (a
   token, a status, a modifier), which leaves it open where it is, its submenu
   too, to add the same again. Escape, Tab, a press outside the menu, a scroll
-  of its bounds, a zoom of the table, or a resize close it. With only a note and no entries, it is a small dialog
-  rather than a menu with nothing to choose.
+  of its bounds, a zoom of the table, or a resize of the window close it. It
+  stays in the part of the window the user sees (lib/visibleArea.ts), and is
+  placed again, from the same point, when that part changes: an on-screen
+  keyboard shows or hides. With only a note and no entries, it is a small
+  dialog rather than a menu with nothing to choose.
   The table's keys keep working while it is open, on its element as under
   the pointer (keys.ts): the simplest consistent choice. The menu stays open
   and follows what they change ("Damage (7)").
@@ -28,6 +31,7 @@
   } from './contextItems';
   import { intersect } from './drag';
   import { placeAtPoint, placeSubmenu, type DropdownPlace } from '../lib/dropdown';
+  import { onVisibleAreaChange, withinVisible } from '../lib/visibleArea';
   import type { Rect } from '../lib/rect';
 
   let {
@@ -88,10 +92,10 @@
 
   // ---- Placement ----
 
-  /** The visible table, within the window. */
+  /** Its bounds, within the window and the part of it the user sees: above an on-screen keyboard. */
   function room(): Rect {
     const screen = { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
-    return intersect(bounds.getBoundingClientRect(), screen);
+    return withinVisible(intersect(bounds.getBoundingClientRect(), screen));
   }
 
   /** Its whole size, even while it is cut to scroll: the content's height, and the borders. */
@@ -100,11 +104,23 @@
     return { w: element.getBoundingClientRect().width, h: element.scrollHeight + borders };
   }
 
+  /** Places the menu at its point; a new place places its open submenu again too. */
+  function placeMenu(): void {
+    if (menu) {
+      place = placeAtPoint(at, sizeOf(menu), room());
+    }
+  }
+
   // Placed as it opens, and again from the same point when its entries change size.
   $effect(() => {
     void entries;
+    placeMenu();
+  });
+
+  // Placed again as an on-screen keyboard shows or hides: its bounds grow or shrink with the visible area.
+  $effect(() => {
     if (menu) {
-      place = placeAtPoint(at, sizeOf(menu), room());
+      return onVisibleAreaChange(placeMenu);
     }
   });
 
