@@ -208,6 +208,19 @@ export function statusCount(name: string, count: number): string | null {
 export const MODIFIERS = ['atk', 'thw', 'def', 'sch', 'rec', 'hp'] as const;
 
 /**
+ * The order the modifier badges show on a card, from the bottom up (in a row, from the left): the
+ * same on the table, in dock mode and in the inspector. The "Add a modifier" menu follows MODIFIERS.
+ */
+export const MODIFIER_BADGES: readonly (typeof MODIFIERS)[number][] = [
+  'atk',
+  'sch',
+  'thw',
+  'def',
+  'rec',
+  'hp',
+];
+
+/**
  * Mirrors maxCount in internal/game/action.go: the most cards one action takes, the most
  * sub-actions a group holds (resolveGroup), and the largest modifier either way, where the
  * server clamps it (applyCounter), so that a step past it changes nothing.

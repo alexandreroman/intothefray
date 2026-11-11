@@ -131,6 +131,20 @@ describe('dockCounterLayout', () => {
     expectApartAndInside(result, 50, 70);
   });
 
+  it('stacks the badges up from ATK in badge order, whatever the order of the card', () => {
+    // 98 high: from the status row down to 96.5, room for five chips.
+    const result = layout(70, 98, { mods: { def: 1, thw: 1, atk: 1, sch: 1 } });
+
+    expect(result.modifiers.items.map((item) => [item.name, item.box.y])).toEqual([
+      ['atk', 82.5],
+      ['sch', 67.5],
+      ['thw', 52.5],
+      ['def', 37.5],
+    ]);
+    expect(result.modifiers.more).toBeNull();
+    expectApartAndInside(result, 70, 98);
+  });
+
   it('counts a badge too wide for the room in the "+N", never cuts it', () => {
     // No room left of the card: 29.5 holds neither "+1 DEF" (37) nor "−99 ATK" (42.5), only "+2".
     const narrow = layout(50, 70, { mods: { atk: -99, def: 1 } }, false, 0);
@@ -229,7 +243,7 @@ describe('dockCounterLayout', () => {
 
     expect(result.modifiers.items.map((item) => [item.name, item.box.y])).toEqual([
       ['atk', 54.5],
-      ['thw', 39.5],
+      ['sch', 39.5],
     ]);
     expect(result.modifiers.more).toEqual({ hidden: 4, box: { x: -6, y: 24.5, w: 15, h: 14 } });
     expectWholeModifiers(result);

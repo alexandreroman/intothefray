@@ -9,7 +9,7 @@ import {
   ARROW_ID,
   counterLabel,
   countersOf,
-  MODIFIERS,
+  MODIFIER_BADGES,
   STATUSES,
   TOKENS,
   type ActionItem,
@@ -52,14 +52,15 @@ const TOKEN_NAMES = TOKENS.map((token) => token.name);
 const STATUS_NAMES = STATUSES.map((status) => status.name);
 
 /**
- * The counters the card carries, in the order of its menus: the tokens, the
- * statuses, then the modifiers. A counter at zero is left out.
+ * The counters the card carries: the tokens and the statuses in the order of
+ * its menus, then the modifiers in the order of their badges (MODIFIER_BADGES).
+ * A counter at zero is left out.
  */
 export function countersFor(card: CardView): SheetCounter[] {
   return [
     ...carried(card, 'token', TOKEN_NAMES),
     ...carried(card, 'status', STATUS_NAMES),
-    ...carried(card, 'modifier', MODIFIERS),
+    ...carried(card, 'modifier', MODIFIER_BADGES),
   ];
 }
 

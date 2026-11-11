@@ -204,13 +204,16 @@ describe('CardView', () => {
     expect(tab?.querySelector('svg.lock')).not.toBeNull();
   });
 
-  it('shows each modifier with its sign in stat order, a penalty in red', () => {
-    const card = tableCard({ mods: { hp: -2, rec: 1, atk: -2, def: 1, thw: 0 } });
+  it('shows each modifier with its sign in badge order, a penalty in red', () => {
+    const card = tableCard({ mods: { hp: -2, rec: 1, thw: 3, atk: -2, def: 1, sch: 1 } });
     const { container } = render(CardView, { card, face: face() });
 
+    // ATK first in the DOM, drawn at the bottom of the column (counters.css).
     const badges = [...container.querySelectorAll<HTMLElement>('.mods .mod')];
     expect(badges.map((badge) => badge.textContent)).toEqual([
       '−2 ATK',
+      '+1 SCH',
+      '+3 THW',
       '+1 DEF',
       '+1 REC',
       '−2 HP',
@@ -218,12 +221,16 @@ describe('CardView', () => {
     // The token pill finds every modifier by its counter name.
     expect(badges.map((badge) => badge.dataset.counter)).toEqual([
       'modifier:atk',
+      'modifier:sch',
+      'modifier:thw',
       'modifier:def',
       'modifier:rec',
       'modifier:hp',
     ]);
     expect(badges.map((badge) => badge.classList.contains('neg'))).toEqual([
       true,
+      false,
+      false,
       false,
       false,
       true,

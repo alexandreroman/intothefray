@@ -765,6 +765,25 @@ describe('CardSheet', () => {
       expect(remove().disabled).toBe(true);
     });
 
+    it('draws the modifier badges in badge order, as the table does', () => {
+      const badge = (name: string): SheetCounter => ({
+        kind: 'modifier',
+        name,
+        label: name.toUpperCase(),
+        value: 1,
+        signed: true,
+      });
+      // In the order of the menu: the face draws them ATK, SCH, THW, from the bottom up (counters.css).
+      renderSheet({ counters: [badge('atk'), badge('thw'), badge('sch')] });
+
+      const badges = [...onFace().querySelectorAll<HTMLElement>('.mods .mod')];
+      expect(badges.map((chip) => chip.dataset.counter)).toEqual([
+        'modifier:atk',
+        'modifier:sch',
+        'modifier:thw',
+      ]);
+    });
+
     it("puts a scheme's threat in the top right corner and its tabs on the left edge", () => {
       const threat: SheetCounter = {
         kind: 'token',

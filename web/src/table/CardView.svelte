@@ -7,7 +7,7 @@
   import type { PackFace, CardView as TableCard } from '../lib/types';
   import {
     CORNER_TOKENS,
-    MODIFIERS,
+    MODIFIER_BADGES,
     statusCount,
     STATUSES,
     THREAT_TOKENS,
@@ -69,7 +69,7 @@
   const statuses = $derived(STATUSES.filter(({ name }) => (card.status?.[name] ?? 0) > 0));
 
   // A modifier is signed: only 0 hides it.
-  const modifiers = $derived(MODIFIERS.filter((name) => (card.mods?.[name] ?? 0) !== 0));
+  const modifiers = $derived(MODIFIER_BADGES.filter((name) => (card.mods?.[name] ?? 0) !== 0));
   // In dock mode its counters take three regions of their own, at a fixed screen size
   // (dockCounters.ts): their layer undoes the table's zoom, so that its px are screen px.
   const zoom = $derived(dock.zoom ?? 1);

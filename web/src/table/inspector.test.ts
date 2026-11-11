@@ -55,6 +55,12 @@ describe('countersFor', () => {
     ]);
   });
 
+  it('lists the modifiers in the order of their badges, not of the menu', () => {
+    const counters = countersFor(card('c', { mods: { thw: 1, sch: -1, atk: 2, hp: 3 } }));
+
+    expect(counters.map((counter) => counter.name)).toEqual(['atk', 'sch', 'thw', 'hp']);
+  });
+
   it('leaves out the counters at zero, and keeps a negative modifier', () => {
     const counters = countersFor(
       card('c', { tokens: { dmg: 0 }, status: { tough: 0 }, mods: { atk: 0, sch: -2 } }),

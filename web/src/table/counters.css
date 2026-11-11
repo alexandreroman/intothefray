@@ -228,13 +228,17 @@
   Stat modifiers: tabs like the statuses, on the edge the statuses leave free. On a portrait
   card, they stick out of the left edge from the bottom, clear of the stats printed along the
   top left and of the corner pile on the right, at most two tokens wide.
-  Anchored at the bottom, the column grows upwards and still reads ATK to REC top to bottom.
+  A column reads from the bottom up in the order of MODIFIER_BADGES (actions.ts), ATK the bottom
+  tab, as in dock mode: column-reverse draws the first tab at the bottom, while the DOM, which a
+  screen reader follows, keeps ATK first. Its main start is the bottom, so flex-start packs the
+  tabs of every column down there (start, the writing mode's, would be the top).
   On a portrait scheme, whose left edge holds the statuses, they stick out of the right edge
   between the threat in the top corner (the acceleration lies to its left, along the top) and
-  the corner pile, at most two tokens high (44px).
+  the corner pile, at most two tokens high (44px). The column keeps its top 30px down and is as
+  high as its tabs, ATK at its bottom.
   That room holds five tabs (14px high, 2px apart): a column holds no more, which also keeps
   it clear of the stats on a portrait card. With all six stats, HP starts a second column
-  inside the card, beside the bottom tab: higher up, it would cover the stats of a portrait
+  inside the card, beside the bottom tab, ATK: higher up, it would cover the stats of a portrait
   card or the statuses of a scheme.
 */
 .counters .mods {
@@ -243,9 +247,10 @@
   left: -6px;
   z-index: 4;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
+  /* The second column goes to the right, into the card. */
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 2px;
   max-height: 78px;
@@ -263,8 +268,9 @@
 
 /*
   A landscape card, scheme or not, is too low for a column: they lie in a row along the bottom
-  from the left corner, wrapping upwards, and stop 5px short of the corner pile, which sits
-  5px in. On a landscape card other than a scheme it is up to two tokens wide (44px), where the
+  from the left corner, ATK first, wrapping upwards (the first row is the bottom one), and stop
+  5px short of the corner pile, which sits 5px in. flex-direction: row reads them from the left.
+  On a landscape card other than a scheme it is up to two tokens wide (44px), where the
   acceleration sits beside the threat. On a landscape scheme the threat and the acceleration
   sit top right, so it is one token wide (21px): the wider row there stays two rows high, under
   the four status tabs of the scheme's left column.
